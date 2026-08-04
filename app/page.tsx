@@ -135,10 +135,17 @@ fontWeight: "bold",
       </nav>
 
       <section
-  style={{
-   padding: "40px 30px 80px",
-    textAlign: "center",
-  }}
+ style={{
+  padding: "140px 30px",
+  textAlign: "center",
+  position: "relative",
+  backgroundImage:
+    "linear-gradient(rgba(5,11,24,0.72), rgba(5,11,24,0.72)), url('/hero-property.jpg')",
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  backgroundRepeat: "no-repeat",
+  overflow: "hidden",
+}}
 >
   <p
     style={{
@@ -230,9 +237,16 @@ fontWeight: "bold",
 </section>
 <section
   style={{
-    padding: "90px 30px",
-    background: "#08111F",
-    textAlign: "center",
+padding: "90px 30px",
+
+backgroundImage:
+  "linear-gradient(rgba(8,17,31,0.85), rgba(8,17,31,0.85)), url('/how-it-works-background.jpg')",
+
+backgroundSize: "cover",
+backgroundPosition: "top",
+backgroundRepeat: "no-repeat",
+
+textAlign: "center",
   }}>
    <h2
   style={{
@@ -361,11 +375,18 @@ fontWeight: "bold",
 </div> 
 </section>
 <section
-  style={{
-    padding: "90px 30px",
-    background: "#050B18",
-    textAlign: "center",
-  }}
+ style={{
+  padding: "90px 30px",
+
+  backgroundImage:
+    "linear-gradient(rgba(5,8,27,0.85), rgba(5,8,27,0.85)), url('/why-choose-background.jpg')",
+
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  backgroundRepeat: "no-repeat",
+
+  textAlign: "center",
+}}
 >
   <h2
     style={{
@@ -523,9 +544,16 @@ fontWeight: "bold",
 </section>
 <section
   style={{
-    padding: "90px 30px",
-    background: "#08111F",
-    textAlign: "center",
+   padding: "90px 30px",
+
+backgroundImage:
+  "linear-gradient(rgba(5,8,27,0.85), rgba(5,8,27,0.85)), url('/early-users-background.jpg')",
+
+backgroundSize: "cover",
+backgroundPosition: "center",
+backgroundRepeat: "no-repeat",
+
+textAlign: "center",
   }}
 >
   <p
@@ -645,9 +673,16 @@ fontWeight: "bold",
 </section>
 <section
   style={{
-    padding: "90px 30px",
-    background: "#050B18",
-    textAlign: "center",
+   padding: "90px 30px",
+
+backgroundImage:
+  "linear-gradient(rgba(8,17,31,0.88), rgba(8,17,31,0.88)), url('/faq-background.jpg')",
+
+backgroundSize: "cover",
+backgroundPosition: "center",
+backgroundRepeat: "no-repeat",
+
+textAlign: "center",
   }}
 >
   <h2
@@ -806,7 +841,13 @@ fontWeight: "bold",
 <section
   style={{
     padding: "90px 30px",
-    background: "#050B18",
+
+   backgroundImage:
+  "linear-gradient(rgba(8,17,31,0.80), rgba(8,17,31,0.80)), url('/supported-documents-background.jpg')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+
     textAlign: "center",
   }}
 >
@@ -823,7 +864,7 @@ fontWeight: "bold",
 
   <h2
     style={{
-      fontSize: "42px",
+    fontSize: "40px",
       fontWeight: "800",
       marginBottom: "20px",
     }}
