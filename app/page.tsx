@@ -1,12 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
  const [isMenuOpen, setIsMenuOpen] = useState(false);
 const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 const router = useRouter();
+const heroImages = [
+  "/hero-property.jpg",
+  "/hero-documents.jpg",
+  "/hero-documents-2.jpg",
+  "/hero-documents-3.jpg",
+  "/hero-documents-4.jpg",
+];
+
+const [currentHero, setCurrentHero] = useState(0);
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    setCurrentHero((prev) => (prev + 1) % heroImages.length);
+  }, 3000);
+
+  return () => clearInterval(interval);
+}, []);
  return (
   <main
   style={{
@@ -17,13 +34,15 @@ const router = useRouter();
   }}
 >
       <nav
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "28px 30px",
-         borderBottom: "1px solid rgba(255,255,255,0.06)",
-        }}
+       style={{
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "28px 30px",
+  borderBottom: "1px solid rgba(255,255,255,0.06)",
+  position: "relative",
+  zIndex: 1000,
+}}
       >
        <h2
   style={{
@@ -53,17 +72,19 @@ fontWeight: "bold",
 
 {isMenuOpen && (
   <div
-    style={{
-      position: "absolute",
-      top: "70px",
-      right: "20px",
-      background: "#111827",
-      borderRadius: "10px",
-     padding: "20px",
-      minWidth: "180px",
-      minHeight: "320px",
-      boxShadow: "0 8px 20px rgba(0,0,0,0.4)",
-    }}
+   style={{
+  position: "absolute",
+  top: "70px",
+  right: "20px",
+  background: "#111827",
+  borderRadius: "10px",
+  padding: "20px",
+  minWidth: "180px",
+  minHeight: "320px",
+  boxShadow: "0 8px 20px rgba(0,0,0,0.4)",
+  zIndex: 1001,
+  backdropFilter: "blur(12px)",
+}}
   >
   <p
   onClick={() => router.push("/")}
@@ -140,7 +161,7 @@ fontWeight: "bold",
   textAlign: "center",
   position: "relative",
   backgroundImage:
-    "linear-gradient(rgba(5,11,24,0.72), rgba(5,11,24,0.72)), url('/hero-property.jpg')",
+  `linear-gradient(rgba(5,11,24,0.72), rgba(5,11,24,0.72)), url('${heroImages[currentHero]}')`,
   backgroundSize: "cover",
   backgroundPosition: "center",
   backgroundRepeat: "no-repeat",
