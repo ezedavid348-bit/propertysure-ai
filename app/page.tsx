@@ -14,16 +14,31 @@ const heroImages = [
   "/hero-documents-3.jpg",
   "/hero-documents-4.jpg",
 ];
-
+useEffect(() => {
+  heroImages.forEach((src) => {
+    const img = new Image();
+    img.src = src;
+  });
+}, []);
 const [currentHero, setCurrentHero] = useState(0);
+const [previousHero, setPreviousHero] = useState(0);
+const [fade, setFade] = useState(false);
+const fadeDuration = 1000;
+
 
 useEffect(() => {
   const interval = setInterval(() => {
-    setCurrentHero((prev) => (prev + 1) % heroImages.length);
-  }, 3000);
+    setPreviousHero(currentHero);
+    setFade(true);
+
+    setTimeout(() => {
+      setCurrentHero((currentHero + 1) % heroImages.length);
+      setFade(false);
+    }, fadeDuration);
+  }, 5000);
 
   return () => clearInterval(interval);
-}, []);
+}, [currentHero]);
  return (
   <main
   style={{
@@ -155,106 +170,127 @@ fontWeight: "bold",
 )}
       </nav>
 
-      <section
- style={{
-  padding: "140px 30px",
-  textAlign: "center",
-  position: "relative",
-  backgroundImage:
-  `linear-gradient(rgba(5,11,24,0.72), rgba(5,11,24,0.72)), url('${heroImages[currentHero]}')`,
-  backgroundSize: "cover",
-  backgroundPosition: "center",
-  backgroundRepeat: "no-repeat",
-  overflow: "hidden",
-}}
+ <section
+  style={{
+    padding: "140px 30px",
+    textAlign: "center",
+    position: "relative",
+   
+    overflow: "hidden",
+  }}
 >
-  <p
-    style={{
-      color: "#4DA3FF",
-      letterSpacing: "3px",
-      fontWeight: "700",
-      marginBottom: "20px",
-    }}
-  >
-    AI PROPERTY VERIFICATION
-  </p>
-
-  <h1
-    style={{
-      fontSize: "clamp(40px, 8vw, 72px)",
-      lineHeight: "1.1",
-      fontWeight: "800",
-      margin: "0",
-    }}
-  >
-    Verify Property
-    <br />
-    Documents Before
-    <br />
-    You Pay.
-  </h1>
-
-  <p
-    style={{
-      color: "#B6C2D2",
-      maxWidth: "700px",
-      margin: "30px auto",
-      fontSize: "clamp(18px, 4vw, 20px)",
-      lineHeight: "1.7",
-    }}
-  >
-    Protect yourself from land fraud using AI-powered
-    document verification before making any payment.
-  </p>
-
+  {/* Current Background */}
   <div
     style={{
-      display: "flex",
-      justifyContent: "center",
-      gap: "15px",
-      flexWrap: "wrap",
-      marginTop: "24px",
+      position: "absolute",
+      inset: 0,
+      backgroundImage: `linear-gradient(rgba(5,11,24,0.72), rgba(5,11,24,0.72)), url('${heroImages[currentHero]}')`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+     transition: "background-image 0.8s ease-in-out",
+zIndex: 0,
+    }}
+  />
+
+ 
+
+  {/* Hero Content */}
+  <div
+    style={{
+      position: "relative",
+      zIndex: 2,
     }}
   >
-    <button
-    onClick={() => router.push("/verify")}
+    <p
       style={{
-        background: "#2EA8FF",
-        color: "white",
-        border: "none",
-        padding: "16px 32px",
-        borderRadius: "12px",
-        fontSize: "18px",
-        cursor: "pointer",
+        color: "#4DA3FF",
+        letterSpacing: "3px",
+        fontWeight: "700",
+        marginBottom: "20px",
+      }}
+    >
+      AI PROPERTY VERIFICATION
+    </p>
+
+    <h1
+      style={{
+        fontSize: "clamp(40px, 8vw, 72px)",
+        lineHeight: "1.1",
+        fontWeight: "800",
+        margin: "0",
       }}
     >
       Verify Property
-    </button>
+      <br />
+      Documents Before
+      <br />
+      You Pay.
+    </h1>
 
-    <button
+    <p
       style={{
-        background: "transparent",
-        color: "white",
-        border: "1px solid rgba(255,255,255,0.25)",
-        padding: "16px 32px",
-        borderRadius: "12px",
-        fontSize: "18px",
-        cursor: "pointer",
+        color: "#B6C2D2",
+        maxWidth: "700px",
+        margin: "30px auto",
+        fontSize: "clamp(18px, 4vw, 20px)",
+        lineHeight: "1.7",
       }}
     >
-      Learn More
-    </button>
-  </div>
+      Protect yourself from land fraud using AI-powered
+      document verification before making any payment.
+    </p>
 
-  <p
-    style={{
-     marginTop: "28px",
-      color: "#9FB3C8",
-      fontSize: "16px",
-    }}
-  >
-    ⭐⭐⭐⭐⭐ Trusted by Property Buyers & Investors
-  </p>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        gap: "15px",
+        flexWrap: "wrap",
+        marginTop: "24px",
+      }}
+    >
+      <button
+        onClick={() => router.push("/verify")}
+        style={{
+          background: "#2EA8FF",
+          color: "white",
+          border: "none",
+          padding: "16px 32px",
+          borderRadius: "12px",
+          fontSize: "18px",
+          cursor: "pointer",
+        }}
+      >
+        Verify Property
+      </button>
+
+     <button
+  onClick={() => router.push("/about")}
+  style={{
+          background: "transparent",
+          color: "white",
+          border: "1px solid rgba(255,255,255,0.25)",
+          padding: "16px 32px",
+          borderRadius: "12px",
+          fontSize: "18px",
+          cursor: "pointer",
+        }}
+      >
+        Learn More
+      </button>
+    </div>
+
+    <p
+      style={{
+        marginTop: "28px",
+        color: "#9FB3C8",
+        fontSize: "16px",
+      }}
+    >
+      ⭐⭐⭐⭐⭐ Trusted by Property Buyers & Investors
+    </p>
+  </div>
 </section>
 <section
   style={{
@@ -581,7 +617,7 @@ textAlign: "center",
     style={{
       color: "#2EA8FF",
       letterSpacing: "3px",
-      fontWeight: "700",
+      fontWeight: "700", 
       marginBottom: "15px",
     }}
   >

@@ -6,7 +6,11 @@ const [file, setFile] = useState<File | null>(null);
     <main
       style={{
         minHeight: "100vh",
-        background: "#0A1224",
+      background: `
+linear-gradient(rgba(5,11,24,0.40), rgba(5,11,24,0.50)),
+url("/verify-blueprint.png") center/cover no-repeat,
+radial-gradient(circle at top, #0E2348 0%, #08111F 45%, #050B18 100%)
+`,
         color: "white",
         display: "flex",
         justifyContent: "center",
@@ -94,11 +98,20 @@ padding: "40px 20px",
 </div>
  <div
   style={{
-    fontSize: "80px",
-    marginBottom: "20px",
+    width: "120px",
+    height: "120px",
+    margin: "0 auto 24px",
+    borderRadius: "50%",
+    background:
+      "linear-gradient(135deg, rgba(46,168,255,0.25), rgba(46,168,255,0.08))",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    boxShadow: "0 0 35px rgba(46,168,255,0.35)",
+    fontSize: "58px",
   }}
 >
-  📄
+  ⬆️
 </div>
 
   <h3 style={{ marginBottom: "10px", color: "#2EA8FF" }}>
@@ -109,6 +122,37 @@ padding: "40px 20px",
    or tap to browse
   </p>
 </label>
+<div
+  style={{
+    display: "flex",
+    justifyContent: "center",
+    gap: "12px",
+    flexWrap: "wrap",
+    marginBottom: "28px",
+  }}
+>
+  {[
+    "🔒 Secure Upload",
+    "🤖 AI Analysis",
+    "⏱️ 2–5 Min",
+    "🛡️ Fraud Detection",
+  ].map((item) => (
+    <div
+      key={item}
+      style={{
+        background: "rgba(46,168,255,0.12)",
+        border: "1px solid rgba(46,168,255,0.25)",
+        color: "#D9F2FF",
+        padding: "8px 14px",
+        borderRadius: "999px",
+        fontSize: "13px",
+        fontWeight: "600",
+      }}
+    >
+      {item}
+    </div>
+  ))}
+</div>
 {file && (
   <div
     style={{
@@ -152,6 +196,19 @@ transition: "all 0.25s ease",
 >
  Verify Property
 </button>
+<p
+  style={{
+    marginTop: "22px",
+    color: "#94A3B8",
+    fontSize: "13px",
+    lineHeight: "1.8",
+    textAlign: "center",
+  }}
+>
+  🔒 Your documents are encrypted and handled securely. PropertySure AI
+  never shares your files with third parties. Verification usually takes
+  2–5 minutes, depending on document complexity.
+</p>
       </div>
     </main>
   );
