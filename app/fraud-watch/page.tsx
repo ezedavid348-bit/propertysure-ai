@@ -146,7 +146,7 @@ export default function FraudWatchPage() {
 
         <nav className="sidebar-nav">
 
-          <a href="/dashboard">
+          <a href="/fraud-watch">
             <span className="nav-icon">⌂</span>
             Dashboard
           </a>

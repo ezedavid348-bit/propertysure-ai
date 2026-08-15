@@ -84,19 +84,28 @@ boxSizing: "border-box",
   "Sign In",
   "Get Started",
 ].map((item) => (
-                <div
-                  key={item}
-                  style={{
-                    padding: "16px 20px",
-                    borderBottom:
-                     item !== "Get Started"
-                        ? "1px solid rgba(255,255,255,.05)"
-                        : "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  {item}
-                </div>
+               <div
+  key={item}
+  onClick={() => {
+    if (item === "Sign In") {
+      router.push("/signing");
+    }
+
+    if (item === "Get Started") {
+      router.push("/signup");
+    }
+  }}
+  style={{
+    padding: "16px 20px",
+    borderBottom:
+      item !== "Get Started"
+        ? "1px solid rgba(255,255,255,.05)"
+        : "none",
+    cursor: "pointer",
+  }}
+>
+  {item}
+</div>
               ))}
             </div>
           )}
@@ -163,7 +172,7 @@ gap: "16px",
           }}
         >
           <button
-onClick={() => router.push("/verify")}
+onClick={() => router.push("/signup")}
   style={{
               background:
                 "linear-gradient(135deg,#2EA8FF,#0077FF)",

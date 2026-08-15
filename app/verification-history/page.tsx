@@ -740,9 +740,9 @@ export default function VerificationHistoryPage() {
 
               <div className="actionCell">
 
-                <button className="viewDetails">
-                  View Details
-                </button>
+               <a href="/verification-details" className="viewDetails">
+  View Details
+</a>
 
                 <button className="moreButton">
                   <MoreIcon />

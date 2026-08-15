@@ -308,7 +308,7 @@ const categories = [
 ];
 
 const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: "home" as IconName },
+{ label: "Dashboard", href: "/dashboard", icon: "home" as IconName },
   {
     label: "Verification History",
     href: "/verification-history",

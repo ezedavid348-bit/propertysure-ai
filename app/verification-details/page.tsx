@@ -164,7 +164,7 @@ export default function VerificationDetailsPage() {
 
         <nav className="sidebar-nav">
 
-          <a href="/dashboard">
+        <a href="/dashboard">
             <span className="nav-icon">⌂</span>
             Dashboard
           </a>

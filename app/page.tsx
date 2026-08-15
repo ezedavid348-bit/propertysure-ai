@@ -139,19 +139,25 @@ fontWeight: "bold",
   }}
 />
 
-<p
+<button
   onClick={() => router.push("/signin")}
   style={{
-    margin: "10px 0",
+    width: "100%",
+    marginTop: "10px",
+    padding: "12px",
+    background: "#2EA8FF",
+    color: "white",
+    border: "none",
+    borderRadius: "10px",
     cursor: "pointer",
-    color: "#B6C2D2",
+    fontWeight: "bold",
   }}
 >
   Sign In
-</p>
+</button>
 
 <button
-  onClick={() => router.push("/signin")}
+  onClick={() => router.push("/signup")}
   style={{
     width: "100%",
     marginTop: "10px",
