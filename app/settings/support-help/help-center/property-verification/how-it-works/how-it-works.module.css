@@ -1,0 +1,1376 @@
+/* =========================================================
+   PAGE
+========================================================= */
+
+.page {
+  min-height: 100vh;
+  width: 100%;
+  background: #ffffff;
+  color: #18253a;
+
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+.page button,
+.page input {
+  font-family: inherit;
+}
+
+
+/* =========================================================
+   TOP HEADER
+========================================================= */
+
+.topHeader {
+  width: 100%;
+  height: 88px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 18px 24px;
+
+  border-bottom: 1px solid #e7ebf0;
+
+  background: #ffffff;
+}
+
+.searchBox {
+  width: min(865px, 100%);
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 13px;
+
+  padding: 0 18px;
+
+  border: 1px solid #dce3eb;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 4px rgba(20, 40, 70, 0.025);
+}
+
+.searchIcon {
+  flex-shrink: 0;
+  color: #63748a;
+}
+
+.searchBox input {
+  width: 100%;
+  height: 100%;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #263852;
+
+  font-size: 14px;
+}
+
+.searchBox input::placeholder {
+  color: #718096;
+}
+
+
+/* =========================================================
+   MAIN LAYOUT
+========================================================= */
+
+.layout {
+  width: min(1240px, calc(100% - 80px));
+
+  margin: 0 auto;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    300px;
+
+  gap: 44px;
+
+  padding: 34px 0 60px;
+}
+
+
+/* =========================================================
+   ARTICLE
+========================================================= */
+
+.article {
+  min-width: 0;
+}
+
+.articleHeader h1 {
+  margin: 0;
+
+  color: #10213d;
+
+  font-size: 31px;
+  line-height: 1.15;
+  font-weight: 700;
+
+  letter-spacing: -0.65px;
+}
+
+.articleHeader > p {
+  max-width: 650px;
+
+  margin: 12px 0 0;
+
+  color: #65758c;
+
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.backButton {
+  margin-top: 20px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #0879df;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.backButton:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.divider {
+  width: 100%;
+  height: 1px;
+
+  margin: 25px 0;
+
+  background: #e5eaf0;
+}
+
+
+/* =========================================================
+   INTRO
+========================================================= */
+
+.introSection {
+  display: grid;
+
+  grid-template-columns: 82px minmax(0, 1fr);
+
+  gap: 20px;
+
+  padding: 18px 20px;
+
+  border: 1px solid #dce6f1;
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #f7fbff,
+      #ffffff
+    );
+}
+
+.introIcon {
+  width: 58px;
+  height: 58px;
+
+  border-radius: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ffffff;
+
+  background: #0879df;
+
+  box-shadow:
+    0 5px 14px rgba(8, 121, 223, 0.14);
+}
+
+.introContent {
+  min-width: 0;
+}
+
+.introContent h2 {
+  margin: 1px 0 0;
+
+  color: #10213d;
+
+  font-size: 19px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.introContent p {
+  max-width: 650px;
+
+  margin: 8px 0 0;
+
+  color: #50617a;
+
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   CONTENT SECTION
+========================================================= */
+
+.contentSection {
+  scroll-margin-top: 25px;
+
+  margin-top: 25px;
+}
+
+.contentSection > h2 {
+  margin: 0;
+
+  color: #10213d;
+
+  font-size: 19px;
+  line-height: 1.3;
+
+  font-weight: 700;
+}
+
+.sectionDescription {
+  margin: 9px 0 15px;
+
+  color: #5d6d83;
+
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   FOUR STEPS
+========================================================= */
+
+.stepsGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 25px;
+
+  margin-top: 17px;
+}
+
+.stepCard {
+  position: relative;
+
+  min-width: 0;
+  min-height: 282px;
+
+  padding: 13px;
+
+  border: 1px solid #dfe6ee;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 8px rgba(15, 35, 65, 0.025);
+}
+
+.stepTop {
+  height: 25px;
+}
+
+.stepNumber {
+  width: 25px;
+  height: 25px;
+
+  border-radius: 6px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stepBlue {
+  background: #e5efff;
+  color: #0879df;
+}
+
+.greenNumber {
+  background: #e5f8ed;
+  color: #15995a;
+}
+
+.yellowNumber {
+  background: #fff3d8;
+  color: #dc991e;
+}
+
+.purpleNumber {
+  background: #eee8ff;
+  color: #7950dc;
+}
+
+.stepIcon {
+  width: 58px;
+  height: 58px;
+
+  margin: 10px auto 13px;
+
+  border-radius: 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blueIcon {
+  color: #0879df;
+  background: #e5f0ff;
+}
+
+.greenIcon {
+  color: #15995a;
+  background: #e3f8ec;
+}
+
+.yellowIcon {
+  color: #dc991e;
+  background: #fff3d8;
+}
+
+.purpleIcon {
+  color: #7950dc;
+  background: #eee8ff;
+}
+
+.stepCard h3 {
+  margin: 0;
+
+  color: #172840;
+
+  font-size: 13px;
+  line-height: 1.35;
+
+  font-weight: 700;
+}
+
+.stepCard > p {
+  min-height: 76px;
+
+  margin: 9px 0 12px;
+
+  color: #5d6d83;
+
+  font-size: 10.5px;
+  line-height: 1.65;
+}
+
+.stepTag {
+  min-height: 29px;
+
+  padding: 0 9px;
+
+  border-radius: 6px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  font-size: 9.5px;
+  font-weight: 600;
+}
+
+.blueTag {
+  color: #0879df;
+  background: #eef5ff;
+}
+
+.greenTag {
+  color: #148a52;
+  background: #eaf9f0;
+}
+
+.yellowTag {
+  color: #c68b18;
+  background: #fff7e5;
+}
+
+.purpleTag {
+  color: #7647d3;
+  background: #f3efff;
+}
+
+.stepArrow {
+  position: absolute;
+
+  right: -24px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #0879df;
+
+  z-index: 2;
+}
+
+
+/* =========================================================
+   BENEFITS
+========================================================= */
+
+.benefitsGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 20px;
+
+  margin-top: 17px;
+}
+
+.benefitItem {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 11px;
+}
+
+.benefitIcon {
+  width: 47px;
+  height: 47px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blueBenefit {
+  color: #0879df;
+  background: #e5f0ff;
+}
+
+.greenBenefit {
+  color: #15995a;
+  background: #e1f7eb;
+}
+
+.yellowBenefit {
+  color: #e0a01f;
+  background: #fff1d3;
+}
+
+.purpleBenefit {
+  color: #8050dc;
+  background: #eee7ff;
+}
+
+.benefitItem h3 {
+  margin: 3px 0 0;
+
+  color: #182a43;
+
+  font-size: 11px;
+  line-height: 1.4;
+
+  font-weight: 700;
+}
+
+.benefitItem p {
+  margin: 8px 0 0;
+
+  color: #627188;
+
+  font-size: 9.5px;
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   WHAT WE CHECK
+========================================================= */
+
+.checkGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(6, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-top: 17px;
+}
+
+.checkCard {
+  min-width: 0;
+  min-height: 178px;
+
+  padding: 14px 10px;
+
+  text-align: center;
+
+  border: 1px solid #dfe6ee;
+  border-radius: 8px;
+
+  background: #ffffff;
+}
+
+.checkIcon {
+  width: 45px;
+  height: 45px;
+
+  margin: 0 auto 10px;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkBlue {
+  color: #0879df;
+  background: #e7f1ff;
+}
+
+.checkGreen {
+  color: #15995a;
+  background: #e2f8ec;
+}
+
+.checkYellow {
+  color: #db9c1c;
+  background: #fff2d6;
+}
+
+.checkPurple {
+  color: #7950db;
+  background: #eee8ff;
+}
+
+.checkCard h3 {
+  margin: 0;
+
+  color: #182a43;
+
+  font-size: 10.5px;
+  line-height: 1.4;
+
+  font-weight: 700;
+}
+
+.checkCard p {
+  margin: 9px 0 0;
+
+  color: #627188;
+
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   TIP
+========================================================= */
+
+.tipBox {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  margin-top: 22px;
+
+  padding: 12px 15px;
+
+  border: 1px solid #ccebdc;
+  border-radius: 8px;
+
+  background: #f3fcf7;
+}
+
+.tipIcon {
+  flex-shrink: 0;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #18a65c;
+}
+
+.tipBox p {
+  margin: 0;
+
+  color: #53687b;
+
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+
+.tipBox strong {
+  color: #263852;
+}
+
+
+/* =========================================================
+   BOTTOM NAVIGATION
+========================================================= */
+
+.bottomNavigation {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-top: 27px;
+
+  padding-top: 20px;
+
+  border-top: 1px solid #e5eaf0;
+}
+
+.previousBottom,
+.nextBottom {
+  border: 0;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  text-align: left;
+}
+
+.previousBottom {
+  padding: 0;
+
+  color: #0879df;
+
+  background: transparent;
+}
+
+.previousBottom span,
+.nextBottom span {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.previousBottom small,
+.nextBottom small {
+  font-size: 9.5px;
+  font-weight: 500;
+}
+
+.previousBottom strong,
+.nextBottom strong {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.nextBottom {
+  min-width: 195px;
+
+  padding: 12px 15px;
+
+  justify-content: space-between;
+
+  color: #ffffff;
+
+  background: #0879df;
+
+  border-radius: 7px;
+}
+
+.nextBottom small,
+.nextBottom strong {
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   RIGHT SIDEBAR
+========================================================= */
+
+.rightSidebar {
+  min-width: 0;
+}
+
+.sideCard {
+  width: 100%;
+
+  margin-bottom: 16px;
+
+  padding: 20px;
+
+  border: 1px solid #dfe6ee;
+  border-radius: 9px;
+
+  background: #ffffff;
+}
+
+.sideCard h3 {
+  margin: 0;
+
+  color: #18253a;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   ARTICLE NAV
+========================================================= */
+
+.articleNav {
+  display: flex;
+  flex-direction: column;
+
+  gap: 17px;
+
+  margin-top: 18px;
+}
+
+.articleNav button {
+  width: 100%;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #52627a;
+
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  text-align: left;
+
+  font-size: 10.5px;
+  line-height: 1.4;
+
+  cursor: pointer;
+}
+
+.articleNav button > span {
+  width: 11px;
+  height: 11px;
+
+  flex-shrink: 0;
+
+  border: 2px solid #b7c1cd;
+
+  border-radius: 50%;
+}
+
+.articleNav .activeArticle {
+  color: #0879df;
+  font-weight: 600;
+}
+
+.articleNav .activeDot {
+  width: 12px;
+  height: 12px;
+
+  border: 0;
+
+  background: #0879df;
+}
+
+
+/* =========================================================
+   FEEDBACK
+========================================================= */
+
+.feedback {
+  display: flex;
+
+  gap: 10px;
+
+  margin-top: 17px;
+}
+
+.feedback button {
+  flex: 1;
+
+  height: 42px;
+
+  border: 1px solid #dce4ed;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #53637a;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  font-size: 11px;
+
+  cursor: pointer;
+}
+
+.feedback button:hover {
+  border-color: #b9d7f6;
+  color: #0879df;
+  background: #f7fbff;
+}
+
+.feedbackMessage {
+  margin-top: 16px;
+
+  padding: 11px;
+
+  border-radius: 7px;
+
+  background: #f1fbf5;
+
+  color: #168b51;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  font-size: 10.5px;
+}
+
+
+/* =========================================================
+   SIDEBAR ARTICLE NAVIGATION
+========================================================= */
+
+.sidePrevious,
+.sideNext {
+  width: 100%;
+
+  border: 0;
+
+  padding: 0;
+
+  background: transparent;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 8px;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.sidePrevious {
+  color: #65758a;
+}
+
+.sidePrevious span,
+.sideNext span {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.sidePrevious small,
+.sideNext small {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.sidePrevious strong,
+.sideNext strong {
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.sideNext {
+  justify-content: space-between;
+
+  color: #0879df;
+}
+
+.sideDivider {
+  width: 100%;
+  height: 1px;
+
+  margin: 16px 0;
+
+  background: #e6ebf1;
+}
+
+
+/* =========================================================
+   HELP CARD
+========================================================= */
+
+.helpCard {
+  padding: 20px;
+
+  border: 1px solid #d9e4f0;
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f5faff,
+      #ffffff
+    );
+}
+
+.helpIcon {
+  width: 46px;
+  height: 46px;
+
+  margin-bottom: 12px;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #0879df;
+
+  background: #e4f0ff;
+}
+
+.helpCard h3 {
+  margin: 0;
+
+  color: #182a43;
+
+  font-size: 14px;
+}
+
+.helpCard p {
+  margin: 9px 0 15px;
+
+  color: #617188;
+
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+
+.helpCard button {
+  width: 100%;
+
+  height: 39px;
+
+  border: 1px solid #0879df;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #0879df;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  font-size: 10.5px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.helpCard button:hover {
+  background: #0879df;
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1050px) {
+  .layout {
+    width: min(920px, calc(100% - 40px));
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      270px;
+
+    gap: 30px;
+  }
+
+  .stepsGrid {
+    gap: 18px;
+  }
+
+  .stepArrow {
+    right: -18px;
+  }
+
+  .benefitsGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    row-gap: 22px;
+  }
+
+  .checkGrid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================================
+   MOBILE / TABLET
+========================================================= */
+
+@media (max-width: 820px) {
+  .topHeader {
+    height: 76px;
+  }
+
+  .layout {
+    width: min(700px, calc(100% - 32px));
+
+    display: block;
+
+    padding-top: 27px;
+  }
+
+  .rightSidebar {
+    margin-top: 30px;
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 15px;
+  }
+
+  .sideCard {
+    margin-bottom: 0;
+  }
+
+  .helpCard {
+    grid-column: 1 / -1;
+  }
+
+  .stepsGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 15px;
+  }
+
+  .stepArrow {
+    display: none;
+  }
+
+  .checkGrid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+  .topHeader {
+    height: 70px;
+
+    padding: 11px 14px;
+  }
+
+  .searchBox {
+    height: 46px;
+
+    padding: 0 13px;
+
+    gap: 9px;
+  }
+
+  .searchBox input {
+    font-size: 11px;
+  }
+
+  .layout {
+    width: 100%;
+
+    padding:
+      25px 15px 40px;
+  }
+
+  .articleHeader h1 {
+    font-size: 27px;
+  }
+
+  .articleHeader > p {
+    font-size: 11.5px;
+  }
+
+  .backButton {
+    font-size: 11px;
+  }
+
+  .introSection {
+    grid-template-columns: 1fr;
+
+    gap: 13px;
+
+    padding: 16px;
+  }
+
+  .introIcon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .introContent h2 {
+    font-size: 18px;
+  }
+
+  .introContent p {
+    font-size: 11px;
+  }
+
+  .contentSection {
+    margin-top: 25px;
+  }
+
+  .contentSection > h2 {
+    font-size: 18px;
+  }
+
+  .stepsGrid {
+    grid-template-columns: 1fr;
+
+    gap: 12px;
+  }
+
+  .stepCard {
+    min-height: auto;
+
+    padding: 15px;
+  }
+
+  .stepIcon {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .stepCard > p {
+    min-height: auto;
+
+    max-width: 480px;
+
+    font-size: 10.5px;
+  }
+
+  .stepTag {
+    width: fit-content;
+  }
+
+  .benefitsGrid {
+    grid-template-columns: 1fr;
+
+    gap: 18px;
+  }
+
+  .benefitItem p {
+    font-size: 10px;
+  }
+
+  .checkGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 10px;
+  }
+
+  .checkCard {
+    min-height: 160px;
+  }
+
+  .tipBox {
+    align-items: flex-start;
+
+    padding: 12px;
+  }
+
+  .tipBox p {
+    font-size: 10px;
+  }
+
+  .bottomNavigation {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .previousBottom {
+    width: 100%;
+  }
+
+  .nextBottom {
+    width: 100%;
+  }
+
+  .rightSidebar {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 14px;
+
+    margin-top: 30px;
+  }
+
+  .sideCard {
+    margin-bottom: 0;
+  }
+
+  .helpCard {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   SMALL PHONE
+========================================================= */
+
+@media (max-width: 380px) {
+  .layout {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .articleHeader h1 {
+    font-size: 25px;
+  }
+
+  .checkGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .checkCard {
+    min-height: auto;
+
+    text-align: left;
+
+    display: grid;
+
+    grid-template-columns:
+      45px
+      1fr;
+
+    column-gap: 12px;
+  }
+
+  .checkIcon {
+    grid-row: 1 / 3;
+
+    margin: 0;
+  }
+
+  .checkCard h3 {
+    margin-top: 3px;
+  }
+
+  .checkCard p {
+    margin-top: 5px;
+  }
+
+  .bottomNavigation {
+    gap: 13px;
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+.page button:focus-visible,
+.page input:focus-visible {
+  outline:
+    2px solid
+    rgba(8, 121, 223, 0.45);
+
+  outline-offset: 3px;
+}
+
+html {
+  scroll-behavior: smooth;
+}

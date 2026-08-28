@@ -1,0 +1,1739 @@
+.page {
+  min-height: 100vh;
+  width: 100%;
+
+  background: #ffffff;
+  color: #101827;
+
+  overflow-x: hidden;
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+.page button,
+.page input {
+  font-family: inherit;
+}
+
+.icon {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: auto;
+  min-width: 1em;
+
+  line-height: 1;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-weight: 600;
+
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.mobileHeader {
+  width: 100%;
+  height: 72px;
+
+  padding: 0 14px;
+
+  display: grid;
+
+  grid-template-columns:
+    44px
+    minmax(0, 1fr)
+    44px;
+
+  align-items: center;
+
+  background: #061b38;
+
+  border-bottom:
+    1px solid
+    #193650;
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 100;
+}
+
+/* ============================================================
+   HEADER BUTTONS
+============================================================ */
+
+.menuButton,
+.mobileBell {
+  width: 40px;
+  height: 40px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  cursor: pointer;
+
+  position: relative;
+
+  border-radius: 50%;
+}
+
+.menuButton:hover,
+.mobileBell:hover {
+  background:
+    rgba(22, 142, 255, 0.08);
+}
+
+.menuButton .icon {
+  font-size: 23px !important;
+}
+
+/* ============================================================
+   BRAND
+============================================================ */
+
+.mobileLogoButton {
+  min-width: 0;
+
+  width: 100%;
+  height: 42px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  cursor: pointer;
+
+  font-size: 17px;
+
+  font-weight: 700;
+
+  letter-spacing: -0.2px;
+
+  white-space: nowrap;
+}
+
+.mobileBrandName {
+  font-size: 17px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.mobileBrandName strong {
+  color: #168eff;
+}
+
+.mobileLogoDiamond {
+  color: #168eff;
+
+  font-size: 23px;
+
+  line-height: 1;
+
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   BELL
+============================================================ */
+
+.mobileBell .icon {
+  width: 20px;
+  height: 20px;
+
+  color: #ffffff;
+
+  font-size: 17px !important;
+}
+
+.mobileNotificationDot {
+  position: absolute;
+
+  width: 8px;
+  height: 8px;
+
+  top: 5px;
+  right: 3px;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  box-shadow:
+    0 0 8px
+    rgba(22, 142, 255, 0.7);
+}
+
+/* ============================================================
+   MAIN
+============================================================ */
+
+.main {
+  width: 100%;
+
+  min-height:
+    calc(100vh - 72px);
+
+  background: #ffffff;
+}
+
+.content {
+  width: 100%;
+
+  max-width: 1100px;
+
+  margin: 0 auto;
+
+  padding:
+    34px 34px 110px;
+}
+
+/* ============================================================
+   PAGE INTRO
+============================================================ */
+
+.pageIntro {
+  position: relative;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  width: 100%;
+}
+
+.pageIntro h1 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 31px;
+
+  line-height: 1.2;
+
+  letter-spacing: -0.8px;
+
+  font-weight: 800;
+}
+
+.pageIntro p {
+  margin:
+    8px 0 0;
+
+  color: #64748b;
+
+  font-size: 14px;
+
+  line-height: 1.55;
+
+  max-width: 550px;
+}
+
+/* ============================================================
+   LOCKED STANDARD BACK TO ACCOUNT BUTTON
+
+   Arrow:      18px
+   Text:       13px
+   Gap:        7px
+   Height:     22px
+   Padding:    0
+   Width:      fit-content
+   Blue:       #168eff
+   Weight:     500
+   Top margin: 20px
+============================================================ */
+
+.backLink {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: flex-start;
+
+  width: fit-content;
+
+  height: 22px;
+
+  gap: 7px;
+
+  margin:
+    20px 0 0 0;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #168eff;
+
+  text-decoration: none;
+
+  font-size: 13px;
+
+  line-height: 22px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+
+  flex: 0 0 auto;
+
+  align-self: flex-start;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.backLink .icon {
+  width: 18px;
+
+  height: 18px;
+
+  min-width: 18px;
+
+  font-size: 18px !important;
+
+  line-height: 18px;
+
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   STATUS
+============================================================ */
+
+.statusBadge {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+
+  height: auto;
+
+  margin-top: 17px;
+
+  padding:
+    9px 12px;
+
+  border-radius: 8px;
+
+  background: #fff7e8;
+
+  color: #dc8b00;
+
+  gap: 8px;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  flex: 0 0 auto;
+
+  align-self: flex-start;
+}
+
+.statusDiamond {
+  font-size: 20px;
+
+  line-height: 1;
+
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   STEPS
+============================================================ */
+
+.steps {
+  width: 100%;
+
+  margin-top: 27px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(90px, 1fr)
+    minmax(20px, 1fr)
+    minmax(90px, 1fr)
+    minmax(20px, 1fr)
+    minmax(90px, 1fr)
+    minmax(20px, 1fr)
+    minmax(90px, 1fr)
+    minmax(20px, 1fr)
+    minmax(90px, 1fr);
+
+  align-items: start;
+
+  gap: 0;
+}
+
+.step {
+  min-width: 0;
+
+  text-align: center;
+}
+
+.stepCircle {
+  width: 58px;
+  height: 58px;
+
+  margin: 0 auto;
+
+  border-radius: 50%;
+
+  border:
+    1px solid
+    #d5dce7;
+
+  background: #ffffff;
+
+  color: #526178;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 17px;
+
+  font-weight: 700;
+}
+
+.stepCircleActive,
+.stepCircleCompleted {
+  background: #126ff1;
+
+  border-color: #126ff1;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 5px 16px
+    rgba(20, 109, 245, 0.18);
+}
+
+.stepCircleCompleted {
+  font-size: 24px;
+}
+
+.stepLabel {
+  margin-top: 10px;
+
+  color: #4f6078;
+
+  font-size: 11px;
+
+  line-height: 1.45;
+
+  font-weight: 500;
+}
+
+.stepActive .stepLabel {
+  color: #096bf4;
+
+  font-weight: 750;
+}
+
+.stepLine {
+  height: 1px;
+
+  width: 100%;
+
+  margin-top: 29px;
+
+  background: #d9e1eb;
+}
+
+.stepLineActive {
+  background: #1675f2;
+}
+
+/* ============================================================
+   VERIFICATION CARD
+============================================================ */
+
+.verificationCard {
+  margin-top: 42px;
+
+  border:
+    1px solid
+    #dfe6ef;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  padding:
+    28px 30px 24px;
+
+  box-shadow:
+    0 3px 15px
+    rgba(15, 36, 64, 0.035);
+}
+
+/* ============================================================
+   CARD HEADER
+============================================================ */
+
+.cardHeader {
+  display: flex;
+
+  align-items: center;
+
+  gap: 20px;
+}
+
+.cardHeaderIcon {
+  width: 70px;
+  height: 70px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #edf5ff;
+
+  color: #146df5;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.cardHeaderText {
+  min-width: 0;
+}
+
+.cardHeaderText h2 {
+  margin: 0;
+
+  color: #14213a;
+
+  font-size: 24px;
+
+  line-height: 1.3;
+
+  font-weight: 800;
+}
+
+.cardHeaderText p {
+  margin:
+    7px 0 0;
+
+  color: #5e708a;
+
+  font-size: 16px;
+
+  line-height: 1.5;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+
+  background: #edf0f4;
+
+  margin:
+    25px 0 20px;
+}
+
+/* ============================================================
+   INFORMATION SECTION
+============================================================ */
+
+.informationSection {
+  margin-top: 17px;
+}
+
+.informationSection:first-of-type {
+  margin-top: 0;
+}
+
+.informationSection h3 {
+  margin:
+    0 0 9px;
+
+  color: #152137;
+
+  font-size: 15px;
+
+  line-height: 1.3;
+
+  font-weight: 750;
+}
+
+/* ============================================================
+   INFORMATION TABLE
+============================================================ */
+
+.informationTable {
+  width: 100%;
+
+  border:
+    1px solid
+    #dfe5ed;
+
+  border-radius: 8px;
+
+  overflow: hidden;
+
+  background: #ffffff;
+}
+
+/* ============================================================
+   INFORMATION ROW
+============================================================ */
+
+.informationRow {
+  min-height: 51px;
+
+  display: grid;
+
+  grid-template-columns:
+    42px
+    190px
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  border-bottom:
+    1px solid
+    #e7ebf1;
+}
+
+.informationRow:last-child {
+  border-bottom: 0;
+}
+
+.rowIcon {
+  width: 28px;
+  height: 28px;
+
+  margin-left: 9px;
+
+  border-radius: 6px;
+
+  background: #edf5ff;
+
+  color: #1672eb;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.rowLabel {
+  color: #25334b;
+
+  font-size: 14px;
+
+  font-weight: 500;
+
+  min-width: 0;
+}
+
+.rowValue {
+  min-width: 0;
+
+  padding:
+    0 12px;
+
+  color: #17243b;
+
+  font-size: 14px;
+
+  font-weight: 500;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+/* ============================================================
+   DOCUMENT BADGE
+============================================================ */
+
+.documentBadge {
+  width: fit-content;
+
+  min-width: 39px;
+
+  height: 25px;
+
+  margin-left: 9px;
+
+  padding:
+    0 7px;
+
+  border-radius: 4px;
+
+  background: #07854b;
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 10px;
+
+  font-weight: 800;
+}
+
+/* ============================================================
+   UPLOADED DOCUMENT
+============================================================ */
+
+.uploadedDocument {
+  min-height: 51px;
+
+  display: grid;
+
+  grid-template-columns:
+    42px
+    190px
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+}
+
+.uploadedDocument .rowValue {
+  padding-right: 10px;
+}
+
+/* ============================================================
+   VIEW BUTTON
+============================================================ */
+
+.viewButton {
+  border: 0;
+
+  background: transparent;
+
+  color: #0877ee;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  padding:
+    6px 12px;
+}
+
+.viewButton:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   CONFIRMATION
+============================================================ */
+
+.confirmationBox {
+  margin-top: 18px;
+
+  min-height: 70px;
+
+  border:
+    1px solid
+    #cfe1f8;
+
+  border-radius: 8px;
+
+  background: #f1f7ff;
+
+  padding:
+    13px 16px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  cursor: pointer;
+}
+
+.confirmationBox input {
+  position: absolute;
+
+  opacity: 0;
+
+  pointer-events: none;
+}
+
+.customCheckbox {
+  width: 28px;
+  height: 28px;
+
+  flex-shrink: 0;
+
+  border-radius: 5px;
+
+  border:
+    1.5px solid
+    #1675f2;
+
+  background: #ffffff;
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18px;
+
+  font-weight: 800;
+}
+
+.confirmationBox input:checked
+  + .customCheckbox {
+  background: #126ff1;
+
+  border-color: #126ff1;
+}
+
+.confirmationText {
+  color: #1e2e47;
+
+  font-size: 14px;
+
+  line-height: 1.45;
+
+  font-weight: 500;
+}
+
+/* ============================================================
+   CONTINUE
+============================================================ */
+
+.continueRow {
+  margin-top: 17px;
+
+  display: flex;
+
+  justify-content: flex-end;
+}
+
+.continueButton {
+  min-width: 410px;
+
+  height: 54px;
+
+  border: 0;
+
+  border-radius: 7px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0879f9,
+      #1269e7
+    );
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  position: relative;
+
+  font-size: 17px;
+
+  font-weight: 750;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 7px 20px
+    rgba(0, 108, 245, 0.15);
+}
+
+.continueButton:hover:not(:disabled) {
+  background:
+    linear-gradient(
+      135deg,
+      #086ee8,
+      #0c5ed0
+    );
+}
+
+.continueButton:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+.continueArrow {
+  position: absolute;
+
+  right: 22px;
+
+  font-size: 29px;
+
+  line-height: 1;
+
+  font-weight: 400;
+}
+
+/* ============================================================
+   MOBILE MENU
+============================================================ */
+
+.mobileMenu {
+  display: none;
+}
+
+/* ============================================================
+   MOBILE BOTTOM NAV
+============================================================ */
+
+.mobileBottomNav {
+  display: none;
+}
+
+/* ============================================================
+   TABLET
+============================================================ */
+
+@media (max-width: 900px) {
+
+  .mobileHeader {
+    padding:
+      0 20px;
+  }
+
+  .content {
+    padding:
+      32px 24px 100px;
+  }
+
+  .pageIntro h1 {
+    font-size: 32px;
+  }
+
+  .informationRow {
+    grid-template-columns:
+      42px
+      160px
+      minmax(0, 1fr);
+  }
+
+  .uploadedDocument {
+    grid-template-columns:
+      42px
+      160px
+      minmax(0, 1fr)
+      auto;
+  }
+
+  .continueButton {
+    min-width: 350px;
+  }
+}
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media (max-width: 700px) {
+
+  .mobileHeader {
+    height: 72px;
+
+    padding:
+      0 14px;
+
+    grid-template-columns:
+      44px
+      minmax(0, 1fr)
+      44px;
+  }
+
+  .mobileLogoButton {
+    gap: 7px;
+
+    font-size: 17px;
+  }
+
+  .mobileBrandName {
+    font-size: 17px;
+  }
+
+  .mobileLogoDiamond {
+    font-size: 23px;
+  }
+
+  .mobileBell .icon {
+    font-size: 17px !important;
+  }
+
+  .main {
+    min-height:
+      calc(100vh - 72px);
+  }
+
+  .content {
+    padding:
+      27px 15px 100px;
+  }
+
+  /* ========================================================
+     INTRO
+  ======================================================== */
+
+  .pageIntro {
+    width: 100%;
+  }
+
+  .pageIntro h1 {
+    width: 100%;
+
+    font-size: 27px;
+
+    line-height: 1.2;
+  }
+
+  .pageIntro p {
+    width: 100%;
+
+    font-size: 13px;
+
+    line-height: 1.55;
+
+    margin-top: 9px;
+  }
+
+  /*
+   * BACK BUTTON IS LOCKED.
+   *
+   * NO MOBILE OVERRIDE.
+   *
+   * It remains:
+   * Arrow 18px
+   * Text 13px
+   * Gap 7px
+   * Height 22px
+   * Padding 0
+   * Top margin 20px
+   * Blue #168eff
+   */
+
+  .statusBadge {
+    margin-top: 17px;
+
+    padding:
+      9px 12px;
+
+    font-size: 12px;
+  }
+
+  /* ========================================================
+     FIVE STEPS
+  ======================================================== */
+
+  .steps {
+    width: 100%;
+
+    margin-top: 27px;
+
+    display: flex;
+
+    flex-direction: row;
+
+    flex-wrap: nowrap;
+
+    align-items: flex-start;
+
+    justify-content: flex-start;
+
+    gap: 0;
+
+    overflow: visible;
+  }
+
+  .step {
+    flex:
+      0 0 46px;
+
+    width: 46px;
+
+    min-width: 46px;
+
+    max-width: 46px;
+
+    text-align: center;
+  }
+
+  .stepCircle {
+    width: 38px;
+    height: 38px;
+
+    margin:
+      0 auto;
+
+    font-size: 13px;
+  }
+
+  .stepCircleCompleted {
+    font-size: 19px;
+  }
+
+  .stepLabel {
+    margin-top: 8px;
+
+    font-size: 9px;
+
+    line-height: 1.4;
+  }
+
+  .stepLine {
+    flex:
+      1 1 auto;
+
+    width: auto;
+
+    min-width: 6px;
+
+    height: 1px;
+
+    margin-top: 19px;
+  }
+
+  /* ========================================================
+     CARD
+  ======================================================== */
+
+  .verificationCard {
+    margin-top: 28px;
+
+    padding:
+      17px;
+
+    border-radius: 10px;
+  }
+
+  .cardHeader {
+    gap: 13px;
+
+    align-items: center;
+  }
+
+  .cardHeaderIcon {
+    width: 53px;
+    height: 53px;
+  }
+
+  .cardHeaderIcon svg {
+    width: 27px;
+    height: 27px;
+  }
+
+  .cardHeaderText h2 {
+    font-size: 17px;
+
+    line-height: 1.3;
+  }
+
+  .cardHeaderText p {
+    margin-top: 5px;
+
+    font-size: 11px;
+
+    line-height: 1.45;
+  }
+
+  .divider {
+    margin:
+      20px 0;
+  }
+
+  /* ========================================================
+     INFORMATION SECTIONS
+  ======================================================== */
+
+  .informationSection {
+    margin-top: 15px;
+  }
+
+  .informationSection h3 {
+    margin-bottom: 7px;
+
+    font-size: 11px;
+  }
+
+  .informationTable {
+    border-radius: 7px;
+  }
+
+  /* ========================================================
+     INFORMATION ROWS
+  ======================================================== */
+
+  .informationRow {
+    min-height: 39px;
+
+    grid-template-columns:
+      30px
+      112px
+      minmax(0, 1fr);
+  }
+
+  .rowIcon {
+    width: 23px;
+    height: 23px;
+
+    margin-left: 6px;
+
+    border-radius: 5px;
+  }
+
+  .rowIcon .icon {
+    font-size: 13px !important;
+  }
+
+  .rowLabel {
+    font-size: 9px;
+  }
+
+  .rowValue {
+    padding:
+      0 7px;
+
+    font-size: 9px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+  }
+
+  .documentBadge {
+    min-width: 31px;
+
+    height: 21px;
+
+    margin-left: 6px;
+
+    padding:
+      0 5px;
+
+    border-radius: 3px;
+
+    font-size: 8px;
+  }
+
+  /* ========================================================
+     UPLOADED DOCUMENT
+  ======================================================== */
+
+  .uploadedDocument {
+    min-height: 39px;
+
+    grid-template-columns:
+      30px
+      112px
+      minmax(0, 1fr)
+      auto;
+  }
+
+  .uploadedDocument .rowValue {
+    padding:
+      0 5px;
+
+    font-size: 9px;
+  }
+
+  .viewButton {
+    padding:
+      5px 8px;
+
+    font-size: 9px;
+  }
+
+  /* ========================================================
+     CONFIRMATION
+  ======================================================== */
+
+  .confirmationBox {
+    min-height: 55px;
+
+    margin-top: 13px;
+
+    padding:
+      9px 10px;
+
+    gap: 8px;
+
+    border-radius: 7px;
+  }
+
+  .customCheckbox {
+    width: 20px;
+    height: 20px;
+
+    border-radius: 4px;
+
+    font-size: 13px;
+  }
+
+  .confirmationText {
+    font-size: 9px;
+
+    line-height: 1.45;
+  }
+
+  /* ========================================================
+     CONTINUE
+  ======================================================== */
+
+  .continueRow {
+    margin-top: 13px;
+
+    display: block;
+  }
+
+  .continueButton {
+    width: 100%;
+
+    min-width: 0;
+
+    height: 50px;
+
+    font-size: 13px;
+  }
+
+  .continueArrow {
+    right: 17px;
+
+    font-size: 25px;
+  }
+
+  /* ========================================================
+     MOBILE MENU
+  ======================================================== */
+
+  .mobileMenu {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 300;
+
+    display: block;
+
+    padding: 22px;
+
+    background: #031229;
+
+    color: #ffffff;
+
+    overflow-y: auto;
+  }
+
+  .mobileMenuHeader {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+  }
+
+  .mobileMenuLogo {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+  }
+
+  .mobileMenuLogo > span {
+    color: #168eff;
+
+    font-size: 25px;
+  }
+
+  .mobileMenuLogo strong {
+    color: #168eff;
+  }
+
+  .closeMenu {
+    border: 0;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 30px;
+
+    cursor: pointer;
+
+    padding: 0;
+  }
+
+  .mobileMenuSubtitle {
+    display: block;
+
+    margin-top: 9px;
+
+    color: #91a7c2;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+  }
+
+  .mobileMenuNav {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    margin-top: 30px;
+  }
+
+  .mobileNavItem {
+    width: 100%;
+
+    min-height: 50px;
+
+    padding:
+      0 14px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    background: transparent;
+
+    color: #b9c8dc;
+
+    font-size: 14px;
+
+    text-align: left;
+
+    cursor: pointer;
+  }
+
+  .mobileNavItem:hover {
+    background:
+      rgba(26, 119, 220, 0.14);
+
+    color: #ffffff;
+  }
+
+  .navIcon {
+    width: 20px;
+
+    min-width: 20px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    color: #8db9e9;
+  }
+
+  .mobileAccountLabel {
+    display: block;
+
+    color: #607897;
+
+    font-size: 10px;
+
+    letter-spacing: 1.5px;
+
+    margin:
+      25px 14px 10px;
+  }
+
+  /* ========================================================
+     BOTTOM NAV
+  ======================================================== */
+
+  .mobileBottomNav {
+    position: fixed;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 74px;
+
+    z-index: 200;
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(5, 1fr);
+
+    align-items: center;
+
+    background: #031229;
+
+    border-top:
+      1px solid
+      rgba(255, 255, 255, 0.1);
+
+    backdrop-filter:
+      blur(15px);
+  }
+
+  .mobileBottomNav button {
+    height: 100%;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #7d93ae;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 4px;
+
+    cursor: pointer;
+  }
+
+  .mobileBottomNav button .icon {
+    font-size: 20px !important;
+  }
+
+  .mobileBottomNav button span:last-child {
+    font-size: 8px;
+  }
+
+  .mobileBottomNav .activeBottom {
+    color: #168eff;
+
+    font-weight: 700;
+  }
+}
+
+/* ============================================================
+   SMALL PHONES
+============================================================ */
+
+@media (max-width: 380px) {
+
+  .mobileBrandName {
+    font-size: 15px;
+  }
+
+  .mobileLogoDiamond {
+    font-size: 21px;
+  }
+
+  .content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .pageIntro h1 {
+    font-size: 25px;
+  }
+
+  .pageIntro p {
+    font-size: 12px;
+  }
+
+  .verificationCard {
+    padding: 14px;
+  }
+
+  /* ========================================================
+     BACK BUTTON REMAINS LOCKED
+  ======================================================== */
+
+  .backLink {
+    width: fit-content;
+
+    height: 22px;
+
+    gap: 7px;
+
+    margin-top: 20px;
+
+    padding: 0;
+
+    font-size: 13px;
+
+    line-height: 22px;
+  }
+
+  .backLink .icon {
+    width: 18px;
+
+    height: 18px;
+
+    min-width: 18px;
+
+    font-size: 18px !important;
+  }
+
+  /* ========================================================
+     SMALL PHONE STEPS
+  ======================================================== */
+
+  .step {
+    flex:
+      0 0 42px;
+
+    width: 42px;
+
+    min-width: 42px;
+
+    max-width: 42px;
+  }
+
+  .stepCircle {
+    width: 34px;
+    height: 34px;
+
+    font-size: 12px;
+  }
+
+  .stepCircleCompleted {
+    font-size: 17px;
+  }
+
+  .stepLabel {
+    font-size: 8px;
+  }
+
+  .stepLine {
+    min-width: 5px;
+
+    margin-top: 17px;
+  }
+
+  /* ========================================================
+     SMALL PHONE INFORMATION
+  ======================================================== */
+
+  .informationRow {
+    grid-template-columns:
+      27px
+      96px
+      minmax(0, 1fr);
+  }
+
+  .uploadedDocument {
+    grid-template-columns:
+      27px
+      96px
+      minmax(0, 1fr)
+      auto;
+  }
+
+  .rowLabel {
+    font-size: 8px;
+  }
+
+  .rowValue {
+    font-size: 8px;
+  }
+
+  .viewButton {
+    font-size: 8px;
+
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  .confirmationText {
+    font-size: 8px;
+  }
+
+  .mobileBottomNav {
+    height: 66px;
+  }
+}

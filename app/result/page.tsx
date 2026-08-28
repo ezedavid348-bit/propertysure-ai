@@ -1,3892 +1,4644 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { jsPDF } from "jspdf";
+import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
-type Finding = {
-  label?: string;
-  title?: string;
-  description?: string;
+/*
+ * ============================================================
+ * TYPES
+ * ============================================================
+ */
+
+type VerificationRecord = {
+  id: string;
+
+  doc_name?: string;
+
+  file_url?: string;
+
   status?: string;
-  passed?: boolean;
+
+  trust_score?: number;
+
+  confidence?: number;
+
+  risk?: string;
+
+  findings?: {
+    document_package?: {
+      name: string;
+      path: string;
+      type: string;
+    }[];
+
+    document_count?: number;
+
+    checks?: {
+      documentStructure?: boolean;
+      dataConsistency?: boolean;
+      signatureValid?: boolean;
+      stampValid?: boolean;
+      noForgery?: boolean;
+      noDuplicate?: boolean;
+      documentCompleteness?: boolean;
+    };
+  };
+
+  doc_type?: string;
+
+  created_at?: string;
 };
 
-function ResultPageContent() {
-  const searchParams = useSearchParams();
-  const verificationId = searchParams.get("id");
+type CheckStatus =
+  | "passed"
+  | "review"
+  | "not_assessed";
 
-  const [trustScore, setTrustScore] = useState(0);
-  const [confidence, setConfidence] = useState(0);
-  const [risk, setRisk] = useState("pending");
-  const [status, setStatus] = useState("uploaded");
+type CheckItem = {
+  title: string;
+  description: string;
+  status: CheckStatus;
+};
 
-  const [docName, setDocName] =
-    useState("Property Document");
+type RiskLevel =
+  | "low"
+  | "medium"
+  | "high"
+  | "incomplete";
 
-  const [propertyId, setPropertyId] =
-    useState("Not assigned");
+/*
+ * ============================================================
+ * SMALL SVG ICONS
+ * ============================================================
+ */
 
-  const [verificationDate, setVerificationDate] =
-    useState("Not available");
+function ShieldIcon({
+  size = 28,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 48 48"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M24 4L39 10V21C39 31.5 32.8 39.2 24 44C15.2 39.2 9 31.5 9 21V10L24 4Z"
+        fill="currentColor"
+        opacity="0.18"
+      />
+      <path
+        d="M24 6L37 11.2V21C37 30.3 31.6 37.1 24 41.5C16.4 37.1 11 30.3 11 21V11.2L24 6Z"
+        stroke="currentColor"
+        strokeWidth="2.5"
+      />
+      <path
+        d="M17.5 24L22 28.5L31 19"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
-  const [fileUrl, setFileUrl] =
-    useState("");
+function DocumentIcon({
+  size = 28,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 48 48"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M13 5H29L37 13V42H13V5Z"
+        fill="currentColor"
+        opacity="0.08"
+      />
+      <path
+        d="M13 5H29L37 13V42H13V5Z"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M29 5V14H37"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M19 22H31M19 28H31M19 34H27"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
-  const [findings, setFindings] =
-    useState<Finding[]>([]);
+function AlertDocumentIcon({
+  size = 56,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M16 7H39L49 17V48H16V7Z"
+        fill="currentColor"
+        opacity="0.08"
+      />
+      <path
+        d="M16 7H39L49 17V48H16V7Z"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M39 7V18H49"
+        stroke="currentColor"
+        strokeWidth="3"
+      />
+      <path
+        d="M32.5 25V35"
+        stroke="currentColor"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+      />
+      <circle
+        cx="32.5"
+        cy="41"
+        r="2"
+        fill="currentColor"
+      />
+      <circle
+        cx="47"
+        cy="45"
+        r="10"
+        fill="currentColor"
+      />
+      <path
+        d="M47 40V46"
+        stroke="white"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <circle
+        cx="47"
+        cy="50"
+        r="1.4"
+        fill="white"
+      />
+    </svg>
+  );
+}
+
+function CheckCircleIcon({
+  size = 20,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <path
+        d="M8 12L10.7 14.7L16.5 9"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function WarningIcon({
+  size = 20,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 3L21 20H3L12 3Z"
+        fill="currentColor"
+        opacity="0.12"
+      />
+      <path
+        d="M12 3L21 20H3L12 3Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 9V13"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <circle
+        cx="12"
+        cy="16.5"
+        r="1"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+function InfoIcon({
+  size = 20,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <path
+        d="M12 10V16"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <circle
+        cx="12"
+        cy="7"
+        r="1"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+function BellIcon({
+  size = 21,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M18 9C18 5.7 15.8 3 12 3C8.2 3 6 5.7 6 9C6 15 3.8 17 3.8 17H20.2C20.2 17 18 15 18 9Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.5 20C10.1 20.7 11 21 12 21C13 21 13.9 20.7 14.5 20"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function HomeIcon({
+  size = 18,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M4 10.5L12 4L20 10.5V20H4V10.5Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 20V14H15V20"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function ReportIcon({
+  size = 18,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <rect
+        x="5"
+        y="3"
+        width="14"
+        height="18"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M8 8H16M8 12H16M8 16H13"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function PropertyIcon({
+  size = 18,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M4 20V10L12 4L20 10V20H4Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 20V14H15V20"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function UserIcon({
+  size = 18,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="8"
+        r="3.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M5 20C5.8 16.5 8.2 14.5 12 14.5C15.8 14.5 18.2 16.5 19 20"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function SettingsIcon({
+  size = 18,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="3"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M19 13.5L21 15L19 18L16.7 17.3C16 18 15.2 18.5 14.2 18.8L13.5 21H10L9.3 18.8C8.3 18.5 7.5 18 6.8 17.3L4.5 18L2.5 15L4.5 13.5C4.3 13 4.2 12.5 4.2 12C4.2 11.5 4.3 11 4.5 10.5L2.5 9L4.5 6L6.8 6.7C7.5 6 8.3 5.5 9.3 5.2L10 3H13.5L14.2 5.2C15.2 5.5 16 6 16.7 6.7L19 6L21 9L19 10.5C19.2 11 19.3 11.5 19.3 12C19.3 12.5 19.2 13 19 13.5Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function DownloadIcon({
+  size = 18,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 4V15"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M8 11L12 15L16 11"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5 19H19"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function ShareIcon({
+  size = 18,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="18"
+        cy="5"
+        r="2.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <circle
+        cx="6"
+        cy="12"
+        r="2.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <circle
+        cx="18"
+        cy="19"
+        r="2.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M8.3 10.8L15.7 6.3M8.3 13.2L15.7 17.7"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function PlusIcon({
+  size = 18,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 5V19M5 12H19"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/*
+ * ============================================================
+ * HERO ILLUSTRATION
+ * ============================================================
+ */
+
+function HeroIllustration() {
+  return (
+    <div className="heroIllustration" aria-hidden="true">
+      <div className="heroGlow heroGlowOne" />
+      <div className="heroGlow heroGlowTwo" />
+
+      <div className="heroClipboard">
+        <div className="clipboardTop" />
+
+        <div className="clipboardSheet">
+          <div className="sheetTitle" />
+          <div className="sheetLine long" />
+          <div className="sheetLine medium" />
+          <div className="sheetCheck">
+            <span>✓</span>
+            <i />
+          </div>
+          <div className="sheetCheck">
+            <span>✓</span>
+            <i />
+          </div>
+          <div className="sheetCheck">
+            <span>!</span>
+            <i />
+          </div>
+        </div>
+
+        <div className="magnifier">
+          <div />
+        </div>
+      </div>
+
+      <div className="heroBars">
+        <span />
+        <span />
+        <span />
+      </div>
+
+      <div className="heroAlert">
+        <WarningIcon size={19} />
+      </div>
+    </div>
+  );
+}
+
+/*
+ * ============================================================
+ * MAIN COMPONENT
+ * ============================================================
+ */
+
+export default function ResultPage() {
+  /*
+   * ============================================================
+   * STATE
+   * ============================================================
+   */
+
+  const [verification, setVerification] =
+    useState<VerificationRecord | null>(null);
 
   const [loading, setLoading] =
     useState(true);
 
-  const [errorMessage, setErrorMessage] =
+  const [error, setError] =
     useState("");
 
+  /*
+   * ============================================================
+   * LOAD VERIFICATION
+   * ============================================================
+   */
+
   useEffect(() => {
-    const loadVerification = async () => {
-      if (!verificationId) {
-        setErrorMessage(
-          "No verification ID was provided."
-        );
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setErrorMessage("");
-
-      const { data, error } = await supabase
-        .from("verifications")
-        .select(
-          "id, trust_score, confidence, risk, doc_name, property_id, created_at, file_url, findings, status"
-        )
-        .eq("id", verificationId)
-        .maybeSingle();
-
-      if (error) {
-        console.error(
-          "Failed to load verification:",
-          error
-        );
-
-        setErrorMessage(
-          "Unable to load this verification record."
-        );
-
-        setLoading(false);
-        return;
-      }
-
-      if (!data) {
-        setErrorMessage(
-          `No verification record was found for ID ${verificationId}.`
-        );
-
-        setLoading(false);
-        return;
-      }
-
-      setTrustScore(
-        data.trust_score ?? 0
-      );
-
-      setConfidence(
-        data.confidence ?? 0
-      );
-
-      setRisk(
-        data.risk ?? "pending"
-      );
-
-      setStatus(
-        data.status ?? "uploaded"
-      );
-
-      setDocName(
-        data.doc_name ??
-          "Property Document"
-      );
-
-      setPropertyId(
-        data.property_id ??
-          `PS-2026-${String(data.id).padStart(
-            4,
-            "0"
-          )}`
-      );
-
-      setFileUrl(
-        data.file_url ?? ""
-      );
-
-      if (data.created_at) {
-        setVerificationDate(
-          new Date(
-            data.created_at
-          ).toLocaleDateString(
-            "en-NG",
-            {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            }
-          )
-        );
-      } else {
-        setVerificationDate(
-          "Not available"
-        );
-      }
-
-      if (Array.isArray(data.findings)) {
-        setFindings(data.findings);
-      } else if (
-        data.findings &&
-        typeof data.findings ===
-          "object"
-      ) {
-        const possibleFindings =
-          Object.entries(
-            data.findings
-          ).map(
-            ([key, value]) => ({
-              label: key,
-              description:
-                typeof value ===
-                "string"
-                  ? value
-                  : undefined,
-              passed:
-                typeof value ===
-                "boolean"
-                  ? value
-                  : undefined,
-            })
+    async function loadVerification() {
+      try {
+        const params =
+          new URLSearchParams(
+            window.location.search
           );
 
-        setFindings(
-          possibleFindings
-        );
-      } else {
-        setFindings([]);
-      }
+        const verificationId =
+          params.get("id");
 
-      setLoading(false);
-    };
+        if (!verificationId) {
+          setError(
+            "Verification record was not found."
+          );
+
+          setLoading(false);
+
+          return;
+        }
+
+        /*
+         * AUTHENTICATION
+         */
+
+        const {
+          data: { user },
+          error: authError,
+        } =
+          await supabase.auth.getUser();
+
+        if (authError || !user) {
+          window.location.href =
+            "/signin";
+
+          return;
+        }
+
+        /*
+         * LOAD VERIFICATION
+         */
+
+        const {
+          data,
+          error: verificationError,
+        } =
+          await supabase
+            .from("verifications")
+            .select("*")
+            .eq(
+              "id",
+              verificationId
+            )
+            .single();
+
+        if (
+          verificationError ||
+          !data
+        ) {
+          console.error(
+            "RESULT PAGE ERROR:",
+            verificationError
+          );
+
+          setError(
+            "We could not load this verification result."
+          );
+
+          setLoading(false);
+
+          return;
+        }
+
+        setVerification(
+          data as VerificationRecord
+        );
+
+        setLoading(false);
+      } catch (err) {
+        console.error(
+          "RESULT LOAD ERROR:",
+          err
+        );
+
+        setError(
+          "Something went wrong while loading the result."
+        );
+
+        setLoading(false);
+      }
+    }
 
     loadVerification();
-  }, [verificationId]);
+  }, []);
 
-  // --------------------------------
-  // RISK LABEL
-  // --------------------------------
+  /*
+   * ============================================================
+   * LOADING PAGE
+   * ============================================================
+   */
 
-  const riskLabel =
-    risk === "very_low"
-      ? "Very Low"
-      : risk === "low"
-      ? "Low"
-      : risk === "medium"
-      ? "Medium"
-      : risk === "high"
-      ? "High"
-      : "Pending";
+  if (loading) {
+    return (
+      <main className="statePage">
+        <div className="loadingSpinner" />
 
-  // --------------------------------
-  // VERIFICATION STATUS
-  // --------------------------------
+        <h2>
+          Loading Verification Result
+        </h2>
 
-  const isVerified =
-    (risk === "very_low" ||
-      risk === "low") &&
-    trustScore >= 80 &&
-    confidence >= 80;
+        <p>
+          Please wait while we retrieve
+          your PropertySure AI report.
+        </p>
 
-  // --------------------------------
-  // FINDING HELPERS
-  // --------------------------------
+        <style jsx>{`
+          .statePage {
+            min-height: 100vh;
+            background: #f6f9fe;
+            color: #12264a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+            font-family:
+              Arial,
+              Helvetica,
+              sans-serif;
+          }
 
-  function formatFindingLabel(
-    label: string
+          .loadingSpinner {
+            width: 46px;
+            height: 46px;
+            border: 4px solid #dcecff;
+            border-top-color: #1268f3;
+            border-radius: 50%;
+            animation:
+              spin 0.8s linear infinite;
+            margin-bottom: 20px;
+          }
+
+          h2 {
+            margin: 0;
+            font-size: 21px;
+          }
+
+          p {
+            max-width: 340px;
+            color: #71809a;
+            font-size: 14px;
+            line-height: 1.6;
+          }
+
+          @keyframes spin {
+            to {
+              transform: rotate(360deg);
+            }
+          }
+        `}</style>
+      </main>
+    );
+  }
+
+  /*
+   * ============================================================
+   * ERROR PAGE
+   * ============================================================
+   */
+
+  if (
+    error ||
+    !verification
   ) {
-    const customLabels: Record<
-      string,
-      string
-    > = {
-      documentStructure:
-        "Document Structure",
-      dataConsistency:
+    return (
+      <main className="statePage">
+        <div className="errorIcon">
+          !
+        </div>
+
+        <h2>
+          Result Unavailable
+        </h2>
+
+        <p>
+          {error ||
+            "This verification result could not be found."}
+        </p>
+
+        <button
+          type="button"
+          onClick={() => {
+            window.location.href =
+              "/dashboard";
+          }}
+        >
+          Back to Dashboard
+        </button>
+
+        <style jsx>{`
+          .statePage {
+            min-height: 100vh;
+            background: #f6f9fe;
+            color: #12264a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+            font-family:
+              Arial,
+              Helvetica,
+              sans-serif;
+          }
+
+          .errorIcon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #fff0f0;
+            color: #e53935;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 29px;
+            font-weight: 800;
+            margin-bottom: 18px;
+          }
+
+          h2 {
+            margin: 0 0 8px;
+          }
+
+          p {
+            max-width: 350px;
+            color: #718096;
+            line-height: 1.6;
+          }
+
+          button {
+            margin-top: 15px;
+            padding: 13px 22px;
+            border: none;
+            border-radius: 9px;
+            background: #1268f3;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+          }
+        `}</style>
+      </main>
+    );
+  }
+
+  /*
+   * ============================================================
+   * VERIFICATION DATA
+   * ============================================================
+   */
+
+  const trustScore =
+    typeof verification.trust_score ===
+    "number"
+      ? Math.max(
+          0,
+          Math.min(
+            100,
+            verification.trust_score
+          )
+        )
+      : 0;
+
+  const confidence =
+    typeof verification.confidence ===
+    "number"
+      ? Math.max(
+          0,
+          Math.min(
+            100,
+            verification.confidence
+          )
+        )
+      : 0;
+
+  const checks =
+    verification.findings?.checks || {};
+
+  /*
+   * ============================================================
+   * CHECK STATUS
+   * ============================================================
+   */
+
+  function getCheckStatus(
+    value: boolean | undefined
+  ): CheckStatus {
+    if (value === true) {
+      return "passed";
+    }
+
+    if (value === false) {
+      return "review";
+    }
+
+    return "not_assessed";
+  }
+
+  /*
+   * ============================================================
+   * SEVEN BASIC AI CHECKS
+   * ============================================================
+   */
+
+  const checkItems: CheckItem[] = [
+    {
+      title:
+        "Document Authenticity",
+
+      description:
+        "Checks the submitted document structure and authenticity indicators.",
+
+      status:
+        getCheckStatus(
+          checks.documentStructure
+        ),
+    },
+
+    {
+      title:
+        "Forgery & Manipulation Detection",
+
+      description:
+        "Looks for signs of alteration, tampering or suspicious modification.",
+
+      status:
+        getCheckStatus(
+          checks.noForgery
+        ),
+    },
+
+    {
+      title:
         "Data Consistency",
-      signatureValid:
-        "Signature Validation",
-      stampValid:
-        "Stamp Validation",
-      noForgery:
-        "Forgery Detection",
-      noDuplicate:
+
+      description:
+        "Checks whether important information within the document is consistent.",
+
+      status:
+        getCheckStatus(
+          checks.dataConsistency
+        ),
+    },
+
+    {
+      title:
+        "Signature Analysis",
+
+      description:
+        "Reviews visible signatures and authentication marks within the document.",
+
+      status:
+        getCheckStatus(
+          checks.signatureValid
+        ),
+    },
+
+    {
+      title:
+        "Stamp & Seal Validation",
+
+      description:
+        "Reviews visible stamps, seals and related document indicators.",
+
+      status:
+        getCheckStatus(
+          checks.stampValid
+        ),
+    },
+
+    {
+      title:
         "Duplicate Detection",
-      registryVerified:
-        "Registry Cross-Check",
-    };
 
-    if (customLabels[label]) {
-      return customLabels[label];
+      description:
+        "Checks for duplicate or repeated document indicators.",
+
+      status:
+        getCheckStatus(
+          checks.noDuplicate
+        ),
+    },
+
+    {
+      title:
+        "Document Completeness",
+
+      description:
+        "Checks whether the submitted document package is complete for this verification.",
+
+      status:
+        getCheckStatus(
+          checks.documentCompleteness
+        ),
+    },
+  ];
+
+  /*
+   * ============================================================
+   * DYNAMIC CHECK COUNTS
+   * ============================================================
+   */
+
+  const passedChecks =
+    checkItems.filter(
+      (item) =>
+        item.status === "passed"
+    ).length;
+
+  const reviewChecks =
+    checkItems.filter(
+      (item) =>
+        item.status === "review"
+    ).length;
+
+  const notAssessedChecks =
+    checkItems.filter(
+      (item) =>
+        item.status ===
+        "not_assessed"
+    ).length;
+
+  const totalChecks =
+    checkItems.length;
+
+  /*
+   * ============================================================
+   * ANALYSIS STATE
+   * ============================================================
+   */
+
+  const allChecksAssessed =
+    notAssessedChecks === 0;
+
+  const noChecksAssessed =
+    passedChecks === 0 &&
+    reviewChecks === 0 &&
+    notAssessedChecks ===
+      totalChecks;
+
+  /*
+   * ============================================================
+   * DATABASE RISK NORMALIZATION
+   * ============================================================
+   */
+
+  function normalizeRisk(
+    value: string | undefined
+  ):
+    | "low"
+    | "medium"
+    | "high"
+    | null {
+    if (!value) {
+      return null;
     }
 
-    return label
-      .replace(
-        /([A-Z])/g,
-        " $1"
+    const normalized =
+      value
+        .toLowerCase()
+        .trim();
+
+    if (
+      normalized.includes("high")
+    ) {
+      return "high";
+    }
+
+    if (
+      normalized.includes(
+        "medium"
+      ) ||
+      normalized.includes(
+        "moderate"
       )
-      .replace(
-        /^./,
-        (char) =>
-          char.toUpperCase()
-      );
-  }
-
-  function getFindingDescription(
-    label: string
-  ) {
-    const descriptions: Record<
-      string,
-      string
-    > = {
-      documentStructure:
-        "Checks document format, fields and overall integrity",
-      dataConsistency:
-        "Verifies consistency across document data",
-      signatureValid:
-        "Validates signatures and authentication marks",
-      stampValid:
-        "Validates official stamps and seals",
-      noForgery:
-        "Detects signs of forgery, manipulation or tampering",
-      noDuplicate:
-        "Checks for duplicate property records",
-      registryVerified:
-        "Cross-checks relevant registry information",
-    };
-
-    return (
-      descriptions[label] ??
-      "Verification check completed by PropertySure AI"
-    );
-  }
-
-  function getFindingPassed(
-    finding: Finding
-  ) {
-    return (
-      finding.passed === true ||
-      finding.status === "passed" ||
-      isVerified
-    );
-  }
-
-  // --------------------------------
-  // OPEN DOCUMENT
-  // --------------------------------
-
-  function previewDocument() {
-    if (!fileUrl) {
-      alert(
-        "The uploaded document URL is not available for this verification."
-      );
-      return;
+    ) {
+      return "medium";
     }
 
-    window.open(
-      fileUrl,
-      "_blank",
-      "noopener,noreferrer"
-    );
+    if (
+      normalized.includes("low")
+    ) {
+      return "low";
+    }
+
+    return null;
   }
 
-  // --------------------------------
-  // DOWNLOAD VERIFICATION PDF
-  // --------------------------------
-
-  function downloadPDF() {
-    const doc = new jsPDF();
-
-    const verificationStatus =
-      isVerified
-        ? "VERIFIED"
-        : "REVIEW REQUIRED";
-
-    doc.setFontSize(22);
-
-    doc.text(
-      "PropertySure AI",
-      20,
-      20
+  const databaseRisk =
+    normalizeRisk(
+      verification.risk
     );
 
-    doc.setFontSize(16);
+  /*
+   * ============================================================
+   * DYNAMIC RISK ENGINE
+   * ============================================================
+   */
 
-    doc.text(
-      "Property Verification Certificate",
-      20,
-      35
-    );
+  let riskLevel: RiskLevel;
 
-    doc.setFontSize(12);
-
-    doc.text(
-      `Verification ID: ${
-        verificationId ?? "N/A"
-      }`,
-      20,
-      52
-    );
-
-    doc.text(
-      `Property ID: ${propertyId}`,
-      20,
-      62
-    );
-
-    doc.text(
-      `Document: ${docName}`,
-      20,
-      72
-    );
-
-    doc.text(
-      `Verification Date: ${verificationDate}`,
-      20,
-      82
-    );
-
-    doc.text(
-      `Trust Score: ${trustScore}/100`,
-      20,
-      92
-    );
-
-    doc.text(
-      `AI Confidence: ${confidence}%`,
-      20,
-      102
-    );
-
-    doc.text(
-      `Risk Level: ${riskLabel}`,
-      20,
-      112
-    );
-
-    doc.text(
-      `Verification Status: ${verificationStatus}`,
-      20,
-      122
-    );
-
-    doc.text(
-      `Record Status: ${status}`,
-      20,
-      132
-    );
-
-    doc.setFontSize(10);
-
-    doc.text(
-      "PropertySure AI - AI Property Verification Platform",
-      20,
-      150
-    );
-
-    doc.text(
-      "This certificate represents the verification result recorded by the PropertySure AI platform.",
-      20,
-      158
-    );
-
-    doc.save(
-      `PropertySure-${propertyId}-Verification.pdf`
-    );
+  if (noChecksAssessed) {
+    riskLevel = "incomplete";
+  } else if (
+    databaseRisk === "high"
+  ) {
+    riskLevel = "high";
+  } else if (
+    reviewChecks > 0
+  ) {
+    riskLevel = "medium";
+  } else if (
+    databaseRisk === "medium"
+  ) {
+    riskLevel = "medium";
+  } else if (
+    allChecksAssessed &&
+    passedChecks === totalChecks
+  ) {
+    riskLevel = "low";
+  } else {
+    riskLevel = "incomplete";
   }
 
-  // --------------------------------
-  // SHARE VERIFICATION
-  // --------------------------------
+  /*
+   * ============================================================
+   * DISPLAY VALUES
+   * ============================================================
+   */
 
-  async function shareVerification() {
+  const riskTitle =
+    riskLevel === "high"
+      ? "HIGH RISK"
+      : riskLevel === "medium"
+      ? "MEDIUM RISK"
+      : riskLevel === "low"
+      ? "LOW RISK"
+      : "ANALYSIS INCOMPLETE";
+
+  const riskShort =
+    riskLevel === "high"
+      ? "HIGH"
+      : riskLevel === "medium"
+      ? "MEDIUM"
+      : riskLevel === "low"
+      ? "LOW"
+      : "INCOMPLETE";
+
+  const riskIcon =
+    riskLevel === "low"
+      ? "✓"
+      : riskLevel === "incomplete"
+      ? "i"
+      : "!";
+
+  const displayTrustScore =
+    noChecksAssessed
+      ? 0
+      : trustScore;
+
+  const displayConfidence =
+    noChecksAssessed
+      ? 0
+      : confidence;
+
+  /*
+   * ============================================================
+   * RISK DESCRIPTION
+   * ============================================================
+   */
+
+  let riskDescription = "";
+
+  if (riskLevel === "high") {
+    riskDescription =
+      "Significant risk indicators were identified during the verification checks. Do not proceed with the transaction until further due-diligence is completed.";
+  } else if (
+    riskLevel === "medium"
+  ) {
+    riskDescription =
+      "One or more risk indicators were identified during the verification checks. Further due-diligence is recommended before proceeding with the transaction.";
+  } else if (
+    riskLevel === "low"
+  ) {
+    riskDescription =
+      "All Basic AI checks were assessed and no major risk indicators were identified.";
+  } else {
+    riskDescription =
+      "The Basic AI analysis is incomplete because the verification checks have not yet produced sufficient results to determine a risk level.";
+  }
+
+  /*
+   * ============================================================
+   * STATUS PILL
+   * ============================================================
+   */
+
+  let statusText = "";
+
+  if (riskLevel === "high") {
+    statusText =
+      "HIGH RISK — DO NOT PROCEED";
+  } else if (
+    riskLevel === "medium"
+  ) {
+    statusText =
+      "REVIEW RECOMMENDED";
+  } else if (
+    riskLevel === "low"
+  ) {
+    statusText =
+      "VERIFICATION PASSED";
+  } else {
+    statusText =
+      "ANALYSIS INCOMPLETE";
+  }
+
+  /*
+   * ============================================================
+   * SUMMARY
+   * ============================================================
+   */
+
+  let summary = "";
+
+  if (riskLevel === "high") {
+    summary =
+      `PropertySure AI analyzed your submitted property document package. ${reviewChecks} ${
+        reviewChecks === 1
+          ? "check requires"
+          : "checks require"
+      } further review. Significant risk indicators were identified, so additional due-diligence is required before proceeding with the transaction.`;
+  } else if (
+    riskLevel === "medium"
+  ) {
+    summary =
+      `PropertySure AI analyzed your submitted property document package. ${passedChecks} of ${totalChecks} Basic AI checks passed, while ${reviewChecks} ${
+        reviewChecks === 1
+          ? "check requires"
+          : "checks require"
+      } further review${
+        notAssessedChecks > 0
+          ? ` and ${notAssessedChecks} ${
+              notAssessedChecks === 1
+                ? "check was"
+                : "checks were"
+            } not assessed`
+          : ""
+      }. Further due-diligence is recommended before proceeding with the transaction.`;
+  } else if (
+    riskLevel === "low"
+  ) {
+    summary =
+      `PropertySure AI analyzed your submitted property document package. All ${totalChecks} Basic AI checks were assessed and passed. No major risk indicators were identified in the Basic AI analysis.`;
+  } else {
+    summary =
+      `PropertySure AI analyzed your submitted property document package, but the Basic AI checks have not yet produced sufficient results to determine a risk level. No risk conclusion should be relied upon until the analysis is completed.`;
+  }
+
+  const assessmentText =
+    riskTitle;
+
+  /*
+   * ============================================================
+   * RECOMMENDATION
+   * ============================================================
+   */
+
+  let recommendationTitle =
+    "RECOMMENDED NEXT STEP";
+
+  let recommendationText = "";
+
+  if (riskLevel === "high") {
+    recommendationText =
+      "Significant risk indicators were identified. Do not make payment or proceed with the transaction based on this Basic AI result. We recommend Premium Verification for deeper due-diligence, including professional legal review where applicable, together with appropriate official verification.";
+  } else if (
+    riskLevel === "medium"
+  ) {
+    recommendationText =
+      "Risk indicators were identified during the Basic AI checks. Before making payment or proceeding with the transaction, we recommend Professional Verification for additional official Ministry or registry verification of the property's title and ownership records.";
+  } else if (
+    riskLevel === "low"
+  ) {
+    recommendationText =
+      "All Basic AI checks were assessed without major risk indicators. However, Basic Verification does not replace official title searches or professional due-diligence. Confirm the property's title and ownership through appropriate official searches before making a payment.";
+  } else {
+    recommendationText =
+      "The Basic AI analysis is incomplete. Do not rely on this result as a Low, Medium or High Risk conclusion until the verification checks have been completed.";
+  }
+
+  const recommendationStatus =
+    riskLevel === "high"
+      ? "high"
+      : riskLevel === "medium"
+      ? "review"
+      : riskLevel === "low"
+      ? "passed"
+      : "not_assessed";
+
+  /*
+   * ============================================================
+   * VERIFIED DATE
+   * ============================================================
+   */
+
+  const verifiedDate =
+    verification.created_at
+      ? new Date(
+          verification.created_at
+        ).toLocaleDateString(
+          "en-NG",
+          {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          }
+        )
+      : "Not available";
+
+  /*
+   * ============================================================
+   * DOCUMENT COUNT
+   * ============================================================
+   */
+
+  const documentCount =
+    verification.findings
+      ?.document_count ??
+    verification.findings
+      ?.document_package?.length ??
+    0;
+
+  /*
+   * ============================================================
+   * SHARE REPORT
+   * ============================================================
+   */
+
+  async function shareReport() {
+    const shareData = {
+      title:
+        "PropertySure AI Verification Result",
+
+      text:
+        `PropertySure AI result: ${riskTitle}. Trust Score: ${displayTrustScore}/100.`,
+
+      url:
+        window.location.href,
+    };
+
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title:
-            "PropertySure AI Verification",
+      if (
+        navigator.share
+      ) {
+        await navigator.share(
+          shareData
+        );
 
-          text: `Verification result for ${docName}. Property ID: ${propertyId}.`,
+        return;
+      }
 
-          url:
-            window.location.href,
-        });
-      } else {
+      if (
+        navigator.clipboard
+      ) {
         await navigator.clipboard.writeText(
           window.location.href
         );
 
         alert(
-          "Verification link copied to clipboard."
+          "Verification link copied."
         );
       }
-    } catch (error) {
-      console.log(
-        "Share cancelled or failed:",
-        error
+    } catch (shareError) {
+      console.error(
+        "SHARE ERROR:",
+        shareError
       );
     }
   }
 
-  // --------------------------------
-  // LOADING SCREEN
-  // --------------------------------
+  /*
+   * ============================================================
+   * DOWNLOAD PDF
+   * ============================================================
+   */
 
-  if (loading) {
-    return (
-      <main className="result-page loading-page">
-        <div className="loading-box">
-          <div className="loading-logo">
-            <div className="brand-shield">
-              ✓
-            </div>
-
-            <div>
-              <div className="brand-name">
-                PropertySure{" "}
-                <span>AI</span>
-              </div>
-
-              <div className="brand-subtitle">
-                Property Verification Platform
-              </div>
-            </div>
-          </div>
-
-          <div className="loading-spinner" />
-
-          <h2>
-            Loading verification result...
-          </h2>
-
-          <p>
-            Securely retrieving your
-            verification report.
-          </p>
-        </div>
-      </main>
+  function downloadReport() {
+    window.open(
+      `/api/report?id=${encodeURIComponent(
+        verification.id
+      )}`,
+      "_blank"
     );
   }
 
-  // --------------------------------
-  // ERROR SCREEN
-  // --------------------------------
+  /*
+   * ============================================================
+   * NAVIGATION
+   * ============================================================
+   */
 
-  if (errorMessage) {
-    return (
-      <main className="result-page error-page">
-        <div className="error-box">
-          <div className="error-icon">
-            !
+  function goTo(
+    path: string
+  ) {
+    window.location.href = path;
+  }
+
+  /*
+   * ============================================================
+   * RENDER
+   * ============================================================
+   */
+
+  return (
+    <main className="resultPage">
+      {/* ======================================================
+          DESKTOP SIDEBAR
+          ====================================================== */}
+
+      <aside className="desktopSidebar">
+        <button
+          type="button"
+          className="sidebarBrand"
+          onClick={() =>
+            goTo("/dashboard")
+          }
+        >
+          <span className="brandMark">
+            ◆
+          </span>
+
+          <span>
+            PropertySure{" "}
+            <strong>AI</strong>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className="newVerificationButton"
+          onClick={() =>
+            goTo("/verify")
+          }
+        >
+          <PlusIcon size={17} />
+          New Verification
+        </button>
+
+        <nav className="sidebarNav">
+          <button
+            type="button"
+            onClick={() =>
+              goTo("/dashboard")
+            }
+          >
+            <HomeIcon />
+            <span>Dashboard</span>
+          </button>
+
+          <button
+            type="button"
+            className="sidebarActive"
+            onClick={() =>
+              goTo("/reports")
+            }
+          >
+            <ReportIcon />
+            <span>Verifications</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              goTo("/properties")
+            }
+          >
+            <PropertyIcon />
+            <span>Properties</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              goTo("/reports")
+            }
+          >
+            <ReportIcon />
+            <span>Reports</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              goTo("/fraud-watch")
+            }
+          >
+            <WarningIcon size={17} />
+            <span>Watchlist</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              goTo("/properties")
+            }
+          >
+            <span className="simpleHeart">
+              ♡
+            </span>
+            <span>Favorites</span>
+          </button>
+        </nav>
+
+        <div className="sidebarSectionLabel">
+          ACCOUNT
+        </div>
+
+        <nav className="sidebarNav accountNav">
+          <button
+            type="button"
+            onClick={() =>
+              goTo("/account")
+            }
+          >
+            <UserIcon />
+            <span>Profile</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              goTo("/account")
+            }
+          >
+            <span className="simpleCard">
+              ▱
+            </span>
+            <span>Subscription</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              goTo("/account")
+            }
+          >
+            <span className="simpleCard">
+              ▣
+            </span>
+            <span>Billing</span>
+          </button>
+
+          <button
+            type="button"
+            className="sidebarSettingsActive"
+            onClick={() =>
+              goTo("/settings")
+            }
+          >
+            <SettingsIcon />
+            <span>Settings</span>
+            <span className="settingsChevron">
+              ⌃
+            </span>
+          </button>
+
+          <div className="settingsSubNav">
+            <button type="button">
+              Account Settings
+            </button>
+
+            <button type="button">
+              Security
+            </button>
+
+            <button type="button">
+              Notification
+            </button>
+
+            <button type="button">
+              Team Management
+            </button>
+
+            <button type="button">
+              Plans & Limits
+            </button>
+
+            <button type="button">
+              Integrations
+            </button>
+
+            <button type="button">
+              Documents & Data
+            </button>
+          </div>
+        </nav>
+
+        <div className="sidebarBottom">
+          <button
+            type="button"
+            onClick={() =>
+              goTo("/contact")
+            }
+          >
+            <InfoIcon size={17} />
+            Help & Support
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              goTo("/signin")
+            }
+          >
+            <span className="logoutIcon">
+              ↪
+            </span>
+            Logout
+          </button>
+        </div>
+
+        <div className="expertCard">
+          <div className="expertIllustration">
+            ◉
           </div>
 
-          <div className="error-label">
-            VERIFICATION ERROR
-          </div>
-
-          <h2>
-            Verification Not Found
-          </h2>
+          <strong>
+            Need Professional Help?
+          </strong>
 
           <p>
-            {errorMessage}
+            Talk to our property
+            verification experts for
+            complex cases.
           </p>
 
           <button
+            type="button"
             onClick={() =>
-              (window.location.href =
-                "/verify")
+              goTo("/contact")
             }
-            className="primary-button"
           >
-            Verify Another Property
+            Contact an Expert
+            <span>→</span>
           </button>
         </div>
-      </main>
-    );
-  }
+      </aside>
 
-  return (
-    <main className="result-page">
-      <div className="result-container">
+      {/* ======================================================
+          MAIN AREA
+          ====================================================== */}
 
-        {/* =====================================
-            NAVIGATION
-        ====================================== */}
+      <div className="mainArea">
+        {/* ====================================================
+            HEADER
+            ==================================================== */}
 
-        <header className="top-nav">
-
-          <div className="brand-area">
-            <div className="brand-shield">
-              ✓
-            </div>
-
-            <div>
-              <div className="brand-name">
-                PropertySure{" "}
-                <span>AI</span>
-              </div>
-
-              <div className="brand-subtitle">
-                Property Verification Platform
-              </div>
-            </div>
-          </div>
-
-          <div className="nav-actions">
-
-            <button
-              className="nav-button secondary"
-              onClick={() =>
-                (window.location.href =
-                  "/")
-              }
-            >
-              ◉ Dashboard
-            </button>
-
-            <button
-              className="nav-button primary"
-              onClick={() =>
-                (window.location.href =
-                  "/verify")
-              }
-            >
-              ＋ Verify Another
-            </button>
-
-          </div>
-        </header>
-
-        {/* =====================================
-            BREADCRUMB
-        ====================================== */}
-
-        <div className="breadcrumb-row">
-
-          <div className="breadcrumbs">
-            <span>⌂</span>
-            <span>Home</span>
-            <b>›</b>
-            <span>
-              Verifications
+        <header className="topHeader">
+          <div className="mobileBrand">
+            <span className="brandMark">
+              ◆
             </span>
-            <b>›</b>
+
+            <span>
+              PropertySure{" "}
+              <strong>AI</strong>
+            </span>
+          </div>
+
+          <div className="desktopBreadcrumb">
+            <button
+              type="button"
+              onClick={() =>
+                goTo("/dashboard")
+              }
+            >
+              Home
+            </button>
+
+            <span>›</span>
+
+            <button
+              type="button"
+              onClick={() =>
+                goTo("/reports")
+              }
+            >
+              Verifications
+            </button>
+
+            <span>›</span>
+
             <strong>Result</strong>
           </div>
 
-          <div className="secure-badge">
-            <span className="secure-dot">
-              ●
-            </span>
-            Secure & Encrypted
-            <span>⌕</span>
-          </div>
-
-        </div>
-
-        {/* =====================================
-            PAGE TITLE
-        ====================================== */}
-
-        <section className="page-heading">
-
-          <div>
-            <h1>
-              Property Verification{" "}
-              <span>Report</span>
-            </h1>
-
-            <p>
-              AI-powered verification
-              completed successfully
-            </p>
-          </div>
-
-          <div className="report-meta">
-
-            <div className="meta-card">
-              <small>
-                Report ID
-              </small>
-
-              <strong>
-                VER-
-                {verificationId ??
-                  "N/A"}
-              </strong>
-
-              <button
-                onClick={() => {
-                  if (
-                    verificationId
-                  ) {
-                    navigator.clipboard.writeText(
-                      verificationId
-                    );
-                  }
-                }}
-                title="Copy report ID"
-              >
-                ▣
-              </button>
-            </div>
-
-            <div className="meta-card">
-              <small>
-                Verified On
-              </small>
-
-              <strong>
-                {verificationDate}
-              </strong>
-
-              <span className="calendar-icon">
-                ◫
-              </span>
-            </div>
-
-          </div>
-
-        </section>
-
-        {/* =====================================
-            AUTHENTICITY BANNER
-        ====================================== */}
-
-        <section
-          className={`auth-banner ${
-            isVerified
-              ? "verified"
-              : "review"
-          }`}
-        >
-
-          <div className="auth-icon-panel">
-            <div className="large-shield">
-              ✓
-            </div>
-          </div>
-
-          <div className="auth-content">
-
-            <div className="complete-label">
-              <span>✓</span>
-
-              {isVerified
-                ? "VERIFICATION COMPLETE"
-                : "VERIFICATION UNDER REVIEW"}
-            </div>
-
-            <h2>
-              Document is{" "}
-              <span>
-                {isVerified
-                  ? "Authentic"
-                  : "Under Review"}
-              </span>
-            </h2>
-
-            <p>
-              {isVerified
-                ? "Our AI has verified the document and found no issues. You can proceed with confidence."
-                : "Your property document has been received and is awaiting a completed verification assessment."}
-            </p>
-
-          </div>
-
-          <div className="auth-decoration">
-            ✓
-          </div>
-
-        </section>
-
-        {/* =====================================
-            SCORE OVERVIEW
-        ====================================== */}
-
-        <section className="score-overview">
-
-          <div className="trust-score-panel">
-
-            <div className="score-label">
-              TRUST SCORE
-            </div>
-
-            <div
-              className={`score-ring ${
-                isVerified
-                  ? "score-success"
-                  : "score-warning"
-              }`}
+          <div className="headerRight">
+            <button
+              type="button"
+              className="notificationButton"
+              aria-label="Notifications"
+              onClick={() =>
+                goTo("/notifications")
+              }
             >
-              <div className="score-inner">
+              <BellIcon />
+              <span className="notificationDot" />
+            </button>
 
+            <div className="userSummary">
+              <div>
                 <strong>
-                  {trustScore}
+                  Eze Ifebu David
                 </strong>
 
                 <span>
-                  /100
+                  Premium Plan
+                </span>
+              </div>
+
+              <div className="avatar">
+                ED
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* ====================================================
+            MOBILE BREADCRUMB
+            ==================================================== */}
+
+        <div className="mobileBreadcrumb">
+          <button
+            type="button"
+            onClick={() =>
+              goTo("/dashboard")
+            }
+          >
+            Home
+          </button>
+
+          <span>›</span>
+
+          <button
+            type="button"
+            onClick={() =>
+              goTo("/reports")
+            }
+          >
+            Verifications
+          </button>
+
+          <span>›</span>
+
+          <strong>
+            Result
+          </strong>
+        </div>
+
+        <div className="content">
+          {/* ==================================================
+              HERO
+              ================================================== */}
+
+          <section
+            className={`resultHero ${riskLevel}`}
+          >
+            <div className="resultHeroIcon">
+              {riskLevel === "incomplete" ? (
+                <AlertDocumentIcon size={60} />
+              ) : riskLevel === "low" ? (
+                <ShieldIcon size={60} />
+              ) : (
+                <WarningIcon size={54} />
+              )}
+            </div>
+
+            <div className="resultHeroContent">
+              <span className="eyebrow">
+                PROPERTY VERIFICATION RESULT
+              </span>
+
+              <h1>
+                {riskLevel ===
+                "incomplete"
+                  ? "Analysis Incomplete"
+                  : riskLevel === "high"
+                  ? "High Risk"
+                  : riskLevel ===
+                    "medium"
+                  ? "Medium Risk"
+                  : "Low Risk"}
+              </h1>
+
+              <div className="statusPill">
+                <span>
+                  {riskIcon}
                 </span>
 
+                {statusText}
               </div>
-            </div>
-
-            <div className="score-caption">
-              {isVerified
-                ? "EXCELLENT"
-                : "REVIEW REQUIRED"}
-            </div>
-
-          </div>
-
-          <div className="metric-divider" />
-
-          <div className="metric-panel">
-
-            <div className="metric-icon blue">
-              ◇
-            </div>
-
-            <div>
-              <small>
-                CONFIDENCE LEVEL
-              </small>
-
-              <strong>
-                {confidence}%
-              </strong>
 
               <p>
-                {confidence >= 80
-                  ? "Very High Confidence"
-                  : "Verification Confidence"}
+                {riskDescription}
               </p>
             </div>
 
-          </div>
+            <HeroIllustration />
+          </section>
 
-          <div className="metric-divider" />
+          {/* ==================================================
+              PRIMARY GRID
+              ================================================== */}
 
-          <div className="metric-panel">
+          <div className="primaryGrid">
+            {/* ==================================================
+                LEFT COLUMN
+                ================================================== */}
 
-            <div className="metric-icon green">
-              ♙
-            </div>
+            <div className="leftColumn">
+              {/* ==================================================
+                  RESULT SUMMARY
+                  ================================================== */}
 
-            <div>
-              <small>
-                RISK LEVEL
-              </small>
+              <section className="card summaryCard">
+                <div className="sectionHeader">
+                  <div className="sectionHeaderIcon blueIcon">
+                    <DocumentIcon size={19} />
+                  </div>
 
-              <strong
-                className={
-                  risk === "high"
-                    ? "danger-text"
-                    : risk === "medium"
-                    ? "warning-text"
-                    : "success-text"
-                }
-              >
-                {riskLabel}
-              </strong>
+                  <div>
+                    <h2>
+                      RESULT SUMMARY
+                    </h2>
+                  </div>
+                </div>
 
-              <p>
-                {risk ===
-                "very_low"
-                  ? "Minimal Risk Detected"
-                  : "Current Risk Assessment"}
-              </p>
-            </div>
-
-          </div>
-
-          <div className="metric-divider" />
-
-          <div className="metric-panel">
-
-            <div className="metric-icon green">
-              ✓
-            </div>
-
-            <div>
-              <small>
-                VERIFICATION STATUS
-              </small>
-
-              <strong
-                className={
-                  isVerified
-                    ? "success-text"
-                    : "warning-text"
-                }
-              >
-                {isVerified
-                  ? "Verified"
-                  : "Review"}
-              </strong>
-
-              <p>
-                {isVerified
-                  ? "All checks passed"
-                  : "Additional review required"}
-              </p>
-            </div>
-
-          </div>
-
-        </section>
-
-        {/* =====================================
-            CHECKS + DOCUMENT
-        ====================================== */}
-
-        <section className="main-grid">
-
-          {/* VERIFICATION CHECKS */}
-
-          <div className="panel checks-panel">
-
-            <div className="panel-header">
-
-              <div>
-                <h3>
-                  Verification Checks{" "}
-                  <span>
-                    (
-                    {findings.length ||
-                      7}{" "}
-                    Key Areas)
-                  </span>
-                </h3>
-
-                <p>
-                  Verification controls
-                  performed on your
-                  property document
+                <p className="summaryText">
+                  {summary}
                 </p>
-              </div>
 
-              <div
-                className={`all-passed ${
-                  isVerified
-                    ? "passed"
-                    : "review"
-                }`}
-              >
-                <span>✓</span>
+                <div className="assessment">
+                  Overall assessment:
+                  <strong
+                    className={`assessment-${riskLevel}`}
+                  >
+                    {" "}
+                    {assessmentText}
+                  </strong>
+                </div>
+              </section>
 
-                {isVerified
-                  ? "All Checks Passed"
-                  : "Review Required"}
-              </div>
+              {/* ==================================================
+                  QUICK RESULT
+                  ================================================== */}
 
-            </div>
+              <section className="card quickResultCard">
+                <div className="cardTopLine">
+                  <div>
+                    <h2>
+                      QUICK RESULT
+                    </h2>
+                  </div>
 
-            <div className="checks-list">
+                  <span className="verificationType">
+                    Basic AI Verification
+                  </span>
+                </div>
 
-              {findings.length >
-              0 ? (
-                findings.map(
-                  (
-                    finding,
-                    index
-                  ) => {
+                <div className="quickGrid">
+                  <div className="quickItem">
+                    <span>Risk</span>
 
-                    const rawLabel =
-                      finding.label ??
-                      finding.title ??
-                      `Verification Check ${
-                        index + 1
-                      }`;
-
-                    const passed =
-                      getFindingPassed(
-                        finding
-                      );
-
-                    return (
-                      <div
-                        className="check-item"
-                        key={index}
-                      >
-
-                        <div className="check-left">
-
-                          <div className="check-icon">
-                            {index ===
-                            0
-                              ? "▤"
-                              : index ===
-                                1
-                              ? "◫"
-                              : index ===
-                                2
-                              ? "✎"
-                              : index ===
-                                3
-                              ? "◆"
-                              : index ===
-                                4
-                              ? "◈"
-                              : index ===
-                                5
-                              ? "♙"
-                              : "⌂"}
-                          </div>
-
-                          <div className="check-number">
-                            {String(
-                              index + 1
-                            ).padStart(
-                              2,
-                              "0"
-                            )}
-                          </div>
-
-                          <div className="check-text">
-
-                            <strong>
-                              {formatFindingLabel(
-                                rawLabel
-                              )}
-                            </strong>
-
-                            <span>
-                              {finding.description ??
-                                getFindingDescription(
-                                  rawLabel
-                                )}
-                            </span>
-
-                          </div>
-
-                        </div>
-
-                        <div
-                          className={`check-result ${
-                            passed
-                              ? "passed"
-                              : "pending"
-                          }`}
-                        >
-
-                          <span>
-                            {passed
-                              ? "✓"
-                              : "!"}
-                          </span>
-
-                          <div>
-                            <strong>
-                              {passed
-                                ? "Passed"
-                                : "Review"}
-                            </strong>
-
-                            <small>
-                              {passed
-                                ? rawLabel ===
-                                  "noForgery"
-                                  ? "No forgery detected"
-                                  : rawLabel ===
-                                    "noDuplicate"
-                                  ? "No duplicate found"
-                                  : "Verification passed"
-                                : "Additional review required"}
-                            </small>
-                          </div>
-
-                          <b>
-                            ›
-                          </b>
-
-                        </div>
-
-                      </div>
-                    );
-                  }
-                )
-              ) : (
-                [
-                  {
-                    label:
-                      "Document Structure",
-                    description:
-                      "Checks document format, fields and overall integrity",
-                  },
-                  {
-                    label:
-                      "Data Consistency",
-                    description:
-                      "Verifies consistency across all data points",
-                  },
-                  {
-                    label:
-                      "Signature Validation",
-                    description:
-                      "Validates signatures and authentication marks",
-                  },
-                  {
-                    label:
-                      "Stamp Validation",
-                    description:
-                      "Validates official stamps and seals",
-                  },
-                  {
-                    label:
-                      "Forgery Detection",
-                    description:
-                      "Detects manipulation or tampering signs",
-                  },
-                  {
-                    label:
-                      "Duplicate Detection",
-                    description:
-                      "Checks against duplicate property records",
-                  },
-                  {
-                    label:
-                      "Registry Cross-Check",
-                    description:
-                      "Cross-verifies relevant property registry information",
-                  },
-                ].map(
-                  (
-                    item,
-                    index
-                  ) => (
-                    <div
-                      className="check-item"
-                      key={index}
+                    <strong
+                      className={`riskValue ${riskLevel}`}
                     >
+                      {riskShort}
+                    </strong>
 
-                      <div className="check-left">
+                    <div
+                      className={`quickIcon ${riskLevel}`}
+                    >
+                      {riskLevel ===
+                      "incomplete" ? (
+                        <WarningIcon
+                          size={16}
+                        />
+                      ) : riskLevel ===
+                        "low" ? (
+                        <CheckCircleIcon
+                          size={16}
+                        />
+                      ) : (
+                        <WarningIcon
+                          size={16}
+                        />
+                      )}
+                    </div>
+                  </div>
 
-                        <div className="check-icon">
-                          {index ===
+                  <div className="quickItem">
+                    <span>
+                      Trust Score
+                    </span>
+
+                    <strong className="blueValue">
+                      {displayTrustScore}
+                      /100
+                    </strong>
+
+                    <div className="quickIcon blue">
+                      <ShieldIcon
+                        size={16}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="quickItem">
+                    <span>
+                      Confidence
+                    </span>
+
+                    <strong className="blueValue">
+                      {displayConfidence}%
+                    </strong>
+
+                    <div className="confidenceBars">
+                      <span />
+                      <span />
+                      <span />
+                      <span />
+                    </div>
+                  </div>
+
+                  <div className="quickItem">
+                    <span>
+                      Checks Passed
+                    </span>
+
+                    <strong
+                      className={
+                        reviewChecks >
+                          0 ||
+                        notAssessedChecks >
                           0
-                            ? "▤"
-                            : index ===
-                              1
-                            ? "◫"
-                            : index ===
-                              2
-                            ? "✎"
-                            : index ===
-                              3
-                            ? "◆"
-                            : index ===
-                              4
-                            ? "◈"
-                            : index ===
-                              5
-                            ? "♙"
-                            : "⌂"}
-                        </div>
+                          ? "orangeValue"
+                          : "greenValue"
+                      }
+                    >
+                      {passedChecks}/
+                      {totalChecks}
+                    </strong>
 
-                        <div className="check-number">
-                          {String(
-                            index + 1
-                          ).padStart(
-                            2,
-                            "0"
+                    <div className="quickIcon neutral">
+                      <CheckCircleIcon
+                        size={16}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* ==================================================
+                  WHAT WE CHECKED
+                  ================================================== */}
+
+              <section className="card checksCard">
+                <div className="checksHeader">
+                  <div>
+                    <h2>
+                      WHAT WE CHECKED
+                    </h2>
+
+                    <p>
+                      Basic AI document
+                      verification
+                    </p>
+                  </div>
+                </div>
+
+                <div className="checksList">
+                  {checkItems.map(
+                    (
+                      item,
+                      index
+                    ) => (
+                      <div
+                        className="checkRow"
+                        key={`${item.title}-${index}`}
+                      >
+                        <div
+                          className={`checkStatus ${item.status}`}
+                        >
+                          {item.status ===
+                          "passed" ? (
+                            <CheckCircleIcon
+                              size={20}
+                            />
+                          ) : item.status ===
+                            "review" ? (
+                            <WarningIcon
+                              size={20}
+                            />
+                          ) : (
+                            <PlusIcon
+                              size={18}
+                            />
                           )}
                         </div>
 
-                        <div className="check-text">
-
+                        <div className="checkInfo">
                           <strong>
-                            {item.label}
+                            {item.title}
                           </strong>
 
                           <span>
                             {item.description}
                           </span>
-
                         </div>
 
-                      </div>
-
-                      <div
-                        className={`check-result ${
-                          isVerified
-                            ? "passed"
-                            : "pending"
-                        }`}
-                      >
-
-                        <span>
-                          {isVerified
-                            ? "✓"
-                            : "!"}
-                        </span>
-
-                        <div>
-                          <strong>
-                            {isVerified
-                              ? "Passed"
-                              : "Review"}
-                          </strong>
-
-                          <small>
-                            {isVerified
-                              ? "Verification passed"
-                              : "Pending assessment"}
-                          </small>
+                        <div
+                          className={`checkResult ${item.status}`}
+                        >
+                          {item.status ===
+                          "passed"
+                            ? "Passed"
+                            : item.status ===
+                              "review"
+                            ? "Review"
+                            : "Not Assessed"}
                         </div>
-
-                        <b>
-                          ›
-                        </b>
-
                       </div>
-
-                    </div>
-                  )
-                )
-              )}
-
-            </div>
-          </div>
-
-          {/* VERIFIED DOCUMENT */}
-
-          <div className="panel document-panel">
-
-            <div className="panel-title">
-              <span className="title-icon">
-                ▤
-              </span>
-
-              <h3>
-                Verified Document
-              </h3>
-            </div>
-
-            <div className="document-card">
-
-              <div className="pdf-icon">
-                <div className="pdf-fold">
-                  PDF
+                    )
+                  )}
                 </div>
-              </div>
 
-              <div className="document-main">
+                <div className="checksFooter">
+                  {reviewChecks >
+                  0 ? (
+                    <>
+                      {passedChecks} of{" "}
+                      {totalChecks}{" "}
+                      checks passed
+                      {" • "}
+                      {reviewChecks}{" "}
+                      require review
+                      {notAssessedChecks >
+                      0
+                        ? ` • ${notAssessedChecks} not assessed`
+                        : ""}
+                    </>
+                  ) : notAssessedChecks >
+                    0 ? (
+                    <>
+                      {passedChecks} of{" "}
+                      {totalChecks}{" "}
+                      checks passed
+                      {" • "}
+                      {
+                        notAssessedChecks
+                      }{" "}
+                      not assessed
+                    </>
+                  ) : (
+                    <>
+                      ✓{" "}
+                      {passedChecks} of{" "}
+                      {totalChecks}{" "}
+                      checks passed
+                    </>
+                  )}
+                </div>
+              </section>
 
-                <div className="document-title-row">
+              {/* ==================================================
+                  RECOMMENDATION + SCOPE
+                  ================================================== */}
 
-                  <h4>
-                    {docName}
-                  </h4>
-
-                  <span
-                    className={
-                      isVerified
-                        ? "document-status verified"
-                        : "document-status"
-                    }
+              <div className="bottomInfoGrid">
+                <section
+                  className={`recommendationCard ${recommendationStatus}`}
+                >
+                  <div
+                    className={`recommendationIcon ${recommendationStatus}`}
                   >
-                    {isVerified
-                      ? "✓ Verified"
-                      : "Review"}
-                  </span>
+                    {riskLevel ===
+                    "high" ? (
+                      <WarningIcon
+                        size={18}
+                      />
+                    ) : riskLevel ===
+                      "medium" ? (
+                      <WarningIcon
+                        size={18}
+                      />
+                    ) : riskLevel ===
+                      "low" ? (
+                      <CheckCircleIcon
+                        size={18}
+                      />
+                    ) : (
+                      <InfoIcon size={18} />
+                    )}
+                  </div>
 
+                  <div>
+                    <strong>
+                      {recommendationTitle}
+                    </strong>
+
+                    <p>
+                      {recommendationText}
+                    </p>
+                  </div>
+                </section>
+
+                <section className="notIncludedCard">
+                  <div className="scopeIcon">
+                    <WarningIcon
+                      size={18}
+                    />
+                  </div>
+
+                  <div>
+                    <strong>
+                      BASIC VERIFICATION
+                      SCOPE
+                    </strong>
+
+                    <p>
+                      This result is based
+                      on AI-assisted document
+                      analysis. It does not
+                      include an official
+                      Ministry or registry
+                      search, lawyer review,
+                      physical inspection,
+                      surveyor assessment or
+                      engineer assessment.
+                    </p>
+                  </div>
+                </section>
+              </div>
+
+              {/* ==================================================
+                  UPGRADE
+                  ================================================== */}
+
+              <section
+                className={`upgradeCard ${riskLevel}`}
+              >
+                <div className="upgradeVisual">
+                  <div className="upgradeClipboard">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
                 </div>
 
-                <p className="document-type">
-                  Property verification
-                  document
-                </p>
+                <div className="upgradeText">
+                  <strong>
+                    {riskLevel ===
+                    "high"
+                      ? "Further verification strongly recommended"
+                      : riskLevel ===
+                        "medium"
+                      ? "Professional verification recommended"
+                      : riskLevel ===
+                        "incomplete"
+                      ? "Complete the verification"
+                      : "Need deeper verification?"}
+                  </strong>
 
-              </div>
+                  <span>
+                    {riskLevel ===
+                    "high"
+                      ? "Consider Premium Verification for deeper due-diligence before proceeding with the transaction."
+                      : riskLevel ===
+                        "medium"
+                      ? "Professional Verification can provide additional official Ministry or registry verification."
+                      : riskLevel ===
+                        "incomplete"
+                      ? "The Basic AI checks have not produced enough results to determine the property's risk level."
+                      : "Professional and Premium plans can provide additional official and professional verification services."}
+                  </span>
+                </div>
 
-            </div>
-
-            <div className="document-details">
-
-              <div>
-                <span>
-                  Document Type
-                </span>
-
-                <strong>
-                  {docName
-                    .toLowerCase()
-                    .endsWith(".pdf")
-                    ? "PDF Document"
-                    : "Property Document"}
-                </strong>
-              </div>
-
-              <div>
-                <span>
-                  Property ID
-                </span>
-
-                <strong>
-                  {propertyId}
-                </strong>
-              </div>
-
-              <div>
-                <span>
-                  Verification ID
-                </span>
-
-                <strong>
-                  #{verificationId}
-                </strong>
-              </div>
-
-              <div>
-                <span>
-                  Verified On
-                </span>
-
-                <strong>
-                  {verificationDate}
-                </strong>
-              </div>
-
-              <div>
-                <span>
-                  Record Status
-                </span>
-
-                <strong
-                  className={
-                    isVerified
-                      ? "success-text"
-                      : "warning-text"
+                <button
+                  type="button"
+                  onClick={() =>
+                    goTo("/pricing")
                   }
                 >
-                  {status}
-                </strong>
-              </div>
+                  {riskLevel ===
+                  "high"
+                    ? "View Premium"
+                    : riskLevel ===
+                      "medium"
+                    ? "View Professional"
+                    : "View Plans"}
 
-              <div>
-                <span>
-                  Verification Engine
-                </span>
-
-                <strong>
-                  PropertySure AI
-                </strong>
-              </div>
-
+                  <span>→</span>
+                </button>
+              </section>
             </div>
 
-            <button
-              className="document-preview-button"
-              onClick={
-                previewDocument
-              }
-              disabled={!fileUrl}
-            >
-              {fileUrl
-                ? "◉ Preview Document"
-                : "Document URL Unavailable"}
-            </button>
+            {/* ==================================================
+                RIGHT COLUMN
+                ================================================== */}
 
+            <div className="rightColumn">
+              {/* ==================================================
+                  VERIFICATION OVERVIEW
+                  ================================================== */}
+
+              <section className="card overviewCard">
+                <h2>
+                  VERIFICATION
+                  OVERVIEW
+                </h2>
+
+                <div className="scoreArea">
+                  <div className="scoreRing">
+                    <div className="scoreRingInner">
+                      <ShieldIcon
+                        size={34}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <strong>
+                      {displayTrustScore}
+                      /100
+                    </strong>
+
+                    <span>
+                      Trust Score
+                    </span>
+                  </div>
+                </div>
+
+                <div className="overviewRows">
+                  <div className="overviewRow">
+                    <span>
+                      <span className="overviewRowIcon">
+                        ◔
+                      </span>
+                      Confidence
+                    </span>
+
+                    <strong>
+                      {displayConfidence}%
+                    </strong>
+                  </div>
+
+                  <div className="overviewRow">
+                    <span>
+                      <span className="overviewRowIcon">
+                        ✣
+                      </span>
+                      Checks Passed
+                    </span>
+
+                    <strong>
+                      {passedChecks}/
+                      {totalChecks}
+                    </strong>
+                  </div>
+
+                  <div className="overviewRow">
+                    <span>
+                      <span className="overviewRowIcon">
+                        ◈
+                      </span>
+                      Risk Level
+                    </span>
+
+                    <strong
+                      className={`overviewRisk ${riskLevel}`}
+                    >
+                      {riskLevel ===
+                      "incomplete"
+                        ? "—"
+                        : riskShort}
+                    </strong>
+                  </div>
+                </div>
+
+                <div className="overviewType">
+                  <DocumentIcon
+                    size={18}
+                  />
+
+                  <span>
+                    Basic AI Verification
+                  </span>
+                </div>
+              </section>
+
+              {/* ==================================================
+                  REPORT DETAILS
+                  ================================================== */}
+
+              <section className="card detailsCard">
+                <h2>
+                  REPORT DETAILS
+                </h2>
+
+                <div className="detailRow">
+                  <span>
+                    Verification ID
+                  </span>
+
+                  <strong>
+                    #{verification.id}
+                  </strong>
+                </div>
+
+                <div className="detailRow">
+                  <span>
+                    Verified On
+                  </span>
+
+                  <strong>
+                    {verifiedDate}
+                  </strong>
+                </div>
+
+                <div className="detailRow">
+                  <span>
+                    Documents Submitted
+                  </span>
+
+                  <strong>
+                    {documentCount}
+                  </strong>
+                </div>
+
+                <div className="detailRow">
+                  <span>
+                    Risk Assessment
+                  </span>
+
+                  <strong
+                    className={`detailRisk ${riskLevel}`}
+                  >
+                    {riskTitle}
+                  </strong>
+                </div>
+
+                <div className="detailRow">
+                  <span>
+                    Verification Type
+                  </span>
+
+                  <strong>
+                    Basic AI Verification
+                  </strong>
+                </div>
+
+                <div className="detailRow">
+                  <span>
+                    Verification Engine
+                  </span>
+
+                  <strong>
+                    PropertySure AI
+                  </strong>
+                </div>
+
+                <div className="actionStack">
+                  <button
+                    type="button"
+                    className="downloadButton"
+                    onClick={
+                      downloadReport
+                    }
+                  >
+                    <DownloadIcon />
+                    Download PDF Report
+                  </button>
+
+                  <button
+                    type="button"
+                    className="shareButton"
+                    onClick={
+                      shareReport
+                    }
+                  >
+                    <ShareIcon />
+                    Share Report
+                  </button>
+                </div>
+
+                <div className="securityNotice">
+                  <div className="securityLock">
+                    ◈
+                  </div>
+
+                  <div>
+                    <strong>
+                      Your data is secure
+                    </strong>
+
+                    <p>
+                      All documents and
+                      verification results
+                      are encrypted and
+                      protected with
+                      enterprise-grade
+                      security.
+                    </p>
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
 
-        </section>
+          {/* ==================================================
+              DISCLAIMER
+              ================================================== */}
 
-        {/* =====================================
-            VERIFICATION ASSESSMENT
-        ====================================== */}
+          <p className="reportDisclaimer">
+            PropertySure AI Basic Verification
+            provides AI-assisted document
+            analysis. It does not replace
+            official government registry
+            searches or professional legal,
+            surveying or engineering advice.
+          </p>
+        </div>
 
-        <section className="assessment-panel">
+        {/* ====================================================
+            FOOTER
+            ==================================================== */}
 
-          <div className="assessment-icon">
-            ✓
-          </div>
-
-          <div className="assessment-content">
-
-            <h3>
-              Verification Assessment
-            </h3>
-
-            <p>
-              {isVerified
-                ? "PropertySure AI has analyzed the document using the available verification checks. No detected indicators of forgery, duplication, or document inconsistency were found."
-                : "PropertySure AI has analyzed the document using the available verification checks. The document currently requires additional review."}
-            </p>
-
-            {isVerified && (
-              <strong>
-                No signs of forgery,
-                duplication, or
-                inconsistency were
-                detected.
-              </strong>
-            )}
-
-          </div>
-
-          <div className="assessment-outcome">
-
-            <span>
-              Outcome
-            </span>
-
-            <strong
-              className={
-                isVerified
-                  ? "success-text"
-                  : "warning-text"
-              }
-            >
-              {isVerified
-                ? "Authentic Document"
-                : "Review Required"}
-            </strong>
-
-            <small>
-              {isVerified
-                ? "You can proceed with confidence."
-                : "Please review the verification details."}
-            </small>
-
-          </div>
-
-        </section>
-
-        {/* =====================================
-            BLOCKCHAIN VERIFICATION
-        ====================================== */}
-
-        <section className="secondary-grid">
-
-          <div className="panel blockchain-panel">
-
-            <div className="panel-title">
-              <span className="title-icon">
-                ◈
-              </span>
-
-              <h3>
-                Blockchain Verification
-              </h3>
-            </div>
-
-            <div className="info-row">
-              <span>
-                Network
-              </span>
-
-              <strong>
-                Ethereum
-              </strong>
-            </div>
-
-            <div className="info-row">
-              <span>
-                Record
-              </span>
-
-              <strong className="success-text">
-                Linked
-              </strong>
-            </div>
-
-            <div className="info-row">
-              <span>
-                Verification ID
-              </span>
-
-              <strong>
-                #{verificationId}
-              </strong>
-            </div>
-
-            <div className="blockchain-record">
-
-              <span>
-                Blockchain Record
-              </span>
-
-              <div>
-                Verification record #
-                {verificationId}
-              </div>
-
-            </div>
-
-            <button
-              className="outline-button"
-              onClick={() =>
-                alert(
-                  "The real blockchain explorer link will be activated when a real transaction hash is stored for this verification."
-                )
-              }
-            >
-              View on Etherscan
-            </button>
-
-          </div>
-
-          {/* =====================================
-              SECURITY SUMMARY
-          ====================================== */}
-
-          <div className="panel security-panel">
-
-            <div className="panel-title">
-              <span className="title-icon">
-                ◇
-              </span>
-
-              <h3>
-                Verification Security
-              </h3>
-            </div>
-
-            <div className="security-item">
-              <span className="security-check">
-                ✓
-              </span>
-
-              <div>
-                <strong>
-                  Secure Processing
-                </strong>
-
-                <p>
-                  Document processed
-                  through the PropertySure
-                  AI verification workflow.
-                </p>
-              </div>
-            </div>
-
-            <div className="security-item">
-              <span className="security-check">
-                ✓
-              </span>
-
-              <div>
-                <strong>
-                  Fraud Analysis
-                </strong>
-
-                <p>
-                  Verification checks
-                  included forgery and
-                  duplicate detection.
-                </p>
-              </div>
-            </div>
-
-            <div className="security-item">
-              <span className="security-check">
-                ✓
-              </span>
-
-              <div>
-                <strong>
-                  Verification Record
-                </strong>
-
-                <p>
-                  Your verification result
-                  has been recorded against
-                  this verification ID.
-                </p>
-              </div>
-            </div>
-
-          </div>
-
-        </section>
-
-        {/* =====================================
-            ACTIONS
-        ====================================== */}
-
-        <section className="actions-section">
-
-          <button
-            className="action-card"
-            onClick={
-              downloadPDF
-            }
-          >
-            <span className="action-icon">
-              ⇩
-            </span>
-
-            <div>
-              <strong>
-                Download Report
-              </strong>
-
-              <small>
-                PDF Verification Report
-              </small>
-            </div>
-          </button>
-
-          <button
-            className="action-card"
-            onClick={
-              shareVerification
-            }
-          >
-            <span className="action-icon">
-              ◉
-            </span>
-
-            <div>
-              <strong>
-                Share Verification
-              </strong>
-
-              <small>
-                Share this verification result
-              </small>
-            </div>
-          </button>
-
-          <button
-            className="action-card primary-action"
-            onClick={() =>
-              (window.location.href =
-                "/verify")
-            }
-          >
-            <span className="action-icon">
-              ＋
-            </span>
-
-            <div>
-              <strong>
-                Verify Another Property
-              </strong>
-
-              <small>
-                Start a new verification
-              </small>
-            </div>
-
-            <b>
-              →
-            </b>
-          </button>
-
-        </section>
-
-        {/* =====================================
-            SECURITY STRIP
-        ====================================== */}
-
-        <section className="security-strip">
-
+        <footer className="desktopFooter">
           <span>
-            Our platform ensures
+            © 2026 PropertySure AI. All
+            rights reserved.
           </span>
 
           <div>
-            🔒 256-bit Encryption
-          </div>
+            <button type="button">
+              Terms of Service
+            </button>
 
-          <div>
-            ◈ Secure Data Handling
-          </div>
+            <button type="button">
+              Privacy Policy
+            </button>
 
-          <div>
-            ✦ AI-Powered Analysis
-          </div>
-
-          <div>
-            ✓ Privacy Protected
-          </div>
-
-        </section>
-
-        {/* =====================================
-            FOOTER
-        ====================================== */}
-
-        <footer className="result-footer">
-
-          <div className="footer-brand">
-
-            <div className="brand-shield">
-              ✓
-            </div>
-
-            <div>
-              <strong>
-                PropertySure{" "}
-                <span>AI</span>
-              </strong>
-
-              <small>
-                Property Verification Platform
-              </small>
-            </div>
-
-          </div>
-
-          <div className="footer-links">
-            <span>
-              About Us
-            </span>
-
-            <span>
-              How It Works
-            </span>
-
-            <span>
+            <button type="button">
               Security
-            </span>
-
-            <span>
-              Contact
-            </span>
+            </button>
           </div>
-
-          <div className="copyright">
-            © 2025 PropertySure AI
-            <br />
-            All rights reserved.
-          </div>
-
         </footer>
-
       </div>
 
-      {/* =====================================
-          PAGE STYLES
-      ====================================== */}
+      {/* ======================================================
+          MOBILE BOTTOM NAV
+          ====================================================== */}
+
+      <nav className="bottomNav">
+        <button
+          type="button"
+          onClick={() =>
+            goTo("/dashboard")
+          }
+        >
+          <HomeIcon size={20} />
+          <small>
+            Dashboard
+          </small>
+        </button>
+
+        <button
+          type="button"
+          className="active"
+          onClick={() =>
+            goTo("/verify")
+          }
+        >
+          <PlusIcon size={21} />
+          <small>
+            Verify
+          </small>
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            goTo("/properties")
+          }
+        >
+          <PropertyIcon size={20} />
+          <small>
+            Properties
+          </small>
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            goTo("/reports")
+          }
+        >
+          <ReportIcon size={20} />
+          <small>
+            Reports
+          </small>
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            goTo("/account")
+          }
+        >
+          <UserIcon size={20} />
+          <small>
+            Account
+          </small>
+        </button>
+      </nav>
+
+      {/* ======================================================
+          STYLES
+          ====================================================== */}
 
       <style jsx>{`
-
         * {
           box-sizing: border-box;
         }
 
-        .result-page {
+        .resultPage {
           min-height: 100vh;
-          background:
-            radial-gradient(
-              circle at 50% -10%,
-              rgba(15, 68, 145, 0.30),
-              transparent 38%
-            ),
-            radial-gradient(
-              circle at 100% 30%,
-              rgba(22, 142, 255, 0.10),
-              transparent 30%
-            ),
-            linear-gradient(
-              180deg,
-              #020B18 0%,
-              #031124 48%,
-              #020917 100%
-            );
-
-          color: #F8FAFC;
+          background: #f7faff;
+          color: #14264b;
           font-family:
             Arial,
             Helvetica,
             sans-serif;
-
-          padding:
-            0 24px 60px;
-
-          overflow-x: hidden;
         }
 
-        .result-container {
-          width: 100%;
-          max-width: 1260px;
-          margin: 0 auto;
+        button {
+          font-family: inherit;
         }
 
-        /* -----------------------------------
-           BRAND
-        ----------------------------------- */
+        /* ======================================================
+           SIDEBAR
+           ====================================================== */
 
-        .top-nav {
-          min-height: 82px;
+        .desktopSidebar {
+          position: fixed;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 212px;
+          background: #ffffff;
+          border-right: 1px solid #e8eef6;
+          z-index: 40;
+          display: flex;
+          flex-direction: column;
+          padding: 15px 14px;
+        }
 
+        .sidebarBrand {
+          border: none;
+          background: transparent;
           display: flex;
           align-items: center;
-          justify-content: space-between;
-
-          gap: 20px;
-
-          border-bottom:
-            1px solid
-            rgba(255,255,255,.08);
-
-          flex-wrap: wrap;
+          gap: 7px;
+          padding: 0 5px 18px;
+          color: #17284c;
+          font-size: 17px;
+          font-weight: 800;
+          cursor: pointer;
+          text-align: left;
         }
 
-        .brand-area,
-        .footer-brand {
-          display: flex;
+        .sidebarBrand strong,
+        .mobileBrand strong {
+          color: #1268f3;
+        }
+
+        .brandMark {
+          width: 28px;
+          height: 28px;
+          display: inline-flex;
           align-items: center;
-          gap: 12px;
+          justify-content: center;
+          color: #1268f3;
+          font-size: 26px;
+          line-height: 1;
         }
 
-        .brand-shield {
-          width: 42px;
-          height: 46px;
-
-          border:
-            2px solid #168EFF;
-
-          border-radius:
-            11px;
-
+        .newVerificationButton {
+          height: 40px;
+          border: none;
+          border-radius: 7px;
+          background: #1268f3;
+          color: #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
-
-          color: #168EFF;
-
-          font-size: 22px;
-          font-weight: 900;
-
-          background:
-            rgba(22,142,255,.08);
-
-          box-shadow:
-            0 0 20px
-            rgba(22,142,255,.18);
-        }
-
-        .brand-name {
-          font-size: 22px;
-          font-weight: 800;
-          color: #FFFFFF;
-        }
-
-        .brand-name span,
-        .footer-brand strong span {
-          color: #168EFF;
-        }
-
-        .brand-subtitle {
-          margin-top: 3px;
-          color: #7F8EA3;
-          font-size: 11px;
-        }
-
-        .nav-actions {
-          display: flex;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
-
-        .nav-button {
-          padding:
-            11px 18px;
-
-          border-radius:
-            10px;
-
+          gap: 7px;
+          font-size: 12px;
           font-weight: 700;
           cursor: pointer;
-
-          transition:
-            transform .2s ease,
-            background .2s ease;
+          box-shadow:
+            0 7px 18px
+            rgba(18, 104, 243, 0.16);
+          margin-bottom: 15px;
         }
 
-        .nav-button:hover {
-          transform:
-            translateY(-2px);
+        .sidebarNav {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
         }
 
-        .nav-button.secondary {
-          background:
-            rgba(7,22,42,.85);
-
-          border:
-            1px solid
-            rgba(22,142,255,.25);
-
-          color: #CBD5E1;
-        }
-
-        .nav-button.primary {
-          background:
-            linear-gradient(
-              90deg,
-              #1268E8,
-              #168EFF
-            );
-
+        .sidebarNav button,
+        .sidebarBottom button {
+          width: 100%;
+          min-height: 37px;
           border: none;
-          color: white;
-        }
-
-        /* -----------------------------------
-           BREADCRUMBS
-        ----------------------------------- */
-
-        .breadcrumb-row {
+          background: transparent;
+          border-radius: 7px;
+          color: #263754;
           display: flex;
           align-items: center;
-          justify-content: space-between;
-
-          gap: 20px;
-
-          margin-top: 24px;
-
-          flex-wrap: wrap;
+          gap: 12px;
+          padding: 0 10px;
+          font-size: 11px;
+          cursor: pointer;
+          text-align: left;
         }
 
-        .breadcrumbs {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-
-          color: #718096;
-
-          font-size: 13px;
+        .sidebarNav button:hover,
+        .sidebarBottom button:hover {
+          background: #f5f8fd;
+          color: #1268f3;
         }
 
-        .breadcrumbs span:first-child {
-          color: #168EFF;
+        .sidebarNav .sidebarActive {
+          color: #1268f3;
+          font-weight: 700;
+        }
+
+        .sidebarSectionLabel {
+          color: #8a98ad;
+          font-size: 9px;
+          font-weight: 700;
+          margin: 24px 10px 8px;
+          letter-spacing: 0.2px;
+        }
+
+        .accountNav {
+          gap: 1px;
+        }
+
+        .sidebarSettingsActive {
+          position: relative;
+        }
+
+        .settingsChevron {
+          margin-left: auto;
+          color: #1268f3;
+        }
+
+        .settingsSubNav {
+          background: #f5f8ff;
+          border-radius: 9px;
+          padding: 5px 0;
+          margin: 1px 0 7px;
+        }
+
+        .settingsSubNav button {
+          min-height: 31px;
+          padding-left: 28px;
+          font-size: 10px;
+        }
+
+        .settingsSubNav button:first-child {
+          color: #1268f3;
+          font-weight: 700;
+          background: #edf4ff;
+        }
+
+        .sidebarBottom {
+          margin-top: auto;
+          padding-top: 12px;
+          border-top: 1px solid #edf1f6;
+        }
+
+        .simpleHeart,
+        .simpleCard,
+        .logoutIcon {
+          width: 18px;
+          text-align: center;
           font-size: 17px;
         }
 
-        .breadcrumbs b {
-          color: #475569;
+        .expertCard {
+          margin-top: 12px;
+          border-radius: 9px;
+          background: #f2f7ff;
+          border: 1px solid #e0ebfa;
+          padding: 13px 11px;
         }
 
-        .breadcrumbs strong {
-          color: #168EFF;
+        .expertIllustration {
+          color: #1268f3;
+          font-size: 23px;
+          margin-bottom: 5px;
         }
 
-        .secure-badge {
+        .expertCard strong {
+          display: block;
+          font-size: 10px;
+          color: #1a3158;
+          margin-bottom: 5px;
+        }
+
+        .expertCard p {
+          margin: 0;
+          color: #687b98;
+          font-size: 8px;
+          line-height: 1.55;
+        }
+
+        .expertCard button {
+          width: 100%;
+          height: 34px;
+          margin-top: 10px;
+          border: 1px solid #8bb8f7;
+          border-radius: 6px;
+          background: #ffffff;
+          color: #1268f3;
+          font-size: 9px;
+          font-weight: 700;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+        }
+
+        /* ======================================================
+           MAIN
+           ====================================================== */
+
+        .mainArea {
+          min-height: 100vh;
+          margin-left: 212px;
+        }
+
+        .topHeader {
+          height: 57px;
+          background: #ffffff;
+          border-bottom: 1px solid #e7edf5;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 22px 0 29px;
+        }
+
+        .desktopBreadcrumb {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 10px;
+        }
+
+        .desktopBreadcrumb button {
+          border: none;
+          background: transparent;
+          padding: 0;
+          color: #71819a;
+          cursor: pointer;
+          font-size: 10px;
+        }
+
+        .desktopBreadcrumb strong {
+          color: #17284c;
+        }
+
+        .desktopBreadcrumb span {
+          color: #aeb9c9;
+        }
+
+        .mobileBrand {
+          display: none;
+        }
+
+        .headerRight {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+        }
+
+        .notificationButton {
+          width: 31px;
+          height: 31px;
+          border: none;
+          background: transparent;
+          color: #182b4c;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          cursor: pointer;
+        }
+
+        .notificationDot {
+          position: absolute;
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #1268f3;
+          right: 4px;
+          top: 4px;
+        }
+
+        .userSummary {
           display: flex;
           align-items: center;
           gap: 8px;
-
-          padding:
-            9px 14px;
-
-          border-radius:
-            999px;
-
-          border:
-            1px solid
-            rgba(53,208,127,.18);
-
-          background:
-            rgba(53,208,127,.05);
-
-          color: #CBD5E1;
-
-          font-size: 12px;
         }
 
-        .secure-dot {
-          color: #35D07F;
-        }
-
-        /* -----------------------------------
-           PAGE HEADING
-        ----------------------------------- */
-
-        .page-heading {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-
-          gap: 30px;
-
-          margin:
-            38px 0 26px;
-
-          flex-wrap: wrap;
-        }
-
-        .page-heading h1 {
-          margin: 0;
-
-          font-size:
-            clamp(32px, 5vw, 48px);
-
-          line-height: 1.1;
-
-          letter-spacing:
-            -1.2px;
-        }
-
-        .page-heading h1 span {
-          color: #168EFF;
-        }
-
-        .page-heading p {
-          margin:
-            10px 0 0;
-
-          color: #94A3B8;
-
-          font-size: 15px;
-        }
-
-        .report-meta {
-          display: flex;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
-
-        .meta-card {
-          min-width: 180px;
-
-          position: relative;
-
-          padding:
-            12px 38px 12px 14px;
-
-          background:
-            rgba(6,22,43,.75);
-
-          border:
-            1px solid
-            rgba(22,142,255,.18);
-
-          border-radius:
-            11px;
-        }
-
-        .meta-card small {
-          display: block;
-          color: #64748B;
-          font-size: 10px;
-          margin-bottom: 5px;
-          text-transform: uppercase;
-        }
-
-        .meta-card strong {
-          color: #E2E8F0;
-          font-size: 12px;
-          word-break: break-word;
-        }
-
-        .meta-card button,
-        .calendar-icon {
-          position: absolute;
-          right: 12px;
-          top: 50%;
-          transform:
-            translateY(-20%);
-
-          background: transparent;
-          border: none;
-          color: #168EFF;
-        }
-
-        .calendar-icon {
-          font-size: 18px;
-        }
-
-        /* -----------------------------------
-           AUTHENTICITY
-        ----------------------------------- */
-
-        .auth-banner {
-          position: relative;
-
-          display: grid;
-
-          grid-template-columns:
-            210px 1fr 160px;
-
-          min-height:
-            185px;
-
-          border-radius:
-            16px;
-
-          overflow:
-            hidden;
-
-          border:
-            1px solid
-            rgba(22,142,255,.35);
-
-          background:
-            linear-gradient(
-              110deg,
-              rgba(7,33,57,.95),
-              rgba(3,19,38,.95)
-            );
-
-          margin-bottom:
-            20px;
-        }
-
-        .auth-banner.verified {
-          border-color:
-            rgba(22,142,255,.45);
-        }
-
-        .auth-banner.review {
-          border-color:
-            rgba(250,204,21,.3);
-        }
-
-        .auth-icon-panel {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          background:
-            linear-gradient(
-              145deg,
-              rgba(13,130,65,.80),
-              rgba(3,50,39,.70)
-            );
-        }
-
-        .auth-banner.review
-        .auth-icon-panel {
-          background:
-            linear-gradient(
-              145deg,
-              rgba(101,82,9,.7),
-              rgba(53,43,5,.7)
-            );
-        }
-
-        .large-shield {
-          width: 90px;
-          height: 90px;
-
-          border:
-            3px solid #35D07F;
-
-          border-radius:
-            24px;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          color: #35D07F;
-
-          font-size: 45px;
-          font-weight: 900;
-
-          transform:
-            rotate(0deg);
-
-          box-shadow:
-            0 0 35px
-            rgba(53,208,127,.30);
-        }
-
-        .auth-banner.review
-        .large-shield {
-          border-color: #FACC15;
-          color: #FACC15;
-          box-shadow:
-            0 0 35px
-            rgba(250,204,21,.20);
-        }
-
-        .auth-content {
-          padding:
-            32px 38px;
-
+        .userSummary > div:first-child {
           display: flex;
           flex-direction: column;
-          justify-content: center;
+          align-items: flex-end;
+          gap: 2px;
         }
 
-        .complete-label {
-          color: #35D07F;
-          font-size: 13px;
-          font-weight: 800;
-          letter-spacing:
-            .3px;
-
-          margin-bottom:
-            12px;
+        .userSummary strong {
+          color: #17284c;
+          font-size: 10px;
         }
 
-        .auth-banner.review
-        .complete-label {
-          color: #FACC15;
+        .userSummary span {
+          color: #8b98aa;
+          font-size: 8px;
         }
 
-        .complete-label span {
-          margin-right: 7px;
-        }
-
-        .auth-content h2 {
-          margin: 0;
-
-          font-size:
-            clamp(30px, 4vw, 40px);
-        }
-
-        .auth-content h2 span {
-          color: #35D07F;
-        }
-
-        .auth-banner.review
-        .auth-content h2 span {
-          color: #FACC15;
-        }
-
-        .auth-content p {
-          margin:
-            10px 0 0;
-
-          color: #94A3B8;
-
-          font-size: 14px;
-          line-height: 1.6;
-
-          max-width: 650px;
-        }
-
-        .auth-decoration {
+        .avatar {
+          width: 35px;
+          height: 35px;
+          border-radius: 50%;
+          background: #edf1f8;
+          color: #6f7f99;
           display: flex;
           align-items: center;
           justify-content: center;
-
-          font-size: 100px;
-          font-weight: 900;
-
-          color:
-            rgba(22,142,255,.14);
+          font-size: 11px;
+          font-weight: 800;
         }
 
-        /* -----------------------------------
-           SCORE OVERVIEW
-        ----------------------------------- */
+        .mobileBreadcrumb {
+          display: none;
+        }
 
-        .score-overview {
-          display: grid;
+        /* ======================================================
+           CONTENT
+           ====================================================== */
 
-          grid-template-columns:
-            1.2fr
-            1px
-            1fr
-            1px
-            1fr
-            1px
-            1fr;
+        .content {
+          width: 100%;
+          max-width: 1090px;
+          margin: 0 auto;
+          padding: 21px 20px 24px;
+        }
 
+        /* ======================================================
+           HERO
+           ====================================================== */
+
+        .resultHero {
+          min-height: 190px;
+          position: relative;
+          overflow: hidden;
+          display: flex;
           align-items: center;
+          gap: 24px;
+          padding: 28px 30px;
+          border-radius: 12px;
+          background: #ffffff;
+          border: 1px solid #e6edf6;
+          box-shadow:
+            0 5px 20px
+            rgba(37, 74, 116, 0.035);
+        }
 
-          min-height: 205px;
+        .resultHero.incomplete {
+          background:
+            radial-gradient(
+              circle at 12% 50%,
+              rgba(255, 214, 135, 0.19),
+              transparent 27%
+            ),
+            linear-gradient(
+              105deg,
+              #fffaf0 0%,
+              #fffdf8 55%,
+              #f9fbff 100%
+            );
+          border-color: #f1e8d5;
+        }
 
-          padding:
-            25px 28px;
-
-          border:
-            1px solid
-            rgba(22,142,255,.16);
-
-          border-radius:
-            16px;
-
+        .resultHero.low {
           background:
             linear-gradient(
-              135deg,
-              rgba(4,24,47,.96),
-              rgba(2,15,31,.96)
+              105deg,
+              #f4fbf8,
+              #ffffff
             );
-
-          margin-bottom:
-            20px;
+          border-color: #dcefe5;
         }
 
-        .trust-score-panel {
-          text-align: center;
+        .resultHero.medium {
+          background:
+            linear-gradient(
+              105deg,
+              #fffaf0,
+              #fffdf8
+            );
+          border-color: #f0dfbb;
         }
 
-        .score-label {
-          color: #94A3B8;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: .5px;
+        .resultHero.high {
+          background:
+            linear-gradient(
+              105deg,
+              #fff6f6,
+              #ffffff
+            );
+          border-color: #f0d6d6;
+        }
+
+        .resultHeroIcon {
+          width: 106px;
+          height: 106px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.85);
+          box-shadow:
+            0 7px 25px
+            rgba(69, 92, 120, 0.08);
+        }
+
+        .resultHero.incomplete
+          .resultHeroIcon {
+          color: #ed7200;
+        }
+
+        .resultHero.low
+          .resultHeroIcon {
+          color: #16a45b;
+        }
+
+        .resultHero.medium
+          .resultHeroIcon {
+          color: #df9400;
+        }
+
+        .resultHero.high
+          .resultHeroIcon {
+          color: #d83a3a;
+        }
+
+        .resultHeroContent {
+          position: relative;
+          z-index: 3;
+          flex: 1;
+          min-width: 0;
+        }
+
+        .eyebrow {
+          display: inline-flex;
+          padding: 6px 11px;
+          border-radius: 999px;
+          background: #fff0d9;
+          color: #e66f00;
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 0.25px;
           margin-bottom: 8px;
         }
 
-        .score-ring {
-          width: 132px;
-          height: 132px;
+        .resultHero.low .eyebrow {
+          background: #e8f8ef;
+          color: #159653;
+        }
 
-          margin:
-            0 auto 8px;
+        .resultHero.medium .eyebrow {
+          background: #fff2d4;
+          color: #d38b00;
+        }
 
-          border-radius:
-            50%;
+        .resultHero.high .eyebrow {
+          background: #ffe8e8;
+          color: #d43737;
+        }
 
-          display: flex;
+        .resultHero h1 {
+          margin: 0;
+          color: #10245c;
+          font-size: 31px;
+          line-height: 1.1;
+          letter-spacing: -0.8px;
+        }
+
+        .resultHero.low h1 {
+          color: #137d48;
+        }
+
+        .resultHero.medium h1 {
+          color: #d48900;
+        }
+
+        .resultHero.high h1 {
+          color: #cf3030;
+        }
+
+        .statusPill {
+          display: inline-flex;
           align-items: center;
-          justify-content: center;
+          gap: 5px;
+          margin-top: 8px;
+          padding: 4px 8px;
+          border-radius: 999px;
+          background: #fff0d9;
+          color: #e66f00;
+          font-size: 8px;
+          font-weight: 800;
+        }
 
+        .resultHero.low .statusPill {
+          background: #e8f8ef;
+          color: #159653;
+        }
+
+        .resultHero.medium .statusPill {
+          background: #fff2d4;
+          color: #d38b00;
+        }
+
+        .resultHero.high .statusPill {
+          background: #ffe8e8;
+          color: #d43737;
+        }
+
+        .resultHero p {
+          max-width: 520px;
+          margin: 10px 0 0;
+          color: #53657f;
+          font-size: 11px;
+          line-height: 1.65;
+        }
+
+        /* ======================================================
+           HERO ILLUSTRATION
+           ====================================================== */
+
+        .heroIllustration {
+          width: 230px;
+          height: 160px;
           position: relative;
+          flex-shrink: 0;
         }
 
-        .score-success {
-          background:
-            conic-gradient(
-              #35D07F 0deg,
-              #168EFF 360deg
-            );
-
-          box-shadow:
-            0 0 28px
-            rgba(53,208,127,.18);
-        }
-
-        .score-warning {
-          background:
-            conic-gradient(
-              #FACC15 0deg,
-              #334155 360deg
-            );
-        }
-
-        .score-ring::before {
-          content: "";
-
+        .heroGlow {
           position: absolute;
-
-          inset: 7px;
-
-          border-radius:
-            50%;
-
-          background:
-            #041326;
+          border-radius: 50%;
+          filter: blur(2px);
         }
 
-        .score-inner {
-          position: relative;
-          z-index: 2;
-
-          display: flex;
-          align-items: baseline;
+        .heroGlowOne {
+          width: 105px;
+          height: 105px;
+          right: 18px;
+          top: 18px;
+          background: rgba(194, 219, 255, 0.42);
         }
 
-        .score-inner strong {
-          font-size: 37px;
-        }
-
-        .score-inner span {
-          color: #94A3B8;
-          font-size: 15px;
-          margin-left: 2px;
-        }
-
-        .score-caption {
-          display: inline-block;
-
-          padding:
-            5px 13px;
-
-          border-radius:
-            999px;
-
-          background:
-            rgba(53,208,127,.10);
-
-          border:
-            1px solid
-            rgba(53,208,127,.22);
-
-          color: #35D07F;
-
-          font-size: 10px;
-          font-weight: 800;
-        }
-
-        .metric-divider {
-          width: 1px;
+        .heroGlowTwo {
+          width: 80px;
           height: 80px;
-          background:
-            rgba(255,255,255,.08);
+          left: 18px;
+          bottom: 2px;
+          background: rgba(214, 235, 255, 0.42);
         }
 
-        .metric-panel {
-          display: flex;
-          align-items: center;
-
-          gap: 13px;
-
-          padding:
-            10px 18px;
+        .heroClipboard {
+          position: absolute;
+          width: 91px;
+          height: 118px;
+          right: 43px;
+          top: 22px;
+          border-radius: 10px;
+          background: linear-gradient(
+            145deg,
+            #eaf3ff,
+            #c9ddff
+          );
+          box-shadow:
+            0 13px 22px
+            rgba(61, 104, 173, 0.18);
+          transform: rotate(4deg);
         }
 
-        .metric-icon {
-          width: 42px;
-          height: 42px;
-
-          border-radius: 11px;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          font-size: 20px;
+        .clipboardTop {
+          position: absolute;
+          left: 30px;
+          top: -7px;
+          width: 31px;
+          height: 18px;
+          border-radius: 6px 6px 3px 3px;
+          background: #b8d2f9;
         }
 
-        .metric-icon.blue {
-          background:
-            rgba(22,142,255,.10);
-          color: #168EFF;
+        .clipboardSheet {
+          position: absolute;
+          left: 13px;
+          top: 19px;
+          width: 64px;
+          height: 86px;
+          border-radius: 5px;
+          background: #ffffff;
+          padding: 10px 8px;
         }
 
-        .metric-icon.green {
-          background:
-            rgba(53,208,127,.08);
-          color: #35D07F;
+        .sheetTitle {
+          width: 29px;
+          height: 4px;
+          background: #88aeea;
+          border-radius: 5px;
+          margin-bottom: 7px;
         }
 
-        .metric-panel small {
-          display: block;
-
-          color: #64748B;
-
-          font-size: 9px;
-          font-weight: 800;
-
+        .sheetLine {
+          height: 3px;
+          border-radius: 4px;
+          background: #e0e9f8;
           margin-bottom: 5px;
         }
 
-        .metric-panel strong {
-          display: block;
-
-          font-size: 20px;
-          color: #E2E8F0;
+        .sheetLine.long {
+          width: 46px;
         }
 
-        .metric-panel p {
-          margin:
-            4px 0 0;
-
-          color: #718096;
-
-          font-size: 10px;
+        .sheetLine.medium {
+          width: 35px;
+          margin-bottom: 8px;
         }
 
-        .success-text {
-          color: #35D07F !important;
-        }
-
-        .warning-text {
-          color: #FACC15 !important;
-        }
-
-        .danger-text {
-          color: #F87171 !important;
-        }
-
-        /* -----------------------------------
-           PANELS
-        ----------------------------------- */
-
-        .main-grid {
-          display: grid;
-
-          grid-template-columns:
-            minmax(0, 1.65fr)
-            minmax(320px, .9fr);
-
-          gap: 20px;
-
-          margin-bottom:
-            20px;
-        }
-
-        .panel {
-          border:
-            1px solid
-            rgba(22,142,255,.14);
-
-          border-radius:
-            16px;
-
-          background:
-            linear-gradient(
-              145deg,
-              rgba(6,25,49,.96),
-              rgba(3,17,34,.96)
-            );
-
-          overflow:
-            hidden;
-        }
-
-        .panel-header {
-          padding:
-            22px 22px 16px;
-
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-
-          gap: 15px;
-
-          border-bottom:
-            1px solid
-            rgba(255,255,255,.06);
-
-          flex-wrap: wrap;
-        }
-
-        .panel-header h3,
-        .panel-title h3 {
-          margin: 0;
-
-          font-size: 17px;
-        }
-
-        .panel-header h3 span {
-          color: #168EFF;
-          font-size: 12px;
-          font-weight: 500;
-        }
-
-        .panel-header p {
-          margin:
-            5px 0 0;
-
-          color: #64748B;
-
-          font-size: 11px;
-        }
-
-        .all-passed {
-          padding:
-            7px 11px;
-
-          border-radius:
-            999px;
-
-          font-size: 10px;
-          font-weight: 800;
-        }
-
-        .all-passed.passed {
-          background:
-            rgba(53,208,127,.08);
-
-          border:
-            1px solid
-            rgba(53,208,127,.18);
-
-          color: #35D07F;
-        }
-
-        .all-passed.review {
-          background:
-            rgba(250,204,21,.08);
-
-          border:
-            1px solid
-            rgba(250,204,21,.18);
-
-          color: #FACC15;
-        }
-
-        .checks-list {
-          padding:
-            8px 14px 14px;
-        }
-
-        .check-item {
+        .sheetCheck {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-
-          gap: 15px;
-
-          padding:
-            12px 10px;
-
-          border-bottom:
-            1px solid
-            rgba(255,255,255,.045);
-        }
-
-        .check-item:last-child {
-          border-bottom: none;
-        }
-
-        .check-left {
-          display: flex;
-          align-items: center;
-
-          gap: 10px;
-
-          min-width: 0;
-        }
-
-        .check-icon {
-          width: 38px;
-          height: 38px;
-
-          flex-shrink: 0;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 10px;
-
-          background:
-            rgba(22,142,255,.09);
-
-          border:
-            1px solid
-            rgba(22,142,255,.15);
-
-          color: #168EFF;
-        }
-
-        .check-number {
-          width: 30px;
-
-          flex-shrink: 0;
-
-          color: #475569;
-
-          font-size: 10px;
-          font-weight: 800;
-        }
-
-        .check-text {
-          min-width: 0;
-
-          display: flex;
-          flex-direction: column;
-
           gap: 4px;
+          margin-top: 5px;
         }
 
-        .check-text strong {
-          color: #E2E8F0;
-          font-size: 12px;
-        }
-
-        .check-text span {
-          color: #64748B;
-          font-size: 10px;
-          line-height: 1.4;
-        }
-
-        .check-result {
-          flex-shrink: 0;
-
-          min-width: 160px;
-
-          display: flex;
-          align-items: center;
-
-          gap: 7px;
-
-          padding:
-            7px 9px;
-
-          border-radius:
-            9px;
-        }
-
-        .check-result.passed {
-          background:
-            rgba(53,208,127,.055);
-        }
-
-        .check-result.pending {
-          background:
-            rgba(250,204,21,.055);
-        }
-
-        .check-result > span {
-          width: 21px;
-          height: 21px;
-
+        .sheetCheck span {
+          width: 9px;
+          height: 9px;
+          border-radius: 2px;
+          background: #4285ed;
+          color: #ffffff;
+          font-size: 6px;
           display: flex;
           align-items: center;
           justify-content: center;
-
-          border-radius:
-            50%;
-
-          background:
-            rgba(53,208,127,.13);
-
-          color: #35D07F;
-
-          font-size: 11px;
-          font-weight: 900;
         }
 
-        .check-result.pending > span {
-          background:
-            rgba(250,204,21,.13);
-
-          color: #FACC15;
+        .sheetCheck:last-child span {
+          background: #f0a126;
         }
 
-        .check-result div {
-          min-width: 0;
-          flex: 1;
+        .sheetCheck i {
+          width: 31px;
+          height: 3px;
+          border-radius: 4px;
+          background: #e3eaf5;
         }
 
-        .check-result strong {
-          display: block;
-          color: #35D07F;
-          font-size: 10px;
+        .magnifier {
+          position: absolute;
+          width: 59px;
+          height: 59px;
+          right: -18px;
+          bottom: 1px;
+          border: 10px solid #377de3;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.7);
+          box-shadow:
+            0 8px 18px
+            rgba(54, 103, 180, 0.18);
         }
 
-        .check-result.pending strong {
-          color: #FACC15;
+        .magnifier::after {
+          content: "";
+          position: absolute;
+          width: 31px;
+          height: 11px;
+          border-radius: 10px;
+          background: #377de3;
+          right: -25px;
+          bottom: -15px;
+          transform: rotate(48deg);
         }
 
-        .check-result small {
-          display: block;
-
-          color: #64748B;
-
-          font-size: 8px;
-
-          margin-top: 2px;
-        }
-
-        .check-result b {
-          color: #475569;
-        }
-
-        /* -----------------------------------
-           DOCUMENT PANEL
-        ----------------------------------- */
-
-        .document-panel {
-          padding:
-            22px;
-        }
-
-        .panel-title {
-          display: flex;
-          align-items: center;
-
-          gap: 10px;
-
-          margin-bottom:
-            18px;
-        }
-
-        .title-icon {
-          width: 34px;
-          height: 34px;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 9px;
-
-          background:
-            rgba(22,142,255,.09);
-
-          color: #168EFF;
-
-          font-size: 16px;
-        }
-
-        .document-card {
-          display: flex;
-          align-items: center;
-
-          gap: 14px;
-
-          padding:
-            13px;
-
-          background:
-            rgba(8,30,56,.8);
-
-          border:
-            1px solid
-            rgba(22,142,255,.12);
-
-          border-radius:
-            12px;
-
-          margin-bottom:
-            15px;
-        }
-
-        .pdf-icon {
-          width: 54px;
-          height: 64px;
-
-          flex-shrink: 0;
-
-          border-radius: 8px;
-
-          background: #F8FAFC;
-
+        .heroBars {
+          position: absolute;
+          left: 18px;
+          bottom: 17px;
+          width: 42px;
+          height: 42px;
           display: flex;
           align-items: flex-end;
+          gap: 4px;
+          padding: 7px;
+          border-radius: 13px;
+          background: rgba(225, 238, 255, 0.9);
+        }
+
+        .heroBars span {
+          width: 6px;
+          border-radius: 4px 4px 1px 1px;
+          background: #397ee9;
+        }
+
+        .heroBars span:nth-child(1) {
+          height: 12px;
+        }
+
+        .heroBars span:nth-child(2) {
+          height: 20px;
+        }
+
+        .heroBars span:nth-child(3) {
+          height: 27px;
+        }
+
+        .heroAlert {
+          position: absolute;
+          right: 6px;
+          bottom: 2px;
+          width: 31px;
+          height: 31px;
+          border-radius: 9px;
+          background: #fff0d5;
+          color: #ec8c00;
+          display: flex;
+          align-items: center;
           justify-content: center;
+          box-shadow:
+            0 7px 15px
+            rgba(197, 130, 27, 0.14);
+        }
 
-          position: relative;
+        /* ======================================================
+           PRIMARY GRID
+           ====================================================== */
 
+        .primaryGrid {
+          display: grid;
+          grid-template-columns:
+            minmax(0, 1fr)
+            300px;
+          gap: 14px;
+          margin-top: 15px;
+        }
+
+        .leftColumn,
+        .rightColumn {
+          min-width: 0;
+        }
+
+        .card {
+          background: #ffffff;
+          border: 1px solid #e3eaf3;
+          border-radius: 11px;
+          box-shadow:
+            0 4px 15px
+            rgba(41, 74, 111, 0.025);
+        }
+
+        /* ======================================================
+           SUMMARY
+           ====================================================== */
+
+        .summaryCard {
+          padding: 17px;
+        }
+
+        .sectionHeader {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+        }
+
+        .sectionHeaderIcon {
+          width: 28px;
+          height: 28px;
+          border-radius: 7px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .blueIcon {
+          background: #edf5ff;
+          color: #1268f3;
+        }
+
+        .sectionHeader h2,
+        .card h2 {
+          margin: 0;
+          color: #123b87;
+          font-size: 12px;
+          font-weight: 800;
+          letter-spacing: 0.1px;
+        }
+
+        .summaryText {
+          margin: 12px 0 0;
+          color: #4e607b;
+          font-size: 10px;
+          line-height: 1.7;
+        }
+
+        .assessment {
+          margin-top: 10px;
+          color: #72829a;
+          font-size: 9px;
+        }
+
+        .assessment-low {
+          color: #159653;
+        }
+
+        .assessment-medium {
+          color: #d48900;
+        }
+
+        .assessment-high {
+          color: #d43737;
+        }
+
+        .assessment-incomplete {
+          color: #e05d00;
+        }
+
+        /* ======================================================
+           QUICK RESULT
+           ====================================================== */
+
+        .quickResultCard {
+          margin-top: 14px;
           overflow: hidden;
         }
 
-        .pdf-fold {
-          width: 100%;
-          padding:
-            7px 0;
-
-          background:
-            #DC2626;
-
-          color: white;
-
-          text-align: center;
-
-          font-size: 10px;
-          font-weight: 900;
-        }
-
-        .document-main {
-          min-width: 0;
-          flex: 1;
-        }
-
-        .document-title-row {
+        .cardTopLine {
           display: flex;
+          align-items: center;
           justify-content: space-between;
-
-          gap: 8px;
-          align-items: flex-start;
+          padding: 13px 16px;
+          border-bottom: 1px solid #edf1f6;
         }
 
-        .document-title-row h4 {
-          margin: 0;
-
-          color: #E2E8F0;
-
-          font-size: 12px;
-
-          word-break:
-            break-word;
-        }
-
-        .document-status {
-          flex-shrink: 0;
-
-          padding:
-            4px 7px;
-
-          border-radius:
-            999px;
-
-          background:
-            rgba(250,204,21,.08);
-
-          color: #FACC15;
-
+        .verificationType {
+          color: #1268f3;
           font-size: 8px;
+          font-weight: 700;
+        }
+
+        .quickGrid {
+          display: grid;
+          grid-template-columns:
+            repeat(4, 1fr);
+        }
+
+        .quickItem {
+          min-height: 88px;
+          border-right: 1px solid #edf1f6;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+        }
+
+        .quickItem:last-child {
+          border-right: none;
+        }
+
+        .quickItem > span {
+          color: #7d8aa0;
+          font-size: 8px;
+          margin-bottom: 7px;
+        }
+
+        .quickItem > strong {
+          font-size: 14px;
           font-weight: 800;
         }
 
-        .document-status.verified {
-          background:
-            rgba(53,208,127,.08);
-
-          color: #35D07F;
+        .riskValue.incomplete {
+          color: #e68b00;
         }
 
-        .document-type {
-          margin:
-            5px 0 0;
-
-          color: #64748B;
-
-          font-size: 9px;
+        .riskValue.low {
+          color: #159653;
         }
 
-        .document-details {
-          display: grid;
-          gap: 0;
+        .riskValue.medium {
+          color: #d48900;
         }
 
-        .document-details > div {
-          display: flex;
-          justify-content: space-between;
-
-          gap: 15px;
-
-          padding:
-            11px 0;
-
-          border-bottom:
-            1px solid
-            rgba(255,255,255,.05);
+        .riskValue.high {
+          color: #d43737;
         }
 
-        .document-details span {
-          color: #64748B;
-          font-size: 9px;
+        .blueValue {
+          color: #1268f3;
         }
 
-        .document-details strong {
-          color: #CBD5E1;
-          font-size: 9px;
-          text-align: right;
-          word-break: break-word;
+        .orangeValue {
+          color: #e34c22;
         }
 
-        .document-preview-button {
-          width: 100%;
-
-          margin-top:
-            18px;
-
-          padding:
-            12px;
-
-          border-radius:
-            10px;
-
-          background:
-            rgba(22,142,255,.08);
-
-          border:
-            1px solid
-            rgba(22,142,255,.25);
-
-          color: #168EFF;
-
-          font-weight: 700;
-
-          cursor: pointer;
+        .greenValue {
+          color: #159653;
         }
 
-        .document-preview-button:disabled {
-          cursor: not-allowed;
-          color: #64748B;
-          background:
-            rgba(71,85,105,.08);
-          border-color:
-            rgba(71,85,105,.15);
-        }
-
-        /* -----------------------------------
-           ASSESSMENT
-        ----------------------------------- */
-
-        .assessment-panel {
-          display: grid;
-
-          grid-template-columns:
-            65px 1fr 280px;
-
-          gap: 20px;
-
-          align-items: center;
-
-          padding:
-            22px 25px;
-
-          margin-bottom:
-            20px;
-
-          border:
-            1px solid
-            rgba(22,142,255,.16);
-
-          border-radius:
-            16px;
-
-          background:
-            linear-gradient(
-              135deg,
-              rgba(6,29,53,.95),
-              rgba(3,17,33,.95)
-            );
-        }
-
-        .assessment-icon {
-          width: 54px;
-          height: 54px;
-
+        .quickIcon {
+          margin-top: 7px;
           display: flex;
           align-items: center;
           justify-content: center;
-
-          border-radius: 15px;
-
-          border:
-            2px solid
-            rgba(53,208,127,.4);
-
-          color: #35D07F;
-
-          font-size: 27px;
-          font-weight: 900;
-
-          background:
-            rgba(53,208,127,.06);
         }
 
-        .assessment-content h3 {
-          margin:
-            0 0 7px;
-
-          font-size: 15px;
+        .quickIcon.incomplete {
+          color: #e68b00;
         }
 
-        .assessment-content p {
+        .quickIcon.low {
+          color: #159653;
+        }
+
+        .quickIcon.medium,
+        .quickIcon.high {
+          color: #d43737;
+        }
+
+        .quickIcon.blue {
+          color: #6885ad;
+        }
+
+        .quickIcon.neutral {
+          color: #778ca9;
+        }
+
+        .confidenceBars {
+          display: flex;
+          align-items: flex-end;
+          gap: 3px;
+          height: 16px;
+          margin-top: 5px;
+        }
+
+        .confidenceBars span {
+          width: 4px;
+          border-radius: 3px;
+          background: #cdd9e8;
+        }
+
+        .confidenceBars span:nth-child(1) {
+          height: 5px;
+        }
+
+        .confidenceBars span:nth-child(2) {
+          height: 9px;
+        }
+
+        .confidenceBars span:nth-child(3) {
+          height: 13px;
+        }
+
+        .confidenceBars span:nth-child(4) {
+          height: 16px;
+        }
+
+        /* ======================================================
+           CHECKS
+           ====================================================== */
+
+        .checksCard {
+          margin-top: 14px;
+          overflow: hidden;
+        }
+
+        .checksHeader {
+          padding: 14px 16px;
+          border-bottom: 1px solid #edf1f6;
+        }
+
+        .checksHeader h2 {
+          margin-bottom: 4px;
+        }
+
+        .checksHeader p {
           margin: 0;
-
-          color: #94A3B8;
-
-          font-size: 11px;
-
-          line-height: 1.6;
+          color: #8492a7;
+          font-size: 8px;
         }
 
-        .assessment-content strong {
-          display: block;
-
-          margin-top: 7px;
-
-          color: #35D07F;
-
-          font-size: 10px;
+        .checksList {
+          padding: 0 14px;
         }
 
-        .assessment-outcome {
-          border-left:
-            1px solid
-            rgba(255,255,255,.07);
-
-          padding-left:
-            25px;
-        }
-
-        .assessment-outcome span {
-          display: block;
-
-          color: #64748B;
-
-          font-size: 9px;
-
-          margin-bottom:
-            5px;
-        }
-
-        .assessment-outcome strong {
-          display: block;
-
-          font-size: 15px;
-
-          margin-bottom:
-            4px;
-        }
-
-        .assessment-outcome small {
-          color: #718096;
-          font-size: 9px;
-        }
-
-        /* -----------------------------------
-           SECONDARY GRID
-        ----------------------------------- */
-
-        .secondary-grid {
-          display: grid;
-
-          grid-template-columns:
-            1fr 1fr;
-
-          gap: 20px;
-
-          margin-bottom:
-            20px;
-        }
-
-        .blockchain-panel,
-        .security-panel {
-          padding:
-            22px;
-        }
-
-        .info-row {
+        .checkRow {
+          min-height: 62px;
           display: flex;
-          justify-content: space-between;
-
-          gap: 20px;
-
-          padding:
-            12px 0;
-
-          border-bottom:
-            1px solid
-            rgba(255,255,255,.05);
+          align-items: center;
+          gap: 9px;
+          border-bottom: 1px solid #edf1f6;
         }
 
-        .info-row span {
-          color: #64748B;
-          font-size: 10px;
-        }
-
-        .info-row strong {
-          color: #CBD5E1;
-          font-size: 10px;
-        }
-
-        .blockchain-record {
-          margin:
-            18px 0;
-        }
-
-        .blockchain-record > span {
-          display: block;
-
-          color: #64748B;
-
-          font-size: 9px;
-
-          margin-bottom:
-            7px;
-        }
-
-        .blockchain-record > div {
-          padding:
-            12px;
-
-          border-radius:
-            9px;
-
-          background:
-            #071A31;
-
-          color: #94A3B8;
-
-          font-size: 10px;
-
-          overflow-x:
-            auto;
-        }
-
-        .outline-button {
-          padding:
-            11px 16px;
-
-          border-radius:
-            9px;
-
-          background:
-            rgba(22,142,255,.08);
-
-          border:
-            1px solid
-            rgba(22,142,255,.25);
-
-          color: #168EFF;
-
-          cursor: pointer;
-
-          font-weight: 700;
-        }
-
-        .security-item {
-          display: flex;
-
-          gap: 12px;
-
-          padding:
-            12px 0;
-
-          border-bottom:
-            1px solid
-            rgba(255,255,255,.05);
-        }
-
-        .security-item:last-child {
+        .checkRow:last-child {
           border-bottom: none;
         }
 
-        .security-check {
-          width: 28px;
-          height: 28px;
-
+        .checkStatus {
+          width: 31px;
+          height: 31px;
+          border-radius: 50%;
           flex-shrink: 0;
-
           display: flex;
           align-items: center;
           justify-content: center;
-
-          border-radius: 8px;
-
-          color: #35D07F;
-
-          background:
-            rgba(53,208,127,.08);
         }
 
-        .security-item strong {
-          display: block;
-
-          color: #CBD5E1;
-
-          font-size: 11px;
-
-          margin-bottom:
-            4px;
+        .checkStatus.passed {
+          color: #1268f3;
+          background: #eef5ff;
         }
 
-        .security-item p {
-          margin: 0;
-
-          color: #64748B;
-
-          font-size: 9px;
-
-          line-height: 1.5;
+        .checkStatus.review {
+          color: #dc8d00;
+          background: #fff5df;
         }
 
-        /* -----------------------------------
-           ACTIONS
-        ----------------------------------- */
-
-        .actions-section {
-          display: grid;
-
-          grid-template-columns:
-            1fr 1fr 1.15fr;
-
-          gap: 14px;
-
-          margin-bottom:
-            18px;
+        .checkStatus.not_assessed {
+          color: #1268f3;
+          background: #eef5ff;
         }
 
-        .action-card {
-          min-height: 82px;
-
+        .checkInfo {
+          flex: 1;
+          min-width: 0;
           display: flex;
-          align-items: center;
-
-          gap: 14px;
-
-          padding:
-            16px 18px;
-
-          border-radius:
-            12px;
-
-          background:
-            rgba(5,24,47,.90);
-
-          border:
-            1px solid
-            rgba(22,142,255,.25);
-
-          color: #FFFFFF;
-
-          cursor: pointer;
-
-          text-align: left;
-
-          transition:
-            transform .2s ease,
-            border-color .2s ease;
+          flex-direction: column;
+          gap: 3px;
         }
 
-        .action-card:hover {
-          transform:
-            translateY(-2px);
-
-          border-color:
-            rgba(22,142,255,.55);
-        }
-
-        .action-icon {
-          width: 42px;
-          height: 42px;
-
-          flex-shrink: 0;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 10px;
-
-          background:
-            rgba(22,142,255,.10);
-
-          color: #168EFF;
-
-          font-size: 20px;
-        }
-
-        .action-card strong {
-          display: block;
-
-          font-size: 12px;
-
-          margin-bottom:
-            5px;
-        }
-
-        .action-card small {
-          display: block;
-
-          color: #64748B;
-
-          font-size: 9px;
-        }
-
-        .action-card.primary-action {
-          background:
-            linear-gradient(
-              90deg,
-              #1268E8,
-              #168EFF
-            );
-
-          border: none;
-        }
-
-        .primary-action .action-icon {
-          background:
-            rgba(255,255,255,.13);
-
-          color: white;
-        }
-
-        .primary-action small {
-          color:
-            rgba(255,255,255,.72);
-        }
-
-        .primary-action > b {
-          margin-left: auto;
-          font-size: 22px;
-        }
-
-        /* -----------------------------------
-           SECURITY STRIP
-        ----------------------------------- */
-
-        .security-strip {
-          display: flex;
-
-          align-items: center;
-          justify-content: center;
-
-          gap: 28px;
-
-          flex-wrap: wrap;
-
-          padding:
-            15px 18px;
-
-          border:
-            1px solid
-            rgba(22,142,255,.12);
-
-          border-radius:
-            12px;
-
-          background:
-            rgba(4,20,38,.72);
-
-          color: #64748B;
-
-          font-size: 9px;
-
-          margin-bottom:
-            20px;
-        }
-
-        .security-strip div {
-          color: #94A3B8;
-        }
-
-        /* -----------------------------------
-           FOOTER
-        ----------------------------------- */
-
-        .result-footer {
-          display: grid;
-
-          grid-template-columns:
-            1fr 1fr 1fr;
-
-          align-items: center;
-
-          gap: 25px;
-
-          padding:
-            25px 5px 0;
-
-          border-top:
-            1px solid
-            rgba(255,255,255,.07);
-        }
-
-        .footer-brand strong {
-          display: block;
-
-          font-size: 15px;
-        }
-
-        .footer-brand small {
-          display: block;
-
-          margin-top:
-            4px;
-
-          color: #64748B;
-
-          font-size: 9px;
-        }
-
-        .footer-links {
-          display: flex;
-
-          justify-content: center;
-
-          gap: 22px;
-
-          color: #64748B;
-
+        .checkInfo strong {
+          color: #172a4c;
           font-size: 10px;
-
-          flex-wrap: wrap;
+          font-weight: 750;
         }
 
-        .footer-links span {
+        .checkInfo span {
+          max-width: 380px;
+          color: #7a899f;
+          font-size: 8px;
+          line-height: 1.45;
+        }
+
+        .checkResult {
+          flex-shrink: 0;
+          padding: 6px 9px;
+          border-radius: 7px;
+          font-size: 8px;
+          font-weight: 700;
+        }
+
+        .checkResult.passed {
+          color: #159653;
+          background: #eaf8ef;
+        }
+
+        .checkResult.review {
+          color: #d28700;
+          background: #fff3d5;
+        }
+
+        .checkResult.not_assessed {
+          color: #718097;
+          background: #f0f3f7;
+        }
+
+        .checksFooter {
+          padding: 10px;
+          border-top: 1px solid #edf1f6;
+          text-align: center;
+          color: #1268f3;
+          background: #f8fbff;
+          font-size: 8px;
+          font-weight: 700;
+        }
+
+        /* ======================================================
+           RIGHT OVERVIEW
+           ====================================================== */
+
+        .overviewCard {
+          padding: 17px;
+        }
+
+        .scoreArea {
+          display: flex;
+          align-items: center;
+          gap: 13px;
+          padding: 17px 0 13px;
+        }
+
+        .scoreRing {
+          width: 72px;
+          height: 72px;
+          border-radius: 50%;
+          background:
+            conic-gradient(
+              #c8daf9 0deg,
+              #e6eefb 80deg,
+              #edf2fa 360deg
+            );
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+        }
+
+        .scoreRing::before {
+          content: "";
+          position: absolute;
+          inset: 6px;
+          border-radius: 50%;
+          background: #ffffff;
+        }
+
+        .scoreRingInner {
+          position: relative;
+          z-index: 2;
+          width: 47px;
+          height: 47px;
+          border-radius: 50%;
+          background: #eef5ff;
+          color: #1268f3;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .scoreArea > div:last-child {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+
+        .scoreArea strong {
+          color: #101f49;
+          font-size: 28px;
+          line-height: 1;
+        }
+
+        .scoreArea span {
+          color: #556782;
+          font-size: 9px;
+        }
+
+        .overviewRows {
+          border-top: 1px solid #edf1f6;
+        }
+
+        .overviewRow {
+          min-height: 47px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid #edf1f6;
+          font-size: 8px;
+        }
+
+        .overviewRow > span {
+          color: #63738b;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .overviewRow > strong {
+          color: #152849;
+          font-size: 9px;
+        }
+
+        .overviewRowIcon {
+          color: #6d87ab;
+          font-size: 14px;
+        }
+
+        .overviewRisk.incomplete {
+          color: #718096;
+        }
+
+        .overviewRisk.low {
+          color: #159653;
+        }
+
+        .overviewRisk.medium {
+          color: #d48900;
+        }
+
+        .overviewRisk.high {
+          color: #d43737;
+        }
+
+        .overviewType {
+          height: 37px;
+          margin-top: 10px;
+          border-radius: 7px;
+          background: #f2f6fc;
+          color: #1268f3;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 0 10px;
+          font-size: 8px;
+          font-weight: 700;
+        }
+
+        /* ======================================================
+           DETAILS
+           ====================================================== */
+
+        .detailsCard {
+          margin-top: 14px;
+          padding: 17px;
+        }
+
+        .detailsCard h2 {
+          margin-bottom: 9px;
+        }
+
+        .detailRow {
+          min-height: 43px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          border-bottom: 1px solid #edf1f6;
+        }
+
+        .detailRow span {
+          color: #73839b;
+          font-size: 8px;
+        }
+
+        .detailRow strong {
+          color: #263754;
+          font-size: 8px;
+          text-align: right;
+        }
+
+        .detailRisk.incomplete {
+          color: #e05d00;
+        }
+
+        .detailRisk.low {
+          color: #159653;
+        }
+
+        .detailRisk.medium {
+          color: #d48900;
+        }
+
+        .detailRisk.high {
+          color: #d43737;
+        }
+
+        .actionStack {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-top: 14px;
+        }
+
+        .actionStack button {
+          height: 39px;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          font-size: 8px;
+          font-weight: 800;
           cursor: pointer;
         }
 
-        .copyright {
-          text-align: right;
-
-          color: #64748B;
-
-          font-size: 9px;
-
-          line-height: 1.6;
+        .downloadButton {
+          border: none;
+          background: #1268f3;
+          color: #ffffff;
+          box-shadow:
+            0 7px 16px
+            rgba(18, 104, 243, 0.15);
         }
 
-        /* -----------------------------------
-           LOADING
-        ----------------------------------- */
+        .shareButton {
+          border: 1px solid #b9cde9;
+          background: #ffffff;
+          color: #1268f3;
+        }
 
-        .loading-page,
-        .error-page {
+        .securityNotice {
+          margin-top: 14px;
+          padding: 11px;
+          border-radius: 7px;
+          background: #f0f8f7;
           display: flex;
-          align-items: center;
-          justify-content: center;
-
-          padding: 30px;
+          gap: 8px;
         }
 
-        .loading-box,
-        .error-box {
-          width: 100%;
-          max-width: 520px;
-
-          padding: 45px 30px;
-
-          text-align: center;
-
-          border:
-            1px solid
-            rgba(22,142,255,.16);
-
-          border-radius:
-            20px;
-
-          background:
-            rgba(5,24,45,.92);
+        .securityLock {
+          color: #159653;
+          font-size: 16px;
         }
 
-        .loading-logo {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-
-          gap: 12px;
-
-          margin-bottom:
-            28px;
+        .securityNotice strong {
+          display: block;
+          color: #25806a;
+          font-size: 8px;
+          margin-bottom: 3px;
         }
 
-        .loading-spinner {
-          width: 48px;
-          height: 48px;
-
-          margin:
-            0 auto 22px;
-
-          border-radius: 50%;
-
-          border:
-            3px solid
-            rgba(22,142,255,.15);
-
-          border-top-color:
-            #168EFF;
-
-          animation:
-            spin 1s linear infinite;
-        }
-
-        .loading-box h2 {
-          margin:
-            0 0 8px;
-
-          font-size: 18px;
-        }
-
-        .loading-box p {
+        .securityNotice p {
           margin: 0;
+          color: #657c7b;
+          font-size: 7px;
+          line-height: 1.55;
+        }
 
-          color: #64748B;
+        /* ======================================================
+           BOTTOM INFO
+           ====================================================== */
 
+        .bottomInfoGrid {
+          display: grid;
+          grid-template-columns:
+            1fr
+            1fr;
+          gap: 14px;
+          margin-top: 14px;
+        }
+
+        .recommendationCard,
+        .notIncludedCard {
+          min-height: 98px;
+          padding: 14px;
+          border-radius: 10px;
+          display: flex;
+          gap: 10px;
+          align-items: flex-start;
+        }
+
+        .recommendationCard.passed {
+          background: #f1f7ff;
+          border: 1px solid #d9e8fc;
+        }
+
+        .recommendationCard.review {
+          background: #fffaf0;
+          border: 1px solid #f0dfbb;
+        }
+
+        .recommendationCard.high {
+          background: #fff5f5;
+          border: 1px solid #efd0d0;
+        }
+
+        .recommendationCard.not_assessed {
+          background: #f7f9fc;
+          border: 1px solid #e1e8f0;
+        }
+
+        .recommendationIcon,
+        .scopeIcon {
+          width: 29px;
+          height: 29px;
+          flex-shrink: 0;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .recommendationIcon.passed {
+          background: #e4f0ff;
+          color: #1268f3;
+        }
+
+        .recommendationIcon.review {
+          background: #fff1ce;
+          color: #d78a00;
+        }
+
+        .recommendationIcon.high {
+          background: #ffe4e4;
+          color: #d43737;
+        }
+
+        .recommendationIcon.not_assessed {
+          background: #eef2f6;
+          color: #718096;
+        }
+
+        .recommendationCard strong,
+        .notIncludedCard strong {
+          display: block;
+          color: #172a4d;
+          font-size: 9px;
+          margin-bottom: 5px;
+        }
+
+        .recommendationCard p,
+        .notIncludedCard p {
+          margin: 0;
+          color: #71819a;
+          font-size: 8px;
+          line-height: 1.55;
+        }
+
+        .notIncludedCard {
+          background: #fffaf0;
+          border: 1px solid #f0dfbb;
+        }
+
+        .scopeIcon {
+          background: #fff0cf;
+          color: #dc8c00;
+        }
+
+        .notIncludedCard strong {
+          color: #9b6a0a;
+        }
+
+        .notIncludedCard p {
+          color: #816f48;
+        }
+
+        /* ======================================================
+           UPGRADE
+           ====================================================== */
+
+        .upgradeCard {
+          margin-top: 14px;
+          min-height: 94px;
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          padding: 15px 18px;
+          border-radius: 10px;
+          border: 1px solid #d9e6f8;
+          background:
+            linear-gradient(
+              100deg,
+              #f1f7ff,
+              #f7fbff
+            );
+        }
+
+        .upgradeCard.medium {
+          background:
+            linear-gradient(
+              100deg,
+              #fffaf0,
+              #fffdf8
+            );
+          border-color: #f0dfbb;
+        }
+
+        .upgradeCard.high {
+          background:
+            linear-gradient(
+              100deg,
+              #fff4f4,
+              #fffafa
+            );
+          border-color: #efd0d0;
+        }
+
+        .upgradeCard.incomplete {
+          background:
+            linear-gradient(
+              100deg,
+              #f2f7ff,
+              #f7fbff
+            );
+        }
+
+        .upgradeVisual {
+          width: 76px;
+          height: 63px;
+          flex-shrink: 0;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .upgradeVisual::before {
+          content: "";
+          position: absolute;
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          background: #dceaff;
+        }
+
+        .upgradeClipboard {
+          position: relative;
+          z-index: 2;
+          width: 34px;
+          height: 44px;
+          border-radius: 4px;
+          background: #ffffff;
+          border: 2px solid #9abcf0;
+          padding: 8px 5px;
+          box-shadow:
+            0 5px 10px
+            rgba(52, 100, 173, 0.13);
+        }
+
+        .upgradeClipboard::before {
+          content: "";
+          position: absolute;
+          width: 14px;
+          height: 6px;
+          border-radius: 3px;
+          background: #8bb3ee;
+          top: -5px;
+          left: 8px;
+        }
+
+        .upgradeClipboard span {
+          display: block;
+          width: 20px;
+          height: 3px;
+          background: #d7e5f8;
+          border-radius: 3px;
+          margin-bottom: 5px;
+        }
+
+        .upgradeText {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+
+        .upgradeText strong {
+          color: #152a4d;
           font-size: 12px;
         }
 
-        @keyframes spin {
-          to {
-            transform:
-              rotate(360deg);
-          }
+        .upgradeText span {
+          color: #657995;
+          font-size: 8px;
+          line-height: 1.55;
+          max-width: 550px;
         }
 
-        /* -----------------------------------
-           ERROR
-        ----------------------------------- */
-
-        .error-icon {
-          width: 64px;
-          height: 64px;
-
-          margin:
-            0 auto 18px;
-
+        .upgradeCard > button {
+          min-width: 115px;
+          height: 39px;
+          border: none;
+          border-radius: 6px;
+          background: #1268f3;
+          color: #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
-
-          border-radius: 50%;
-
-          background:
-            rgba(248,113,113,.08);
-
-          border:
-            1px solid
-            rgba(248,113,113,.25);
-
-          color: #F87171;
-
-          font-size: 30px;
-          font-weight: 900;
-        }
-
-        .error-label {
-          color: #F87171;
-
-          font-size: 11px;
-
+          gap: 10px;
+          font-size: 9px;
           font-weight: 800;
-
-          letter-spacing:
-            .5px;
-
-          margin-bottom:
-            8px;
-        }
-
-        .error-box h2 {
-          margin:
-            0 0 12px;
-        }
-
-        .error-box p {
-          color: #94A3B8;
-
-          line-height: 1.7;
-
-          font-size: 13px;
-        }
-
-        .primary-button {
-          margin-top:
-            15px;
-
-          padding:
-            13px 20px;
-
-          border: none;
-
-          border-radius:
-            10px;
-
-          background:
-            linear-gradient(
-              90deg,
-              #1268E8,
-              #168EFF
-            );
-
-          color: white;
-
-          font-weight: 700;
-
           cursor: pointer;
         }
 
-        /* -----------------------------------
-           TABLET
-        ----------------------------------- */
+        .upgradeCard.medium > button {
+          background: #dd9100;
+        }
 
-        @media (max-width: 1000px) {
+        .upgradeCard.high > button {
+          background: #d43737;
+        }
 
-          .score-overview {
-            grid-template-columns:
-              1fr 1fr;
+        .upgradeCard.incomplete > button {
+          background: #1268f3;
+        }
 
-            gap: 15px;
-          }
+        /* ======================================================
+           DISCLAIMER
+           ====================================================== */
 
-          .metric-divider {
+        .reportDisclaimer {
+          max-width: 820px;
+          margin: 17px auto 0;
+          color: #8794a7;
+          font-size: 8px;
+          line-height: 1.6;
+          text-align: center;
+        }
+
+        /* ======================================================
+           FOOTER
+           ====================================================== */
+
+        .desktopFooter {
+          min-height: 58px;
+          border-top: 1px solid #e7edf5;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 35px;
+          color: #7c899c;
+          font-size: 8px;
+          background: #ffffff;
+        }
+
+        .desktopFooter div {
+          display: flex;
+          gap: 24px;
+        }
+
+        .desktopFooter button {
+          border: none;
+          background: transparent;
+          color: #7c899c;
+          font-size: 8px;
+          cursor: pointer;
+        }
+
+        /* ======================================================
+           MOBILE NAV
+           ====================================================== */
+
+        .bottomNav {
+          display: none;
+        }
+
+        /* ======================================================
+           MOBILE
+           ====================================================== */
+
+        @media (max-width: 850px) {
+          .desktopSidebar {
             display: none;
           }
 
-          .metric-panel {
-            border:
-              1px solid
-              rgba(255,255,255,.05);
+          .mainArea {
+            margin-left: 0;
+            padding-bottom: 72px;
+          }
 
-            border-radius:
-              12px;
+          .topHeader {
+            height: 60px;
+            padding: 0 15px;
+          }
 
+          .desktopBreadcrumb,
+          .userSummary {
+            display: none;
+          }
+
+          .mobileBrand {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #17284c;
+            font-size: 16px;
+            font-weight: 800;
+          }
+
+          .mobileBrand .brandMark {
+            width: 24px;
+            height: 24px;
+            font-size: 22px;
+          }
+
+          .headerRight {
+            margin-left: auto;
+          }
+
+          .mobileBreadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 13px 15px 0;
+            font-size: 9px;
+            color: #71819a;
+          }
+
+          .mobileBreadcrumb button {
+            border: none;
+            background: transparent;
+            padding: 0;
+            color: #71819a;
+            font-size: 9px;
+          }
+
+          .mobileBreadcrumb strong {
+            color: #17284c;
+          }
+
+          .content {
             padding:
-              15px;
+              12px
+              12px
+              20px;
           }
 
-          .main-grid {
-            grid-template-columns:
-              1fr;
+          .resultHero {
+            min-height: 0;
+            padding: 18px 15px;
+            gap: 12px;
+            align-items: flex-start;
           }
 
-          .assessment-panel {
-            grid-template-columns:
-              55px 1fr;
+          .resultHeroIcon {
+            width: 64px;
+            height: 64px;
           }
 
-          .assessment-outcome {
-            grid-column:
-              1 / -1;
-
-            border-left: none;
-
-            border-top:
-              1px solid
-              rgba(255,255,255,.07);
-
-            padding:
-              15px 0 0;
-          }
-
-          .secondary-grid {
-            grid-template-columns:
-              1fr;
-          }
-
-          .result-footer {
-            grid-template-columns:
-              1fr;
-
-            text-align: center;
-          }
-
-          .footer-brand {
-            justify-content: center;
-          }
-
-          .copyright {
-            text-align: center;
-          }
-        }
-
-        /* -----------------------------------
-           MOBILE
-        ----------------------------------- */
-
-        @media (max-width: 700px) {
-
-          .result-page {
-            padding:
-              0 12px 40px;
-          }
-
-          .top-nav {
-            padding:
-              15px 0;
-          }
-
-          .brand-name {
-            font-size: 18px;
-          }
-
-          .brand-shield {
-            width: 36px;
+          .resultHeroIcon svg {
+            width: 40px;
             height: 40px;
           }
 
-          .nav-actions {
-            width: 100%;
+          .resultHero h1 {
+            font-size: 22px;
+            letter-spacing: -0.4px;
           }
 
-          .nav-button {
-            flex: 1;
+          .resultHero p {
+            font-size: 9px;
+            line-height: 1.55;
           }
 
-          .breadcrumb-row {
-            margin-top:
-              18px;
+          .eyebrow {
+            font-size: 7px;
+            padding: 5px 7px;
           }
 
-          .secure-badge {
-            width: 100%;
-            justify-content:
-              center;
+          .statusPill {
+            font-size: 7px;
+            padding: 4px 6px;
           }
 
-          .page-heading {
-            margin-top:
-              25px;
-          }
-
-          .page-heading h1 {
-            font-size:
-              34px;
-          }
-
-          .report-meta {
-            width: 100%;
-          }
-
-          .meta-card {
-            flex: 1;
-            min-width: 0;
-          }
-
-          .auth-banner {
-            grid-template-columns:
-              1fr;
-
-            text-align:
-              center;
-          }
-
-          .auth-icon-panel {
-            min-height:
-              135px;
-          }
-
-          .auth-content {
-            padding:
-              25px 18px;
-          }
-
-          .auth-content p {
-            margin-left:
-              auto;
-            margin-right:
-              auto;
-          }
-
-          .auth-decoration {
+          .heroIllustration {
             display: none;
           }
 
-          .score-overview {
-            grid-template-columns:
-              1fr;
-
-            padding:
-              20px 15px;
-          }
-
-          .metric-panel {
-            justify-content:
-              center;
-          }
-
-          .checks-list {
-            padding:
-              5px 9px 10px;
-          }
-
-          .check-item {
-            align-items:
-              flex-start;
-
-            flex-direction:
-              column;
-          }
-
-          .check-left {
-            width: 100%;
-          }
-
-          .check-result {
-            width: 100%;
-            min-width: 0;
-          }
-
-          .assessment-panel {
-            grid-template-columns:
-              1fr;
-
-            text-align:
-              center;
-          }
-
-          .assessment-icon {
-            margin:
-              0 auto;
-          }
-
-          .assessment-outcome {
-            text-align:
-              center;
-          }
-
-          .actions-section {
-            grid-template-columns:
-              1fr;
-          }
-
-          .security-strip {
-            justify-content:
-              flex-start;
+          .primaryGrid {
+            display: flex;
+            flex-direction: column;
             gap: 12px;
+            margin-top: 12px;
           }
 
-          .footer-links {
-            gap: 12px;
+          .rightColumn {
+            display: contents;
+          }
+
+          .overviewCard {
+            order: 0;
+          }
+
+          .leftColumn {
+            display: contents;
+          }
+
+          .summaryCard {
+            order: 1;
+          }
+
+          .quickResultCard {
+            order: 2;
+          }
+
+          .checksCard {
+            order: 3;
+          }
+
+          .detailsCard {
+            order: 4;
+          }
+
+          .bottomInfoGrid {
+            order: 5;
+          }
+
+          .upgradeCard {
+            order: 6;
+          }
+
+          .bottomInfoGrid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 12px;
+          }
+
+          .recommendationCard,
+          .notIncludedCard {
+            min-height: auto;
+          }
+
+          .upgradeCard {
+            align-items: center;
+            padding: 13px;
+            gap: 9px;
+          }
+
+          .upgradeVisual {
+            width: 49px;
+            height: 49px;
+          }
+
+          .upgradeVisual::before {
+            width: 47px;
+            height: 47px;
+          }
+
+          .upgradeClipboard {
+            width: 25px;
+            height: 33px;
+            padding: 5px 3px;
+          }
+
+          .upgradeClipboard::before {
+            width: 10px;
+            height: 4px;
+            top: -4px;
+            left: 5px;
+          }
+
+          .upgradeClipboard span {
+            width: 15px;
+            height: 2px;
+            margin-bottom: 4px;
+          }
+
+          .upgradeText strong {
+            font-size: 10px;
+          }
+
+          .upgradeText span {
+            font-size: 7px;
+          }
+
+          .upgradeCard > button {
+            min-width: 79px;
+            height: 34px;
+            padding: 0 7px;
+            font-size: 7px;
+          }
+
+          .desktopFooter {
+            display: none;
+          }
+
+          .bottomNav {
+            position: fixed;
+            display: grid;
+            grid-template-columns:
+              repeat(5, 1fr);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 67px;
+            z-index: 100;
+            background: #12233e;
+            border-top: 1px solid #263b59;
+            box-shadow:
+              0 -5px 20px
+              rgba(0, 0, 0, 0.12);
+          }
+
+          .bottomNav button {
+            border: none;
+            background: transparent;
+            color: #92a1b8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+          }
+
+          .bottomNav button.active {
+            color: #3f9aff;
+          }
+
+          .bottomNav small {
+            font-size: 7px;
+          }
+
+          .bottomNav button.active small {
+            font-weight: 800;
           }
         }
 
-        @media (max-width: 430px) {
+        /* ======================================================
+           SMALL MOBILE
+           ====================================================== */
 
-          .page-heading h1 {
-            font-size:
-              29px;
-          }
-
-          .brand-subtitle {
-            font-size:
-              9px;
-          }
-
-          .report-meta {
-            flex-direction:
-              column;
-          }
-
-          .meta-card {
-            width: 100%;
-          }
-
-          .auth-content h2 {
-            font-size:
-              28px;
-          }
-
-          .score-ring {
-            width: 120px;
-            height: 120px;
-          }
-
-          .score-inner strong {
-            font-size:
-              32px;
-          }
-
-          .check-left {
-            align-items:
-              flex-start;
-          }
-
-          .check-number {
-            display: none;
-          }
-
-          .document-title-row {
-            flex-direction:
-              column;
-          }
-
-          .document-details > div {
-            flex-direction:
-              column;
-
+        @media (max-width: 500px) {
+          .headerRight {
             gap: 4px;
           }
 
-          .document-details strong {
-            text-align:
-              left;
+          .content {
+            padding-left: 9px;
+            padding-right: 9px;
           }
 
-          .security-strip {
-            flex-direction:
-              column;
+          .resultHero {
+            padding: 15px 12px;
+            border-radius: 10px;
+          }
 
-            align-items:
-              flex-start;
+          .resultHeroIcon {
+            width: 55px;
+            height: 55px;
+          }
+
+          .resultHeroIcon svg {
+            width: 35px;
+            height: 35px;
+          }
+
+          .resultHero h1 {
+            font-size: 19px;
+          }
+
+          .resultHero p {
+            font-size: 8px;
+          }
+
+          .sectionHeader h2,
+          .card h2 {
+            font-size: 10px;
+          }
+
+          .summaryCard,
+          .overviewCard,
+          .detailsCard {
+            padding: 13px;
+          }
+
+          .summaryText {
+            font-size: 9px;
+          }
+
+          .quickGrid {
+            grid-template-columns:
+              repeat(2, 1fr);
+          }
+
+          .quickItem {
+            min-height: 82px;
+            border-bottom: 1px solid #edf1f6;
+          }
+
+          .quickItem:nth-child(2) {
+            border-right: none;
+          }
+
+          .quickItem:nth-child(3),
+          .quickItem:nth-child(4) {
+            border-bottom: none;
+          }
+
+          .quickItem > strong {
+            font-size: 13px;
+          }
+
+          .checkRow {
+            min-height: 67px;
+          }
+
+          .checkInfo strong {
+            font-size: 9px;
+          }
+
+          .checkInfo span {
+            font-size: 7px;
+          }
+
+          .checkResult {
+            display: none;
+          }
+
+          .detailsCard {
+            margin-top: 12px;
+          }
+
+          .detailRow {
+            min-height: 40px;
+          }
+
+          .upgradeText {
+            gap: 3px;
+          }
+
+          .upgradeCard > button {
+            min-width: 72px;
+          }
+
+          .overviewCard {
+            margin-top: 0;
+          }
+
+          .scoreArea strong {
+            font-size: 25px;
+          }
+
+          .bottomNav {
+            height: 64px;
+          }
+
+          .mainArea {
+            padding-bottom: 69px;
           }
         }
-
       `}</style>
     </main>
-  );
-}
-export default function ResultPage() {
-  return (
-    <Suspense fallback={<div>Loading verification result...</div>}>
-      <ResultPageContent />
-    </Suspense>
   );
 }

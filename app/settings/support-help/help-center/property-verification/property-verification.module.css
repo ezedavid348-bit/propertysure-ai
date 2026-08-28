@@ -1,0 +1,1008 @@
+/* =========================================================
+   PAGE
+========================================================= */
+
+.page {
+  min-height: 100vh;
+  width: 100%;
+
+  background: #ffffff;
+  color: #18253a;
+
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+.page button,
+.page input {
+  font-family: inherit;
+}
+
+
+/* =========================================================
+   TOP HEADER
+========================================================= */
+
+.topHeader {
+  width: 100%;
+  height: 88px;
+
+  padding: 18px 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-bottom: 1px solid #e7ebf0;
+
+  background: #ffffff;
+}
+
+.searchBox {
+  width: min(865px, calc(100% - 48px));
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 13px;
+
+  padding: 0 18px;
+
+  border: 1px solid #dce3eb;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 4px rgba(20, 40, 70, 0.025);
+}
+
+.searchIcon {
+  flex-shrink: 0;
+
+  color: #6d7d92;
+}
+
+.searchBox input {
+  width: 100%;
+  height: 100%;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #263852;
+
+  font-size: 14px;
+}
+
+.searchBox input::placeholder {
+  color: #718096;
+}
+
+
+/* =========================================================
+   MAIN LAYOUT
+========================================================= */
+
+.layout {
+  width: min(1240px, calc(100% - 80px));
+
+  margin: 0 auto;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    310px;
+
+  gap: 64px;
+
+  padding: 36px 0 60px;
+}
+
+
+/* =========================================================
+   ARTICLE
+========================================================= */
+
+.article {
+  min-width: 0;
+}
+
+.articleHeader h1 {
+  margin: 0;
+
+  color: #10213d;
+
+  font-size: 31px;
+  line-height: 1.15;
+
+  font-weight: 700;
+
+  letter-spacing: -0.6px;
+}
+
+.articleHeader > p {
+  margin: 12px 0 0;
+
+  color: #65758c;
+
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+.backButton {
+  margin-top: 22px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #0879df;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 8px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.backButton:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.divider {
+  width: 100%;
+  height: 1px;
+
+  margin: 26px 0;
+
+  background: #e5eaf0;
+}
+
+
+/* =========================================================
+   ARTICLE SECTION
+========================================================= */
+
+.articleSection {
+  display: grid;
+
+  grid-template-columns:
+    82px
+    minmax(0, 1fr);
+
+  gap: 24px;
+}
+
+.sectionIcon {
+  width: 62px;
+  height: 62px;
+
+  border-radius: 13px;
+
+  background: rgba(35, 135, 255, 0.12);
+
+  color: #0879df;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.sectionContent {
+  min-width: 0;
+}
+
+.sectionContent h2 {
+  margin: 2px 0 0;
+
+  color: #10213d;
+
+  font-size: 23px;
+  line-height: 1.25;
+
+  font-weight: 700;
+}
+
+.sectionContent p {
+  max-width: 720px;
+
+  margin: 13px 0 0;
+
+  color: #50617a;
+
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.sectionContent .intro {
+  margin-top: 17px;
+
+  color: #263852;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   CHECK LIST
+========================================================= */
+
+.checkList {
+  list-style: none;
+
+  margin: 9px 0 0;
+  padding: 0;
+}
+
+.checkList li {
+  min-height: 29px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  color: #52637b;
+
+  font-size: 12.5px;
+}
+
+.checkList li > span {
+  width: 17px;
+  height: 17px;
+
+  border-radius: 50%;
+
+  background: #e2f8ec;
+
+  color: #19a85b;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   TIP
+========================================================= */
+
+.tipBox {
+  max-width: 650px;
+
+  margin-top: 18px;
+
+  padding: 11px 16px;
+
+  border: 1px solid #ccebdc;
+  border-radius: 8px;
+
+  background: #f4fcf7;
+
+  color: #52687b;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.tipBox strong {
+  color: #263852;
+}
+
+.tipIcon {
+  color: #22a963;
+
+  display: flex;
+  align-items: center;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   BOTTOM ARTICLE NAVIGATION
+========================================================= */
+
+.bottomNavigation {
+  margin-top: 28px;
+
+  padding-top: 16px;
+
+  border-top: 1px solid #e5eaf0;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  gap: 15px;
+}
+
+
+/* =========================================================
+   PREVIOUS BOTTOM BUTTON
+========================================================= */
+
+.previousButton {
+  min-height: 62px;
+
+  padding: 11px 15px;
+
+  border: 1px solid #dfe6ee;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #0879df;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.previousButton:hover {
+  background: #f8fbff;
+
+  border-color: #b9d7f6;
+}
+
+.previousButton span {
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.previousButton small,
+.nextButton small {
+  font-size: 9px;
+
+  font-weight: 500;
+}
+
+.previousButton strong,
+.nextButton strong {
+  font-size: 11.5px;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   NEXT BOTTOM BUTTON
+========================================================= */
+
+.nextButton {
+  min-height: 62px;
+
+  padding: 11px 15px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: #0879df;
+
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.nextButton:hover {
+  background: #066bc5;
+
+  transform: translateY(-1px);
+}
+
+.nextButton span {
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.nextButton small {
+  opacity: 0.9;
+}
+
+.nextArrow {
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   RIGHT SIDEBAR
+========================================================= */
+
+.rightSidebar {
+  min-width: 0;
+}
+
+.sideCard {
+  width: 100%;
+
+  padding: 22px;
+
+  margin-bottom: 22px;
+
+  border: 1px solid #dfe6ee;
+  border-radius: 10px;
+
+  background: #ffffff;
+}
+
+.sideCard h3 {
+  margin: 0;
+
+  color: #18253a;
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   ARTICLE NAVIGATION
+========================================================= */
+
+.articleNav {
+  margin-top: 18px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+.articleNav button {
+  width: 100%;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #52627a;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  text-align: left;
+
+  font-size: 11.5px;
+  line-height: 1.35;
+
+  cursor: pointer;
+
+  transition: color 0.15s ease;
+}
+
+.articleNav button:hover {
+  color: #0879df;
+}
+
+.articleNav button > span {
+  width: 11px;
+  height: 11px;
+
+  border: 2px solid #b8c2ce;
+
+  border-radius: 50%;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   ACTIVE ARTICLE
+========================================================= */
+
+.articleNav .activeArticle {
+  color: #0879df;
+
+  font-weight: 600;
+}
+
+.articleNav .activeDot {
+  width: 12px;
+  height: 12px;
+
+  border: 0;
+
+  background: #0879df;
+}
+
+
+/* =========================================================
+   FEEDBACK
+========================================================= */
+
+.feedback {
+  margin-top: 18px;
+
+  display: flex;
+
+  gap: 12px;
+}
+
+.feedback button {
+  flex: 1;
+
+  height: 43px;
+
+  padding: 0 14px;
+
+  border: 1px solid #dce4ed;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #53637a;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.feedback button:first-child {
+  border-color: #cfe2fa;
+
+  color: #0879df;
+
+  background: #f7fbff;
+}
+
+.feedback button:hover {
+  border-color: #b9d7f6;
+
+  color: #0879df;
+
+  background: #f7fbff;
+}
+
+
+/* =========================================================
+   FEEDBACK SUCCESS
+========================================================= */
+
+.feedbackMessage {
+  min-height: 43px;
+
+  margin-top: 18px;
+
+  padding: 10px 12px;
+
+  border-radius: 8px;
+
+  background: #f1fbf5;
+
+  color: #168b51;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  font-size: 11px;
+  font-weight: 500;
+}
+
+
+/* =========================================================
+   SIDEBAR PREVIOUS ARTICLE
+========================================================= */
+
+.previousArticle {
+  width: 100%;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #65758a;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 9px;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.previousArticle:hover {
+  color: #0879df;
+}
+
+.previousArticle span,
+.previousDisabled span {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.previousArticle small,
+.previousDisabled small {
+  font-size: 10px;
+}
+
+.previousArticle strong,
+.previousDisabled strong {
+  font-size: 11px;
+
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   DISABLED PREVIOUS
+========================================================= */
+
+.previousDisabled {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 9px;
+
+  color: #9aa7b7;
+}
+
+
+/* =========================================================
+   SIDEBAR DIVIDER
+========================================================= */
+
+.sideDivider {
+  width: 100%;
+  height: 1px;
+
+  margin: 17px 0;
+
+  background: #e6ebf1;
+}
+
+
+/* =========================================================
+   SIDEBAR NEXT ARTICLE
+========================================================= */
+
+.nextArticle {
+  width: 100%;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #0879df;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.nextArticle:hover {
+  color: #066bc5;
+}
+
+.nextArticle span {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.nextArticle small {
+  font-size: 10px;
+
+  font-weight: 600;
+}
+
+.nextArticle strong {
+  font-size: 11px;
+
+  line-height: 1.4;
+
+  color: #0879df;
+}
+
+
+/* =========================================================
+   DISABLED NEXT
+========================================================= */
+
+.nextDisabled {
+  color: #9aa7b7;
+}
+
+.nextDisabled span {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.nextDisabled small {
+  font-size: 10px;
+}
+
+.nextDisabled strong {
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+  .layout {
+    width: min(920px, calc(100% - 40px));
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      280px;
+
+    gap: 32px;
+  }
+}
+
+
+/* =========================================================
+   TABLET / MOBILE
+========================================================= */
+
+@media (max-width: 900px) {
+  .layout {
+    width: min(760px, calc(100% - 36px));
+
+    grid-template-columns: 1fr;
+
+    gap: 30px;
+  }
+
+  .rightSidebar {
+    display: grid;
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+  }
+
+  .sideCard {
+    margin-bottom: 0;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+  .topHeader {
+    height: 72px;
+
+    padding: 12px 15px;
+  }
+
+  .searchBox {
+    width: 100%;
+
+    height: 46px;
+
+    padding: 0 13px;
+
+    gap: 9px;
+  }
+
+  .searchBox input {
+    font-size: 11px;
+  }
+
+  .layout {
+    width: 100%;
+
+    padding: 26px 15px 40px;
+
+    display: block;
+  }
+
+  .articleHeader h1 {
+    font-size: 28px;
+  }
+
+  .articleHeader > p {
+    font-size: 11px;
+  }
+
+  .backButton {
+    margin-top: 18px;
+
+    font-size: 11px;
+  }
+
+  .divider {
+    margin: 22px 0;
+  }
+
+  .articleSection {
+    grid-template-columns: 1fr;
+
+    gap: 15px;
+  }
+
+  .sectionIcon {
+    width: 55px;
+    height: 55px;
+  }
+
+  .sectionContent h2 {
+    font-size: 20px;
+  }
+
+  .sectionContent p {
+    font-size: 11px;
+
+    line-height: 1.7;
+  }
+
+  .checkList li {
+    font-size: 10.5px;
+  }
+
+  .tipBox {
+    font-size: 10px;
+
+    align-items: flex-start;
+  }
+
+  .bottomNavigation {
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+  }
+
+  .previousButton,
+  .nextButton {
+    width: 100%;
+  }
+
+  .rightSidebar {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 16px;
+
+    margin-top: 26px;
+  }
+
+  .sideCard {
+    padding: 18px;
+  }
+}
+
+
+/* =========================================================
+   SMALL PHONE
+========================================================= */
+
+@media (max-width: 380px) {
+  .layout {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .articleHeader h1 {
+    font-size: 26px;
+  }
+
+  .nextButton,
+  .previousButton {
+    min-height: 55px;
+  }
+
+  .nextButton strong,
+  .previousButton strong {
+    font-size: 10.5px;
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+.page button:focus-visible,
+.page input:focus-visible {
+  outline:
+    2px solid
+    rgba(8, 121, 223, 0.45);
+
+  outline-offset: 3px;
+}

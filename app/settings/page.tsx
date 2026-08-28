@@ -1,24 +1,37 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import Link from "next/link";
+import {
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import { useRouter } from "next/navigation";
 import styles from "./settings.module.css";
+import { supabase } from "../lib/supabase";
+
+/*
+============================================================
+ICON SYSTEM
+============================================================
+*/
 
 type IconName =
-  | "home"
-  | "history"
+  | "dashboard"
+  | "verify"
   | "properties"
-  | "shield"
-  | "database"
+  | "history"
+  | "fraud"
+  | "reports"
   | "account"
   | "settings"
-  | "grid"
   | "bell"
-  | "palette"
-  | "globe"
-  | "help"
-  | "logout"
-  | "user"
+  | "general"
+  | "security"
+  | "notifications"
+  | "appearance"
+  | "language"
+  | "privacy"
+  | "support"
   | "calendar"
   | "clock"
   | "ruler"
@@ -27,292 +40,224 @@ type IconName =
   | "trash"
   | "chevron"
   | "menu"
-  | "plus";
+  | "plus"
+  | "logout"
+  | "user";
 
 function Icon({
   name,
-  size = 20,
+  size,
+  className = "",
 }: {
   name: IconName;
   size?: number;
+  className?: string;
 }) {
-  const common = {
-    width: size,
-    height: size,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 1.8,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
+  const icons: Record<IconName, string> = {
+    dashboard: "▦",
+    verify: "⇧",
+    properties: "⌂",
+    history: "◷",
+    fraud: "◈",
+    reports: "▤",
+    account: "◯",
+    settings: "⚙",
+    bell: "🔔",
+
+    general: "▦",
+    security: "◈",
+    notifications: "🔔",
+    appearance: "◌",
+    language: "◎",
+    privacy: "▤",
+    support: "?",
+
+    calendar: "▣",
+    clock: "◷",
+    ruler: "◇",
+    refresh: "↻",
+    compact: "▣",
+    trash: "⌫",
+    chevron: "›",
+    menu: "☰",
+    plus: "+",
+    logout: "↪",
+    user: "◯",
   };
 
-  switch (name) {
-    case "home":
-      return (
-        <svg {...common}>
-          <path d="M3.5 10.5 12 3l8.5 7.5" />
-          <path d="M5.5 9.5V21h13V9.5" />
-          <path d="M9.5 21v-6h5v6" />
-        </svg>
-      );
-
-    case "history":
-      return (
-        <svg {...common}>
-          <path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" />
-          <path d="M3.5 4.5v5h5" />
-          <path d="M12 7.5v4.8l3.2 2" />
-        </svg>
-      );
-
-    case "properties":
-      return (
-        <svg {...common}>
-          <path d="M4 20V9.5L12 4l8 5.5V20" />
-          <path d="M8 20v-6h8v6" />
-          <path d="M9.5 10h5" />
-        </svg>
-      );
-
-    case "shield":
-      return (
-        <svg {...common}>
-          <path d="M12 3 20 6v5c0 5-3.2 8.4-8 10-4.8-1.6-8-5-8-10V6l8-3Z" />
-          <path d="m9 12 2 2 4-4" />
-        </svg>
-      );
-
-    case "database":
-      return (
-        <svg {...common}>
-          <ellipse cx="12" cy="5" rx="7" ry="3" />
-          <path d="M5 5v7c0 1.7 3.1 3 7 3s7-1.3 7-3V5" />
-          <path d="M5 12v7c0 1.7 3.1 3 7 3s7-1.3 7-3v-7" />
-        </svg>
-      );
-
-    case "account":
-      return (
-        <svg {...common}>
-          <circle cx="12" cy="8" r="3.2" />
-          <path d="M5 20c.9-3.3 3.2-5 7-5s6.1 1.7 7 5" />
-        </svg>
-      );
-
-    case "settings":
-      return (
-        <svg {...common}>
-          <path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Z" />
-          <path d="m19.4 15 .2.2a1.8 1.8 0 0 1-2.5 2.5l-.2-.2" />
-          <path d="m4.6 9-.2-.2a1.8 1.8 0 0 1 2.5-2.5l.2.2" />
-          <path d="M9 4.6a1.8 1.8 0 0 1 3.6 0v.3" />
-          <path d="M15 19.4a1.8 1.8 0 0 1-3.6 0v-.3" />
-          <path d="M19.4 9a1.8 1.8 0 0 1 0 3.6h-.3" />
-          <path d="M4.6 15a1.8 1.8 0 0 1 0-3.6h.3" />
-        </svg>
-      );
-
-    case "grid":
-      return (
-        <svg {...common}>
-          <rect x="4" y="4" width="6" height="6" rx="1" />
-          <rect x="14" y="4" width="6" height="6" rx="1" />
-          <rect x="4" y="14" width="6" height="6" rx="1" />
-          <rect x="14" y="14" width="6" height="6" rx="1" />
-        </svg>
-      );
-
-    case "bell":
-      return (
-        <svg {...common}>
-          <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-          <path d="M10 21h4" />
-        </svg>
-      );
-
-    case "palette":
-      return (
-        <svg {...common}>
-          <path d="M12 3a9 9 0 0 0 0 18h1.5a2 2 0 0 0 0-4H12a2 2 0 0 1 0-4h4a5 5 0 0 0 5-5c0-2.2-4-5-9-5Z" />
-          <circle cx="7.5" cy="11" r=".7" />
-          <circle cx="9" cy="7.5" r=".7" />
-          <circle cx="13" cy="6.5" r=".7" />
-        </svg>
-      );
-
-    case "globe":
-      return (
-        <svg {...common}>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M3 12h18" />
-          <path d="M12 3c2.3 2.5 3.5 5.5 3.5 9S14.3 18.5 12 21c-2.3-2.5-3.5-5.5-3.5-9S9.7 5.5 12 3Z" />
-        </svg>
-      );
-
-    case "help":
-      return (
-        <svg {...common}>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M9.7 9a2.4 2.4 0 0 1 4.6 1c0 1.8-2.3 2-2.3 3.5" />
-          <circle cx="12" cy="16.5" r=".5" />
-        </svg>
-      );
-
-    case "logout":
-      return (
-        <svg {...common}>
-          <path d="M10 5H5v14h5" />
-          <path d="m14 8 4 4-4 4" />
-          <path d="M8 12h10" />
-        </svg>
-      );
-
-    case "user":
-      return (
-        <svg {...common}>
-          <circle cx="12" cy="8" r="3.5" />
-          <path d="M5 20c.8-3.2 3.2-5 7-5s6.2 1.8 7 5" />
-        </svg>
-      );
-
-    case "calendar":
-      return (
-        <svg {...common}>
-          <rect x="4" y="5" width="16" height="15" rx="2" />
-          <path d="M8 3v4M16 3v4M4 10h16" />
-        </svg>
-      );
-
-    case "clock":
-      return (
-        <svg {...common}>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 7v5l3 2" />
-        </svg>
-      );
-
-    case "ruler":
-      return (
-        <svg {...common}>
-          <path d="m5 19 14-14" />
-          <path d="m7 21-4-4L17 3l4 4L7 21Z" />
-          <path d="m8 10 2 2M11 7l2 2M14 4l2 2" />
-        </svg>
-      );
-
-    case "refresh":
-      return (
-        <svg {...common}>
-          <path d="M20 11a8 8 0 0 0-14-5L4 8" />
-          <path d="M4 4v4h4" />
-          <path d="M4 13a8 8 0 0 0 14 5l2-2" />
-          <path d="M20 20v-4h-4" />
-        </svg>
-      );
-
-    case "compact":
-      return (
-        <svg {...common}>
-          <rect x="4" y="4" width="16" height="16" rx="2" />
-          <path d="M8 9h8M8 12h8M8 15h5" />
-        </svg>
-      );
-
-    case "trash":
-      return (
-        <svg {...common}>
-          <path d="M4 7h16" />
-          <path d="M9 7V4h6v3" />
-          <path d="M7 7l1 13h8l1-13" />
-          <path d="M10 11v5M14 11v5" />
-        </svg>
-      );
-
-    case "chevron":
-      return (
-        <svg {...common}>
-          <path d="m9 5 7 7-7 7" />
-        </svg>
-      );
-
-    case "menu":
-      return (
-        <svg {...common}>
-          <path d="M4 7h16M4 12h16M4 17h16" />
-        </svg>
-      );
-
-    case "plus":
-      return (
-        <svg {...common}>
-          <path d="M12 5v14M5 12h14" />
-        </svg>
-      );
-
-    default:
-      return null;
-  }
+  return (
+    <span
+      className={`${styles.icon} ${className}`}
+      style={{
+        fontSize: size
+          ? `${size}px`
+          : undefined,
+      }}
+      aria-hidden="true"
+    >
+      {icons[name]}
+    </span>
+  );
 }
+
+/*
+============================================================
+CATEGORIES
+============================================================
+*/
 
 const categories = [
   {
     id: "general",
     label: "General",
-    description: "Basic preferences and settings",
-    icon: "grid" as IconName,
+    description:
+      "Basic preferences and settings",
+    icon: "general" as IconName,
     color: "green",
   },
   {
     id: "security",
     label: "Security & Privacy",
-    description: "Password, 2FA, and privacy",
-    icon: "shield" as IconName,
+    description:
+      "Password, 2FA, and privacy",
+    icon: "security" as IconName,
     color: "blue",
   },
   {
     id: "notifications",
     label: "Notifications",
-    description: "Email, SMS and push preferences",
-    icon: "bell" as IconName,
+    description:
+      "Email, SMS and push preferences",
+    icon: "notifications" as IconName,
     color: "yellow",
   },
   {
     id: "appearance",
     label: "Appearance",
-    description: "Theme, colors and display",
-    icon: "palette" as IconName,
+    description:
+      "Theme, colors and display",
+    icon: "appearance" as IconName,
     color: "cyan",
   },
   {
     id: "language",
     label: "Language & Region",
-    description: "Language and regional settings",
-    icon: "globe" as IconName,
+    description:
+      "Language and regional settings",
+    icon: "language" as IconName,
     color: "blue",
   },
   {
     id: "privacy",
     label: "Data & Privacy",
-    description: "Your data and privacy controls",
-    icon: "database" as IconName,
+    description:
+      "Your data and privacy controls",
+    icon: "privacy" as IconName,
     color: "gray",
   },
   {
     id: "support",
     label: "Support & Help",
-    description: "Help center and support",
-    icon: "help" as IconName,
+    description:
+      "Help center and support",
+    icon: "support" as IconName,
     color: "gray",
   },
 ];
 
+/*
+============================================================
+SETTING ROUTES
+============================================================
+
+These routes correspond to the folders/pages inside:
+
+app/settings/
+
+Current structure:
+
+app/settings/
+├── page.tsx
+├── general/
+├── security/
+├── notifications/
+├── appearance/
+├── language-region/
+├── data-privacy/
+└── support-help/
+
+============================================================
+*/
+
+const settingRoutes: Record<string, string> = {
+  general: "/settings/general",
+
+  security: "/settings/security",
+
+  notifications:
+    "/settings/notifications",
+
+  appearance:
+    "/settings/appearance",
+
+  language:
+    "/settings/language-region",
+
+  privacy:
+    "/settings/data-privacy",
+
+  // UPDATED SUPPORT ROUTE
+  support:
+    "/settings/support-help",
+};
+
+/*
+============================================================
+SUPPORT ROUTES
+============================================================
+
+These are the pages that belong INSIDE Support & Help.
+
+The Support & Help landing page will contain cards for:
+
+1. Help Center
+2. Contact Support
+3. Report an Issue
+4. Feature Request
+
+============================================================
+*/
+
+const supportRoutes = {
+  helpCenter:
+    "/settings/support-help/help-center",
+
+  contactSupport:
+    "/settings/support-help/contact-support",
+
+  reportIssue:
+    "/settings/support-help/report-issue",
+
+  featureRequest:
+    "/settings/support-help/feature-request",
+};
+
+/*
+============================================================
+DASHBOARD NAVIGATION
+============================================================
+*/
+
 const navItems = [
-{ label: "Dashboard", href: "/dashboard", icon: "home" as IconName },
   {
-    label: "Verification History",
-    href: "/verification-history",
-    icon: "history" as IconName,
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: "dashboard" as IconName,
+  },
+  {
+    label: "Verify Property",
+    href: "/verify",
+    icon: "verify" as IconName,
   },
   {
     label: "My Properties",
@@ -320,19 +265,27 @@ const navItems = [
     icon: "properties" as IconName,
   },
   {
-    label: "Verification Details",
-    href: "/verification-details",
-    icon: "database" as IconName,
+    label: "Verification History",
+    href: "/verification-history",
+    icon: "history" as IconName,
   },
   {
     label: "Fraud Watch",
     href: "/fraud-watch",
-    icon: "shield" as IconName,
+    icon: "fraud" as IconName,
   },
-  { label: "Reports", href: "/reports", icon: "database" as IconName },
-  { label: "Account", href: "/account", icon: "account" as IconName },
-  { label: "Settings", href: "/settings", icon: "settings" as IconName },
+  {
+    label: "Reports",
+    href: "/reports",
+    icon: "reports" as IconName,
+  },
 ];
+
+/*
+============================================================
+SETTING ROW
+============================================================
+*/
 
 function Toggle({
   enabled,
@@ -344,10 +297,18 @@ function Toggle({
   return (
     <button
       type="button"
-      aria-label="Toggle setting"
+      aria-label={
+        enabled
+          ? "Turn setting off"
+          : "Turn setting on"
+      }
       aria-pressed={enabled}
       onClick={onChange}
-      className={`${styles.toggle} ${enabled ? styles.toggleOn : ""}`}
+      className={`${styles.toggle} ${
+        enabled
+          ? styles.toggleOn
+          : ""
+      }`}
     >
       <span />
     </button>
@@ -369,19 +330,51 @@ function SettingRow({
 }) {
   return (
     <div className={styles.settingRow}>
-      <div className={`${styles.settingIcon} ${styles[color]}`}>
-        <Icon name={icon} size={18} />
+      <div
+        className={`${styles.settingIcon} ${
+          styles[color]
+        }`}
+      >
+        <Icon
+          name={icon}
+          size={18}
+        />
       </div>
 
       <div className={styles.settingText}>
-        <div className={styles.settingTitle}>{title}</div>
-        <div className={styles.settingDescription}>{description}</div>
+        <div
+          className={
+            styles.settingTitle
+          }
+        >
+          {title}
+        </div>
+
+        <div
+          className={
+            styles.settingDescription
+          }
+        >
+          {description}
+        </div>
       </div>
 
-      <div className={styles.settingControl}>{children}</div>
+      <div
+        className={
+          styles.settingControl
+        }
+      >
+        {children}
+      </div>
     </div>
   );
 }
+
+/*
+============================================================
+CATEGORY ITEM
+============================================================
+*/
 
 function CategoryItem({
   category,
@@ -397,7 +390,9 @@ function CategoryItem({
       type="button"
       onClick={onClick}
       className={`${styles.categoryItem} ${
-        active ? styles.categoryActive : ""
+        active
+          ? styles.categoryActive
+          : ""
       }`}
     >
       <span
@@ -405,153 +400,1055 @@ function CategoryItem({
           styles[category.color]
         }`}
       >
-        <Icon name={category.icon} size={18} />
+        <Icon
+          name={category.icon}
+          size={18}
+        />
       </span>
 
-      <span className={styles.categoryText}>
-        <strong>{category.label}</strong>
-        <small>{category.description}</small>
+      <span
+        className={
+          styles.categoryText
+        }
+      >
+        <strong>
+          {category.label}
+        </strong>
+
+        <small>
+          {category.description}
+        </small>
       </span>
 
-      <span className={styles.categoryChevron}>
-        <Icon name="chevron" size={17} />
+      <span
+        className={
+          styles.categoryChevron
+        }
+      >
+        <Icon
+          name="chevron"
+          size={17}
+        />
       </span>
     </button>
   );
 }
 
-export default function SettingsPage() {
-  const [activeCategory, setActiveCategory] = useState("general");
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const [compactMode, setCompactMode] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
+/*
+============================================================
+SETTINGS PAGE
+============================================================
+*/
 
-  const signOut = () => {
-    alert("Sign out action");
+export default function SettingsPage() {
+  const router = useRouter();
+
+  const [
+    activeCategory,
+    setActiveCategory,
+  ] = useState("general");
+
+  const [
+    autoRefresh,
+    setAutoRefresh,
+  ] = useState(true);
+
+  const [
+    compactMode,
+    setCompactMode,
+  ] = useState(false);
+
+  const [
+    deleteModal,
+    setDeleteModal,
+  ] = useState(false);
+
+  const [
+    menuOpen,
+    setMenuOpen,
+  ] = useState(false);
+
+  const [
+    loadingUser,
+    setLoadingUser,
+  ] = useState(true);
+
+  const [user, setUser] =
+    useState({
+      fullName: "User",
+      initial: "U",
+      plan: "Free Plan",
+    });
+
+  /*
+  ============================================================
+  LOAD USER
+  ============================================================
+  */
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadUser = async () => {
+      try {
+        setLoadingUser(true);
+
+        const {
+          data: { user: authUser },
+          error,
+        } =
+          await supabase.auth.getUser();
+
+        if (error) {
+          console.error(
+            "Could not load authenticated user:",
+            error
+          );
+
+          return;
+        }
+
+        if (!authUser) {
+          router.replace("/signin");
+          return;
+        }
+
+        if (!mounted) {
+          return;
+        }
+
+        const metadata =
+          authUser.user_metadata || {};
+
+        const metadataName =
+          metadata.full_name ||
+          metadata.name ||
+          metadata.display_name ||
+          "";
+
+        const email =
+          authUser.email || "";
+
+        const fallbackName = email
+          ? email
+              .split("@")[0]
+              .replace(
+                /[._-]+/g,
+                " "
+              )
+              .replace(
+                /\b\w/g,
+                (
+                  letter: string
+                ) =>
+                  letter.toUpperCase()
+              )
+          : "User";
+
+        const fullName =
+          String(metadataName).trim() ||
+          fallbackName;
+
+        const firstInitial =
+          fullName
+            .trim()
+            .charAt(0)
+            .toUpperCase() ||
+          "U";
+
+        const metadataPlan =
+          metadata.plan ||
+          metadata.subscription_plan ||
+          metadata.account_plan ||
+          "Free Plan";
+
+        setUser({
+          fullName,
+          initial: firstInitial,
+          plan: String(
+            metadataPlan
+          ),
+        });
+      } catch (error) {
+        console.error(
+          "Settings user loading error:",
+          error
+        );
+      } finally {
+        if (mounted) {
+          setLoadingUser(false);
+        }
+      }
+    };
+
+    loadUser();
+
+    return () => {
+      mounted = false;
+    };
+  }, [router]);
+
+  /*
+  ============================================================
+  NAVIGATION
+  ============================================================
+  */
+
+  const navigateTo = (
+    path: string
+  ) => {
+    setMenuOpen(false);
+    router.push(path);
   };
+
+  /*
+  ============================================================
+  SUPPORT NAVIGATION
+  ============================================================
+  */
+
+  const openSupportHelp = () => {
+    setMenuOpen(false);
+
+    router.push(
+      "/settings/support-help"
+    );
+  };
+
+  const openHelpCenter = () => {
+    setMenuOpen(false);
+
+    router.push(
+      supportRoutes.helpCenter
+    );
+  };
+
+  const openContactSupport = () => {
+    setMenuOpen(false);
+
+    router.push(
+      supportRoutes.contactSupport
+    );
+  };
+
+  const openReportIssue = () => {
+    setMenuOpen(false);
+
+    router.push(
+      supportRoutes.reportIssue
+    );
+  };
+
+  const openFeatureRequest = () => {
+    setMenuOpen(false);
+
+    router.push(
+      supportRoutes.featureRequest
+    );
+  };
+
+  /*
+  ============================================================
+  NOTIFICATIONS
+  ============================================================
+  */
+
+  const openNotifications = () => {
+    setMenuOpen(false);
+
+    router.push(
+      "/settings/notifications"
+    );
+  };
+
+  /*
+  ============================================================
+  APPEARANCE
+  ============================================================
+  */
+
+  const openAppearance = () => {
+    setMenuOpen(false);
+
+    router.push(
+      "/settings/appearance"
+    );
+  };
+
+  /*
+  ============================================================
+  CATEGORY NAVIGATION
+  ============================================================
+  */
+
+  const handleCategoryClick = (
+    categoryId: string
+  ) => {
+    const route =
+      settingRoutes[categoryId];
+
+    if (route) {
+      setActiveCategory(
+        categoryId
+      );
+
+      setMenuOpen(false);
+
+      router.push(route);
+
+      return;
+    }
+
+    setActiveCategory(
+      categoryId
+    );
+  };
+
+  /*
+  ============================================================
+  SIGN OUT
+  ============================================================
+  */
+
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+
+      router.replace("/signin");
+    } catch (error) {
+      console.error(
+        "Sign out error:",
+        error
+      );
+    }
+  };
+
+  /*
+  ============================================================
+  LOADING
+  ============================================================
+  */
+
+  if (loadingUser) {
+    return (
+      <main className={styles.loading}>
+        <div
+          className={
+            styles.loadingBrand
+          }
+        >
+          <span
+            className={
+              styles.loadingLogo
+            }
+          >
+            ◆
+          </span>
+
+          <span>
+            PropertySure
+            <strong>
+              {" "}
+              AI
+            </strong>
+          </span>
+        </div>
+
+        <div
+          className={
+            styles.loadingText
+          }
+        >
+          Loading your settings...
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className={styles.page}>
-      {/* ================= DESKTOP SIDEBAR ================= */}
-      <aside className={styles.sidebar}>
-        <div className={styles.brand}>
-          <div className={styles.brandIcon}>
-            <Icon name="shield" size={28} />
-          </div>
+      {/* =====================================================
+          MOBILE HEADER
+      ===================================================== */}
 
-          <div>
-            <div className={styles.brandName}>
-              PropertySure <span>AI</span>
-            </div>
+      <header
+        className={
+          styles.mobileHeader
+        }
+      >
+        <button
+          type="button"
+          className={
+            styles.menuButton
+          }
+          onClick={() =>
+            setMenuOpen(true)
+          }
+          aria-label="Open navigation"
+        >
+          <Icon
+            name="menu"
+            size={24}
+          />
+        </button>
 
-            <div className={styles.brandTagline}>
-              Verify with Confidence
-            </div>
-          </div>
-        </div>
+        <button
+          type="button"
+          className={
+            styles.mobileLogoButton
+          }
+          onClick={() =>
+            navigateTo(
+              "/dashboard"
+            )
+          }
+        >
+          <span
+            className={
+              styles.mobileLogoDiamond
+            }
+          >
+            ◆
+          </span>
 
-        <nav className={styles.sideNav}>
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${styles.navLink} ${
-                item.href === "/settings" ? styles.navActive : ""
-              }`}
-            >
-              <Icon name={item.icon} size={18} />
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
+          <span>
+            PropertySure
+            <strong>
+              {" "}
+              AI
+            </strong>
+          </span>
+        </button>
 
-        <div className={styles.profileCard}>
-          <div className={styles.avatar}>EK</div>
+        <button
+          type="button"
+          className={
+            styles.mobileBell
+          }
+          onClick={
+            openNotifications
+          }
+          aria-label="Notifications"
+        >
+          <Icon
+            name="bell"
+            size={17}
+          />
 
-          <div className={styles.profileInfo}>
-            <strong>Eze Ked</strong>
-            <small>Premium Plan</small>
-          </div>
+          <span
+            className={
+              styles.mobileNotificationDot
+            }
+          />
+        </button>
+      </header>
 
-          <Icon name="chevron" size={15} />
-        </div>
-      </aside>
+      {/* =====================================================
+          MOBILE MENU
+      ===================================================== */}
 
-      {/* ================= MAIN ================= */}
-      <section className={styles.main}>
-        {/* DESKTOP HEADER */}
-        <header className={styles.desktopHeader}>
-          <div>
-            <h1>Settings</h1>
-            <p>
-              Manage your preferences, security, and application settings.
-            </p>
-          </div>
+      {menuOpen && (
+        <div
+          className={
+            styles.mobileMenu
+          }
+        >
+          <div
+            className={
+              styles.mobileMenuHeader
+            }
+          >
+            <div>
+              <button
+                type="button"
+                className={
+                  styles.mobileMenuLogo
+                }
+                onClick={() =>
+                  navigateTo(
+                    "/dashboard"
+                  )
+                }
+              >
+                <span>
+                  ◆
+                </span>
 
-          <div className={styles.notification}>
-            <Icon name="bell" size={23} />
-            <span>3</span>
-          </div>
-        </header>
+                <div>
+                  PropertySure
+                  <strong>
+                    {" "}
+                    AI
+                  </strong>
+                </div>
+              </button>
 
-        {/* MOBILE HEADER */}
-        <header className={styles.mobileHeader}>
-          <button type="button" className={styles.menuButton}>
-            <Icon name="menu" size={25} />
-          </button>
-
-          <h1>Settings</h1>
-
-          <div className={styles.notification}>
-            <Icon name="bell" size={23} />
-            <span>3</span>
-          </div>
-        </header>
-
-        <div className={styles.contentGrid}>
-          {/* ================= CATEGORIES ================= */}
-          <aside className={styles.categoriesCard}>
-            <div className={styles.cardLabel}>CATEGORIES</div>
-
-            <div className={styles.categoryList}>
-              {categories.map((category) => (
-                <CategoryItem
-                  key={category.id}
-                  category={category}
-                  active={activeCategory === category.id}
-                  onClick={() => setActiveCategory(category.id)}
-                />
-              ))}
+              <div
+                className={
+                  styles.mobileMenuSubtitle
+                }
+              >
+                AI-Powered Property
+                Due Diligence
+              </div>
             </div>
 
             <button
               type="button"
-              className={styles.signOutCategory}
-              onClick={signOut}
+              className={
+                styles.closeMenu
+              }
+              onClick={() =>
+                setMenuOpen(false)
+              }
+              aria-label="Close navigation"
             >
-              <span className={styles.signOutIcon}>
-                <Icon name="logout" size={19} />
+              ×
+            </button>
+          </div>
+
+          <nav
+            className={
+              styles.mobileMenuNav
+            }
+          >
+            {navItems.map(
+              (item) => (
+                <button
+                  key={item.href}
+                  type="button"
+                  className={
+                    styles.mobileNavItem
+                  }
+                  onClick={() =>
+                    navigateTo(
+                      item.href
+                    )
+                  }
+                >
+                  <span
+                    className={
+                      styles.navIcon
+                    }
+                  >
+                    <Icon
+                      name={
+                        item.icon
+                      }
+                      size={18}
+                    />
+                  </span>
+
+                  <span>
+                    {item.label}
+                  </span>
+                </button>
+              )
+            )}
+          </nav>
+
+          <div
+            className={
+              styles.mobileAccountLabel
+            }
+          >
+            ACCOUNT
+          </div>
+
+          <button
+            type="button"
+            className={
+              styles.mobileNavItem
+            }
+            onClick={() =>
+              navigateTo(
+                "/account"
+              )
+            }
+          >
+            <span
+              className={
+                styles.navIcon
+              }
+            >
+              <Icon
+                name="account"
+                size={18}
+              />
+            </span>
+
+            <span>
+              Account
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.mobileNavItem} ${styles.mobileNavActive}`}
+            onClick={() =>
+              navigateTo(
+                "/settings"
+              )
+            }
+          >
+            <span
+              className={
+                styles.navIcon
+              }
+            >
+              <Icon
+                name="settings"
+                size={18}
+              />
+            </span>
+
+            <span>
+              Settings
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.mobileNavItem} ${styles.logoutItem}`}
+            onClick={
+              signOut
+            }
+          >
+            <span
+              className={
+                styles.navIcon
+              }
+            >
+              <Icon
+                name="logout"
+                size={18}
+              />
+            </span>
+
+            <span>
+              Sign Out
+            </span>
+          </button>
+        </div>
+      )}
+
+      {/* =====================================================
+          DESKTOP SIDEBAR
+      ===================================================== */}
+
+      <aside
+        className={
+          styles.sidebar
+        }
+      >
+        <button
+          type="button"
+          className={
+            styles.brandButton
+          }
+          onClick={() =>
+            navigateTo(
+              "/dashboard"
+            )
+          }
+        >
+          <div
+            className={
+              styles.brandName
+            }
+          >
+            <span
+              className={
+                styles.brandLogoDiamond
+              }
+            >
+              ◆
+            </span>
+
+            <span>
+              PropertySure
+              <strong>
+                {" "}
+                AI
+              </strong>
+            </span>
+          </div>
+
+          <div
+            className={
+              styles.brandSubtitle
+            }
+          >
+            AI-Powered Property
+            <br />
+            Due Diligence
+          </div>
+        </button>
+
+        <nav
+          className={
+            styles.sidebarNav
+          }
+        >
+          {navItems.map(
+            (item) => (
+              <button
+                key={item.href}
+                type="button"
+                className={
+                  styles.navItem
+                }
+                onClick={() =>
+                  navigateTo(
+                    item.href
+                  )
+                }
+              >
+                <span
+                  className={
+                    styles.navIcon
+                  }
+                >
+                  <Icon
+                    name={
+                      item.icon
+                    }
+                    size={18}
+                  />
+                </span>
+
+                <span>
+                  {item.label}
+                </span>
+              </button>
+            )
+          )}
+        </nav>
+
+        <div
+          className={
+            styles.accountLabel
+          }
+        >
+          ACCOUNT
+        </div>
+
+        <button
+          type="button"
+          className={
+            styles.navItem
+          }
+          onClick={() =>
+            navigateTo(
+              "/account"
+            )
+          }
+        >
+          <span
+            className={
+              styles.navIcon
+            }
+          >
+            <Icon
+              name="account"
+              size={18}
+            />
+          </span>
+
+          <span>
+            Account
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={`${styles.navItem} ${styles.navActive}`}
+          onClick={() =>
+            navigateTo(
+              "/settings"
+            )
+          }
+        >
+          <span
+            className={
+              styles.navIcon
+            }
+          >
+            <Icon
+              name="settings"
+              size={18}
+            />
+          </span>
+
+          <span>
+            Settings
+          </span>
+        </button>
+
+        {/* ===================================================
+            SUPPORT BOX
+        =================================================== */}
+
+        <div
+          className={
+            styles.helpBox
+          }
+        >
+          <div
+            className={
+              styles.helpTitle
+            }
+          >
+            Need Help?
+          </div>
+
+          <div
+            className={
+              styles.helpText
+            }
+          >
+            Our support team is
+            ready to assist you.
+          </div>
+
+          <button
+            type="button"
+            className={
+              styles.supportButton
+            }
+            onClick={
+              openContactSupport
+            }
+          >
+            Contact Support
+          </button>
+        </div>
+
+        <button
+          type="button"
+          className={
+            styles.sidebarUser
+          }
+          onClick={() =>
+            navigateTo(
+              "/account"
+            )
+          }
+        >
+          <div
+            className={
+              styles.avatar
+            }
+          >
+            {user.initial}
+          </div>
+
+          <div
+            className={
+              styles.userInfo
+            }
+          >
+            <div
+              className={
+                styles.userName
+              }
+            >
+              {user.fullName}
+            </div>
+
+            <div
+              className={
+                styles.userPlan
+              }
+            >
+              {user.plan}
+            </div>
+          </div>
+        </button>
+      </aside>
+
+      {/* =====================================================
+          MAIN
+      ===================================================== */}
+
+      <section
+        className={styles.main}
+      >
+        {/* ===================================================
+            DESKTOP HEADER
+        =================================================== */}
+
+        <header
+          className={
+            styles.desktopHeader
+          }
+        >
+          <div>
+            <div
+              className={
+                styles.eyebrow
+              }
+            >
+              PROPERTYSURE AI
+            </div>
+
+            <h1>
+              Settings
+            </h1>
+
+            <p>
+              Manage your
+              preferences,
+              security, and
+              application
+              settings.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className={
+              styles.notification
+            }
+            onClick={
+              openNotifications
+            }
+            aria-label="Notifications"
+          >
+            <Icon
+              name="bell"
+              size={17}
+            />
+
+            <span
+              className={
+                styles.notificationDot
+              }
+            />
+          </button>
+        </header>
+
+        {/* ===================================================
+            DESKTOP CONTENT
+        =================================================== */}
+
+        <div
+          className={
+            styles.contentGrid
+          }
+        >
+          <aside
+            className={
+              styles.categoriesCard
+            }
+          >
+            <div
+              className={
+                styles.cardLabel
+              }
+            >
+              CATEGORIES
+            </div>
+
+            <div
+              className={
+                styles.categoryList
+              }
+            >
+              {categories.map(
+                (category) => (
+                  <CategoryItem
+                    key={
+                      category.id
+                    }
+                    category={
+                      category
+                    }
+                    active={
+                      activeCategory ===
+                      category.id
+                    }
+                    onClick={() =>
+                      handleCategoryClick(
+                        category.id
+                      )
+                    }
+                  />
+                )
+              )}
+            </div>
+
+            <button
+              type="button"
+              className={
+                styles.signOutCategory
+              }
+              onClick={
+                signOut
+              }
+            >
+              <span
+                className={
+                  styles.signOutIcon
+                }
+              >
+                <Icon
+                  name="logout"
+                  size={18}
+                />
               </span>
 
-              <span className={styles.signOutText}>
-                <strong>Sign Out</strong>
-                <small>Sign out of your account</small>
+              <span
+                className={
+                  styles.signOutText
+                }
+              >
+                <strong>
+                  Sign Out
+                </strong>
+
+                <small>
+                  Sign out of
+                  your account
+                </small>
               </span>
             </button>
           </aside>
 
-          {/* ================= SETTINGS CONTENT ================= */}
-          <div className={styles.settingsContent}>
-            <section className={styles.card}>
-              <div className={styles.sectionHeader}>
-                <h2>General Settings</h2>
+          <div
+            className={
+              styles.settingsContent
+            }
+          >
+            <section
+              className={
+                styles.card
+              }
+            >
+              <div
+                className={
+                  styles.sectionHeader
+                }
+              >
+                <h2>
+                  General Settings
+                </h2>
+
                 <p>
-                  Manage your general preferences and basic application
+                  Manage your
+                  general
+                  preferences and
+                  basic
+                  application
                   settings.
                 </p>
               </div>
 
-              <div className={styles.settingsRows}>
+              <div
+                className={
+                  styles.settingsRows
+                }
+              >
                 <SettingRow
                   icon="user"
                   title="Profile Information"
@@ -560,26 +1457,42 @@ export default function SettingsPage() {
                 >
                   <button
                     type="button"
-                    className={styles.profileButton}
-                    onClick={() => alert("Profile settings")}
+                    className={
+                      styles.profileButton
+                    }
+                    onClick={() =>
+                      navigateTo(
+                        "/account"
+                      )
+                    }
                   >
                     Update Profile
                   </button>
                 </SettingRow>
 
                 <SettingRow
-                  icon="grid"
+                  icon="dashboard"
                   title="Default Dashboard"
                   description="Choose which dashboard you see when you log in."
                   color="blue"
                 >
                   <select
-                    className={styles.select}
+                    className={
+                      styles.select
+                    }
                     defaultValue="Overview"
                   >
-                    <option>Overview</option>
-                    <option>My Properties</option>
-                    <option>Fraud Watch</option>
+                    <option>
+                      Overview
+                    </option>
+
+                    <option>
+                      My Properties
+                    </option>
+
+                    <option>
+                      Fraud Watch
+                    </option>
                   </select>
                 </SettingRow>
 
@@ -590,12 +1503,22 @@ export default function SettingsPage() {
                   color="purple"
                 >
                   <select
-                    className={styles.select}
+                    className={
+                      styles.select
+                    }
                     defaultValue="MM DD, YYYY"
                   >
-                    <option>MM DD, YYYY</option>
-                    <option>DD MM, YYYY</option>
-                    <option>YYYY MM DD</option>
+                    <option>
+                      MM DD, YYYY
+                    </option>
+
+                    <option>
+                      DD MM, YYYY
+                    </option>
+
+                    <option>
+                      YYYY MM DD
+                    </option>
                   </select>
                 </SettingRow>
 
@@ -610,13 +1533,21 @@ export default function SettingsPage() {
                     defaultValue="(GMT+01:00) West Africa Time"
                   >
                     <option>
-                      (GMT+01:00) West Africa Time
+                      (GMT+01:00)
+                      West Africa
+                      Time
                     </option>
+
                     <option>
-                      (GMT+00:00) Greenwich Mean Time
+                      (GMT+00:00)
+                      Greenwich
+                      Mean Time
                     </option>
+
                     <option>
-                      (GMT+02:00) Central Africa Time
+                      (GMT+02:00)
+                      Central
+                      Africa Time
                     </option>
                   </select>
                 </SettingRow>
@@ -628,11 +1559,20 @@ export default function SettingsPage() {
                   color="cyan"
                 >
                   <select
-                    className={styles.select}
+                    className={
+                      styles.select
+                    }
                     defaultValue="Metric (m, kg, °C)"
                   >
-                    <option>Metric (m, kg, °C)</option>
-                    <option>Imperial (ft, lb, °F)</option>
+                    <option>
+                      Metric (m, kg,
+                      °C)
+                    </option>
+
+                    <option>
+                      Imperial (ft,
+                      lb, °F)
+                    </option>
                   </select>
                 </SettingRow>
 
@@ -643,8 +1583,15 @@ export default function SettingsPage() {
                   color="green"
                 >
                   <Toggle
-                    enabled={autoRefresh}
-                    onChange={() => setAutoRefresh((v) => !v)}
+                    enabled={
+                      autoRefresh
+                    }
+                    onChange={() =>
+                      setAutoRefresh(
+                        (value) =>
+                          !value
+                      )
+                    }
                   />
                 </SettingRow>
 
@@ -655,52 +1602,118 @@ export default function SettingsPage() {
                   color="blue"
                 >
                   <Toggle
-                    enabled={compactMode}
-                    onChange={() => setCompactMode((v) => !v)}
+                    enabled={
+                      compactMode
+                    }
+                    onChange={() =>
+                      setCompactMode(
+                        (value) =>
+                          !value
+                      )
+                    }
                   />
                 </SettingRow>
               </div>
             </section>
 
-            {/* DANGER ZONE */}
-            <section className={styles.dangerCard}>
-              <div className={styles.sectionHeader}>
-                <h2>Danger Zone</h2>
-                <p>Irreversible and sensitive actions.</p>
+            <section
+              className={
+                styles.dangerCard
+              }
+            >
+              <div
+                className={
+                  styles.sectionHeader
+                }
+              >
+                <h2>
+                  Danger Zone
+                </h2>
+
+                <p>
+                  Irreversible and
+                  sensitive actions.
+                </p>
               </div>
 
-              <div className={styles.dangerRow}>
-                <div className={styles.dangerIcon}>
-                  <Icon name="trash" size={20} />
+              <div
+                className={
+                  styles.dangerRow
+                }
+              >
+                <div
+                  className={
+                    styles.dangerIcon
+                  }
+                >
+                  <Icon
+                    name="trash"
+                    size={20}
+                  />
                 </div>
 
-                <div className={styles.dangerText}>
-                  <strong>Delete Account</strong>
+                <div
+                  className={
+                    styles.dangerText
+                  }
+                >
+                  <strong>
+                    Delete Account
+                  </strong>
+
                   <span>
-                    Permanently delete your account and all associated data.
+                    Permanently
+                    delete your
+                    account and
+                    all associated
+                    data.
                   </span>
                 </div>
 
                 <button
                   type="button"
-                  className={styles.deleteButton}
-                  onClick={() => setDeleteModal(true)}
+                  className={
+                    styles.deleteButton
+                  }
+                  onClick={() =>
+                    setDeleteModal(
+                      true
+                    )
+                  }
                 >
                   Delete My Account
                 </button>
               </div>
             </section>
 
-            {/* SAVE NOTICE */}
-            <div className={styles.saveNotice}>
-              <div className={styles.saveIcon}>
-                <Icon name="shield" size={21} />
+            <div
+              className={
+                styles.saveNotice
+              }
+            >
+              <div
+                className={
+                  styles.saveIcon
+                }
+              >
+                <Icon
+                  name="security"
+                  size={20}
+                />
               </div>
 
               <div>
-                <strong>Your settings are automatically saved</strong>
+                <strong>
+                  Your settings are
+                  automatically
+                  saved
+                </strong>
+
                 <p>
-                  All changes you make to your settings are saved
+                  All changes you
+                  make to your
+                  settings are
+                  saved
                   automatically.
                 </p>
               </div>
@@ -708,42 +1721,115 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* ================= MOBILE CONTENT ================= */}
-        <div className={styles.mobileContent}>
-          <div className={styles.mobileLabel}>SETTINGS CATEGORIES</div>
+        {/* ===================================================
+            MOBILE CONTENT
+        =================================================== */}
 
-          <section className={styles.mobileCategoriesCard}>
-            {categories.map((category) => (
-              <CategoryItem
-                key={category.id}
-                category={category}
-                active={activeCategory === category.id}
-                onClick={() => setActiveCategory(category.id)}
-              />
-            ))}
+        <div
+          className={
+            styles.mobileContent
+          }
+        >
+          <div
+            className={
+              styles.mobilePageHeader
+            }
+          >
+            <h1>
+              Settings
+            </h1>
+
+            <p>
+              Manage your
+              preferences,
+              security, and
+              application
+              settings.
+            </p>
+          </div>
+
+          <section
+            className={
+              styles.mobileCategoriesCard
+            }
+          >
+            {categories.map(
+              (category) => (
+                <CategoryItem
+                  key={
+                    category.id
+                  }
+                  category={
+                    category
+                  }
+                  active={
+                    activeCategory ===
+                    category.id
+                  }
+                  onClick={() =>
+                    handleCategoryClick(
+                      category.id
+                    )
+                  }
+                />
+              )
+            )}
 
             <button
               type="button"
-              className={styles.mobileSignOut}
-              onClick={signOut}
+              className={
+                styles.mobileSignOut
+              }
+              onClick={
+                signOut
+              }
             >
-              <span className={styles.signOutIcon}>
-                <Icon name="logout" size={19} />
+              <span
+                className={
+                  styles.signOutIcon
+                }
+              >
+                <Icon
+                  name="logout"
+                  size={18}
+                />
               </span>
 
-              <span className={styles.signOutText}>
-                <strong>Sign Out</strong>
-                <small>Sign out of your account</small>
+              <span
+                className={
+                  styles.signOutText
+                }
+              >
+                <strong>
+                  Sign Out
+                </strong>
+
+                <small>
+                  Sign out of
+                  your account
+                </small>
               </span>
 
-              <Icon name="chevron" size={18} />
+              <Icon
+                name="chevron"
+                size={18}
+              />
             </button>
           </section>
 
-          {/* QUICK SETTINGS */}
-          <div className={styles.quickLabel}>QUICK SETTINGS</div>
+          <div
+            className={
+              styles.quickLabel
+            }
+          >
+            QUICK SETTINGS
+          </div>
 
-          <section className={styles.quickCard}>
+          <section
+            className={
+              styles.quickCard
+            }
+          >
             <SettingRow
               icon="refresh"
               title="Auto-refresh Dashboard"
@@ -751,8 +1837,15 @@ export default function SettingsPage() {
               color="green"
             >
               <Toggle
-                enabled={autoRefresh}
-                onChange={() => setAutoRefresh((v) => !v)}
+                enabled={
+                  autoRefresh
+                }
+                onChange={() =>
+                  setAutoRefresh(
+                    (value) =>
+                      !value
+                  )
+                }
               />
             </SettingRow>
 
@@ -763,51 +1856,133 @@ export default function SettingsPage() {
               color="blue"
             >
               <Toggle
-                enabled={compactMode}
-                onChange={() => setCompactMode((v) => !v)}
+                enabled={
+                  compactMode
+                }
+                onChange={() =>
+                  setCompactMode(
+                    (value) =>
+                      !value
+                  )
+                }
               />
             </SettingRow>
 
-            <button type="button" className={styles.themeRow}>
-              <span className={`${styles.settingIcon} ${styles.cyan}`}>
-                <Icon name="palette" size={18} />
+            <button
+              type="button"
+              className={
+                styles.themeRow
+              }
+              onClick={
+                openAppearance
+              }
+              aria-label="Open Appearance settings"
+            >
+              <span
+                className={`${styles.settingIcon} ${styles.cyan}`}
+              >
+                <Icon
+                  name="appearance"
+                  size={18}
+                />
               </span>
 
-              <span className={styles.themeText}>
-                <strong>Theme</strong>
-                <small>Choose your preferred theme</small>
+              <span
+                className={
+                  styles.themeText
+                }
+              >
+                <strong>
+                  Theme
+                </strong>
+
+                <small>
+                  Choose your
+                  preferred
+                  theme
+                </small>
               </span>
 
-              <span className={styles.themeValue}>Dark</span>
+              <span
+                className={
+                  styles.themeValue
+                }
+              >
+                Dark
+              </span>
 
-              <Icon name="chevron" size={18} />
+              <Icon
+                name="chevron"
+                size={18}
+              />
             </button>
           </section>
 
-          {/* MOBILE DANGER */}
-          <section className={styles.mobileDanger}>
-            <div className={styles.sectionHeader}>
-              <h2>Danger Zone</h2>
-              <p>Irreversible and sensitive actions.</p>
+          <section
+            className={
+              styles.mobileDanger
+            }
+          >
+            <div
+              className={
+                styles.sectionHeader
+              }
+            >
+              <h2>
+                Danger Zone
+              </h2>
+
+              <p>
+                Irreversible and
+                sensitive actions.
+              </p>
             </div>
 
-            <div className={styles.mobileDangerInfo}>
-              <div className={styles.dangerIcon}>
-                <Icon name="trash" size={20} />
+            <div
+              className={
+                styles.mobileDangerInfo
+              }
+            >
+              <div
+                className={
+                  styles.dangerIcon
+                }
+              >
+                <Icon
+                  name="trash"
+                  size={20}
+                />
               </div>
 
-              <div className={styles.dangerText}>
-                <strong>Delete Account</strong>
+              <div
+                className={
+                  styles.dangerText
+                }
+              >
+                <strong>
+                  Delete Account
+                </strong>
+
                 <span>
-                  Permanently delete your account and all associated data.
+                  Permanently
+                  delete your
+                  account and
+                  all associated
+                  data.
                 </span>
               </div>
             </div>
 
             <button
               type="button"
-              className={styles.mobileDeleteButton}
-              onClick={() => setDeleteModal(true)}
+              className={
+                styles.mobileDeleteButton
+              }
+              onClick={() =>
+                setDeleteModal(
+                  true
+                )
+              }
             >
               Delete My Account
             </button>
@@ -815,73 +1990,190 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* ================= MOBILE BOTTOM NAV ================= */}
-      <nav className={styles.mobileBottomNav}>
-        <Link href="/dashboard">
-          <Icon name="home" size={21} />
-          <span>Dashboard</span>
-        </Link>
+      {/* =====================================================
+          MOBILE BOTTOM NAV
+      ===================================================== */}
 
-        <Link href="/verification-history">
-          <Icon name="history" size={21} />
-          <span>History</span>
-        </Link>
+      <nav
+        className={
+          styles.mobileBottomNav
+        }
+      >
+        <button
+          type="button"
+          onClick={() =>
+            navigateTo(
+              "/dashboard"
+            )
+          }
+        >
+          <Icon
+            name="dashboard"
+            size={20}
+          />
+
+          <span>
+            Dashboard
+          </span>
+        </button>
 
         <button
           type="button"
-          className={styles.addButton}
-          onClick={() => alert("Start new verification")}
+          onClick={() =>
+            navigateTo(
+              "/verify"
+            )
+          }
         >
-          <Icon name="plus" size={30} />
+          <Icon
+            name="verify"
+            size={20}
+          />
+
+          <span>
+            Verify
+          </span>
         </button>
 
-        <Link href="/my-properties">
-          <Icon name="properties" size={21} />
-          <span>Properties</span>
-        </Link>
+        <button
+          type="button"
+          onClick={() =>
+            navigateTo(
+              "/my-properties"
+            )
+          }
+        >
+          <Icon
+            name="properties"
+            size={20}
+          />
 
-        <Link href="/account" className={styles.activeBottom}>
-          <Icon name="account" size={21} />
-          <span>Account</span>
-        </Link>
+          <span>
+            Properties
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            navigateTo(
+              "/reports"
+            )
+          }
+        >
+          <Icon
+            name="reports"
+            size={20}
+          />
+
+          <span>
+            Reports
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={
+            styles.activeBottom
+          }
+          onClick={() =>
+            navigateTo(
+              "/account"
+            )
+          }
+        >
+          <Icon
+            name="account"
+            size={20}
+          />
+
+          <span>
+            Account
+          </span>
+        </button>
       </nav>
 
-      {/* ================= DELETE MODAL ================= */}
+      {/* =====================================================
+          DELETE MODAL
+      ===================================================== */}
+
       {deleteModal && (
         <div
-          className={styles.modalBackdrop}
-          onClick={() => setDeleteModal(false)}
+          className={
+            styles.modalBackdrop
+          }
+          onClick={() =>
+            setDeleteModal(
+              false
+            )
+          }
         >
           <div
-            className={styles.modal}
-            onClick={(event) => event.stopPropagation()}
+            className={
+              styles.modal
+            }
+            onClick={(event) =>
+              event.stopPropagation()
+            }
           >
-            <div className={styles.modalIcon}>
-              <Icon name="trash" size={25} />
+            <div
+              className={
+                styles.modalIcon
+              }
+            >
+              <Icon
+                name="trash"
+                size={25}
+              />
             </div>
 
-            <h3>Delete your account?</h3>
+            <h3>
+              Delete your
+              account?
+            </h3>
 
             <p>
-              This action is permanent. Your account and all associated
-              data will be deleted and cannot be recovered.
+              This action is
+              permanent. Your
+              account and all
+              associated data
+              will be deleted
+              and cannot be
+              recovered.
             </p>
 
-            <div className={styles.modalActions}>
+            <div
+              className={
+                styles.modalActions
+              }
+            >
               <button
                 type="button"
-                className={styles.cancelButton}
-                onClick={() => setDeleteModal(false)}
+                className={
+                  styles.cancelButton
+                }
+                onClick={() =>
+                  setDeleteModal(
+                    false
+                  )
+                }
               >
                 Cancel
               </button>
 
               <button
                 type="button"
-                className={styles.confirmDelete}
+                className={
+                  styles.confirmDelete
+                }
                 onClick={() => {
-                  setDeleteModal(false);
-                  alert("Account deletion would be processed here.");
+                  setDeleteModal(
+                    false
+                  );
+
+                  alert(
+                    "Account deletion would be processed here."
+                  );
                 }}
               >
                 Delete Account

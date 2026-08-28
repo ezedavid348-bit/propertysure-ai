@@ -1,0 +1,1545 @@
+/* =========================================================
+   GENERAL SETTINGS PAGE
+   PropertySure AI
+
+   MASTER UI SHARED ELEMENTS:
+   - PropertySure AI logo
+   - Header
+   - Menu icon
+   - Native notification bell
+   - Notification dot
+   - Bottom navigation
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  background: #ffffff;
+  color: #18253a;
+}
+
+button,
+select {
+  font-family: inherit;
+}
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.general-page {
+  min-height: 100vh;
+  width: 100%;
+
+  background: #ffffff;
+  color: #18253a;
+
+  padding-bottom: 90px;
+}
+
+/* =========================================================
+   MASTER HEADER
+========================================================= */
+
+.general-header {
+  width: 100%;
+  height: 72px;
+
+  position: sticky;
+  top: 0;
+
+  z-index: 100;
+
+  display: grid;
+
+  grid-template-columns:
+    44px
+    minmax(0, 1fr)
+    44px;
+
+  align-items: center;
+
+  padding: 0 14px;
+
+  background: #061b38;
+
+  border-bottom:
+    1px solid
+    #193650;
+}
+
+/* =========================================================
+   MASTER THREE-DASH BUTTON
+========================================================= */
+
+.general-menu-button {
+  width: 40px;
+  height: 40px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  padding: 0;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.general-master-menu-icon {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #ffffff;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 23px;
+
+  font-weight: 400;
+
+  line-height: 1;
+
+  transform:
+    translateY(-1px);
+}
+
+/* =========================================================
+   MASTER PROPERTYSURE AI LOGO
+========================================================= */
+
+.general-brand {
+  height: 40px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  min-width: 0;
+
+  color: #ffffff;
+
+  text-decoration: none;
+}
+
+.general-brand-diamond {
+  width: 23px;
+  height: 23px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #168eff;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 23px;
+
+  line-height: 1;
+
+  transform: none;
+}
+
+.general-brand-text {
+  color: #ffffff;
+
+  font-size: 17px;
+
+  font-weight: 700;
+
+  letter-spacing: -0.2px;
+
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+.general-brand-ai {
+  color: #168eff;
+}
+
+/* =========================================================
+   MASTER NOTIFICATION BUTTON
+========================================================= */
+
+.general-notification-button {
+  width: 40px;
+  height: 40px;
+
+  border: 0;
+
+  background: transparent;
+
+  position: relative;
+
+  display: grid;
+
+  place-items: center;
+
+  cursor: pointer;
+
+  padding: 0;
+
+  /*
+  IMPORTANT:
+  Do not allow the button's text color or the global
+  application font to control the emoji.
+  */
+  color: inherit;
+
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* =========================================================
+   MASTER NATIVE NOTIFICATION BELL
+
+   SOURCE:
+       🔔
+
+   MOBILE:
+       17px
+
+   DESKTOP:
+       21px
+
+   IMPORTANT:
+   The bell MUST use the native color emoji font.
+
+   DO NOT:
+       - use SVG
+       - use filter
+       - use grayscale
+       - use sepia
+       - use brightness
+       - use hue-rotate
+       - use invert
+       - use white color
+       - use Arial
+       - use Inter
+       - use the body font stack
+
+   The emoji itself supplies the yellow/gold appearance.
+========================================================= */
+
+.general-master-bell {
+  width: 20px;
+  height: 20px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  font-family:
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Noto Color Emoji",
+    sans-serif !important;
+
+  font-size: 17px;
+
+  font-style: normal;
+
+  font-weight: normal;
+
+  line-height: 1;
+
+  letter-spacing: normal;
+
+  text-align: center;
+
+  white-space: nowrap;
+
+  /*
+  Prevent inherited text color from changing the emoji.
+  */
+  color: initial !important;
+
+  /*
+  CRITICAL:
+  No filter whatsoever.
+  */
+  filter: none !important;
+
+  -webkit-filter: none !important;
+
+  /*
+  Do not use text-fill to recolor the emoji.
+  */
+  -webkit-text-fill-color: initial;
+
+  opacity: 1;
+
+  transform:
+    translateY(-1px);
+
+  /*
+  Force normal emoji rendering where supported.
+  */
+  font-variant-emoji: emoji;
+}
+
+/* =========================================================
+   MASTER NOTIFICATION DOT
+========================================================= */
+
+.general-notification-dot {
+  position: absolute;
+
+  width: 8px;
+  height: 8px;
+
+  top: 5px;
+  right: 3px;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  box-shadow:
+    0 0 8px
+    rgba(22, 142, 255, 0.7);
+}
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.general-content {
+  width: 100%;
+
+  max-width: 900px;
+
+  margin: 0 auto;
+
+  padding:
+    28px 24px 35px;
+}
+
+.general-content h1 {
+  margin: 0;
+
+  color: #18253a;
+
+  font-size: 30px;
+
+  line-height: 1.1;
+
+  font-weight: 700;
+
+  letter-spacing: -0.7px;
+}
+
+.general-description {
+  margin:
+    8px 0 0;
+
+  color: #71849e;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+.general-back-link {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-top: 20px;
+  margin-bottom: 22px;
+
+  color: #168eff;
+
+  text-decoration: none;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.general-back-arrow {
+  font-size: 27px;
+
+  line-height: 0.7;
+
+  font-weight: 300;
+}
+
+/* =========================================================
+   CARDS
+========================================================= */
+
+.general-card {
+  width: 100%;
+
+  margin-bottom: 14px;
+
+  padding:
+    16px 15px;
+
+  border:
+    1px solid
+    #dce4ed;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 2px
+    rgba(10, 30, 70, 0.02);
+
+  overflow: visible;
+}
+
+.general-section-label {
+  margin-bottom: 10px;
+
+  color: #168eff;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+
+  line-height: 1.2;
+}
+
+/* =========================================================
+   SETTING ROW
+========================================================= */
+
+.general-setting-row {
+  min-height: 74px;
+
+  display: grid;
+
+  grid-template-columns:
+    54px
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 11px;
+
+  position: relative;
+}
+
+.general-divider {
+  padding-bottom: 13px;
+
+  margin-bottom: 13px;
+
+  border-bottom:
+    1px solid
+    #e1e7ee;
+}
+
+/* =========================================================
+   ICON BOX
+========================================================= */
+
+.general-icon-box {
+  width: 54px;
+  height: 54px;
+
+  flex: 0 0 54px;
+
+  border-radius: 13px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.general-icon-box svg {
+  width: 28px;
+  height: 28px;
+}
+
+.general-icon-blue {
+  color: #168eff;
+
+  background:
+    rgba(35, 135, 255, 0.11);
+}
+
+.general-icon-green {
+  color: #15965a;
+
+  background:
+    rgba(30, 190, 125, 0.12);
+}
+
+.general-icon-purple {
+  color: #7956d8;
+
+  background:
+    rgba(126, 88, 255, 0.11);
+}
+
+.general-icon-yellow {
+  color: #D79A13;
+
+  background:
+    rgba(255, 160, 20, 0.12);
+}
+
+.general-icon-cyan {
+  color: #168eff;
+
+  background:
+    rgba(35, 135, 255, 0.10);
+}
+
+.general-icon-red {
+  color: #df4049;
+
+  background:
+    rgba(255, 62, 74, 0.10);
+}
+
+/* =========================================================
+   SETTING CONTENT
+========================================================= */
+
+.general-setting-content {
+  min-width: 0;
+}
+
+.general-setting-content h2 {
+  margin:
+    0 0 4px;
+
+  color: #18253a;
+
+  font-size: 13px;
+
+  line-height: 1.25;
+
+  font-weight: 700;
+}
+
+.general-setting-content p {
+  margin: 0;
+
+  color: #71849e;
+
+  font-size: 9px;
+
+  line-height: 1.45;
+}
+
+.desktop-break {
+  display: none;
+}
+
+/* =========================================================
+   CONTROL
+========================================================= */
+
+.general-control {
+  min-width: 45px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 3px;
+}
+
+/* =========================================================
+   TOGGLE
+========================================================= */
+
+.general-toggle {
+  width: 40px;
+  height: 23px;
+
+  padding: 2px;
+
+  border: 0;
+
+  border-radius: 99px;
+
+  background: #cbd5e1;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-start;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease;
+}
+
+.general-toggle-knob {
+  width: 19px;
+  height: 19px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 4px
+    rgba(0, 0, 0, 0.15);
+
+  transition:
+    transform 0.2s ease;
+}
+
+.general-toggle-on {
+  background: #168eff;
+
+  justify-content: flex-end;
+}
+
+.general-status {
+  font-size: 8px;
+
+  font-weight: 600;
+}
+
+.general-status-on {
+  color: #168eff;
+}
+
+.general-status-off {
+  color: #71849e;
+}
+
+/* =========================================================
+   PROFESSIONAL LANDING PAGE DROPDOWN
+========================================================= */
+
+.general-select-wrapper {
+  width: 135px;
+
+  position: relative;
+
+  flex-shrink: 0;
+
+  z-index: 20;
+}
+
+.general-select {
+  width: 100%;
+  height: 34px;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  border:
+    1px solid
+    #d7dee9;
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #18253a;
+
+  font-size: 9px;
+
+  font-weight: 500;
+
+  padding:
+    0 28px 0 9px;
+
+  outline: none;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  text-align: left;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.general-select:hover {
+  border-color:
+    #b9c8da;
+
+  background:
+    #fbfdff;
+}
+
+.general-select-focused {
+  border-color:
+    #168eff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(22, 142, 255, 0.10);
+}
+
+.general-select-arrow {
+  position: absolute;
+
+  pointer-events: none;
+
+  right: 9px;
+
+  top: 50%;
+
+  transform:
+    translateY(-55%);
+
+  color: #71849e;
+
+  font-size: 17px;
+
+  line-height: 1;
+
+  transition:
+    transform 0.18s ease,
+    color 0.18s ease;
+}
+
+.general-select-arrow-open {
+  transform:
+    translateY(-45%)
+    rotate(180deg);
+
+  color: #168eff;
+}
+
+.general-select-menu {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+
+  top: calc(100% + 7px);
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    #d7e1ec;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 12px 30px
+    rgba(14, 40, 75, 0.14),
+    0 3px 8px
+    rgba(14, 40, 75, 0.07);
+
+  padding: 4px;
+
+  z-index: 100;
+}
+
+.general-select-option {
+  width: 100%;
+
+  min-height: 34px;
+
+  border: 0;
+
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: #34455d;
+
+  padding:
+    0 9px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  text-align: left;
+
+  font-size: 9px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.general-select-option:hover {
+  background:
+    rgba(22, 142, 255, 0.07);
+
+  color: #168eff;
+}
+
+.general-select-option-active {
+  background:
+    rgba(22, 142, 255, 0.09);
+
+  color: #168eff;
+
+  font-weight: 600;
+}
+
+.general-select-check {
+  color: #168eff;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+/* =========================================================
+   RESET BUTTON
+========================================================= */
+
+.general-reset-card {
+  margin-bottom: 0;
+}
+
+.general-reset-label {
+  color: #d92626;
+}
+
+.general-reset-button {
+  height: 34px;
+
+  min-width: 125px;
+
+  padding:
+    0 11px;
+
+  border:
+    1px solid
+    #df4a52;
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #d92626;
+
+  font-size: 8.5px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.general-reset-button:hover {
+  background: #fff5f5;
+}
+
+.general-reset-button:active {
+  background: #df4a52;
+
+  color: #ffffff;
+}
+
+.general-reset-message {
+  margin-top: 10px;
+
+  padding:
+    9px 11px;
+
+  border-radius: 7px;
+
+  background: #eaf8ef;
+
+  color: #11834a;
+
+  font-size: 8.5px;
+
+  font-weight: 600;
+}
+
+/* =========================================================
+   MASTER BOTTOM NAVIGATION
+========================================================= */
+
+.general-bottom-nav {
+  position: fixed;
+
+  display: flex;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: 74px;
+
+  z-index: 150;
+
+  background:
+    rgba(3, 18, 40, 0.98);
+
+  border-top:
+    1px solid
+    rgba(255, 255, 255, 0.1);
+
+  justify-content:
+    space-around;
+
+  align-items: center;
+
+  backdrop-filter:
+    blur(15px);
+}
+
+/* =========================================================
+   MASTER NAV ICON SYSTEM
+========================================================= */
+
+.general-master-nav-icon {
+  width: 20px;
+  height: 20px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  color: currentColor;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 20px;
+
+  font-weight: 600;
+
+  line-height: 1;
+}
+
+.general-nav-item {
+  flex: 1;
+
+  height: 100%;
+
+  border: none;
+
+  background: transparent;
+
+  color: #7d93ae;
+
+  text-decoration: none;
+
+  cursor: pointer;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 4px;
+
+  transition:
+    color 0.2s ease;
+}
+
+.general-nav-item span:last-child {
+  font-size: 8px;
+
+  line-height: 1.2;
+}
+
+.general-nav-item:hover {
+  color: #a9bad0;
+}
+
+.general-nav-active {
+  color: #168eff;
+}
+
+/* =========================================================
+   TABLET / DESKTOP
+========================================================= */
+
+@media (min-width: 701px) {
+
+  .general-page {
+    padding-bottom: 0;
+  }
+
+  .general-header {
+    position: relative;
+
+    height: 88px;
+
+    grid-template-columns:
+      60px
+      minmax(0, 1fr)
+      60px;
+
+    padding:
+      0 24px;
+  }
+
+  .general-menu-button {
+    display: none;
+  }
+
+  .general-brand {
+    justify-content: flex-start;
+  }
+
+  .general-brand-diamond {
+    width: 28px;
+    height: 28px;
+
+    font-size: 28px;
+  }
+
+  .general-brand-text {
+    font-size: 24px;
+  }
+
+  .general-notification-button {
+    justify-self: end;
+  }
+
+  /* =======================================================
+     DESKTOP NATIVE EMOJI BELL
+  ======================================================= */
+
+  .general-master-bell {
+    width: 25px;
+    height: 25px;
+
+    font-size: 21px;
+
+    font-family:
+      "Apple Color Emoji",
+      "Segoe UI Emoji",
+      "Noto Color Emoji",
+      sans-serif !important;
+
+    color: initial !important;
+
+    filter: none !important;
+
+    -webkit-filter: none !important;
+
+    -webkit-text-fill-color: initial;
+
+    font-variant-emoji: emoji;
+  }
+
+  .general-content {
+    max-width: 900px;
+
+    padding:
+      35px 30px 60px;
+  }
+
+  .general-content h1 {
+    font-size: 34px;
+  }
+
+  .general-description {
+    font-size: 14px;
+  }
+
+  .general-setting-content h2 {
+    font-size: 15px;
+  }
+
+  .general-setting-content p {
+    font-size: 10px;
+  }
+
+  .general-bottom-nav {
+    display: none;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .general-page {
+    min-height: 100vh;
+
+    padding-bottom: 74px;
+  }
+
+  .general-header {
+    height: 72px;
+
+    padding: 0 14px;
+  }
+
+  .general-master-menu-icon {
+    font-size: 23px;
+  }
+
+  .general-brand-diamond {
+    width: 23px;
+    height: 23px;
+
+    font-size: 23px;
+  }
+
+  .general-brand-text {
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  /* =======================================================
+     MASTER MOBILE NATIVE NOTIFICATION BELL
+
+     EXACT SOURCE:
+         🔔
+
+     EXACT MOBILE SIZE:
+         17px
+
+     Native iOS color emoji.
+     No filter.
+     No white color.
+     No Arial.
+     No inherited Inter.
+  ======================================================= */
+
+  .general-master-bell {
+    width: 20px;
+    height: 20px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-family:
+      "Apple Color Emoji",
+      "Segoe UI Emoji",
+      "Noto Color Emoji",
+      sans-serif !important;
+
+    font-size: 17px;
+
+    font-style: normal;
+
+    font-weight: normal;
+
+    line-height: 1;
+
+    letter-spacing: normal;
+
+    text-align: center;
+
+    white-space: nowrap;
+
+    color: initial !important;
+
+    filter: none !important;
+
+    -webkit-filter: none !important;
+
+    -webkit-text-fill-color: initial;
+
+    opacity: 1;
+
+    transform:
+      translateY(-1px);
+
+    font-variant-emoji: emoji;
+  }
+
+  /* =======================================================
+     MASTER DOT
+  ======================================================= */
+
+  .general-notification-dot {
+    width: 8px;
+    height: 8px;
+
+    top: 5px;
+    right: 3px;
+
+    background: #168eff;
+
+    box-shadow:
+      0 0 8px
+      rgba(22, 142, 255, 0.7);
+  }
+
+  .general-content {
+    width: 100%;
+
+    max-width: none;
+
+    padding:
+      28px 15px 30px;
+  }
+
+  .general-content h1 {
+    font-size: 30px;
+  }
+
+  .general-description {
+    max-width: 100%;
+
+    font-size: 12px;
+  }
+
+  .general-back-link {
+    margin-top: 19px;
+
+    margin-bottom: 22px;
+
+    font-size: 13px;
+  }
+
+  .general-card {
+    margin-bottom: 14px;
+
+    padding:
+      16px 15px;
+
+    border-radius: 11px;
+
+    overflow: visible;
+  }
+
+  .general-section-label {
+    font-size: 10px;
+
+    margin-bottom: 10px;
+  }
+
+  .general-setting-row {
+    min-height: 74px;
+
+    grid-template-columns:
+      54px
+      minmax(0, 1fr);
+
+    gap: 11px;
+
+    align-items: center;
+  }
+
+  .general-icon-box {
+    width: 54px;
+    height: 54px;
+  }
+
+  .general-setting-content {
+    padding-right: 45px;
+  }
+
+  .general-setting-content h2 {
+    font-size: 13px;
+
+    line-height: 1.3;
+  }
+
+  .general-setting-content p {
+    font-size: 9px;
+
+    line-height: 1.45;
+  }
+
+  .general-control {
+    position: absolute;
+
+    right: 0;
+
+    top: 4px;
+
+    min-width: auto;
+  }
+
+  .general-toggle {
+    width: 40px;
+    height: 23px;
+  }
+
+  .general-toggle-knob {
+    width: 19px;
+    height: 19px;
+  }
+
+  /* =======================================================
+     MOBILE LANDING PAGE DROPDOWN
+  ======================================================= */
+
+  .general-select-wrapper {
+    grid-column: 2;
+
+    width: 100%;
+
+    margin-top: 6px;
+
+    z-index: 30;
+  }
+
+  .general-select {
+    width: 100%;
+
+    height: 38px;
+
+    border-radius: 9px;
+
+    padding:
+      0 32px 0 12px;
+
+    font-size: 11px;
+
+    font-weight: 500;
+  }
+
+  .general-select-menu {
+    top: calc(100% + 8px);
+
+    padding: 5px;
+
+    border-radius: 11px;
+
+    box-shadow:
+      0 16px 35px
+      rgba(14, 40, 75, 0.16),
+      0 4px 10px
+      rgba(14, 40, 75, 0.08);
+  }
+
+  .general-select-option {
+    min-height: 40px;
+
+    padding:
+      0 12px;
+
+    border-radius: 8px;
+
+    font-size: 11px;
+  }
+
+  .general-select-check {
+    font-size: 14px;
+  }
+
+  .general-select-arrow {
+    right: 11px;
+
+    font-size: 17px;
+  }
+
+  .general-reset-button {
+    grid-column: 2;
+
+    width: 100%;
+
+    min-width: 0;
+
+    height: 34px;
+
+    margin-top: 6px;
+
+    font-size: 8.5px;
+  }
+
+  .general-reset-message {
+    font-size: 8.5px;
+  }
+
+  .general-bottom-nav {
+    display: flex;
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .general-content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .general-header {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .general-brand-text {
+    font-size: 15px;
+  }
+
+  .general-brand-diamond {
+    width: 21px;
+    height: 21px;
+
+    font-size: 21px;
+  }
+
+  /* =======================================================
+     SMALL PHONE NATIVE EMOJI BELL
+
+     Keep the exact same native emoji treatment.
+  ======================================================= */
+
+  .general-master-bell {
+    width: 20px;
+    height: 20px;
+
+    font-size: 17px;
+
+    font-family:
+      "Apple Color Emoji",
+      "Segoe UI Emoji",
+      "Noto Color Emoji",
+      sans-serif !important;
+
+    font-style: normal;
+
+    font-weight: normal;
+
+    line-height: 1;
+
+    color: initial !important;
+
+    filter: none !important;
+
+    -webkit-filter: none !important;
+
+    -webkit-text-fill-color: initial;
+
+    opacity: 1;
+
+    transform:
+      translateY(-1px);
+
+    font-variant-emoji: emoji;
+  }
+
+  .general-content h1 {
+    font-size: 28px;
+  }
+
+  .general-setting-content h2 {
+    font-size: 12px;
+  }
+
+  .general-setting-content p {
+    font-size: 8.5px;
+  }
+
+  .general-icon-box {
+    width: 50px;
+    height: 50px;
+  }
+
+  .general-setting-row {
+    grid-template-columns:
+      50px
+      minmax(0, 1fr);
+  }
+
+  .general-select {
+    height: 36px;
+
+    font-size: 10px;
+  }
+
+  .general-select-option {
+    min-height: 38px;
+
+    font-size: 10px;
+  }
+
+  .general-bottom-nav {
+    height: 74px;
+  }
+}

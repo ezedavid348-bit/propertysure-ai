@@ -1,0 +1,1583 @@
+/* =========================================================
+   PAGE
+========================================================= */
+
+.page {
+  min-height: 100vh;
+  width: 100%;
+
+  display: flex;
+
+  background: #ffffff;
+  color: #18253a;
+
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+.page button,
+.page input {
+  font-family: inherit;
+}
+
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.icon {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width: 1em;
+
+  line-height: 1;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-weight: 600;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.sidebar {
+  width: 264px;
+  min-width: 264px;
+  min-height: 100vh;
+
+  padding:
+    27px 18px;
+
+  background:
+    #04142f;
+
+  color: #ffffff;
+
+  display: flex;
+  flex-direction: column;
+
+  border-right:
+    1px solid
+    rgba(83, 157, 255, 0.15);
+}
+
+.brand {
+  width: 100%;
+
+  border: 0;
+  background: transparent;
+
+  padding: 0 9px;
+
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  text-align: left;
+
+  font-size: 22px;
+  font-weight: 700;
+
+  letter-spacing: -0.4px;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.brand strong {
+  color: #168eff;
+}
+
+.brandDiamond {
+  color: #168eff;
+
+  font-size: 26px;
+
+  line-height: 1;
+}
+
+
+/* =========================================================
+   SIDEBAR NAV
+========================================================= */
+
+.primaryNav {
+  margin-top: 31px;
+}
+
+.navItem {
+  width: 100%;
+  min-height: 47px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 13px;
+
+  padding:
+    0 13px;
+
+  margin-bottom: 5px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #b2c1d5;
+
+  font-size: 14px;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.navItem:hover {
+  background:
+    rgba(24, 112, 200, 0.15);
+
+  color: #ffffff;
+}
+
+.settingsActive {
+  background:
+    linear-gradient(
+      90deg,
+      #0879df,
+      #1268b7
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 5px 20px
+    rgba(0, 120, 255, 0.18);
+}
+
+.accountLabel {
+  margin:
+    27px 13px 10px;
+
+  color: #607996;
+
+  font-size: 10px;
+
+  letter-spacing: 1.5px;
+}
+
+
+/* =========================================================
+   SIDEBAR HELP
+========================================================= */
+
+.sidebarHelp {
+  margin-top: auto;
+
+  padding: 16px;
+
+  border:
+    1px solid
+    rgba(71, 151, 255, 0.24);
+
+  border-radius: 11px;
+
+  background:
+    rgba(16, 88, 170, 0.09);
+}
+
+.sidebarHelp strong {
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sidebarHelp p {
+  margin:
+    7px 0 13px;
+
+  color: #8298b6;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+.sidebarHelp button {
+  width: 100%;
+
+  height: 38px;
+
+  border:
+    1px solid
+    #168eff;
+
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: #65b0ff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  font-size: 11px;
+
+  cursor: pointer;
+}
+
+.sidebarHelp button:hover {
+  background:
+    rgba(22, 142, 255, 0.08);
+}
+
+
+/* =========================================================
+   WEATHER
+========================================================= */
+
+.weather {
+  margin-top: 18px;
+
+  padding:
+    8px 10px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  color: #8196b0;
+}
+
+.weather > span {
+  font-size: 18px;
+}
+
+.weather div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.weather strong {
+  color: #ffffff;
+
+  font-size: 11px;
+}
+
+.weather small {
+  color: #7990ad;
+
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+.main {
+  flex: 1;
+
+  min-width: 0;
+
+  min-height: 100vh;
+
+  background: #ffffff;
+
+  overflow-x: hidden;
+}
+
+.mainInner {
+  width: 100%;
+
+  max-width: 1180px;
+
+  margin: 0 auto;
+
+  padding:
+    48px 48px 70px;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+.pageHeader {
+  margin-bottom: 26px;
+}
+
+.pageHeader h1 {
+  margin: 0;
+
+  color: #101c31;
+
+  font-size: 36px;
+
+  line-height: 1.1;
+
+  letter-spacing: -0.8px;
+
+  font-weight: 700;
+}
+
+.pageHeader p {
+  margin:
+    10px 0 0;
+
+  color: #718096;
+
+  font-size: 14px;
+
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   STANDARD BACK BUTTON
+========================================================= */
+
+.backButton {
+  margin-top: 16px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #168eff;
+
+  font-size: 11px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.backButton:hover {
+  text-decoration: underline;
+}
+
+.backButton:focus-visible {
+  outline:
+    2px solid
+    rgba(22, 142, 255, 0.55);
+
+  outline-offset: 3px;
+}
+
+
+/* =========================================================
+   HELP CARD
+========================================================= */
+
+.helpCard {
+  width: 100%;
+
+  padding:
+    32px;
+
+  border:
+    1px solid
+    #dfe6ee;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 15px
+    rgba(15, 35, 65, 0.025);
+}
+
+.helpCard h2 {
+  margin: 0 0 28px;
+
+  color: #18253a;
+
+  font-size: 24px;
+
+  line-height: 1.25;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   HELP GRID
+========================================================= */
+
+.helpGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 20px;
+}
+
+
+/* =========================================================
+   HELP OPTION
+========================================================= */
+
+.helpOption {
+  min-height: 230px;
+
+  padding:
+    32px 22px;
+
+  border:
+    1px solid
+    #dfe6ee;
+
+  border-radius: 13px;
+
+  background: #ffffff;
+
+  color: #18253a;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.helpOption:hover {
+  border-color: #c6d7e8;
+
+  box-shadow:
+    0 8px 24px
+    rgba(17, 46, 82, 0.07);
+
+  transform:
+    translateY(-1px);
+}
+
+.helpIcon {
+  width: 64px;
+  height: 64px;
+
+  margin-bottom: 27px;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.helpOption strong {
+  color: #18253a;
+
+  font-size: 15px;
+
+  line-height: 1.3;
+}
+
+.helpOption span {
+  margin-top: 15px;
+
+  color: #637a9b;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   HELP OPTION COLORS
+========================================================= */
+
+.blue {
+  color: #6d86a7;
+
+  background:
+    rgba(35, 135, 255, 0.11);
+}
+
+.green {
+  color: #6d9d8d;
+
+  background:
+    rgba(30, 190, 125, 0.11);
+}
+
+.yellow {
+  color: #e4aa4c;
+
+  background:
+    rgba(255, 190, 60, 0.14);
+}
+
+.purple {
+  color: #897bb0;
+
+  background:
+    rgba(126, 88, 255, 0.10);
+}
+
+
+/* =========================================================
+   LOWER GRID
+========================================================= */
+
+.lowerGrid {
+  margin-top: 22px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.1fr)
+    minmax(0, 0.9fr);
+
+  gap: 22px;
+
+  align-items: start;
+}
+
+
+/* =========================================================
+   TOPICS CARD
+========================================================= */
+
+.topicsCard,
+.contactCard {
+  border:
+    1px solid
+    #dfe6ee;
+
+  border-radius: 13px;
+
+  background: #ffffff;
+
+  padding: 24px;
+}
+
+.topicsCard h2,
+.contactCard h2 {
+  margin: 0;
+
+  color: #18253a;
+
+  font-size: 17px;
+
+  line-height: 1.3;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   TOPIC LIST
+========================================================= */
+
+.topicList {
+  margin-top: 16px;
+
+  border-top:
+    1px solid
+    #e5eaf0;
+}
+
+.topicItem {
+  width: 100%;
+
+  min-height: 55px;
+
+  padding:
+    8px 0;
+
+  border: 0;
+
+  border-bottom:
+    1px solid
+    #e5eaf0;
+
+  background: #ffffff;
+
+  color: #18253a;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.topicItem:hover {
+  background:
+    #fbfdff;
+}
+
+.topicIcon {
+  width: 29px;
+  height: 29px;
+
+  flex: 0 0 29px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(35, 135, 255, 0.09);
+
+  color: #168eff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.topicTitle {
+  flex: 1;
+
+  min-width: 0;
+
+  color: #405675;
+
+  font-size: 10.5px;
+
+  line-height: 1.45;
+}
+
+.topicArrow {
+  color: #7c8da2;
+
+  flex-shrink: 0;
+}
+
+.viewArticles {
+  margin-top: 15px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #168eff;
+
+  font-size: 10px;
+
+  cursor: pointer;
+}
+
+.viewArticles:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   CONTACT INFORMATION
+========================================================= */
+
+.contactItem {
+  margin-top: 18px;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 11px;
+}
+
+.contactIcon {
+  width: 35px;
+  height: 35px;
+
+  flex: 0 0 35px;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.contactItem > div:last-child {
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+}
+
+.contactItem strong {
+  color: #263852;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+.contactItem span {
+  margin-top: 4px;
+
+  color: #657992;
+
+  font-size: 9.5px;
+
+  line-height: 1.5;
+}
+
+.contactItem small {
+  margin-top: 3px;
+
+  color: #8797aa;
+
+  font-size: 8.5px;
+
+  line-height: 1.4;
+}
+
+.chatButton {
+  width: 100%;
+
+  height: 38px;
+
+  margin-top: 19px;
+
+  border:
+    1px solid
+    #168eff;
+
+  border-radius: 7px;
+
+  background: #168eff;
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  font-size: 10px;
+
+  cursor: pointer;
+}
+
+.chatButton:hover {
+  background: #0879df;
+
+  border-color: #0879df;
+}
+
+
+/* =========================================================
+   SATISFACTION
+========================================================= */
+
+.satisfaction {
+  margin-top: 22px;
+
+  padding:
+    20px 22px;
+
+  border:
+    1px solid
+    #dfe6ee;
+
+  border-radius: 13px;
+
+  background:
+    #f8fbff;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+}
+
+.satisfactionIcon {
+  width: 46px;
+  height: 46px;
+
+  flex: 0 0 46px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(22, 142, 255, 0.10);
+
+  color: #168eff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.satisfaction strong {
+  color: #18253a;
+
+  font-size: 13px;
+}
+
+.satisfaction p {
+  margin:
+    5px 0 0;
+
+  color: #687c98;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   STANDARD NOTIFICATION BELL
+========================================================= */
+
+.topBell {
+  position: relative;
+
+  width: 40px;
+  height: 40px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #f2b500;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  flex-shrink: 0;
+}
+
+.topBellDot {
+  position: absolute;
+
+  top: 4px;
+  right: 3px;
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #168eff;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading {
+  min-height: 100vh;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  background: #ffffff;
+
+  color: #18253a;
+
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.loadingBrand {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  font-size: 22px;
+
+  font-weight: 700;
+}
+
+.loadingBrand > span {
+  color: #168eff;
+
+  font-size: 26px;
+}
+
+.loadingBrand strong {
+  color: #168eff;
+}
+
+.loadingText {
+  margin-top: 12px;
+
+  color: #718096;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   MOBILE HEADER
+========================================================= */
+
+.mobileHeader {
+  display: none;
+}
+
+.mobileMenuButton {
+  border: 0;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+.mobileBrand {
+  border: 0;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  font-size: 17px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.mobileBrand > span {
+  color: #168eff;
+
+  font-size: 22px;
+}
+
+.mobileBrand strong {
+  color: #168eff;
+}
+
+
+/* =========================================================
+   MOBILE MENU
+========================================================= */
+
+.mobileMenu {
+  display: none;
+}
+
+.mobileClose {
+  border: 0;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  cursor: pointer;
+}
+
+.mobileMenuTop {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+}
+
+.mobileMenuTop > button:first-child {
+  border: 0;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  font-size: 20px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.mobileMenuTop strong {
+  color: #168eff;
+}
+
+.mobileMenuItem {
+  width: 100%;
+
+  min-height: 52px;
+
+  padding:
+    0 14px;
+
+  margin-top: 5px;
+
+  border: 0;
+
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: #b3c3d8;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 13px;
+
+  text-align: left;
+
+  font-size: 14px;
+
+  cursor: pointer;
+}
+
+.mobileMenuItem:hover {
+  background:
+    rgba(24, 112, 200, 0.14);
+
+  color: #ffffff;
+}
+
+.mobileMenuAccount {
+  margin:
+    28px 14px 10px;
+
+  color: #617996;
+
+  font-size: 10px;
+
+  letter-spacing: 1.5px;
+}
+
+.mobileMenuActive {
+  background:
+    linear-gradient(
+      90deg,
+      #0879df,
+      #1268b7
+    );
+
+  color: #ffffff;
+}
+
+.mobileLogout {
+  color: #ff8b91;
+}
+
+
+/* =========================================================
+   MOBILE BOTTOM NAV
+========================================================= */
+
+.mobileBottomNav {
+  display: none;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+  .sidebar {
+    width: 225px;
+    min-width: 225px;
+  }
+
+  .mainInner {
+    padding:
+      38px 30px 60px;
+  }
+
+  .helpCard {
+    padding: 26px;
+  }
+
+  .helpGrid {
+    gap: 15px;
+  }
+
+  .lowerGrid {
+    gap: 16px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+  .page {
+    display: block;
+
+    min-height: 100vh;
+
+    padding-bottom: 74px;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  /* =======================================================
+     MOBILE HEADER
+  ======================================================= */
+
+  .mobileHeader {
+    position: sticky;
+
+    top: 0;
+
+    z-index: 100;
+
+    height: 70px;
+
+    padding:
+      0 13px;
+
+    display: grid;
+
+    grid-template-columns:
+      42px
+      minmax(0, 1fr)
+      42px;
+
+    align-items: center;
+
+    background: #06152f;
+
+    border-bottom:
+      1px solid
+      #193650;
+  }
+
+  .mobileMenuButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .mobileBrand {
+    height: 40px;
+  }
+
+  /*
+   * Standard notification bell:
+   * 40px × 40px
+   * Yellow icon
+   * Blue 7px dot
+   */
+
+  .topBell {
+    width: 40px;
+    height: 40px;
+  }
+
+  .topBellDot {
+    top: 4px;
+    right: 3px;
+
+    width: 7px;
+    height: 7px;
+  }
+
+  /* =======================================================
+     MAIN
+  ======================================================= */
+
+  .main {
+    min-height:
+      calc(100vh - 70px);
+  }
+
+  .mainInner {
+    width: 100%;
+
+    padding:
+      30px 15px 35px;
+  }
+
+  /* =======================================================
+     PAGE HEADER
+  ======================================================= */
+
+  .pageHeader {
+    margin-bottom: 20px;
+  }
+
+  .pageHeader h1 {
+    font-size: 29px;
+
+    letter-spacing: -0.6px;
+  }
+
+  .pageHeader p {
+    margin-top: 9px;
+
+    font-size: 11px;
+
+    line-height: 1.55;
+  }
+
+  /*
+   * Standard back button remains small
+   * and blue on mobile.
+   */
+
+  .backButton {
+    margin-top: 15px;
+
+    font-size: 11px;
+  }
+
+  /* =======================================================
+     HELP CARD
+  ======================================================= */
+
+  .helpCard {
+    padding: 20px 14px;
+
+    border-radius: 13px;
+  }
+
+  .helpCard h2 {
+    margin:
+      0 0 20px;
+
+    padding-left: 3px;
+
+    font-size: 19px;
+  }
+
+  .helpGrid {
+    display: grid;
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 18px;
+  }
+
+  .helpOption {
+    min-height: 198px;
+
+    padding:
+      24px 12px;
+  }
+
+  .helpIcon {
+    width: 60px;
+    height: 60px;
+
+    margin-bottom: 24px;
+  }
+
+  .helpOption strong {
+    font-size: 13px;
+  }
+
+  .helpOption span {
+    margin-top: 13px;
+
+    font-size: 9px;
+
+    line-height: 1.5;
+  }
+
+  /* =======================================================
+     LOWER GRID
+  ======================================================= */
+
+  .lowerGrid {
+    margin-top: 18px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 18px;
+  }
+
+  .topicsCard,
+  .contactCard {
+    width: 100%;
+
+    padding: 18px;
+  }
+
+  .topicsCard h2,
+  .contactCard h2 {
+    font-size: 16px;
+  }
+
+  .topicItem {
+    min-height: 54px;
+  }
+
+  .topicTitle {
+    font-size: 9.5px;
+  }
+
+  /* =======================================================
+     SATISFACTION
+  ======================================================= */
+
+  .satisfaction {
+    margin-top: 18px;
+
+    padding:
+      17px 16px;
+  }
+
+  .satisfactionIcon {
+    width: 40px;
+    height: 40px;
+
+    flex-basis: 40px;
+  }
+
+  .satisfaction strong {
+    font-size: 11px;
+  }
+
+  .satisfaction p {
+    font-size: 9px;
+  }
+
+  /* =======================================================
+     MOBILE BOTTOM NAV
+  ======================================================= */
+
+  .mobileBottomNav {
+    position: fixed;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 74px;
+
+    z-index: 150;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-around;
+
+    padding-bottom:
+      env(safe-area-inset-bottom);
+
+    background:
+      rgba(3, 18, 40, 0.98);
+
+    border-top:
+      1px solid
+      #193650;
+
+    backdrop-filter:
+      blur(15px);
+  }
+
+  .mobileBottomNav button {
+    flex: 1;
+
+    height: 100%;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #7990ad;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 4px;
+
+    cursor: pointer;
+  }
+
+  .mobileBottomNav button span {
+    font-size: 8px;
+  }
+
+  .activeBottom {
+    color: #168eff;
+  }
+
+  /* =======================================================
+     MOBILE MENU
+  ======================================================= */
+
+  .mobileMenu {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 300;
+
+    display: block;
+
+    padding: 22px;
+
+    overflow-y: auto;
+
+    background: #06152f;
+
+    color: #ffffff;
+  }
+}
+
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 380px) {
+  .mainInner {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .mobileBrand {
+    font-size: 15px;
+  }
+
+  .pageHeader h1 {
+    font-size: 27px;
+  }
+
+  .helpCard {
+    padding:
+      18px 12px;
+  }
+
+  .helpGrid {
+    gap: 12px;
+  }
+
+  .helpOption {
+    min-height: 185px;
+
+    padding:
+      20px 9px;
+  }
+
+  .helpIcon {
+    width: 55px;
+    height: 55px;
+
+    margin-bottom: 20px;
+  }
+
+  .helpOption strong {
+    font-size: 12px;
+  }
+
+  .helpOption span {
+    font-size: 8.5px;
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+button:focus-visible,
+input:focus-visible {
+  outline:
+    2px solid
+    rgba(22, 142, 255, 0.55);
+
+  outline-offset: 2px;
+}

@@ -1,594 +1,1538 @@
 "use client";
 
-import { useState } from "react";
+import {
+  ChangeEvent,
+  DragEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
 
-type VerificationChecks = {
-  documentStructure: boolean;
-  dataConsistency: boolean;
-  signatureValid: boolean;
-  stampValid: boolean;
-  noForgery: boolean;
-  noDuplicate: boolean;
-  registryVerified: boolean;
+type SelectedDocument = {
+  file: File;
+  id: string;
 };
 
-function calculateVerificationScore(
-  checks: VerificationChecks
-) {
-  const weights = {
-    documentStructure: 10,
-    dataConsistency: 15,
-    signatureValid: 15,
-    stampValid: 10,
-    noForgery: 20,
-    noDuplicate: 10,
-    registryVerified: 20,
+type UploadedDocument = {
+  id: string;
+  name: string;
+  original_name: string;
+  path: string;
+  type: string;
+  mime_type: string;
+  size: number;
+};
+
+type VerificationFindings = {
+  document_package: UploadedDocument[];
+  document_count: number;
+
+  checks: {
+    documentStructure: boolean | null;
+    dataConsistency: boolean | null;
+    signatureValid: boolean | null;
+    stampValid: boolean | null;
+    noForgery: boolean | null;
+    noDuplicate: boolean | null;
+    documentCompleteness: boolean | null;
   };
 
-  let score = 0;
+  processing: {
+    stage: "received";
+    progress: 8;
+    message: string;
+  };
+};
 
-  if (checks.documentStructure)
-    score += weights.documentStructure;
+const STORAGE_BUCKET = "property-documents";
 
-  if (checks.dataConsistency)
-    score += weights.dataConsistency;
+const MAX_FILE_SIZE =
+  20 * 1024 * 1024;
 
-  if (checks.signatureValid)
-    score += weights.signatureValid;
+const ALLOWED_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+];
 
-  if (checks.stampValid)
-    score += weights.stampValid;
-
-  if (checks.noForgery)
-    score += weights.noForgery;
-
-  if (checks.noDuplicate)
-    score += weights.noDuplicate;
-
-  if (checks.registryVerified)
-    score += weights.registryVerified;
-
-  let risk:
-    | "very_low"
-    | "low"
-    | "medium"
-    | "high"
-    | "critical";
-
-  if (score >= 90) {
-    risk = "very_low";
-  } else if (score >= 75) {
-    risk = "low";
-  } else if (score >= 50) {
-    risk = "medium";
-  } else if (score >= 25) {
-    risk = "high";
-  } else {
-    risk = "critical";
+function getDocumentType(
+  file: File
+): string {
+  if (
+    file.type ===
+    "application/pdf"
+  ) {
+    return "PDF";
   }
 
-  return {
-    trustScore: score,
-    confidence: score,
-    risk,
-  };
+  if (
+    file.type ===
+    "image/jpeg"
+  ) {
+    return "JPG";
+  }
+
+  if (
+    file.type ===
+    "image/png"
+  ) {
+    return "PNG";
+  }
+
+  const extension =
+    file.name
+      .split(".")
+      .pop()
+      ?.toUpperCase();
+
+  return extension || "FILE";
+}
+
+function formatFileSize(
+  bytes: number
+): string {
+  if (
+    bytes <
+    1024 * 1024
+  ) {
+    return `${Math.round(
+      bytes / 1024
+    )} KB`;
+  }
+
+  return `${(
+    bytes /
+    (1024 * 1024)
+  ).toFixed(2)} MB`;
+}
+
+function createSafeFileName(
+  fileName: string
+): string {
+  const lastDot =
+    fileName.lastIndexOf(".");
+
+  const extension =
+    lastDot >= 0
+      ? fileName
+          .slice(lastDot)
+          .toLowerCase()
+      : "";
+
+  const baseName =
+    lastDot >= 0
+      ? fileName.slice(
+          0,
+          lastDot
+        )
+      : fileName;
+
+  const safeBase =
+    baseName
+      .normalize("NFKD")
+      .replace(
+        /[^a-zA-Z0-9_-]/g,
+        "-"
+      )
+      .replace(
+        /-+/g,
+        "-"
+      )
+      .replace(
+        /^-+|-+$/g,
+        ""
+      );
+
+  return `${
+    safeBase ||
+    "property-document"
+  }${extension}`;
+}
+
+function getFileKey(
+  file: File
+): string {
+  return `${file.name}__${file.size}__${file.lastModified}`;
+}
+
+function createDocumentId(): string {
+  if (
+    typeof crypto !==
+      "undefined" &&
+    typeof crypto.randomUUID ===
+      "function"
+  ) {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2)}`;
 }
 
 export default function VerifyPage() {
-  const [file, setFile] =
-    useState<File | null>(null);
+  const router =
+    useRouter();
 
-  const [isUploading, setIsUploading] =
+  const [
+    menuOpen,
+    setMenuOpen,
+  ] = useState(false);
+
+  const [
+    loadingPage,
+    setLoadingPage,
+  ] = useState(true);
+
+  const fileInputRef =
+    useRef<HTMLInputElement>(
+      null
+    );
+
+  const [
+    documents,
+    setDocuments,
+  ] =
+    useState<SelectedDocument[]>(
+      []
+    );
+
+  const [
+    isDragging,
+    setIsDragging,
+  ] =
     useState(false);
 
-  const [isDragging, setIsDragging] =
+  const [
+    isUploading,
+    setIsUploading,
+  ] =
     useState(false);
 
-  const [uploadError, setUploadError] =
+  const [
+    uploadError,
+    setUploadError,
+  ] =
     useState("");
 
-  function handleFileSelection(
-    selectedFile: File | null
+  useEffect(() => {
+    const timer =
+      window.setTimeout(() => {
+        setLoadingPage(false);
+      }, 350);
+
+    return () => {
+      window.clearTimeout(
+        timer
+      );
+    };
+  }, []);
+
+  function navigateTo(
+    path: string
   ) {
-    if (!selectedFile) return;
+    setMenuOpen(false);
+
+    window.location.href =
+      path;
+  }
+
+  function addDocuments(
+    selectedFiles:
+      | FileList
+      | File[]
+  ) {
+    setUploadError("");
+
+    const incomingFiles =
+      Array.from(
+        selectedFiles
+      );
+
+    if (
+      incomingFiles.length ===
+      0
+    ) {
+      return;
+    }
+
+    const invalidFiles:
+      string[] = [];
+
+    const duplicateFiles:
+      string[] = [];
+
+    const existingFileKeys =
+      new Set(
+        documents.map(
+          (
+            document
+          ) =>
+            getFileKey(
+              document.file
+            )
+        )
+      );
+
+    const currentSelectionKeys =
+      new Set<string>();
+
+    const validFiles:
+      File[] = [];
+
+    for (
+      const file of
+      incomingFiles
+    ) {
+      if (
+        !ALLOWED_TYPES.includes(
+          file.type
+        )
+      ) {
+        invalidFiles.push(
+          `${file.name}: unsupported file type`
+        );
+
+        continue;
+      }
+
+      if (
+        file.size >
+        MAX_FILE_SIZE
+      ) {
+        invalidFiles.push(
+          `${file.name}: exceeds 20 MB`
+        );
+
+        continue;
+      }
+
+      const fileKey =
+        getFileKey(file);
+
+      if (
+        existingFileKeys.has(
+          fileKey
+        )
+      ) {
+        duplicateFiles.push(
+          file.name
+        );
+
+        continue;
+      }
+
+      if (
+        currentSelectionKeys.has(
+          fileKey
+        )
+      ) {
+        duplicateFiles.push(
+          file.name
+        );
+
+        continue;
+      }
+
+      currentSelectionKeys.add(
+        fileKey
+      );
+
+      validFiles.push(
+        file
+      );
+    }
+
+    const messages:
+      string[] = [];
+
+    if (
+      invalidFiles.length >
+      0
+    ) {
+      messages.push(
+        invalidFiles.join(
+          " • "
+        )
+      );
+    }
+
+    if (
+      duplicateFiles.length >
+      0
+    ) {
+      messages.push(
+        `Already selected: ${duplicateFiles.join(
+          ", "
+        )}`
+      );
+    }
+
+    if (
+      messages.length >
+      0
+    ) {
+      setUploadError(
+        messages.join(
+          " • "
+        )
+      );
+    }
+
+    if (
+      validFiles.length ===
+      0
+    ) {
+      return;
+    }
+
+    const newDocuments =
+      validFiles.map(
+        (
+          file
+        ) => ({
+          file,
+          id:
+            createDocumentId(),
+        })
+      );
+
+    setDocuments(
+      (
+        current
+      ) => [
+        ...current,
+        ...newDocuments,
+      ]
+    );
+  }
+
+  function handleFileInput(
+    event:
+      ChangeEvent<HTMLInputElement>
+  ) {
+    if (
+      event.target.files
+    ) {
+      addDocuments(
+        event.target.files
+      );
+    }
+
+    event.target.value = "";
+  }
+
+  function handleDragOver(
+    event:
+      DragEvent<HTMLLabelElement>
+  ) {
+    event.preventDefault();
+
+    setIsDragging(true);
+  }
+
+  function handleDragLeave() {
+    setIsDragging(false);
+  }
+
+  function handleDrop(
+    event:
+      DragEvent<HTMLLabelElement>
+  ) {
+    event.preventDefault();
+
+    setIsDragging(false);
+
+    if (
+      event.dataTransfer.files
+    ) {
+      addDocuments(
+        event.dataTransfer.files
+      );
+    }
+  }
+
+  function removeDocument(
+    documentId: string
+  ) {
+    if (
+      isUploading
+    ) {
+      return;
+    }
+
+    setDocuments(
+      (
+        current
+      ) =>
+        current.filter(
+          (
+            document
+          ) =>
+            document.id !==
+            documentId
+        )
+    );
 
     setUploadError("");
-    setFile(selectedFile);
+  }
+
+  function openFilePicker() {
+    if (
+      isUploading
+    ) {
+      return;
+    }
+
+    fileInputRef.current?.click();
   }
 
   async function handleVerification() {
-    if (!file) return;
+    if (
+      documents.length ===
+        0 ||
+      isUploading
+    ) {
+      return;
+    }
 
     setIsUploading(true);
+
     setUploadError("");
+
+    const uploadedStoragePaths:
+      string[] = [];
 
     try {
       /*
-       * ==========================================
-       * STEP 1 — UPLOAD DOCUMENT TO SUPABASE
-       * ==========================================
+       * ======================================================
+       * 1. GET EXISTING SESSION
+       * ======================================================
        */
 
-      const filePath =
-        `${Date.now()}-${file.name}`;
-
       const {
-        data,
-        error,
-      } = await supabase.storage
-        .from("property-documents")
-        .upload(
-          filePath,
-          file,
+        data: {
+          session,
+        },
+        error:
+          sessionError,
+      } =
+        await supabase.auth.getSession();
+
+      if (
+        sessionError
+      ) {
+        console.error(
+          "PROPERTY SURE AI: SESSION CHECK ERROR:",
+          sessionError
+        );
+
+        throw new Error(
+          "We could not verify your account session. Please sign in again."
+        );
+      }
+
+      /*
+       * ======================================================
+       * 2. REQUIRE REAL AUTHENTICATED USER
+       *
+       * IMPORTANT:
+       * NO anonymous fallback.
+       * ======================================================
+       */
+
+      if (
+        !session?.user ||
+        session.user.is_anonymous ===
+          true
+      ) {
+        router.replace(
+          "/signin"
+        );
+
+        return;
+      }
+
+      /*
+       * ======================================================
+       * 3. USER ID
+       * ======================================================
+       */
+
+      const user =
+        session.user;
+
+      console.log(
+        "PROPERTY SURE AI: Verification user:",
+        {
+          userId:
+            user.id,
+
+          anonymous:
+            user.is_anonymous ===
+            true,
+        }
+      );
+
+      /*
+       * ======================================================
+       * 4. UPLOAD COMPLETE DOCUMENT PACKAGE
+       * ======================================================
+       */
+
+      const uploadedDocuments:
+        UploadedDocument[] = [];
+
+      for (
+        let index = 0;
+        index <
+        documents.length;
+        index++
+      ) {
+        const selectedDocument =
+          documents[index];
+
+        const file =
+          selectedDocument.file;
+
+        const originalFileName =
+          file.name;
+
+        const safeFileName =
+          createSafeFileName(
+            originalFileName
+          );
+
+        const documentId =
+          selectedDocument.id;
+
+        const filePath =
+          `${user.id}/verification-uploads/${documentId}/${safeFileName}`;
+
+        console.log(
+          "PROPERTY SURE AI: UPLOADING DOCUMENT:",
           {
-            cacheControl: "3600",
-            upsert: false,
+            documentId,
+            originalFileName,
+            safeFileName,
+            filePath,
+            mimeType:
+              file.type,
+            size:
+              file.size,
           }
         );
 
-      if (error) {
-        console.error(
-          "SUPABASE ERROR:",
-          error
+        const {
+          error:
+            storageError,
+        } =
+          await supabase.storage
+            .from(
+              STORAGE_BUCKET
+            )
+            .upload(
+              filePath,
+              file,
+              {
+                cacheControl:
+                  "3600",
+
+                upsert:
+                  false,
+
+                contentType:
+                  file.type,
+              }
+            );
+
+        if (
+          storageError
+        ) {
+          console.error(
+            "SUPABASE STORAGE UPLOAD ERROR:",
+            storageError
+          );
+
+          throw new Error(
+            `Could not upload "${originalFileName}": ${storageError.message}`
+          );
+        }
+
+        uploadedStoragePaths.push(
+          filePath
         );
 
-        setUploadError(
-          `Upload failed: ${error.message}`
-        );
+        const {
+          data:
+            signedUrlData,
+          error:
+            signedUrlError,
+        } =
+          await supabase.storage
+            .from(
+              STORAGE_BUCKET
+            )
+            .createSignedUrl(
+              filePath,
+              60 * 10
+            );
 
-        setIsUploading(false);
-        return;
+        if (
+          signedUrlError ||
+          !signedUrlData?.signedUrl
+        ) {
+          console.error(
+            "SUPABASE STORAGE VERIFICATION ERROR:",
+            {
+              filePath,
+              signedUrlError,
+            }
+          );
+
+          throw new Error(
+            `The document "${originalFileName}" uploaded, but PropertySure could not verify the stored file. Please try uploading it again.`
+          );
+        }
+
+        uploadedDocuments.push({
+          id:
+            documentId,
+
+          name:
+            originalFileName,
+
+          original_name:
+            originalFileName,
+
+          path:
+            filePath,
+
+          type:
+            getDocumentType(
+              file
+            ),
+
+          mime_type:
+            file.type,
+
+          size:
+            file.size,
+        });
       }
 
-      /*
-       * ==========================================
-       * STEP 2 — DEMONSTRATION VERIFICATION CHECKS
-       *
-       * These remain the same prototype values
-       * from your original verification page.
-       * ==========================================
-       */
-
-      const checks: VerificationChecks = {
-        documentStructure: true,
-        dataConsistency: true,
-        signatureValid: true,
-        stampValid: true,
-        noForgery: true,
-        noDuplicate: true,
-        registryVerified: true,
-      };
-
-      const verificationScore =
-        calculateVerificationScore(
-          checks
+      if (
+        uploadedDocuments.length ===
+        0
+      ) {
+        throw new Error(
+          "No documents were uploaded."
         );
+      }
 
-      /*
-       * ==========================================
-       * STEP 3 — CREATE VERIFICATION RECORD
-       * ==========================================
-       */
+      const findings:
+        VerificationFindings =
+        {
+          document_package:
+            uploadedDocuments,
+
+          document_count:
+            uploadedDocuments.length,
+
+          checks: {
+            documentStructure:
+              null,
+
+            dataConsistency:
+              null,
+
+            signatureValid:
+              null,
+
+            stampValid:
+              null,
+
+            noForgery:
+              null,
+
+            noDuplicate:
+              null,
+
+            documentCompleteness:
+              null,
+          },
+
+          processing: {
+            stage:
+              "received",
+
+            progress:
+              8,
+
+            message:
+              "Your property document package has been securely received.",
+          },
+        };
+
+      const primaryDocument =
+        uploadedDocuments[0];
+
+      if (
+        !primaryDocument
+      ) {
+        throw new Error(
+          "No primary document was found."
+        );
+      }
 
       const {
-        data: verificationRecord,
-        error: verificationError,
-      } = await supabase
-        .from("verifications")
-        .insert({
-          doc_name: file.name,
-          file_url: filePath,
-          status: "uploaded",
+        data:
+          verificationRecord,
+        error:
+          verificationError,
+      } =
+        await supabase
+          .from(
+            "verifications"
+          )
+          .insert({
+            user_id:
+              user.id,
 
-          trust_score:
-            verificationScore.trustScore,
+            doc_name:
+              primaryDocument.name,
 
-          confidence:
-            verificationScore.confidence,
+            file_url:
+              primaryDocument.path,
 
-          risk:
-            verificationScore.risk,
+            doc_type:
+              primaryDocument.type,
 
-          findings: {},
+            status:
+              "review",
 
-          doc_type: file.type,
-        })
-        .select()
-        .single();
+            trust_score:
+              null,
 
-      if (verificationError) {
+            confidence:
+              null,
+
+            risk:
+              null,
+
+            findings,
+          })
+          .select(
+            "id"
+          )
+          .single();
+
+      if (
+        verificationError
+      ) {
         console.error(
-          "VERIFICATION ERROR:",
+          "VERIFICATION RECORD ERROR:",
           verificationError
         );
 
-        setUploadError(
-          `Verification record failed: ${verificationError.message}`
-        );
+        if (
+          uploadedStoragePaths.length >
+          0
+        ) {
+          const {
+            error:
+              rollbackError,
+          } =
+            await supabase.storage
+              .from(
+                STORAGE_BUCKET
+              )
+              .remove(
+                uploadedStoragePaths
+              );
 
-        setIsUploading(false);
-        return;
+          if (
+            rollbackError
+          ) {
+            console.warn(
+              "STORAGE ROLLBACK WARNING:",
+              rollbackError
+            );
+          }
+        }
+
+        throw new Error(
+          `Could not create verification record: ${verificationError.message}`
+        );
       }
 
-      /*
-       * ==========================================
-       * STEP 4 — GO TO PROCESSING PAGE
-       * ==========================================
-       */
+      if (
+        !verificationRecord?.id
+      ) {
+        throw new Error(
+          "Verification record was created but no verification ID was returned."
+        );
+      }
+
+      console.log(
+        "PROPERTY SURE AI: VERIFICATION CREATED:",
+        {
+          verificationId:
+            verificationRecord.id,
+
+          userId:
+            user.id,
+
+          anonymous:
+            user.is_anonymous ===
+            true,
+
+          documentCount:
+            uploadedDocuments.length,
+
+          documents:
+            uploadedDocuments.map(
+              (
+                document
+              ) => ({
+                id:
+                  document.id,
+
+                name:
+                  document.name,
+
+                original_name:
+                  document.original_name,
+
+                path:
+                  document.path,
+
+                type:
+                  document.type,
+
+                mime_type:
+                  document.mime_type,
+
+                size:
+                  document.size,
+              })
+            ),
+        }
+      );
 
       window.location.href =
-        `/processing?id=${verificationRecord.id}`;
-
-    } catch (error) {
+        `/verify/review?id=${encodeURIComponent(
+          verificationRecord.id
+        )}`;
+    } catch (
+      error
+    ) {
       console.error(
-        "VERIFICATION ERROR:",
+        "VERIFICATION START ERROR:",
         error
       );
 
       setUploadError(
-        "Something went wrong while starting verification."
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while uploading your documents."
       );
 
       setIsUploading(false);
     }
   }
 
+  const documentCount =
+    documents.length;
+
+  const hasDocuments =
+    documentCount > 0;
+
+  if (loadingPage) {
+    return (
+      <main className="dashboardLoading">
+        <div className="loadingBrand">
+          <div className="loadingLogo">
+            ◆
+          </div>
+
+          <div className="loadingTitle">
+            <span>
+              PropertySure
+            </span>
+
+            <strong>
+              AI
+            </strong>
+          </div>
+        </div>
+
+        <div className="loadingText">
+          Loading verification...
+        </div>
+
+        <style jsx>{`
+          .dashboardLoading {
+            min-height: 100vh;
+
+            background:
+              radial-gradient(
+                circle at 70% 0%,
+                rgba(
+                  0,
+                  123,
+                  255,
+                  0.18
+                ),
+                transparent 30%
+              ),
+              #06152f;
+
+            color: #ffffff;
+
+            font-family:
+              Inter,
+              Arial,
+              Helvetica,
+              sans-serif;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 10px;
+          }
+
+          .loadingBrand {
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+          }
+
+          .loadingLogo {
+            color: #168eff;
+
+            font-size: 42px;
+
+            line-height: 1;
+          }
+
+          .loadingTitle {
+            font-size: 22px;
+
+            font-weight: 700;
+
+            letter-spacing: -0.2px;
+          }
+
+          .loadingTitle span {
+            color: #ffffff;
+          }
+
+          .loadingTitle strong {
+            color: #168eff;
+          }
+
+          .loadingText {
+            color: #8ea4c3;
+
+            font-size: 14px;
+          }
+        `}</style>
+      </main>
+    );
+  }
+
   return (
-    <main className="verify-page">
+    <main className="verifyPage">
 
-      {/* =========================================
-          BACKGROUND DECORATION
-      ========================================== */}
+      <header className="mobileHeader">
 
-      <div className="background-grid" />
-      <div className="background-glow glow-one" />
-      <div className="background-glow glow-two" />
+        <button
+          className="menuButton"
+          type="button"
+          onClick={() =>
+            setMenuOpen(true)
+          }
+          aria-label="Open navigation"
+        >
+          ☰
+        </button>
 
-      <div className="page-container">
+        <button
+          className="mobileLogoButton"
+          type="button"
+          onClick={() =>
+            navigateTo(
+              "/dashboard"
+            )
+          }
+        >
+          <span className="mobileLogoDiamond">
+            ◆
+          </span>
 
-        {/* =========================================
-            HEADER
-        ========================================== */}
+          <span className="mobileBrandName">
+            PropertySure
+            <strong>
+              AI
+            </strong>
+          </span>
+        </button>
 
-        <header className="top-header">
+        <button
+          className="mobileBell"
+          type="button"
+          onClick={() =>
+            navigateTo(
+              "/account/notifications"
+            )
+          }
+          aria-label="Notifications"
+        >
+          <span className="bellIcon">
+            🔔
+          </span>
 
-          <div className="brand">
+          <span className="mobileNotificationDot" />
+        </button>
 
-            <div className="brand-icon">
-              <span>✓</span>
-            </div>
+      </header>
+
+      {menuOpen && (
+
+        <div className="mobileMenu">
+
+          <div className="mobileMenuHeader">
 
             <div>
-              <div className="brand-name">
-                PropertySure{" "}
-                <span>AI</span>
+
+              <div className="mobileMenuLogo">
+
+                <span className="mobileMenuDiamond">
+                  ◆
+                </span>
+
+                <span>
+                  PropertySure
+                  <strong>
+                    AI
+                  </strong>
+                </span>
+
               </div>
 
-              <div className="brand-subtitle">
-                Property Verification Platform
+              <div className="mobileMenuSubtitle">
+                AI-Powered Property Due Diligence
               </div>
+
             </div>
 
+            <button
+              className="closeMenu"
+              type="button"
+              onClick={() =>
+                setMenuOpen(false)
+              }
+              aria-label="Close navigation"
+            >
+              ×
+            </button>
+
           </div>
 
-          <div className="secure-environment">
-            <span className="secure-dot" />
+          <nav className="mobileMenuNav">
+
+            <button
+              className="mobileNavItem"
+              type="button"
+              onClick={() =>
+                navigateTo(
+                  "/dashboard"
+                )
+              }
+            >
+              <span className="navIcon">
+                ▦
+              </span>
+
+              Dashboard
+            </button>
+
+            <button
+              className="mobileNavItem active"
+              type="button"
+              onClick={() =>
+                setMenuOpen(false)
+              }
+            >
+              <span className="navIcon">
+                ⇧
+              </span>
+
+              Verify Property
+            </button>
+
+            <button
+              className="mobileNavItem"
+              type="button"
+              onClick={() =>
+                navigateTo(
+                  "/my-properties"
+                )
+              }
+            >
+              <span className="navIcon">
+                ⌂
+              </span>
+
+              My Properties
+            </button>
+
+            <button
+              className="mobileNavItem"
+              type="button"
+              onClick={() =>
+                navigateTo(
+                  "/verification-history"
+                )
+              }
+            >
+              <span className="navIcon">
+                ◷
+              </span>
+
+              Verification History
+            </button>
+
+            <button
+              className="mobileNavItem"
+              type="button"
+              onClick={() =>
+                navigateTo(
+                  "/fraud-watch"
+                )
+              }
+            >
+              <span className="navIcon">
+                ◈
+              </span>
+
+              Fraud Watch
+            </button>
+
+            <button
+              className="mobileNavItem"
+              type="button"
+              onClick={() =>
+                navigateTo(
+                  "/reports"
+                )
+              }
+            >
+              <span className="navIcon">
+                ▤
+              </span>
+
+              Reports
+            </button>
+
+          </nav>
+
+          <div className="mobileAccountLabel">
+            ACCOUNT
+          </div>
+
+          <button
+            className="mobileNavItem"
+            type="button"
+            onClick={() =>
+              navigateTo(
+                "/account"
+              )
+            }
+          >
+            <span className="navIcon">
+              ◯
+            </span>
+
+            Account
+          </button>
+
+          <button
+            className="mobileNavItem"
+            type="button"
+            onClick={() =>
+              navigateTo(
+                "/settings"
+              )
+            }
+          >
+            <span className="navIcon">
+              ⚙
+            </span>
+
+            Settings
+          </button>
+
+        </div>
+      )}
+
+      <div className="pageContent">
+
+        <div className="verificationBadge">
+
+          <span className="badgeDiamond">
+            ◇
+          </span>
+
+          AI-POWERED VERIFICATION
+
+        </div>
+
+        <section className="intro">
+
+          <h1>
+            Let's{" "}
             <span>
-              Secure Environment
-            </span>
-            <span className="lock-icon">
-              ♧
-            </span>
-          </div>
-
-        </header>
-
-
-        {/* =========================================
-            HERO
-        ========================================== */}
-
-        <section className="hero-section">
-
-          <div className="hero-badge">
-            <span>✦</span>
-            AI-POWERED VERIFICATION
-          </div>
-
-          <h1 className="hero-title">
-            Verify Your Property
-            <br />
-            With{" "}
-            <span>
-              Confidence
-            </span>
+              Verify
+            </span>{" "}
+            Your Property
           </h1>
 
-          <p className="hero-description">
-            Upload your property document and let
-            PropertySure AI analyze its authenticity,
-            ownership details, and potential risks
-            using advanced AI technology.
+          <p>
+            Upload your complete property
+            document package and let
+            PropertySure AI analyze the
+            submitted documents for
+            authenticity, consistency,
+            completeness and potential
+            risk indicators.
           </p>
 
         </section>
 
-
-        {/* =========================================
-            FEATURE STRIP
-        ========================================== */}
-
-        <section className="feature-strip">
-
-          <div className="feature-item">
-
-            <div className="feature-icon">
-              ♧
-            </div>
-
-            <div>
-              <strong>
-                Secure Upload
-              </strong>
-
-              <span>
-                256-bit encrypted
-              </span>
-            </div>
-
-          </div>
-
-
-          <div className="feature-divider" />
-
-
-          <div className="feature-item">
-
-            <div className="feature-icon">
-              ◉
-            </div>
-
-            <div>
-              <strong>
-                AI Analysis
-              </strong>
-
-              <span>
-                Multi-layer verification
-              </span>
-            </div>
-
-          </div>
-
-
-          <div className="feature-divider" />
-
-
-          <div className="feature-item">
-
-            <div className="feature-icon">
-              ◷
-            </div>
-
-            <div>
-              <strong>
-                2–5 Minutes
-              </strong>
-
-              <span>
-                Average completion
-              </span>
-            </div>
-
-          </div>
-
-
-          <div className="feature-divider" />
-
-
-          <div className="feature-item">
-
-            <div className="feature-icon">
-              ◇
-            </div>
-
-            <div>
-              <strong>
-                Fraud Detection
-              </strong>
-
-              <span>
-                Advanced risk checks
-              </span>
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* =========================================
-            UPLOAD CARD
-        ========================================== */}
-
-        <section className="upload-card">
+        <section
+          className={`uploadCard ${
+            isDragging
+              ? "uploadCardDragging"
+              : ""
+          }`}
+        >
 
           <label
-            className={`upload-zone ${
+            className={`uploadZone ${
               isDragging
                 ? "dragging"
                 : ""
             }`}
-            onDragOver={(event) => {
-              event.preventDefault();
-              setIsDragging(true);
-            }}
-            onDragLeave={() => {
-              setIsDragging(false);
-            }}
-            onDrop={(event) => {
-              event.preventDefault();
-              setIsDragging(false);
-
-              const droppedFile =
-                event.dataTransfer.files?.[0];
-
-              handleFileSelection(
-                droppedFile || null
-              );
-            }}
+            onDragOver={
+              handleDragOver
+            }
+            onDragLeave={
+              handleDragLeave
+            }
+            onDrop={
+              handleDrop
+            }
           >
 
             <input
+              ref={
+                fileInputRef
+              }
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
-              style={{
-                display: "none",
-              }}
-              onChange={(event) => {
-                const selectedFile =
-                  event.target.files?.[0];
-
-                handleFileSelection(
-                  selectedFile || null
-                );
-              }}
+              multiple
+              onChange={
+                handleFileInput
+              }
+              disabled={
+                isUploading
+              }
             />
 
+            <div className="uploadIllustration">
 
-            {/* AI READY */}
+              <div className="documentBack">
 
-            <div className="ai-ready">
-              AI READY
-            </div>
+                <div className="documentLines">
 
+                  <span />
+                  <span />
+                  <span />
 
-            {/* UPLOAD ICON */}
+                </div>
 
-            <div className="upload-icon-circle">
-              <div className="upload-arrow">
+              </div>
+
+              <div className="documentFront">
+
+                <div className="documentLines">
+
+                  <span />
+                  <span />
+                  <span />
+
+                </div>
+
+              </div>
+
+              <div className="uploadCircle">
                 ↑
               </div>
 
-              <div className="upload-tray" />
             </div>
 
-
             <h2>
-              Drop your document here
+              Upload Document Package
             </h2>
 
-            <p>
-              or click to{" "}
-              <span>
-                browse files
-              </span>
+            <p className="uploadInstruction">
+              Tap to browse or drag & drop
+              your property documents
             </p>
 
+            <div className="fileTypes">
 
-            {/* FILE TYPES */}
-
-            <div className="file-types">
-
-              <span>
-                <b className="pdf-dot">
-                  ▣
-                </b>
+              <span className="fileType pdf">
                 PDF
               </span>
 
-              <span>
-                <b className="jpg-dot">
-                  ▣
-                </b>
+              <span className="fileType jpg">
                 JPG
               </span>
 
-              <span>
-                <b className="png-dot">
-                  ▣
-                </b>
+              <span className="fileType png">
                 PNG
               </span>
 
             </div>
 
-            <div className="file-limit">
-              Maximum file size: 20 MB
+            <div className="uploadLimit">
+              Upload all relevant documents • 20 MB each
             </div>
 
           </label>
 
+          {hasDocuments && (
 
-          {/* =====================================
-              SELECTED FILE
-          ====================================== */}
+            <div className="selectedDocuments">
 
-          {file && (
+              <div className="selectedHeader">
 
-            <div className="selected-file">
-
-              <div className="selected-file-left">
-
-                <div className="file-preview">
-                  <div className="paper-fold" />
-                  <span>
-                    PDF
-                  </span>
+                <div>
+                  Documents selected
                 </div>
 
-                <div className="selected-file-info">
-
-                  <div className="selected-label">
-                    <span className="check-circle">
-                      ✓
-                    </span>
-
-                    Document Selected
-                  </div>
-
-                  <div className="selected-name">
-                    {file.name}
-                  </div>
-
-                  <div className="selected-meta">
-                    {(
-                      file.size /
-                      (1024 * 1024)
-                    ).toFixed(2)}{" "}
-                    MB
-                    {" • "}
-                    {file.type ||
-                      "application/octet-stream"}
-                  </div>
-
-                </div>
+                <span>
+                  {documentCount}{" "}
+                  {documentCount ===
+                  1
+                    ? "document"
+                    : "documents"}
+                </span>
 
               </div>
 
+              {documents.map(
+                (
+                  document,
+                  index
+                ) => (
 
-              <label className="change-file">
+                  <div
+                    className="documentRow"
+                    key={
+                      document.id
+                    }
+                  >
 
-                Change file
+                    <div className="documentRowIcon">
 
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  style={{
-                    display: "none",
-                  }}
-                  onChange={(event) => {
-                    const selectedFile =
-                      event.target.files?.[0];
+                      {getDocumentType(
+                        document.file
+                      )}
 
-                    handleFileSelection(
-                      selectedFile || null
-                    );
-                  }}
-                />
+                    </div>
 
-              </label>
+                    <div className="documentRowInfo">
+
+                      <div className="documentRowName">
+
+                        {
+                          document
+                            .file
+                            .name
+                        }
+
+                      </div>
+
+                      <div className="documentRowMeta">
+
+                        Document{" "}
+                        {index + 1}
+
+                        {" • "}
+
+                        {getDocumentType(
+                          document.file
+                        )}
+
+                        {" • "}
+
+                        {formatFileSize(
+                          document
+                            .file
+                            .size
+                        )}
+
+                      </div>
+
+                    </div>
+
+                    <button
+                      type="button"
+                      className="removeDocument"
+                      onClick={() =>
+                        removeDocument(
+                          document.id
+                        )
+                      }
+                      disabled={
+                        isUploading
+                      }
+                      aria-label={`Remove ${document.file.name}`}
+                    >
+                      ×
+                    </button>
+
+                  </div>
+
+                )
+              )}
+
+              <button
+                type="button"
+                className="addMoreButton"
+                onClick={
+                  openFilePicker
+                }
+                disabled={
+                  isUploading
+                }
+              >
+                + Add another document
+              </button>
 
             </div>
 
@@ -596,411 +1540,289 @@ export default function VerifyPage() {
 
         </section>
 
-
-        {/* =========================================
-            ERROR MESSAGE
-        ========================================== */}
-
         {uploadError && (
 
-          <div className="upload-error">
+          <div className="errorMessage">
+
             <span>
-              ⚠
+              !
             </span>
 
-            <div>
+            <p>
               {uploadError}
-            </div>
+            </p>
 
           </div>
 
         )}
 
-
-        {/* =========================================
-            BENEFIT CARDS
-        ========================================== */}
-
-        <section className="benefit-grid">
-
-          <div className="benefit-card">
-
-            <div className="benefit-icon">
-              ♧
-            </div>
-
-            <h3>
-              Encrypted & Secure
-            </h3>
-
-            <p>
-              Your documents are encrypted
-              and protected at every step.
-            </p>
-
-          </div>
-
-
-          <div className="benefit-card">
-
-            <div className="benefit-icon">
-              ◉
-            </div>
-
-            <h3>
-              AI-Powered Analysis
-            </h3>
-
-            <p>
-              Our AI verifies document
-              structure, authenticity and
-              ownership details.
-            </p>
-
-          </div>
-
-
-          <div className="benefit-card">
-
-            <div className="benefit-icon shield-icon">
-              ◇
-            </div>
-
-            <h3>
-              Fraud Detection
-            </h3>
-
-            <p>
-              Advanced algorithms detect
-              forgery, duplicates and
-              suspicious patterns.
-            </p>
-
-          </div>
-
-
-          <div className="benefit-card">
-
-            <div className="benefit-icon report-icon">
-              ▤
-            </div>
-
-            <h3>
-              Verified Report
-            </h3>
-
-            <p>
-              Get a comprehensive verification
-              report with trust score and risk level.
-            </p>
-
-          </div>
-
-        </section>
-
-
-        {/* =========================================
-            WHAT WE ANALYZE
-        ========================================== */}
-
-        <section className="analysis-card">
-
-          <div className="analysis-header">
-
-            <h2>
-              What We Analyze{" "}
-              <span>
-                (7 Key Checks)
-              </span>
-            </h2>
-
-          </div>
-
-
-          <div className="checks-grid">
-
-            {/* 01 */}
-
-            <div className="check-item">
-
-              <div className="check-number">
-                01
-              </div>
-
-              <div>
-                <h3>
-                  Document Structure
-                </h3>
-
-                <p>
-                  Checks format, fields,
-                  and overall integrity
-                </p>
-              </div>
-
-            </div>
-
-
-            {/* 02 */}
-
-            <div className="check-item">
-
-              <div className="check-number">
-                02
-              </div>
-
-              <div>
-                <h3>
-                  Data Consistency
-                </h3>
-
-                <p>
-                  Verifies consistency
-                  across all data points
-                </p>
-              </div>
-
-            </div>
-
-
-            {/* 03 */}
-
-            <div className="check-item">
-
-              <div className="check-number">
-                03
-              </div>
-
-              <div>
-                <h3>
-                  Signature & Stamp
-                </h3>
-
-                <p>
-                  Validates signatures
-                  and official stamps
-                </p>
-              </div>
-
-            </div>
-
-
-            {/* 04 */}
-
-            <div className="check-item">
-
-              <div className="check-number">
-                04
-              </div>
-
-              <div>
-                <h3>
-                  Forgery Detection
-                </h3>
-
-                <p>
-                  Detects manipulation
-                  or tampering signs
-                </p>
-              </div>
-
-            </div>
-
-
-            {/* 05 */}
-
-            <div className="check-item">
-
-              <div className="check-number">
-                05
-              </div>
-
-              <div>
-                <h3>
-                  Duplicate Detection
-                </h3>
-
-                <p>
-                  Checks against duplicate
-                  property records
-                </p>
-              </div>
-
-            </div>
-
-
-            {/* 06 */}
-
-            <div className="check-item">
-
-              <div className="check-number">
-                06
-              </div>
-
-              <div>
-                <h3>
-                  Ownership Validation
-                </h3>
-
-                <p>
-                  Verifies ownership and
-                  party information
-                </p>
-              </div>
-
-            </div>
-
-
-            {/* 07 */}
-
-            <div className="check-item check-item-last">
-
-              <div className="check-number">
-                07
-              </div>
-
-              <div>
-                <h3>
-                  Registry Cross-Check
-                </h3>
-
-                <p>
-                  Cross-verifies with relevant
-                  government registries
-                </p>
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* =========================================
-            VERIFY BUTTON
-        ========================================== */}
-
         <button
-          disabled={
-            !file || isUploading
-          }
-          onClick={
-            handleVerification
-          }
-          className={`verify-button ${
-            !file ||
+          type="button"
+          className={`startButton ${
+            !hasDocuments ||
             isUploading
               ? "disabled"
               : ""
           }`}
+          disabled={
+            !hasDocuments ||
+            isUploading
+          }
+          onClick={
+            handleVerification
+          }
         >
 
-          <span className="button-sparkle">
+          <span className="sparkle">
             ✦
           </span>
 
           <span>
             {isUploading
-              ? "Starting Verification..."
-              : "Verify Property Document"}
+              ? "Uploading Documents..."
+              : "Continue to Review"}
           </span>
 
           {!isUploading && (
-            <span className="button-arrow">
+
+            <span className="startArrow">
               →
             </span>
+
           )}
 
         </button>
 
+        <div className="securityNotice">
 
-        {/* =========================================
-            PROCESSING NOTICE
-        ========================================== */}
-
-        <div className="processing-notice">
-
-          <span className="notice-shield">
-            ♢
+          <span className="securityIcon">
+            ♧
           </span>
 
-          Your document will be securely processed
-          through the PropertySure AI verification workflow.
+          <span>
+            Your documents are securely
+            uploaded and processed through
+            the PropertySure AI verification
+            workflow.
+          </span>
 
         </div>
 
+        <section className="benefitsCard">
 
-        {/* =========================================
-            FOOTER
-        ========================================== */}
+          <div className="benefit">
 
-        <footer className="footer">
-
-          <div className="footer-brand">
-
-            <div className="footer-logo">
-              ✓
+            <div className="benefitIcon secureIcon">
+              ♢
             </div>
 
-            <div>
-              <div className="footer-name">
-                PropertySure{" "}
-                <span>
-                  AI
-                </span>
-              </div>
-
-              <div className="footer-subtitle">
-                Property Verification Platform
-              </div>
-            </div>
-
-          </div>
-
-
-          <div className="footer-badges">
-
-            <span>
-              <b>
-                ♧
-              </b>
+            <strong>
               Secure
-            </span>
+            </strong>
 
             <span>
-              <b>
-                ✓
-              </b>
+              Protected
+              <br />
+              Documents
+            </span>
+
+          </div>
+
+          <div className="benefitDivider" />
+
+          <div className="benefit">
+
+            <div className="benefitIcon fastIcon">
+              ◷
+            </div>
+
+            <strong>
+              Fast
+            </strong>
+
+            <span>
+              Automated
+              <br />
+              Workflow
+            </span>
+
+          </div>
+
+          <div className="benefitDivider" />
+
+          <div className="benefit">
+
+            <div className="benefitIcon aiIcon">
+              ✤
+            </div>
+
+            <strong>
+              AI-Powered
+            </strong>
+
+            <span>
+              Document
+              <br />
+              Analysis
+            </span>
+
+          </div>
+
+          <div className="benefitDivider" />
+
+          <div className="benefit">
+
+            <div className="benefitIcon reliableIcon">
+              ♢
+            </div>
+
+            <strong>
               Reliable
-            </span>
+            </strong>
 
             <span>
-              <b>
-                ◇
-              </b>
-              Transparent
+              Structured
+              <br />
+              Findings
             </span>
 
           </div>
 
+        </section>
 
-          <div className="copyright">
+        <button
+          type="button"
+          className="reportCard"
+          onClick={() =>
+            navigateTo(
+              "/reports"
+            )
+          }
+        >
 
-            © 2025 PropertySure AI
-            <br />
-            All rights reserved.
+          <div className="reportIcon">
+            ▤
+          </div>
+
+          <div className="reportText">
+
+            <strong>
+              Verification Reports
+            </strong>
+
+            <span>
+              View completed verification
+              reports and results.
+            </span>
 
           </div>
 
-        </footer>
+          <div className="reportArrow">
+            ›
+          </div>
+
+        </button>
 
       </div>
 
+      <nav className="bottomNav">
 
-      {/* =========================================
-          STYLES
-      ========================================== */}
+        <button
+          type="button"
+          className="bottomItem"
+          onClick={() =>
+            navigateTo(
+              "/dashboard"
+            )
+          }
+        >
+
+          <span>
+            ▦
+          </span>
+
+          <small>
+            Dashboard
+          </small>
+
+        </button>
+
+        <button
+          type="button"
+          className="bottomItem active"
+        >
+
+          <span>
+            ⇧
+          </span>
+
+          <small>
+            Verify
+          </small>
+
+        </button>
+
+        <button
+          type="button"
+          className="bottomItem"
+          onClick={() =>
+            navigateTo(
+              "/my-properties"
+            )
+          }
+        >
+
+          <span>
+            ⌂
+          </span>
+
+          <small>
+            Properties
+          </small>
+
+        </button>
+
+        <button
+          type="button"
+          className="bottomItem"
+          onClick={() =>
+            navigateTo(
+              "/reports"
+            )
+          }
+        >
+
+          <span>
+            ▤
+          </span>
+
+          <small>
+            Reports
+          </small>
+
+        </button>
+
+        <button
+          type="button"
+          className="bottomItem"
+          onClick={() =>
+            navigateTo(
+              "/account"
+            )
+          }
+        >
+
+          <span>
+            ◯
+          </span>
+
+          <small>
+            Account
+          </small>
+
+        </button>
+
+      </nav>
 
       <style jsx>{`
 
@@ -1008,1303 +1830,1595 @@ export default function VerifyPage() {
           box-sizing: border-box;
         }
 
-        .verify-page {
+        .verifyPage {
           min-height: 100vh;
-          position: relative;
-          overflow-x: hidden;
+          padding-bottom: 80px;
+          color: #f8fafc;
+
           background:
             radial-gradient(
-              circle at 50% -10%,
-              rgba(13, 71, 135, 0.35),
-              transparent 38%
+              circle at 50% -20%,
+              rgba(
+                17,
+                105,
+                190,
+                .22
+              ),
+              transparent 40%
             ),
             linear-gradient(
               180deg,
-              #020B18 0%,
-              #031126 45%,
-              #020A17 100%
+              #031328 0%,
+              #041a34 50%,
+              #021124 100%
             );
-          color: #F8FAFC;
+
           font-family:
             Arial,
             Helvetica,
             sans-serif;
         }
 
-
-        /* =====================================
-           BACKGROUND
-        ====================================== */
-
-        .background-grid {
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          opacity: 0.25;
-          background-image:
-            linear-gradient(
-              rgba(35, 139, 230, 0.07) 1px,
-              transparent 1px
-            ),
-            linear-gradient(
-              90deg,
-              rgba(35, 139, 230, 0.07) 1px,
-              transparent 1px
-            );
-          background-size:
-            80px 80px;
-          mask-image:
-            linear-gradient(
-              to bottom,
-              black,
-              transparent 75%
-            );
+        button {
+          font-family: inherit;
         }
 
+        .mobileHeader {
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          height: 72px;
+          padding: 0 14px;
 
-        .background-glow {
-          position: absolute;
-          pointer-events: none;
-          border-radius: 50%;
-          filter: blur(100px);
-        }
+          display: grid;
 
+          grid-template-columns:
+            44px
+            minmax(0, 1fr)
+            44px;
 
-        .glow-one {
-          width: 420px;
-          height: 420px;
-          top: 250px;
-          left: -220px;
-          background:
-            rgba(0, 110, 255, 0.08);
-        }
-
-
-        .glow-two {
-          width: 420px;
-          height: 420px;
-          top: 500px;
-          right: -220px;
-          background:
-            rgba(0, 150, 255, 0.06);
-        }
-
-
-        /* =====================================
-           MAIN CONTAINER
-        ====================================== */
-
-        .page-container {
-          position: relative;
-          z-index: 2;
-          width: 100%;
-          max-width: 1040px;
-          margin: 0 auto;
-          padding:
-            0 28px 45px;
-        }
-
-
-        /* =====================================
-           HEADER
-        ====================================== */
-
-        .top-header {
-          min-height: 84px;
-          display: flex;
           align-items: center;
-          justify-content: space-between;
-          gap: 20px;
+
+          background:
+            rgba(
+              3,
+              18,
+              40,
+              0.98
+            );
+
           border-bottom:
             1px solid
-            rgba(148, 163, 184, 0.12);
+            #193650;
         }
 
+        .menuButton {
+          width: 40px;
+          height: 40px;
+          border: 0;
+          background: transparent;
+          color: white;
+          font-size: 24px;
+          padding: 5px;
+          cursor: pointer;
 
-        .brand {
-          display: flex;
-          align-items: center;
-          gap: 13px;
-        }
-
-
-        .brand-icon {
-          width: 43px;
-          height: 43px;
-          border:
-            2px solid #168EFF;
-          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #168EFF;
-          font-size: 25px;
-          font-weight: 900;
-          background:
-            rgba(22, 142, 255, 0.06);
-          box-shadow:
-            0 0 25px
-            rgba(22, 142, 255, 0.15);
         }
 
+        .mobileLogoButton {
+          height: 40px;
+          border: none;
+          background: transparent;
+          color: white;
 
-        .brand-name {
-          font-size: 22px;
-          font-weight: 800;
-          letter-spacing: -0.5px;
-        }
-
-
-        .brand-name span {
-          color: #20A7FF;
-        }
-
-
-        .brand-subtitle {
-          margin-top: 3px;
-          color: #94A3B8;
-          font-size: 11px;
-        }
-
-
-        .secure-environment {
           display: flex;
           align-items: center;
-          gap: 9px;
-          border:
-            1px solid
-            rgba(40, 146, 255, 0.25);
-          background:
-            rgba(7, 25, 48, 0.75);
-          border-radius: 999px;
-          padding:
-            10px 16px;
-          color: #CBD5E1;
-          font-size: 12px;
-        }
+          justify-content: center;
 
+          gap: 7px;
 
-        .secure-dot {
-          width: 9px;
-          height: 9px;
-          border-radius: 50%;
-          background: #21D67B;
-          box-shadow:
-            0 0 10px
-            rgba(33, 214, 123, 0.7);
-        }
-
-
-        .lock-icon {
-          color: #94A3B8;
-          font-size: 15px;
-        }
-
-
-        /* =====================================
-           HERO
-        ====================================== */
-
-        .hero-section {
-          text-align: center;
-          padding:
-            55px 0 35px;
-        }
-
-
-        .hero-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 9px;
-          padding:
-            8px 15px;
-          border-radius: 999px;
-          background:
-            rgba(15, 102, 178, 0.12);
-          border:
-            1px solid
-            rgba(25, 142, 255, 0.12);
-          color: #19A7FF;
-          font-size: 12px;
+          font-size: 17px;
           font-weight: 700;
-          letter-spacing: 0.4px;
-        }
+          letter-spacing: -0.2px;
 
-
-        .hero-badge span {
-          font-size: 15px;
-        }
-
-
-        .hero-title {
-          margin:
-            20px 0 16px;
-          font-size:
-            clamp(38px, 6vw, 58px);
-          line-height: 1.04;
-          letter-spacing: -2px;
-          font-weight: 800;
-        }
-
-
-        .hero-title span {
-          color: #20A7FF;
-          text-shadow:
-            0 0 25px
-            rgba(32, 167, 255, 0.18);
-        }
-
-
-        .hero-description {
-          max-width: 730px;
-          margin:
-            0 auto;
-          color: #AAB8CB;
-          font-size: 15px;
-          line-height: 1.75;
-        }
-
-
-        /* =====================================
-           FEATURE STRIP
-        ====================================== */
-
-        .feature-strip {
-          display: grid;
-          grid-template-columns:
-            1fr
-            auto
-            1fr
-            auto
-            1fr
-            auto
-            1fr;
-          align-items: center;
-          gap: 20px;
-          margin:
-            0 auto 30px;
-          max-width: 900px;
-        }
-
-
-        .feature-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
+          cursor: pointer;
           min-width: 0;
         }
 
-
-        .feature-icon {
-          width: 38px;
-          height: 38px;
+        .mobileLogoDiamond {
+          color: #168eff;
+          font-size: 23px;
+          line-height: 1;
           flex-shrink: 0;
+        }
+
+        .mobileBrandName {
+          color: #ffffff;
+          white-space: nowrap;
+        }
+
+        .mobileBrandName strong {
+          color: #168eff;
+        }
+
+        .mobileBell {
+          width: 40px;
+          height: 40px;
+          border: 0;
+          border-radius: 50%;
+          background: transparent;
+          color: white;
+          position: relative;
+
+          display: grid;
+          place-items: center;
+
+          cursor: pointer;
+          padding: 0;
+        }
+
+        .mobileBell .bellIcon {
+          font-size: 17px;
+          line-height: 1;
+          display: block;
+        }
+
+        .mobileNotificationDot {
+          position: absolute;
+          width: 8px;
+          height: 8px;
+          top: 5px;
+          right: 3px;
+          border-radius: 50%;
+          background: #168eff;
+
+          box-shadow:
+            0 0 8px
+            rgba(
+              22,
+              142,
+              255,
+              0.6
+            );
+        }
+
+        .mobileBell:hover {
+          background:
+            rgba(
+              22,
+              142,
+              255,
+              0.05
+            );
+        }
+
+        .mobileMenu {
+          position: fixed;
+          inset: 0;
+          z-index: 200;
+          display: block;
+          background: #06152f;
+          padding: 22px;
+          overflow-y: auto;
+        }
+
+        .mobileMenuHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+        }
+
+        .mobileMenuLogo {
           display: flex;
           align-items: center;
-          justify-content: center;
-          border:
-            1px solid
-            rgba(30, 148, 255, 0.2);
-          border-radius: 10px;
-          color: #168EFF;
+          gap: 8px;
           font-size: 20px;
+          font-weight: 700;
+        }
+
+        .mobileMenuDiamond {
+          color: #168eff;
+          font-size: 25px;
+          line-height: 1;
+        }
+
+        .mobileMenuLogo > span:last-child {
+          color: #ffffff;
+        }
+
+        .mobileMenuLogo strong {
+          color: #168eff;
+        }
+
+        .mobileMenuSubtitle {
+          color: #8fa5c2;
+          font-size: 11px;
+          line-height: 1.5;
+          margin-top: 8px;
+        }
+
+        .closeMenu {
+          border: 0;
+          background: transparent;
+          color: white;
+          font-size: 30px;
+          cursor: pointer;
+        }
+
+        .mobileMenuNav {
+          margin-top: 35px;
+        }
+
+        .mobileNavItem {
+          width: 100%;
+
+          display: flex;
+          align-items: center;
+
+          gap: 15px;
+
+          padding:
+            16px 14px;
+
+          border-radius: 10px;
+          border: none;
+
           background:
-            rgba(18, 88, 155, 0.08);
+            transparent;
+
+          color: #b3c3d8;
+          font-size: 15px;
+
+          margin-bottom: 5px;
+
+          cursor: pointer;
+          text-align: left;
         }
 
-
-        .feature-item strong {
-          display: block;
-          color: #F1F5F9;
-          font-size: 12px;
-          margin-bottom: 4px;
+        .mobileNavItem:hover {
+          background:
+            rgba(
+              25,
+              111,
+              200,
+              0.14
+            );
         }
 
+        .mobileNavItem.active {
+          background: #0c64bd;
+          color: white;
+        }
 
-        .feature-item span {
-          display: block;
-          color: #718096;
+        .navIcon {
+          width: 20px;
+          text-align: center;
+          color: #82b9f2;
+          flex-shrink: 0;
+        }
+
+        .mobileAccountLabel {
+          color: #617996;
           font-size: 10px;
+          letter-spacing: 1.5px;
+          margin:
+            28px 14px 10px;
         }
 
-
-        .feature-divider {
-          width: 1px;
-          height: 38px;
-          background:
-            rgba(148, 163, 184, 0.18);
+        .pageContent {
+          width: 100%;
+          max-width: 760px;
+          margin: 0 auto;
+          padding:
+            40px 28px 35px;
         }
 
+        .verificationBadge {
+          width: fit-content;
 
-        /* =====================================
-           UPLOAD CARD
-        ====================================== */
+          display: flex;
+          align-items: center;
 
-        .upload-card {
-          padding: 18px;
+          gap: 9px;
+
+          padding:
+            10px 17px;
+
+          border-radius: 999px;
+
           border:
             1px solid
-            rgba(32, 154, 255, 0.5);
+            rgba(
+              22,
+              142,
+              255,
+              .35
+            );
+
+          background:
+            rgba(
+              10,
+              91,
+              164,
+              .12
+            );
+
+          color: #20d981;
+
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: .4px;
+        }
+
+        .badgeDiamond {
+          color: #20d981;
+          font-size: 16px;
+        }
+
+        .intro {
+          width: 100%;
+          text-align: center;
+          padding:
+            38px 0 32px;
+        }
+
+        .intro h1 {
+          margin: 0;
+          color: #f8fafc;
+
+          font-size:
+            clamp(
+              35px,
+              6vw,
+              48px
+            );
+
+          line-height: 1.08;
+          letter-spacing: -1.8px;
+          font-weight: 750;
+        }
+
+        .intro h1 span {
+          color: #20a7ff;
+        }
+
+        .intro p {
+          max-width: 650px;
+          margin:
+            18px auto 0;
+
+          color: #9aafc7;
+          font-size: 15px;
+          line-height: 1.65;
+        }
+
+        .uploadCard {
+          width: 88%;
+          max-width: 680px;
+          margin: 0 auto;
+          padding: 10px;
+
+          border:
+            1px solid
+            rgba(
+              25,
+              143,
+              255,
+              .48
+            );
+
           border-radius: 18px;
+
           background:
             linear-gradient(
               145deg,
-              rgba(8, 28, 55, 0.95),
-              rgba(3, 17, 35, 0.94)
+              rgba(
+                8,
+                32,
+                62,
+                .94
+              ),
+              rgba(
+                3,
+                18,
+                36,
+                .96
+              )
             );
+
           box-shadow:
-            0 20px 70px
-            rgba(0, 0, 0, 0.28),
-            0 0 35px
-            rgba(22, 142, 255, 0.04);
+            0 20px 55px
+            rgba(
+              0,
+              0,
+              0,
+              .2
+            );
         }
 
+        .uploadZone {
+          min-height: 380px;
 
-        .upload-zone {
-          min-height: 350px;
-          border:
-            1.5px dashed
-            rgba(26, 147, 255, 0.75);
-          border-radius: 16px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
+
           text-align: center;
-          cursor: pointer;
+
           padding:
-            40px 20px;
+            35px 20px;
+
+          border:
+            2px dashed
+            rgba(
+              22,
+              142,
+              255,
+              .7
+            );
+
+          border-radius: 15px;
+
+          cursor: pointer;
+
           background:
             radial-gradient(
               circle at center,
-              rgba(22, 142, 255, 0.08),
-              rgba(5, 20, 39, 0.18)
+              rgba(
+                16,
+                111,
+                200,
+                .09
+              ),
+              transparent 65%
             );
+
           transition:
-            all 0.25s ease;
+            .2s ease;
         }
 
+        .uploadZone:hover,
+        .uploadZone.dragging {
+          border-color:
+            #28aaff;
 
-        .upload-zone:hover,
-        .upload-zone.dragging {
-          border-color: #38BDF8;
           background:
             radial-gradient(
               circle at center,
-              rgba(22, 142, 255, 0.15),
-              rgba(5, 20, 39, 0.28)
+              rgba(
+                20,
+                126,
+                221,
+                .16
+              ),
+              transparent 68%
             );
-          box-shadow:
-            inset 0 0 35px
-            rgba(22, 142, 255, 0.04);
         }
 
+        .uploadZone input {
+          display: none;
+        }
 
-        .ai-ready {
-          padding:
-            6px 13px;
-          border-radius: 999px;
-          background:
-            rgba(18, 112, 195, 0.35);
-          border:
-            1px solid
-            rgba(32, 154, 255, 0.15);
-          color: #39B8FF;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.4px;
+        .uploadIllustration {
+          position: relative;
+
+          width: 130px;
+          height: 125px;
+
           margin-bottom: 20px;
         }
 
+        .documentBack {
+          position: absolute;
 
-        .upload-icon-circle {
-          position: relative;
-          width: 132px;
-          height: 132px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 20px;
+          width: 75px;
+          height: 95px;
+
+          left: 23px;
+          top: 4px;
+
+          border-radius: 9px;
+
           border:
             1px solid
-            rgba(41, 175, 255, 0.9);
-          background:
-            radial-gradient(
-              circle,
-              rgba(31, 126, 206, 0.2),
-              rgba(15, 42, 76, 0.25)
+            rgba(
+              41,
+              169,
+              255,
+              .7
             );
-          box-shadow:
-            0 0 35px
-            rgba(22, 142, 255, 0.2);
-        }
 
-
-        .upload-arrow {
-          position: absolute;
-          top: 25px;
-          color: #36B5FF;
-          font-size: 58px;
-          line-height: 1;
-          font-weight: 300;
-        }
-
-
-        .upload-tray {
-          position: absolute;
-          bottom: 29px;
-          width: 42px;
-          height: 22px;
-          border:
-            4px solid #36B5FF;
-          border-top: none;
-          border-radius: 0 0 4px 4px;
-        }
-
-
-        .upload-zone h2 {
-          margin:
-            0 0 7px;
-          font-size: 23px;
-          color: #F8FAFC;
-        }
-
-
-        .upload-zone p {
-          margin: 0;
-          color: #A6B4C7;
-          font-size: 15px;
-        }
-
-
-        .upload-zone p span {
-          color: #20A7FF;
-          font-weight: 600;
-        }
-
-
-        .file-types {
-          display: flex;
-          gap: 10px;
-          margin-top: 20px;
-        }
-
-
-        .file-types span {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          padding:
-            5px 9px;
-          border:
-            1px solid
-            rgba(148, 163, 184, 0.13);
-          border-radius: 6px;
-          background:
-            rgba(15, 37, 65, 0.65);
-          color: #CBD5E1;
-          font-size: 10px;
-          font-weight: 700;
-        }
-
-
-        .pdf-dot {
-          color: #EF4444;
-        }
-
-
-        .jpg-dot {
-          color: #22C55E;
-        }
-
-
-        .png-dot {
-          color: #3B82F6;
-        }
-
-
-        .file-limit {
-          margin-top: 14px;
-          color: #718096;
-          font-size: 11px;
-        }
-
-
-        /* =====================================
-           SELECTED FILE
-        ====================================== */
-
-        .selected-file {
-          margin-top: 14px;
-          min-height: 104px;
-          padding:
-            16px 18px;
-          border:
-            1px solid
-            rgba(72, 127, 191, 0.25);
-          border-radius: 13px;
-          background:
-            rgba(9, 29, 53, 0.8);
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 15px;
-        }
-
-
-        .selected-file-left {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          min-width: 0;
-        }
-
-
-        .file-preview {
-          position: relative;
-          width: 55px;
-          height: 65px;
-          flex-shrink: 0;
-          border-radius: 6px;
-          background: #F8FAFC;
-          color: #DC2626;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 10px;
-          font-weight: 900;
-          box-shadow:
-            0 5px 18px
-            rgba(0, 0, 0, 0.2);
-        }
-
-
-        .paper-fold {
-          position: absolute;
-          top: 0;
-          right: 0;
-          width: 15px;
-          height: 15px;
-          background:
-            #CBD5E1;
-          clip-path:
-            polygon(
-              0 0,
-              100% 0,
-              100% 100%
-            );
-        }
-
-
-        .selected-file-info {
-          min-width: 0;
-        }
-
-
-        .selected-label {
-          color: #20D981;
-          font-size: 11px;
-          font-weight: 700;
-          margin-bottom: 5px;
-        }
-
-
-        .check-circle {
-          display: inline-flex;
-          width: 18px;
-          height: 18px;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          background: #20D981;
-          color: #04150D;
-          margin-right: 6px;
-          font-size: 11px;
-        }
-
-
-        .selected-name {
-          color: #F8FAFC;
-          font-size: 15px;
-          font-weight: 700;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          max-width: 550px;
-        }
-
-
-        .selected-meta {
-          color: #718096;
-          font-size: 11px;
-          margin-top: 5px;
-        }
-
-
-        .change-file {
-          flex-shrink: 0;
-          border:
-            1px solid
-            rgba(63, 137, 218, 0.25);
-          border-radius: 8px;
-          padding:
-            10px 14px;
-          color: #CBD5E1;
-          background:
-            rgba(9, 27, 49, 0.7);
-          font-size: 11px;
-          cursor: pointer;
-          transition:
-            all 0.2s ease;
-        }
-
-
-        .change-file:hover {
-          border-color: #168EFF;
-          color: #168EFF;
-        }
-
-
-        /* =====================================
-           ERROR
-        ====================================== */
-
-        .upload-error {
-          margin-top: 14px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding:
-            13px 16px;
-          border:
-            1px solid
-            rgba(248, 113, 113, 0.25);
-          background:
-            rgba(127, 29, 29, 0.16);
-          border-radius: 10px;
-          color: #FCA5A5;
-          font-size: 12px;
-        }
-
-
-        /* =====================================
-           BENEFIT CARDS
-        ====================================== */
-
-        .benefit-grid {
-          display: grid;
-          grid-template-columns:
-            repeat(4, 1fr);
-          gap: 9px;
-          margin-top: 16px;
-        }
-
-
-        .benefit-card {
-          min-height: 125px;
-          padding: 16px;
-          border:
-            1px solid
-            rgba(47, 137, 220, 0.24);
-          border-radius: 10px;
           background:
             linear-gradient(
               145deg,
-              rgba(8, 29, 54, 0.9),
-              rgba(4, 20, 38, 0.85)
+              #0b4c87,
+              #0a315c
+            );
+
+          transform:
+            rotate(-8deg);
+        }
+
+        .documentFront {
+          position: absolute;
+
+          width: 78px;
+          height: 98px;
+
+          left: 37px;
+          top: 17px;
+
+          border-radius: 9px;
+
+          background:
+            linear-gradient(
+              145deg,
+              #168eff,
+              #0872d8
+            );
+
+          border:
+            1px solid
+            rgba(
+              71,
+              184,
+              255,
+              .75
+            );
+
+          box-shadow:
+            0 12px 25px
+            rgba(
+              0,
+              92,
+              180,
+              .3
             );
         }
 
+        .documentLines {
+          position: absolute;
 
-        .benefit-icon {
-          width: 33px;
-          height: 33px;
-          border-radius: 8px;
+          left: 22px;
+          top: 32px;
+
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .documentLines span {
+          display: block;
+
+          width: 32px;
+          height: 3px;
+
+          border-radius: 3px;
+
+          background:
+            rgba(
+              255,
+              255,
+              255,
+              .28
+            );
+        }
+
+        .uploadCircle {
+          position: absolute;
+
+          right: 4px;
+          bottom: 3px;
+
+          width: 62px;
+          height: 62px;
+
+          border-radius: 50%;
+
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #168EFF;
-          background:
-            rgba(22, 142, 255, 0.1);
+
           border:
-            1px solid
-            rgba(22, 142, 255, 0.15);
-          font-size: 18px;
-          margin-bottom: 10px;
+            3px solid
+            #1fa7ff;
+
+          background:
+            #06264a;
+
+          color: #35b4ff;
+
+          font-size: 31px;
+          line-height: 1;
+
+          box-shadow:
+            0 0 0 5px
+            rgba(
+              22,
+              142,
+              255,
+              .05
+            );
         }
 
-
-        .benefit-card h3 {
+        .uploadZone h2 {
           margin:
-            0 0 7px;
-          color: #29AFFF;
-          font-size: 12px;
+            0 0 9px;
+
+          color:
+            #f8fafc;
+
+          font-size: 23px;
+          font-weight: 700;
         }
 
-
-        .benefit-card p {
+        .uploadInstruction {
           margin: 0;
-          color: #8FA0B4;
-          font-size: 10px;
-          line-height: 1.5;
+          color: #91a8c2;
+          font-size: 14px;
         }
 
+        .fileTypes {
+          display: flex;
+          align-items: center;
+          justify-content: center;
 
-        /* =====================================
-           ANALYSIS
-        ====================================== */
+          gap: 12px;
 
-        .analysis-card {
-          margin-top: 16px;
+          margin-top: 20px;
+        }
+
+        .fileType {
+          min-width: 82px;
+
+          padding:
+            10px 18px;
+
           border:
             1px solid
-            rgba(47, 137, 220, 0.45);
-          border-radius: 12px;
+            rgba(
+              48,
+              139,
+              220,
+              .3
+            );
+
+          border-radius: 8px;
+
           background:
-            rgba(4, 21, 41, 0.86);
-          overflow: hidden;
+            rgba(
+              5,
+              30,
+              58,
+              .7
+            );
+
+          font-size: 12px;
+          font-weight: 700;
         }
 
-
-        .analysis-header {
-          padding:
-            18px 20px 12px;
+        .fileType.pdf {
+          color: #ff4d55;
         }
 
-
-        .analysis-header h2 {
-          margin: 0;
-          color: #F8FAFC;
-          font-size: 16px;
+        .fileType.jpg {
+          color: #20d981;
         }
 
-
-        .analysis-header h2 span {
-          color: #168EFF;
-          font-weight: 500;
+        .fileType.png {
+          color: #42a6ff;
         }
 
-
-        .checks-grid {
-          display: grid;
-          grid-template-columns:
-            repeat(3, 1fr);
+        .uploadLimit {
+          margin-top: 20px;
+          color: #6f89a7;
+          font-size: 11px;
         }
 
+        .selectedDocuments {
+          margin-top: 10px;
+          padding: 14px;
 
-        .check-item {
+          border-radius: 12px;
+
+          border:
+            1px solid
+            rgba(
+              40,
+              130,
+              211,
+              .28
+            );
+
+          background:
+            rgba(
+              2,
+              18,
+              37,
+              .65
+            );
+        }
+
+        .selectedHeader {
           display: flex;
-          align-items: flex-start;
-          gap: 12px;
-          padding:
-            16px 20px;
-          border-top:
+          align-items: center;
+          justify-content: space-between;
+
+          color: #dbeafe;
+
+          font-size: 12px;
+          font-weight: 700;
+
+          margin-bottom: 9px;
+        }
+
+        .selectedHeader span {
+          color: #20a7ff;
+        }
+
+        .documentRow {
+          display: flex;
+          align-items: center;
+
+          gap: 10px;
+
+          padding: 9px;
+          margin-top: 7px;
+
+          border-radius: 9px;
+
+          background:
+            rgba(
+              7,
+              35,
+              67,
+              .7
+            );
+
+          border:
             1px solid
-            rgba(148, 163, 184, 0.1);
-          border-right:
-            1px solid
-            rgba(148, 163, 184, 0.1);
+            rgba(
+              57,
+              137,
+              214,
+              .15
+            );
         }
 
-
-        .check-item:nth-child(3n) {
-          border-right: none;
-        }
-
-
-        .check-item-last {
-          grid-column: 1 / 2;
-        }
-
-
-        .check-number {
+        .documentRowIcon {
           width: 40px;
           height: 40px;
+
           flex-shrink: 0;
-          border-radius: 50%;
+
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #168EFF;
+
+          border-radius: 8px;
+
           background:
-            radial-gradient(
-              circle,
-              rgba(22, 142, 255, 0.14),
-              rgba(22, 142, 255, 0.04)
+            rgba(
+              17,
+              115,
+              202,
+              .15
             );
+
+          color: #36aaff;
+
+          font-size: 9px;
+          font-weight: 800;
+        }
+
+        .documentRowInfo {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .documentRowName {
+          color: #e8f1fb;
+          font-size: 12px;
+          font-weight: 600;
+
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .documentRowMeta {
+          margin-top: 4px;
+          color: #708aa7;
+          font-size: 9px;
+        }
+
+        .removeDocument {
+          width: 28px;
+          height: 28px;
+
+          flex-shrink: 0;
+
+          border: none;
+          border-radius: 50%;
+
+          background:
+            rgba(
+              239,
+              68,
+              68,
+              .08
+            );
+
+          color: #f87171;
+
+          font-size: 19px;
+
+          cursor: pointer;
+        }
+
+        .removeDocument:disabled {
+          opacity: .4;
+          cursor:
+            not-allowed;
+        }
+
+        .addMoreButton {
+          width: 100%;
+          margin-top: 9px;
+          padding: 9px;
+
+          border:
+            1px dashed
+            rgba(
+              42,
+              156,
+              239,
+              .35
+            );
+
+          border-radius: 8px;
+
+          background:
+            transparent;
+
+          color: #48aaff;
+
+          font-size: 11px;
+
+          cursor: pointer;
+        }
+
+        .addMoreButton:disabled {
+          opacity: .4;
+          cursor:
+            not-allowed;
+        }
+
+        .errorMessage {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          margin:
+            10px auto 0;
+
+          width: 88%;
+          max-width: 680px;
+
+          padding:
+            11px 13px;
+
+          border-radius: 9px;
+
           border:
             1px solid
-            rgba(22, 142, 255, 0.18);
-          font-size: 13px;
+            rgba(
+              248,
+              113,
+              113,
+              .25
+            );
+
+          background:
+            rgba(
+              127,
+              29,
+              29,
+              .15
+            );
+
+          color:
+            #fca5a5;
+
+          font-size: 11px;
+        }
+
+        .errorMessage span {
+          width: 22px;
+          height: 22px;
+
+          flex-shrink: 0;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          border-radius: 50%;
+
+          background:
+            rgba(
+              239,
+              68,
+              68,
+              .18
+            );
+
+          color:
+            #ff7178;
+
           font-weight: 700;
         }
 
-
-        .check-item h3 {
-          margin:
-            1px 0 6px;
-          color: #F8FAFC;
-          font-size: 12px;
-        }
-
-
-        .check-item p {
+        .errorMessage p {
           margin: 0;
-          color: #7E90A5;
-          font-size: 10px;
           line-height: 1.5;
         }
 
+        .startButton {
+          width: 88%;
+          max-width: 680px;
 
-        /* =====================================
-           VERIFY BUTTON
-        ====================================== */
+          height: 60px;
 
-        .verify-button {
-          width: 100%;
-          margin-top: 14px;
-          height: 58px;
-          border: none;
-          border-radius: 9px;
+          margin:
+            12px auto 0;
+
+          position: relative;
+
           display: flex;
           align-items: center;
           justify-content: center;
+
           gap: 10px;
-          position: relative;
-          color: white;
-          font-size: 16px;
-          font-weight: 700;
-          cursor: pointer;
+
+          border: none;
+          border-radius: 10px;
+
           background:
             linear-gradient(
               90deg,
-              #168EFF,
-              #0868E8
+              #0875df,
+              #0c65cf
             );
+
+          color: white;
+
+          font-size: 17px;
+          font-weight: 700;
+
+          cursor: pointer;
+
           box-shadow:
-            0 10px 30px
-            rgba(22, 142, 255, 0.25);
-          transition:
-            all 0.25s ease;
+            0 10px 28px
+            rgba(
+              0,
+              102,
+              225,
+              .2
+            );
         }
 
-
-        .verify-button:hover:not(.disabled) {
-          transform:
-            translateY(-1px);
-          box-shadow:
-            0 14px 35px
-            rgba(22, 142, 255, 0.38);
+        .startButton:hover:not(
+          .disabled
+        ) {
+          background:
+            linear-gradient(
+              90deg,
+              #168eff,
+              #0872d8
+            );
         }
 
-
-        .verify-button.disabled {
-          cursor: not-allowed;
-          opacity: 0.55;
+        .startButton.disabled {
+          opacity: .55;
+          cursor:
+            not-allowed;
         }
 
-
-        .button-sparkle {
+        .sparkle {
           font-size: 18px;
         }
 
-
-        .button-arrow {
+        .startArrow {
           position: absolute;
-          right: 28px;
-          font-size: 23px;
+          right: 22px;
+
+          font-size: 29px;
           font-weight: 300;
         }
 
-
-        /* =====================================
-           NOTICE
-        ====================================== */
-
-        .processing-notice {
+        .securityNotice {
           display: flex;
-          justify-content: center;
           align-items: center;
-          gap: 8px;
-          color: #8797AB;
-          font-size: 11px;
-          text-align: center;
+          justify-content: center;
+
+          gap: 9px;
+
           padding:
-            17px 0 30px;
+            14px 10px;
+
+          color: #849bb6;
+
+          font-size: 11px;
+          line-height: 1.5;
+
+          text-align: center;
         }
 
+        .securityIcon {
+          color: #3bb1ff;
+          font-size: 17px;
+          flex-shrink: 0;
+        }
 
-        .notice-shield {
-          color: #168EFF;
+        .benefitsCard {
+          width: 100%;
+          min-height: 150px;
+
+          display: grid;
+
+          grid-template-columns:
+            1fr auto
+            1fr auto
+            1fr auto
+            1fr;
+
+          align-items: center;
+
+          border:
+            1px solid
+            rgba(
+              42,
+              126,
+              205,
+              .3
+            );
+
+          border-radius: 12px;
+
+          background:
+            rgba(
+              5,
+              28,
+              54,
+              .75
+            );
+        }
+
+        .benefit {
+          display: flex;
+
+          flex-direction: column;
+
+          align-items: center;
+          justify-content: center;
+
+          text-align: center;
+
+          padding:
+            16px 8px;
+        }
+
+        .benefitIcon {
+          width: 42px;
+          height: 42px;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          border-radius: 11px;
+
+          margin-bottom: 9px;
+
+          font-size: 24px;
+        }
+
+        .secureIcon {
+          color: #20d981;
+
+          border:
+            1px solid
+            rgba(
+              32,
+              217,
+              129,
+              .3
+            );
+
+          background:
+            rgba(
+              32,
+              217,
+              129,
+              .07
+            );
+        }
+
+        .fastIcon {
+          color: #168eff;
+
+          border:
+            1px solid
+            rgba(
+              22,
+              142,
+              255,
+              .3
+            );
+
+          background:
+            rgba(
+              22,
+              142,
+              255,
+              .07
+            );
+        }
+
+        .aiIcon {
+          color: #a56bff;
+
+          border:
+            1px solid
+            rgba(
+              165,
+              107,
+              255,
+              .3
+            );
+
+          background:
+            rgba(
+              165,
+              107,
+              255,
+              .07
+            );
+        }
+
+        .reliableIcon {
+          color: #ffb52e;
+
+          border:
+            1px solid
+            rgba(
+              255,
+              181,
+              46,
+              .3
+            );
+
+          background:
+            rgba(
+              255,
+              181,
+              46,
+              .07
+            );
+        }
+
+        .benefit strong {
+          color: #f5f8fc;
+          font-size: 12px;
+          margin-bottom: 6px;
+        }
+
+        .benefit span {
+          color: #879bb5;
+          font-size: 10px;
+          line-height: 1.5;
+        }
+
+        .benefitDivider {
+          width: 1px;
+          height: 70px;
+
+          background:
+            rgba(
+              132,
+              157,
+              187,
+              .16
+            );
+        }
+
+        .reportCard {
+          width: 100%;
+          min-height: 92px;
+
+          margin-top: 12px;
+
+          display: flex;
+          align-items: center;
+
+          gap: 14px;
+
+          padding:
+            15px 17px;
+
+          border:
+            1px solid
+            rgba(
+              41,
+              126,
+              205,
+              .3
+            );
+
+          border-radius: 12px;
+
+          background:
+            rgba(
+              5,
+              28,
+              54,
+              .75
+            );
+
+          color: white;
+
+          text-align: left;
+
+          cursor: pointer;
+        }
+
+        .reportIcon {
+          width: 50px;
+          height: 50px;
+
+          flex-shrink: 0;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          border-radius: 10px;
+
+          border:
+            1px solid
+            rgba(
+              22,
+              142,
+              255,
+              .28
+            );
+
+          background:
+            rgba(
+              22,
+              142,
+              255,
+              .1
+            );
+
+          color: #168eff;
+
+          font-size: 24px;
+        }
+
+        .reportText {
+          display: flex;
+          flex-direction: column;
+
+          gap: 6px;
+
+          flex: 1;
+          min-width: 0;
+        }
+
+        .reportText strong {
+          color: #f4f8fd;
           font-size: 15px;
         }
 
+        .reportText span {
+          color: #8298b3;
+          font-size: 11px;
+        }
 
-        /* =====================================
-           FOOTER
-        ====================================== */
+        .reportArrow {
+          color: #8ca4c0;
+          font-size: 30px;
+          font-weight: 300;
+        }
 
-        .footer {
-          min-height: 80px;
-          padding-top: 20px;
+        .bottomNav {
+          position: fixed;
+
+          display: flex;
+
+          left: 0;
+          right: 0;
+          bottom: 0;
+
+          height: 68px;
+
+          z-index: 150;
+
+          background:
+            rgba(
+              4,
+              18,
+              42,
+              .98
+            );
+
           border-top:
             1px solid
-            rgba(148, 163, 184, 0.12);
-          display: grid;
-          grid-template-columns:
-            1fr auto 1fr;
+            rgba(
+              76,
+              149,
+              235,
+              .18
+            );
+
+          justify-content:
+            space-around;
+
           align-items: center;
-          gap: 25px;
         }
 
+        .bottomItem {
+          flex: 1;
+          height: 100%;
 
-        .footer-brand {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
+          border: none;
 
-
-        .footer-logo {
-          width: 36px;
-          height: 36px;
-          border:
-            2px solid #168EFF;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #168EFF;
-          font-size: 20px;
-          font-weight: 800;
-        }
-
-
-        .footer-name {
-          color: #F8FAFC;
-          font-size: 16px;
-          font-weight: 800;
-        }
-
-
-        .footer-name span {
-          color: #168EFF;
-        }
-
-
-        .footer-subtitle {
-          margin-top: 2px;
-          color: #64748B;
-          font-size: 9px;
-        }
-
-
-        .footer-badges {
-          display: flex;
-          gap: 7px;
-        }
-
-
-        .footer-badges span {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding:
-            8px 12px;
-          border:
-            1px solid
-            rgba(45, 122, 202, 0.2);
-          border-radius: 7px;
-          color: #CBD5E1;
           background:
-            rgba(9, 30, 55, 0.55);
-          font-size: 10px;
+            transparent;
+
+          text-align: center;
+
+          color: #7990ad;
+
+          font-size: 17px;
+
+          cursor: pointer;
+
+          display: flex;
+
+          flex-direction: column;
+
+          align-items: center;
+
+          justify-content: center;
         }
 
-
-        .footer-badges b {
-          color: #20D981;
+        .bottomItem span {
+          display: block;
+          margin-bottom: 4px;
         }
 
-
-        .copyright {
-          text-align: right;
-          color: #64748B;
-          font-size: 9px;
-          line-height: 1.7;
+        .bottomItem small {
+          font-size: 8px;
         }
 
-
-        /* =====================================
-           TABLET
-        ====================================== */
-
-        @media (max-width: 850px) {
-
-          .page-container {
-            padding-left: 18px;
-            padding-right: 18px;
-          }
-
-
-          .feature-strip {
-            grid-template-columns:
-              repeat(2, 1fr);
-          }
-
-
-          .feature-divider {
-            display: none;
-          }
-
-
-          .benefit-grid {
-            grid-template-columns:
-              repeat(2, 1fr);
-          }
-
-
-          .checks-grid {
-            grid-template-columns:
-              repeat(2, 1fr);
-          }
-
-
-          .check-item:nth-child(3n) {
-            border-right:
-              1px solid
-              rgba(148, 163, 184, 0.1);
-          }
-
-
-          .check-item:nth-child(2n) {
-            border-right: none;
-          }
-
-
-          .check-item-last {
-            grid-column: auto;
-          }
-
-
-          .footer {
-            grid-template-columns:
-              1fr;
-            justify-items: center;
-            text-align: center;
-          }
-
-
-          .copyright {
-            text-align: center;
-          }
-
+        .bottomItem.active {
+          color: #42a5ff;
         }
-
-
-        /* =====================================
-           MOBILE
-        ====================================== */
 
         @media (max-width: 600px) {
 
-          .page-container {
+          .pageContent {
+            max-width: 100%;
+
             padding:
-              0 12px 30px;
+              26px 16px 25px;
           }
 
-
-          .top-header {
-            min-height: 76px;
-          }
-
-
-          .brand-name {
-            font-size: 18px;
-          }
-
-
-          .brand-subtitle {
-            font-size: 9px;
-          }
-
-
-          .brand-icon {
-            width: 38px;
-            height: 38px;
-            font-size: 21px;
-          }
-
-
-          .secure-environment {
-            padding:
-              8px 11px;
-            font-size: 9px;
-          }
-
-
-          .hero-section {
-            padding:
-              40px 5px 28px;
-          }
-
-
-          .hero-title {
-            font-size:
-              clamp(34px, 10vw, 48px);
-            letter-spacing: -1.5px;
-          }
-
-
-          .hero-description {
-            font-size: 13px;
-          }
-
-
-          .feature-strip {
-            grid-template-columns:
-              1fr 1fr;
-            gap: 15px;
-          }
-
-
-          .feature-item {
-            gap: 8px;
-          }
-
-
-          .feature-icon {
-            width: 32px;
-            height: 32px;
-            font-size: 16px;
-          }
-
-
-          .feature-item strong {
+          .verificationBadge {
             font-size: 10px;
-          }
 
-
-          .feature-item span {
-            font-size: 8px;
-          }
-
-
-          .upload-card {
-            padding: 10px;
-          }
-
-
-          .upload-zone {
-            min-height: 310px;
             padding:
-              25px 15px;
+              9px 13px;
           }
 
-
-          .upload-icon-circle {
-            width: 105px;
-            height: 105px;
+          .intro {
+            padding:
+              27px 0 24px;
           }
 
+          .intro h1 {
+            font-size:
+              clamp(
+                30px,
+                8.8vw,
+                39px
+              );
 
-          .upload-arrow {
-            top: 18px;
-            font-size: 48px;
+            letter-spacing:
+              -1.3px;
           }
 
+          .intro p {
+            margin-top: 13px;
 
-          .upload-tray {
-            bottom: 22px;
-            width: 36px;
+            font-size: 12px;
           }
 
+          .uploadCard {
+            width: 92%;
 
-          .upload-zone h2 {
+            padding: 8px;
+          }
+
+          .uploadZone {
+            min-height: 330px;
+
+            padding:
+              25px 12px;
+          }
+
+          .uploadIllustration {
+            transform:
+              scale(.88);
+
+            margin-bottom: 8px;
+          }
+
+          .uploadZone h2 {
             font-size: 19px;
           }
 
+          .uploadInstruction {
+            font-size: 12px;
+          }
 
-          .upload-zone p {
+          .fileTypes {
+            margin-top: 16px;
+
+            gap: 9px;
+          }
+
+          .fileType {
+            min-width: 70px;
+
+            padding:
+              8px 13px;
+
+            font-size: 11px;
+          }
+
+          .uploadLimit {
+            margin-top: 15px;
+
+            font-size: 10px;
+          }
+
+          .startButton {
+            width: 92%;
+
+            height: 58px;
+
+            font-size: 15px;
+          }
+
+          .errorMessage {
+            width: 92%;
+          }
+
+          .securityNotice {
+            font-size: 9px;
+
+            padding:
+              12px 5px;
+          }
+
+          .benefitsCard {
+            min-height: 140px;
+          }
+
+          .benefit {
+            padding:
+              12px 3px;
+          }
+
+          .benefitIcon {
+            width: 35px;
+
+            height: 35px;
+
+            font-size: 19px;
+
+            margin-bottom: 7px;
+          }
+
+          .benefit strong {
+            font-size: 10px;
+          }
+
+          .benefit span {
+            font-size: 8px;
+          }
+
+          .benefitDivider {
+            height: 62px;
+          }
+
+          .reportCard {
+            min-height: 82px;
+
+            padding: 12px;
+          }
+
+          .reportIcon {
+            width: 43px;
+
+            height: 43px;
+
+            font-size: 20px;
+          }
+
+          .reportText strong {
             font-size: 13px;
           }
 
-
-          .selected-file {
-            align-items: flex-start;
-            flex-direction: column;
-          }
-
-
-          .selected-name {
-            max-width: 210px;
-          }
-
-
-          .change-file {
-            width: 100%;
-            text-align: center;
-          }
-
-
-          .benefit-grid {
-            grid-template-columns:
-              1fr 1fr;
-          }
-
-
-          .benefit-card {
-            min-height: 145px;
-            padding: 13px;
-          }
-
-
-          .analysis-header {
-            padding:
-              16px;
-          }
-
-
-          .checks-grid {
-            grid-template-columns:
-              1fr;
-          }
-
-
-          .check-item,
-          .check-item:nth-child(2n),
-          .check-item:nth-child(3n) {
-            border-right: none;
-          }
-
-
-          .check-item-last {
-            grid-column: auto;
-          }
-
-
-          .verify-button {
-            height: 56px;
-            font-size: 14px;
-          }
-
-
-          .button-arrow {
-            right: 17px;
-          }
-
-
-          .processing-notice {
-            padding:
-              15px 10px 25px;
+          .reportText span {
             font-size: 9px;
           }
 
+          .reportArrow {
+            font-size: 25px;
+          }
 
-          .footer-badges {
-            flex-wrap: wrap;
-            justify-content: center;
+        }
+
+        @media (max-width: 380px) {
+
+          .pageContent {
+            padding-left: 12px;
+
+            padding-right: 12px;
+          }
+
+          .mobileLogoButton {
+            font-size: 15px;
+          }
+
+          .mobileLogoDiamond {
+            font-size: 21px;
+          }
+
+          .mobileBell {
+            font-size: 17px;
+          }
+
+          .intro h1 {
+            font-size: 29px;
+          }
+
+          .intro p {
+            font-size: 11px;
+          }
+
+          .uploadCard {
+            width: 94%;
+          }
+
+          .uploadZone {
+            min-height: 315px;
+          }
+
+          .benefit span {
+            font-size: 7px;
+          }
+
+          .benefit strong {
+            font-size: 9px;
           }
 
         }

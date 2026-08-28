@@ -1,0 +1,1698 @@
+.page {
+  min-height: 100vh;
+  width: 100%;
+  background: #ffffff;
+  color: #101827;
+  overflow-x: hidden;
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+.page button {
+  font-family: inherit;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 1em;
+  line-height: 1;
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   MOBILE HEADER
+============================================================ */
+
+.mobileHeader {
+  width: 100%;
+  height: 72px;
+  padding: 0 14px;
+
+  display: grid;
+  grid-template-columns:
+    44px
+    minmax(0, 1fr)
+    44px;
+
+  align-items: center;
+
+  background: #061b38;
+  border-bottom: 1px solid #193650;
+
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.menuButton,
+.mobileBell {
+  width: 40px;
+  height: 40px;
+
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+
+  border-radius: 50%;
+}
+
+.menuButton:hover,
+.mobileBell:hover {
+  background: rgba(22, 142, 255, 0.08);
+}
+
+.menuButton .icon {
+  color: #ffffff !important;
+  font-size: 23px !important;
+  font-weight: 400;
+}
+
+.mobileLogoButton {
+  min-width: 0;
+  width: 100%;
+  height: 42px;
+
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  cursor: pointer;
+
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+
+  white-space: nowrap;
+}
+
+.mobileBrandName {
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.mobileBrandName strong {
+  color: #168eff;
+}
+
+.mobileLogoDiamond {
+  color: #168eff;
+  font-size: 23px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.mobileBell .icon {
+  width: 20px;
+  height: 20px;
+
+  color: #ffffff !important;
+  font-size: 17px !important;
+}
+
+.mobileNotificationDot {
+  position: absolute;
+
+  width: 8px;
+  height: 8px;
+
+  top: 5px;
+  right: 3px;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  box-shadow:
+    0 0 8px
+    rgba(22, 142, 255, 0.7);
+}
+
+/* ============================================================
+   MAIN
+============================================================ */
+
+.main {
+  width: 100%;
+  min-height: calc(100vh - 72px);
+  background: #ffffff;
+}
+
+.content {
+  width: 100%;
+  max-width: 1100px;
+
+  margin: 0 auto;
+
+  padding: 34px 34px 110px;
+}
+
+/* ============================================================
+   PAGE INTRO
+============================================================ */
+
+.pageIntro {
+  position: relative;
+
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  padding: 0;
+  margin: 0;
+}
+
+.pageIntro h1 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 31px;
+  line-height: 1.2;
+
+  letter-spacing: -0.8px;
+
+  font-weight: 800;
+}
+
+.pageIntro p {
+  margin: 8px 0 0;
+
+  color: #64748b;
+
+  font-size: 14px;
+  line-height: 1.55;
+
+  max-width: 550px;
+}
+
+/* ============================================================
+   BACK TO ACCOUNT
+
+   LOCKED DESIGN
+
+   Arrow: 18px
+   Text: 13px
+   Gap: 7px
+   Height: 22px
+   No padding
+   No forced width
+   Blue: #168eff
+   Weight: 500
+   Top spacing: 20px
+============================================================ */
+
+.backLink {
+  display: inline-flex !important;
+
+  align-items: center !important;
+  justify-content: flex-start !important;
+
+  width: fit-content !important;
+  height: 22px !important;
+
+  gap: 7px;
+
+  margin-top: 20px !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  margin-bottom: 0 !important;
+
+  padding: 0 !important;
+
+  border: 0;
+  background: transparent;
+
+  color: #168eff;
+
+  text-decoration: none;
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 22px;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+
+  align-self: flex-start !important;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.backLink .icon {
+  font-size: 18px !important;
+
+  width: 18px;
+  height: 18px;
+}
+
+/* ============================================================
+   STATUS
+============================================================ */
+
+.statusBadge {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+
+  margin-top: 17px;
+
+  border-radius: 8px;
+
+  padding: 9px 12px;
+
+  background: #fff7e8;
+  color: #dc8b00;
+
+  gap: 8px;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.statusDiamond {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* ============================================================
+   FIVE STEP PROGRESS
+============================================================ */
+
+.steps {
+  width: 100%;
+
+  margin-top: 27px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+
+  align-items: start;
+
+  gap: 0;
+
+  overflow: visible;
+}
+
+.stepItem {
+  min-width: 0;
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(12px, 0.55fr);
+
+  align-items: start;
+
+  gap: 0;
+}
+
+.stepItemLast {
+  grid-template-columns:
+    minmax(0, 1fr);
+}
+
+.step {
+  min-width: 0;
+  width: 100%;
+
+  text-align: center;
+}
+
+.stepCircle {
+  width: 58px;
+  height: 58px;
+
+  margin: 0 auto;
+
+  border-radius: 50%;
+
+  border: 1px solid #d5dce7;
+
+  background: #ffffff;
+  color: #526178;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.stepCircleActive,
+.stepCircleCompleted {
+  background: #126ff1;
+
+  border-color: #126ff1;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 5px 16px
+    rgba(20, 109, 245, 0.18);
+}
+
+.stepCircleCompleted {
+  font-size: 24px;
+}
+
+.stepLabel {
+  margin-top: 10px;
+
+  color: #4f6078;
+
+  font-size: 11px;
+  line-height: 1.45;
+
+  font-weight: 500;
+}
+
+.stepActive .stepLabel {
+  color: #096bf4;
+  font-weight: 750;
+}
+
+.stepLine {
+  width: 100%;
+  height: 1px;
+
+  background: #d9e1eb;
+
+  margin-top: 29px;
+}
+
+.stepLineActive {
+  background: #1675f2;
+}
+
+/* ============================================================
+   VERIFICATION CARD
+============================================================ */
+
+.verificationCard {
+  margin-top: 42px;
+
+  border: 1px solid #dfe6ef;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  padding: 28px 30px 24px;
+
+  box-shadow:
+    0 3px 15px
+    rgba(15, 36, 64, 0.035);
+}
+
+/* ============================================================
+   CARD HEADER
+============================================================ */
+
+.cardHeader {
+  display: flex;
+
+  align-items: center;
+
+  gap: 20px;
+}
+
+.cardHeaderIcon {
+  width: 70px;
+  height: 70px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #edf5ff;
+  color: #146df5;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.cardHeaderText {
+  min-width: 0;
+}
+
+.cardHeaderText h2 {
+  margin: 0;
+
+  color: #14213a;
+
+  font-size: 24px;
+  line-height: 1.3;
+
+  font-weight: 800;
+}
+
+.cardHeaderText p {
+  margin: 7px 0 0;
+
+  color: #5e708a;
+
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+
+  background: #edf0f4;
+
+  margin: 25px 0 20px;
+}
+
+/* ============================================================
+   SELFIE REQUIREMENTS
+============================================================ */
+
+.requirementsBox {
+  border: 1px solid #d4e3f7;
+
+  background: #f5f9ff;
+
+  border-radius: 8px;
+
+  padding: 17px 18px 16px;
+}
+
+.requirementsBox h3 {
+  margin: 0;
+
+  color: #152137;
+
+  font-size: 14px;
+
+  font-weight: 750;
+}
+
+.requirementsGrid {
+  margin-top: 14px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+}
+
+.selfieRequirement {
+  min-width: 0;
+  min-height: 110px;
+
+  padding: 0 17px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: flex-start;
+
+  text-align: center;
+
+  border-right: 1px solid #dce7f5;
+}
+
+.selfieRequirement:first-child {
+  padding-left: 0;
+}
+
+.selfieRequirement:last-child {
+  border-right: 0;
+  padding-right: 0;
+}
+
+.requirementIcon {
+  width: 45px;
+  height: 45px;
+
+  border-radius: 50%;
+
+  background: #e9f3ff;
+  color: #1471ed;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 10px;
+}
+
+.requirementText {
+  color: #17243b;
+
+  font-size: 12px;
+  line-height: 1.35;
+
+  font-weight: 700;
+}
+
+/* ============================================================
+   SELFIE AREA
+============================================================ */
+
+.selfieArea {
+  position: relative;
+
+  width: 380px;
+  height: 380px;
+
+  max-width: 100%;
+
+  margin: 25px auto 23px;
+
+  border-radius: 50%;
+
+  border: 1.5px dashed #2783ed;
+
+  background:
+    radial-gradient(
+      circle,
+      #f8faff 0%,
+      #f0f5fb 100%
+    );
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+.selfieAreaCamera {
+  border-style: solid;
+
+  border-width: 3px;
+
+  border-color: #1675f2;
+
+  background: #000000;
+}
+
+.selfieAreaCaptured {
+  border-style: solid;
+
+  border-width: 2px;
+
+  border-color: #1675f2;
+}
+
+.selfiePlaceholder {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  color: #14213a;
+}
+
+.cameraIcon {
+  color: #1471ed;
+
+  margin-bottom: 12px;
+}
+
+.selfiePlaceholder h3 {
+  margin: 0;
+
+  color: #14213a;
+
+  font-size: 21px;
+
+  font-weight: 800;
+}
+
+.selfiePlaceholder p {
+  margin: 8px 0 0;
+
+  color: #65758d;
+
+  font-size: 13px;
+
+  line-height: 1.45;
+}
+
+.cameraVideo {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  transform: scaleX(-1);
+}
+
+.selfiePreview {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.hiddenCanvas {
+  display: none;
+}
+
+/* ============================================================
+   CAMERA ERROR
+============================================================ */
+
+.cameraError {
+  margin: -10px auto 17px;
+
+  max-width: 560px;
+
+  padding: 9px 12px;
+
+  border-radius: 6px;
+
+  background: #fff1f2;
+
+  color: #c6283c;
+
+  font-size: 11px;
+
+  line-height: 1.45;
+
+  text-align: center;
+}
+
+/* ============================================================
+   SECURITY
+============================================================ */
+
+.securityBox {
+  min-height: 57px;
+
+  border: 1px solid #cde6d7;
+
+  background: #eff9f2;
+
+  border-radius: 7px;
+
+  padding: 11px 16px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+.securityLock {
+  width: 28px;
+  height: 28px;
+
+  flex-shrink: 0;
+
+  color: #13814a;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.securityBox p {
+  margin: 0;
+
+  color: #187844;
+
+  font-size: 13px;
+
+  line-height: 1.45;
+}
+
+/* ============================================================
+   ACTION
+============================================================ */
+
+.actionRow {
+  margin-top: 17px;
+
+  display: flex;
+
+  justify-content: flex-end;
+}
+
+.takeSelfieButton {
+  width: 100%;
+  height: 54px;
+
+  border: 0;
+
+  border-radius: 7px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0879f9,
+      #1269e7
+    );
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+
+  position: relative;
+
+  font-size: 17px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 7px 20px
+    rgba(0, 108, 245, 0.15);
+}
+
+.takeSelfieButton:hover:not(:disabled) {
+  background:
+    linear-gradient(
+      135deg,
+      #086ee8,
+      #0c5ed0
+    );
+}
+
+.takeSelfieButton:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+.capturedActions {
+  width: 100%;
+
+  display: flex;
+
+  gap: 12px;
+}
+
+.capturedActions .takeSelfieButton {
+  flex: 1;
+}
+
+.retakeButton {
+  min-width: 150px;
+
+  height: 54px;
+
+  border: 1px solid #d4deeb;
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #176fe8;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.retakeButton:hover {
+  background: #f5f9ff;
+
+  border-color: #a9c8ee;
+}
+
+.continueArrow {
+  position: absolute;
+
+  right: 22px;
+
+  font-size: 29px;
+
+  line-height: 1;
+
+  font-weight: 400;
+}
+
+/* ============================================================
+   MOBILE MENU
+============================================================ */
+
+.mobileMenu {
+  display: none;
+}
+
+.mobileMenuHeader,
+.mobileMenuNav,
+.mobileAccountLabel {
+  display: none;
+}
+
+/* ============================================================
+   MOBILE BOTTOM NAV
+============================================================ */
+
+.mobileBottomNav {
+  display: none;
+}
+
+/* ============================================================
+   TABLET
+============================================================ */
+
+@media (max-width: 900px) {
+  .content {
+    padding: 32px 24px 100px;
+  }
+
+  .cardHeaderText h2 {
+    font-size: 22px;
+  }
+
+  .cardHeaderText p {
+    font-size: 14px;
+  }
+
+  .selfieRequirement {
+    padding: 0 10px;
+  }
+
+  .requirementText {
+    font-size: 11px;
+  }
+
+  .selfieArea {
+    width: 330px;
+    height: 330px;
+  }
+}
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media (max-width: 700px) {
+  .mobileHeader {
+    height: 72px;
+
+    padding: 0 14px;
+
+    grid-template-columns:
+      44px
+      minmax(0, 1fr)
+      44px;
+  }
+
+  .mobileBrandName {
+    font-size: 17px;
+  }
+
+  .mobileLogoDiamond {
+    font-size: 23px;
+  }
+
+  .main {
+    min-height: calc(100vh - 72px);
+  }
+
+  .content {
+    padding: 27px 15px 100px;
+  }
+
+  /* ========================================================
+     INTRO
+  ======================================================== */
+
+  .pageIntro {
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    align-items: flex-start !important;
+
+    width: 100% !important;
+  }
+
+  .pageIntro h1 {
+    width: 100%;
+
+    font-size: 27px;
+
+    line-height: 1.2;
+  }
+
+  .pageIntro p {
+    width: 100%;
+
+    font-size: 13px;
+
+    line-height: 1.55;
+
+    margin-top: 9px;
+  }
+
+  /* ========================================================
+     BACK TO ACCOUNT
+  ======================================================== */
+
+  .pageIntro > .backLink {
+    display: inline-flex !important;
+
+    position: static !important;
+
+    width: fit-content !important;
+
+    height: 22px !important;
+
+    margin-top: 20px !important;
+
+    margin-left: 0 !important;
+
+    padding: 0 !important;
+
+    align-self: flex-start !important;
+
+    flex: 0 0 auto !important;
+  }
+
+  .backLink .icon {
+    font-size: 18px !important;
+
+    width: 18px;
+    height: 18px;
+  }
+
+  /* ========================================================
+     STATUS
+  ======================================================== */
+
+  .pageIntro > .statusBadge {
+    display: inline-flex !important;
+
+    position: static !important;
+
+    width: fit-content !important;
+
+    margin-top: 17px !important;
+
+    margin-left: 0 !important;
+
+    padding: 9px 12px !important;
+
+    align-self: flex-start !important;
+  }
+
+  .statusDiamond {
+    font-size: 19px;
+  }
+
+  /* ========================================================
+     FIVE STEPS
+  ======================================================== */
+
+  .steps {
+    width: 100% !important;
+
+    margin-top: 27px !important;
+
+    display: grid !important;
+
+    grid-template-columns:
+      repeat(5, minmax(0, 1fr)) !important;
+
+    grid-template-rows: auto !important;
+
+    gap: 0 !important;
+
+    align-items: start !important;
+  }
+
+  .stepItem {
+    min-width: 0 !important;
+
+    width: 100% !important;
+
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(5px, 0.45fr) !important;
+
+    grid-row: 1 !important;
+  }
+
+  .stepItemLast {
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+  }
+
+  .step {
+    width: 100% !important;
+
+    min-width: 0 !important;
+  }
+
+  .stepCircle {
+    width: 38px !important;
+
+    height: 38px !important;
+
+    margin: 0 auto !important;
+
+    font-size: 13px !important;
+  }
+
+  .stepCircleCompleted {
+    font-size: 19px !important;
+  }
+
+  .stepLabel {
+    margin-top: 8px !important;
+
+    font-size: 9px !important;
+
+    line-height: 1.4 !important;
+
+    text-align: center !important;
+  }
+
+  .stepLine {
+    width: 100% !important;
+
+    min-width: 5px !important;
+
+    height: 1px !important;
+
+    margin-top: 19px !important;
+  }
+
+  /* ========================================================
+     CARD
+  ======================================================== */
+
+  .verificationCard {
+    margin-top: 28px;
+
+    padding: 17px;
+
+    border-radius: 10px;
+  }
+
+  .cardHeader {
+    gap: 13px;
+
+    align-items: center;
+  }
+
+  .cardHeaderIcon {
+    width: 53px;
+
+    height: 53px;
+  }
+
+  .cardHeaderIcon svg {
+    width: 27px;
+
+    height: 27px;
+  }
+
+  .cardHeaderText h2 {
+    font-size: 17px;
+
+    line-height: 1.3;
+  }
+
+  .cardHeaderText p {
+    margin-top: 5px;
+
+    font-size: 11px;
+
+    line-height: 1.45;
+  }
+
+  .divider {
+    margin: 20px 0;
+  }
+
+  /* ========================================================
+     REQUIREMENTS
+  ======================================================== */
+
+  .requirementsBox {
+    padding: 12px 10px 11px;
+  }
+
+  .requirementsBox h3 {
+    font-size: 11px;
+  }
+
+  .requirementsGrid {
+    margin-top: 10px;
+
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+  }
+
+  .selfieRequirement {
+    min-height: 92px;
+
+    padding: 0 5px;
+  }
+
+  .requirementIcon {
+    width: 34px;
+
+    height: 34px;
+
+    margin-bottom: 7px;
+  }
+
+  .requirementIcon .icon {
+    font-size: 17px !important;
+  }
+
+  .requirementText {
+    font-size: 8px;
+
+    line-height: 1.35;
+  }
+
+  /* ========================================================
+     SELFIE AREA
+  ======================================================== */
+
+  .selfieArea {
+    width: 245px;
+
+    height: 245px;
+
+    margin: 18px auto 16px;
+  }
+
+  .cameraIcon {
+    margin-bottom: 8px;
+  }
+
+  .cameraIcon svg {
+    width: 31px;
+
+    height: 31px;
+  }
+
+  .selfiePlaceholder h3 {
+    font-size: 15px;
+  }
+
+  .selfiePlaceholder p {
+    margin-top: 6px;
+
+    font-size: 10px;
+
+    line-height: 1.45;
+  }
+
+  /* ========================================================
+     ERROR
+  ======================================================== */
+
+  .cameraError {
+    margin: -4px auto 12px;
+
+    font-size: 9px;
+  }
+
+  /* ========================================================
+     SECURITY
+  ======================================================== */
+
+  .securityBox {
+    min-height: auto;
+
+    padding: 9px 10px;
+
+    gap: 8px;
+
+    align-items: center;
+  }
+
+  .securityLock {
+    width: 24px;
+
+    height: 24px;
+  }
+
+  .securityLock svg {
+    width: 19px;
+
+    height: 19px;
+  }
+
+  .securityBox p {
+    font-size: 8px;
+
+    line-height: 1.5;
+  }
+
+  /* ========================================================
+     ACTION
+  ======================================================== */
+
+  .actionRow {
+    margin-top: 13px;
+
+    display: block;
+  }
+
+  .takeSelfieButton {
+    width: 100%;
+
+    min-width: 0;
+
+    height: 46px;
+
+    font-size: 13px;
+  }
+
+  .takeSelfieButton svg {
+    width: 20px;
+
+    height: 20px;
+  }
+
+  .continueArrow {
+    right: 17px;
+
+    font-size: 25px;
+  }
+
+  .capturedActions {
+    gap: 8px;
+  }
+
+  .retakeButton {
+    min-width: 105px;
+
+    height: 46px;
+
+    font-size: 11px;
+  }
+
+  /* ========================================================
+     MOBILE MENU
+  ======================================================== */
+
+  .mobileMenu {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 300;
+
+    display: block;
+
+    padding: 22px;
+
+    background: #031229;
+
+    color: #ffffff;
+
+    overflow-y: auto;
+  }
+
+  .mobileMenuHeader {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+  }
+
+  .mobileMenuLogo {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+  }
+
+  .mobileMenuLogo > span {
+    color: #168eff;
+
+    font-size: 25px;
+  }
+
+  .mobileMenuLogo strong {
+    color: #168eff;
+  }
+
+  .closeMenu {
+    border: 0;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 30px;
+
+    cursor: pointer;
+
+    padding: 0;
+  }
+
+  .mobileMenuSubtitle {
+    display: block;
+
+    margin-top: 9px;
+
+    color: #91a7c2;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+  }
+
+  .mobileMenuNav {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    margin-top: 30px;
+  }
+
+  .mobileNavItem {
+    width: 100%;
+
+    min-height: 50px;
+
+    padding: 0 14px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    background: transparent;
+
+    color: #b9c8dc;
+
+    font-size: 14px;
+
+    text-align: left;
+
+    cursor: pointer;
+  }
+
+  .mobileNavItem:hover {
+    background: rgba(26, 119, 220, 0.14);
+
+    color: #ffffff;
+  }
+
+  .navIcon {
+    width: 20px;
+
+    min-width: 20px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #8db9e9;
+  }
+
+  .mobileAccountLabel {
+    display: block;
+
+    color: #607897;
+
+    font-size: 10px;
+
+    letter-spacing: 1.5px;
+
+    margin: 25px 14px 10px;
+  }
+
+  /* ========================================================
+     BOTTOM NAV
+  ======================================================== */
+
+  .mobileBottomNav {
+    position: fixed;
+
+    left: 0;
+
+    right: 0;
+
+    bottom: 0;
+
+    height: 74px;
+
+    z-index: 200;
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(5, 1fr);
+
+    align-items: center;
+
+    background: #031229;
+
+    border-top:
+      1px solid
+      rgba(255, 255, 255, 0.1);
+
+    backdrop-filter: blur(15px);
+  }
+
+  .mobileBottomNav button {
+    height: 100%;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #7d93ae;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 4px;
+
+    cursor: pointer;
+  }
+
+  .mobileBottomNav button .icon {
+    font-size: 20px !important;
+  }
+
+  .mobileBottomNav button span:last-child {
+    font-size: 8px;
+  }
+
+  .mobileBottomNav .activeBottom {
+    color: #168eff;
+
+    font-weight: 700;
+  }
+}
+
+/* ============================================================
+   SMALL PHONES
+============================================================ */
+
+@media (max-width: 380px) {
+  .mobileBrandName {
+    font-size: 15px;
+  }
+
+  .mobileLogoDiamond {
+    font-size: 21px;
+  }
+
+  .content {
+    padding-left: 12px;
+
+    padding-right: 12px;
+  }
+
+  .pageIntro h1 {
+    font-size: 25px;
+  }
+
+  .pageIntro p {
+    font-size: 12px;
+  }
+
+  .verificationCard {
+    padding: 14px;
+  }
+
+  .pageIntro > .backLink {
+    height: 22px !important;
+
+    margin-top: 18px !important;
+  }
+
+  .pageIntro > .statusBadge {
+    margin-top: 15px !important;
+  }
+
+  .steps {
+    grid-template-columns:
+      repeat(5, minmax(0, 1fr)) !important;
+  }
+
+  .stepItem {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(4px, 0.35fr) !important;
+
+    grid-row: 1 !important;
+  }
+
+  .stepItemLast {
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+  }
+
+  .stepCircle {
+    width: 34px !important;
+
+    height: 34px !important;
+
+    font-size: 12px !important;
+  }
+
+  .stepCircleCompleted {
+    font-size: 17px !important;
+  }
+
+  .stepLabel {
+    font-size: 8px !important;
+
+    line-height: 1.4 !important;
+  }
+
+  .stepLine {
+    min-width: 4px !important;
+
+    margin-top: 17px !important;
+  }
+
+  .selfieArea {
+    width: 215px;
+
+    height: 215px;
+  }
+
+  .selfiePlaceholder h3 {
+    font-size: 14px;
+  }
+
+  .selfiePlaceholder p {
+    font-size: 9px;
+  }
+
+  .requirementsBox {
+    padding: 10px 7px;
+  }
+
+  .selfieRequirement {
+    padding: 0 3px;
+  }
+
+  .requirementText {
+    font-size: 7px;
+  }
+
+  .mobileBottomNav {
+    height: 66px;
+  }
+}

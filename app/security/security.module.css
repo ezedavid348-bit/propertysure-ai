@@ -1,0 +1,1222 @@
+.page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  background: #ffffff;
+  color: #101827;
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+.page button,
+.page a {
+  font-family: inherit;
+}
+
+/* =========================================================
+   ICON SYSTEM
+========================================================= */
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 1em;
+  line-height: 1;
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background:
+    linear-gradient(
+      180deg,
+      #031229 0%,
+      #061b3b 100%
+    );
+  color: #ffffff;
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.loadingBrand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.loadingBrand strong {
+  color: #168eff;
+}
+
+.loadingLogo {
+  color: #168eff;
+  font-size: 40px;
+  line-height: 1;
+}
+
+.loadingText {
+  color: #9eb1c9;
+  font-size: 14px;
+}
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.sidebar {
+  width: 285px;
+  min-width: 285px;
+  min-height: 100vh;
+  padding: 30px 20px 20px;
+  background:
+    linear-gradient(
+      180deg,
+      #031229 0%,
+      #061b3b 100%
+    );
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  border-right:
+    1px solid
+    rgba(24, 142, 255, 0.12);
+}
+
+.brandButton {
+  border: 0;
+  background: transparent;
+  color: white;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.brandName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  white-space: nowrap;
+}
+
+.brandName strong {
+  color: #168eff;
+}
+
+.brandLogoDiamond {
+  color: #168eff;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.brandSubtitle {
+  margin-top: 10px;
+  padding-left: 3px;
+  color: #9eb1c9;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   SIDEBAR NAVIGATION
+========================================================= */
+
+.sidebarNav {
+  margin-top: 40px;
+}
+
+.navItem {
+  width: 100%;
+  min-height: 50px;
+  margin-bottom: 5px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #b9c8dc;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.navItem:hover {
+  background:
+    rgba(26, 119, 220, 0.14);
+  color: white;
+}
+
+.navIcon {
+  width: 20px;
+  min-width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8db9e9;
+}
+
+.accountLabel {
+  color: #607897;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  margin: 28px 14px 10px;
+}
+
+/* =========================================================
+   SUPPORT
+========================================================= */
+
+.helpBox {
+  margin-top: auto;
+  padding: 18px;
+  border:
+    1px solid
+    rgba(95, 157, 222, 0.25);
+  border-radius: 10px;
+  background:
+    rgba(10, 51, 103, 0.28);
+}
+
+.helpTitle {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 9px;
+}
+
+.helpText {
+  color: #91a7c2;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.supportButton {
+  width: 100%;
+  height: 40px;
+  margin-top: 15px;
+  border:
+    1px solid
+    #168eff;
+  border-radius: 7px;
+  background: transparent;
+  color: #48a7ff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease;
+}
+
+.supportButton:hover {
+  background:
+    rgba(22, 142, 255, 0.08);
+}
+
+/* =========================================================
+   SIDEBAR USER
+========================================================= */
+
+.sidebarUser {
+  width: 100%;
+  min-height: 68px;
+  margin-top: 20px;
+  padding: 8px 5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-top:
+    1px solid
+    rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #147de2;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.userInfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.userName {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userPlan {
+  margin-top: 3px;
+  color: #8ca1bc;
+  font-size: 11px;
+}
+
+.userChevron {
+  color: #a7b9cf;
+  font-size: 18px;
+}
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+.main {
+  flex: 1;
+  min-width: 0;
+  min-height: 100vh;
+  background: #ffffff;
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   TOP BAR
+========================================================= */
+
+.topBar {
+  height: 70px;
+  padding: 0 30px 0 45px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom:
+    1px solid
+    #e5eaf0;
+  background: #ffffff;
+}
+
+.topBarTitle {
+  color: #111827;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.topBarRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topNotification {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: #334155;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.topNotificationDot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  top: 5px;
+  right: 7px;
+  border-radius: 50%;
+  background: #168eff;
+  border: 2px solid white;
+}
+
+.topUser {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  color: #111827;
+  cursor: pointer;
+  padding: 3px;
+}
+
+.topAvatar {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #147de2;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.topUserText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.topUserText strong {
+  color: #111827;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.topUserText span {
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 10px;
+}
+
+.topChevron {
+  margin-left: 2px;
+  color: #64748b;
+  font-size: 17px;
+}
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.content {
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 35px 42px 55px;
+}
+
+.pageIntro h1 {
+  margin: 0;
+  color: #111827;
+  font-size:
+    clamp(28px, 3vw, 34px);
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.7px;
+}
+
+.pageIntro p {
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 26px;
+  color: #168eff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   SECTION LABEL
+========================================================= */
+
+.sectionLabel {
+  margin-top: 28px;
+  margin-bottom: 9px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.sessionsLabel {
+  margin-top: 37px;
+}
+
+.accountSecurityLabel {
+  margin-top: 37px;
+}
+
+/* =========================================================
+   SECURITY CARDS
+========================================================= */
+
+.securityCard {
+  width: 100%;
+  min-height: 106px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  border:
+    1px solid
+    #dce3eb;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow:
+    0 2px 8px
+    rgba(15, 23, 42, 0.035);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.securityCard + .securityCard {
+  margin-top: 14px;
+}
+
+.securityCard:hover {
+  border-color: #cbd8e6;
+  box-shadow:
+    0 5px 18px
+    rgba(15, 23, 42, 0.06);
+}
+
+/* =========================================================
+   SECURITY ICON
+========================================================= */
+
+.securityIcon {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+}
+
+.passwordIcon {
+  color: #168eff;
+  background: #eaf3ff;
+}
+
+.twoFactorIcon {
+  color: #25bd72;
+  background: #e9f9f0;
+}
+
+.sessionIcon {
+  color: #8b4de8;
+  background: #f2eaff;
+}
+
+.emailIcon {
+  color: #168eff;
+  background: #eaf3ff;
+}
+
+.phoneIcon {
+  color: #168eff;
+  background: #eaf3ff;
+}
+
+/* =========================================================
+   SECURITY TEXT
+========================================================= */
+
+.securityText {
+  min-width: 0;
+  flex: 1;
+}
+
+.securityText h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.securityText p {
+  margin: 7px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+/* =========================================================
+   ACTION BUTTON
+========================================================= */
+
+.actionButton {
+  min-width: 215px;
+  height: 48px;
+  padding: 0 17px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border:
+    1px solid
+    #168eff;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #168eff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.actionButton:hover {
+  background: #f3f8ff;
+  box-shadow:
+    0 4px 12px
+    rgba(22, 142, 255, 0.1);
+}
+
+.actionButton .icon {
+  font-size: 25px !important;
+  font-weight: 400;
+}
+
+/* =========================================================
+   2FA STATUS + ACTION
+========================================================= */
+
+.statusActionGroup {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.loadingStatus {
+  color: #64748b;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.notEnabledStatus,
+.enabledStatus {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.notEnabledStatus {
+  color: #f0a400;
+}
+
+.enabledStatus {
+  color: #20b76a;
+}
+
+.notEnabledStatus .statusCircle,
+.enabledStatus .statusCircle {
+  width: 21px;
+  height: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.notEnabledStatus .statusCircle {
+  border: 2px solid #e29a00;
+}
+
+.enabledStatus .statusCircle {
+  border: 2px solid #20b76a;
+}
+
+/* =========================================================
+   VERIFIED STATUS
+========================================================= */
+
+.verifiedStatus,
+.unverifiedStatus {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.verifiedStatus {
+  color: #20b76a;
+}
+
+.unverifiedStatus {
+  color: #e29a00;
+}
+
+.statusCircle {
+  width: 21px;
+  height: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.verifiedStatus .statusCircle {
+  border: 2px solid #20b76a;
+}
+
+.unverifiedStatus .statusCircle {
+  border: 2px solid #e29a00;
+}
+
+/* =========================================================
+   SECURITY NOTICE
+========================================================= */
+
+.securityNotice {
+  min-height: 110px;
+  margin-top: 18px;
+  padding: 20px 25px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border:
+    1px solid
+    #dce3eb;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow:
+    0 2px 8px
+    rgba(15, 23, 42, 0.035);
+  overflow: hidden;
+  position: relative;
+}
+
+.noticeIcon {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: #edf5ff;
+  color: #168eff;
+}
+
+.noticeText {
+  position: relative;
+  z-index: 2;
+}
+
+.noticeText h3 {
+  margin: 0;
+  color: #172033;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.noticeText p {
+  margin: 7px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.noticeDecoration {
+  margin-left: auto;
+  width: 170px;
+  height: 80px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  opacity: 0.5;
+}
+
+.noticeLock {
+  font-size: 57px;
+  filter: grayscale(1);
+  opacity: 0.18;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+.mobileHeader,
+.mobileMenu,
+.mobileBottomNav {
+  display: none;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1050px) {
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+  }
+
+  .content {
+    padding: 30px 25px 45px;
+  }
+
+  .topBar {
+    padding: 0 22px;
+  }
+
+  .securityCard {
+    gap: 18px;
+  }
+
+  .actionButton {
+    min-width: 185px;
+  }
+
+  .statusActionGroup {
+    gap: 12px;
+  }
+}
+
+/* =========================================================
+   PHONE
+========================================================= */
+
+@media (max-width: 700px) {
+  .page {
+    display: block;
+    min-height: 100vh;
+    padding-bottom: 74px;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .main {
+    width: 100%;
+    min-height: calc(100vh - 74px);
+  }
+
+  /* =======================================================
+     MOBILE HEADER
+  ======================================================= */
+
+  .mobileHeader {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 68px;
+    padding: 0 12px;
+    display: grid;
+    grid-template-columns:
+      42px
+      minmax(0, 1fr)
+      42px;
+    align-items: center;
+    background: #ffffff;
+    border-bottom:
+      1px solid
+      #e5eaf0;
+  }
+
+  .menuButton {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: #1e293b;
+    cursor: pointer;
+  }
+
+  .mobileLogoButton {
+    min-width: 0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 0;
+    background: transparent;
+    color: #111827;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .mobileLogoButton strong {
+    color: #168eff;
+  }
+
+  .mobileLogoDiamond {
+    color: #168eff;
+    font-size: 22px;
+  }
+
+  .mobileBell {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: #334155;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .mobileNotificationDot {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    top: 5px;
+    right: 5px;
+    border-radius: 50%;
+    background: #168eff;
+    border:
+      2px solid
+      #ffffff;
+  }
+
+  /* =======================================================
+     MOBILE MENU
+  ======================================================= */
+
+  .mobileMenu {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: block;
+    padding: 22px;
+    background: #031229;
+    color: white;
+    overflow-y: auto;
+  }
+
+  .mobileMenuHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .mobileMenuLogo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .mobileMenuLogo > span {
+    color: #168eff;
+    font-size: 25px;
+  }
+
+  .mobileMenuLogo strong {
+    color: #168eff;
+  }
+
+  .closeMenu {
+    border: 0;
+    background: transparent;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+  }
+
+  .mobileMenuSubtitle {
+    margin-top: 9px;
+    color: #91a7c2;
+    font-size: 11px;
+  }
+
+  .mobileMenuNav {
+    margin-top: 30px;
+  }
+
+  .mobileNavItem {
+    width: 100%;
+    min-height: 50px;
+    margin-bottom: 5px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #b9c8dc;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .mobileNavItem:hover {
+    background:
+      rgba(26, 119, 220, 0.14);
+  }
+
+  .mobileAccountLabel {
+    color: #607897;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    margin: 25px 14px 10px;
+  }
+
+  .logoutItem {
+    color: #ff7d86;
+  }
+
+  /* =======================================================
+     MOBILE CONTENT
+  ======================================================= */
+
+  .topBar {
+    display: none;
+  }
+
+  .content {
+    width: 100%;
+    padding: 27px 15px 30px;
+  }
+
+  .pageIntro h1 {
+    font-size: 27px;
+  }
+
+  .pageIntro p {
+    font-size: 13px;
+    max-width: 95%;
+  }
+
+  .backLink {
+    margin-top: 20px;
+  }
+
+  .sectionLabel {
+    margin-top: 26px;
+    margin-bottom: 9px;
+  }
+
+  .sessionsLabel,
+  .accountSecurityLabel {
+    margin-top: 28px;
+  }
+
+  .securityCard {
+    min-height: auto;
+    padding: 15px;
+    display: grid;
+    grid-template-columns:
+      48px
+      minmax(0, 1fr);
+    gap: 13px;
+    align-items: center;
+  }
+
+  .securityIcon {
+    width: 48px;
+    height: 48px;
+    flex-basis: 48px;
+    grid-row: span 1;
+  }
+
+  .securityIcon .icon {
+    font-size: 23px !important;
+  }
+
+  .securityText h2 {
+    font-size: 15px;
+  }
+
+  .securityText p {
+    margin-top: 5px;
+    font-size: 11px;
+  }
+
+  .actionButton {
+    width: 100%;
+    min-width: 0;
+    height: 43px;
+    grid-column: 1 / -1;
+    padding: 0 13px;
+    font-size: 12px;
+  }
+
+  .statusActionGroup {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .notEnabledStatus,
+  .enabledStatus,
+  .loadingStatus {
+    justify-content: flex-end;
+    font-size: 11px;
+  }
+
+  .verifiedStatus,
+  .unverifiedStatus {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    margin-left: 0;
+    font-size: 12px;
+  }
+
+  .securityNotice {
+    min-height: auto;
+    padding: 16px;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .noticeIcon {
+    width: 45px;
+    height: 45px;
+    flex-basis: 45px;
+  }
+
+  .noticeText h3 {
+    font-size: 13px;
+  }
+
+  .noticeText p {
+    font-size: 10px;
+  }
+
+  .noticeDecoration {
+    display: none;
+  }
+
+  /* =======================================================
+     MOBILE BOTTOM NAV
+  ======================================================= */
+
+  .mobileBottomNav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 150;
+    height: 74px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: #031229;
+    border-top:
+      1px solid
+      rgba(255, 255, 255, 0.1);
+  }
+
+  .mobileBottomNav button {
+    flex: 1;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #7d93ae;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+
+  .mobileBottomNav button span:last-child {
+    font-size: 8px;
+  }
+
+  .mobileBottomNav .activeBottom {
+    color: #168eff;
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 380px) {
+  .content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .pageIntro h1 {
+    font-size: 25px;
+  }
+
+  .securityCard {
+    padding: 13px;
+  }
+
+  .securityText h2 {
+    font-size: 14px;
+  }
+}

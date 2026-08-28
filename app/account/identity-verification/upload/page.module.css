@@ -1,0 +1,2118 @@
+.page {
+  min-height: 100vh;
+  width: 100%;
+  background: #ffffff;
+  color: #101827;
+  overflow-x: hidden;
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+.page button,
+.page input {
+  font-family: inherit;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 1em;
+  line-height: 1;
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.mobileHeader {
+  width: 100%;
+  height: 72px;
+
+  padding: 0 14px;
+
+  display: grid;
+
+  grid-template-columns:
+    44px
+    minmax(0, 1fr)
+    44px;
+
+  align-items: center;
+
+  background: #061b38;
+
+  border-bottom:
+    1px solid
+    #193650;
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 100;
+}
+
+/* ============================================================
+   HAMBURGER
+============================================================ */
+
+.menuButton,
+.mobileBell {
+  width: 40px;
+  height: 40px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  cursor: pointer;
+
+  position: relative;
+
+  border-radius: 50%;
+}
+
+.menuButton:hover,
+.mobileBell:hover {
+  background:
+    rgba(22, 142, 255, 0.08);
+}
+
+.menuButton .icon {
+  font-size: 23px !important;
+}
+
+/* ============================================================
+   BRAND
+============================================================ */
+
+.mobileLogoButton {
+  min-width: 0;
+
+  width: 100%;
+
+  height: 42px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  cursor: pointer;
+
+  font-size: 17px;
+
+  font-weight: 700;
+
+  letter-spacing: -0.2px;
+
+  white-space: nowrap;
+}
+
+.mobileBrandName {
+  font-size: 17px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.mobileBrandName strong {
+  color: #168eff;
+}
+
+.mobileLogoDiamond {
+  color: #168eff;
+
+  font-size: 23px;
+
+  line-height: 1;
+
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   BELL
+============================================================ */
+
+.mobileBell .icon {
+  width: 20px;
+
+  height: 20px;
+
+  color: #ffffff;
+
+  font-size: 17px !important;
+}
+
+.mobileNotificationDot {
+  position: absolute;
+
+  width: 8px;
+
+  height: 8px;
+
+  top: 5px;
+
+  right: 3px;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  box-shadow:
+    0 0 8px
+    rgba(22, 142, 255, 0.7);
+}
+
+/* ============================================================
+   MAIN
+============================================================ */
+
+.main {
+  width: 100%;
+
+  min-height:
+    calc(100vh - 72px);
+
+  background: #ffffff;
+}
+
+.content {
+  width: 100%;
+
+  max-width: 1100px;
+
+  margin: 0 auto;
+
+  padding:
+    34px 34px 110px;
+}
+
+/* ============================================================
+   PAGE INTRO
+============================================================ */
+
+.pageIntro {
+  position: relative;
+
+  width: 100%;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  justify-content: flex-start;
+
+  padding: 0;
+
+  margin: 0;
+}
+
+.pageIntro h1 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 31px;
+
+  line-height: 1.2;
+
+  letter-spacing: -0.8px;
+
+  font-weight: 800;
+}
+
+.pageIntro p {
+  margin:
+    8px 0 0;
+
+  color: #64748b;
+
+  font-size: 14px;
+
+  line-height: 1.55;
+
+  max-width: 550px;
+}
+
+/* ============================================================
+   BACK TO ACCOUNT
+============================================================ */
+
+.backLink {
+  display: inline-flex !important;
+
+  align-items: center !important;
+
+  justify-content: flex-start !important;
+
+  width: fit-content !important;
+
+  height: auto !important;
+
+  gap: 7px;
+
+  margin-top: 20px !important;
+
+  margin-left: 0 !important;
+
+  margin-right: 0 !important;
+
+  margin-bottom: 0 !important;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #168eff;
+
+  text-decoration: none;
+
+  padding: 0 !important;
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+
+  flex: 0 0 auto !important;
+
+  align-self: flex-start !important;
+
+  float: none;
+
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.backLink .icon {
+  font-size: 18px !important;
+}
+
+/* ============================================================
+   NOT VERIFIED
+   ALWAYS A SEPARATE BLOCK BELOW BACK TO ACCOUNT
+============================================================ */
+
+.statusBadge {
+  display: inline-flex !important;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: fit-content !important;
+
+  max-width: 100%;
+
+  height: auto !important;
+
+  flex: 0 0 auto !important;
+
+  align-self: flex-start !important;
+
+  position: static !important;
+
+  margin-top: 17px !important;
+
+  margin-left: 0 !important;
+
+  margin-right: 0 !important;
+
+  margin-bottom: 0 !important;
+
+  border-radius: 8px;
+
+  padding:
+    9px 12px;
+
+  background: #fff7e8;
+
+  color: #dc8b00;
+
+  gap: 8px;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  float: none;
+
+  clear: both;
+}
+
+.statusDiamond {
+  font-size: 20px;
+
+  line-height: 1;
+
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   FIVE STEP PROGRESS
+   STRUCTURE:
+
+   STEP 1 + LINE
+   STEP 2 + LINE
+   STEP 3 + LINE
+   STEP 4 + LINE
+   STEP 5
+
+   The outer .steps is a 5-column grid.
+   Each .stepItem contains its own step and connector.
+
+   This is the important structural fix.
+============================================================ */
+
+.steps {
+  width: 100%;
+
+  margin-top: 27px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  align-items: start;
+
+  gap: 0;
+
+  overflow: visible;
+}
+
+.stepItem {
+  min-width: 0;
+
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(12px, 0.55fr);
+
+  align-items: start;
+
+  gap: 0;
+}
+
+.stepItemLast {
+  grid-template-columns:
+    minmax(0, 1fr);
+}
+
+.step {
+  min-width: 0;
+
+  width: 100%;
+
+  text-align: center;
+}
+
+.stepCircle {
+  width: 58px;
+
+  height: 58px;
+
+  margin: 0 auto;
+
+  border-radius: 50%;
+
+  border:
+    1px solid
+    #d5dce7;
+
+  background: #ffffff;
+
+  color: #526178;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 17px;
+
+  font-weight: 700;
+}
+
+.stepCircleActive,
+.stepCircleCompleted {
+  background: #126ff1;
+
+  border-color: #126ff1;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 5px 16px
+    rgba(20, 109, 245, 0.18);
+}
+
+.stepCircleCompleted {
+  font-size: 24px;
+}
+
+.stepLabel {
+  margin-top: 10px;
+
+  color: #4f6078;
+
+  font-size: 11px;
+
+  line-height: 1.45;
+
+  font-weight: 500;
+}
+
+.stepActive .stepLabel {
+  color: #096bf4;
+
+  font-weight: 750;
+}
+
+.stepLine {
+  width: 100%;
+
+  height: 1px;
+
+  background: #d9e1eb;
+
+  margin-top: 29px;
+}
+
+.stepLineActive {
+  background: #1675f2;
+}
+
+/* ============================================================
+   VERIFICATION CARD
+============================================================ */
+
+.verificationCard {
+  margin-top: 42px;
+
+  border:
+    1px solid
+    #dfe6ef;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  padding:
+    28px 30px 24px;
+
+  box-shadow:
+    0 3px 15px
+    rgba(15, 36, 64, 0.035);
+}
+
+/* ============================================================
+   CARD HEADER
+============================================================ */
+
+.cardHeader {
+  display: flex;
+
+  align-items: center;
+
+  gap: 20px;
+}
+
+.cardHeaderIcon {
+  width: 70px;
+
+  height: 70px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #edf5ff;
+
+  color: #146df5;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.cardHeaderText {
+  min-width: 0;
+}
+
+.cardHeaderText h2 {
+  margin: 0;
+
+  color: #14213a;
+
+  font-size: 24px;
+
+  line-height: 1.3;
+
+  font-weight: 800;
+}
+
+.cardHeaderText p {
+  margin:
+    7px 0 0;
+
+  color: #5e708a;
+
+  font-size: 16px;
+
+  line-height: 1.5;
+}
+
+.divider {
+  width: 100%;
+
+  height: 1px;
+
+  background: #edf0f4;
+
+  margin:
+    25px 0 20px;
+}
+
+/* ============================================================
+   REQUIREMENTS
+============================================================ */
+
+.requirementsBox {
+  border:
+    1px solid
+    #d4e3f7;
+
+  background: #f5f9ff;
+
+  border-radius: 8px;
+
+  padding:
+    19px 20px;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 15px;
+}
+
+.infoIcon {
+  color: #1672eb;
+
+  width: 28px;
+
+  height: 28px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.requirementsContent {
+  flex: 1;
+
+  min-width: 0;
+}
+
+.requirementsContent h3 {
+  margin: 0;
+
+  color: #152137;
+
+  font-size: 15px;
+
+  font-weight: 750;
+}
+
+.requirementsGrid {
+  margin-top: 12px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  column-gap: 70px;
+
+  row-gap: 10px;
+}
+
+.requirement {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  color: #253650;
+
+  font-size: 14px;
+
+  line-height: 1.4;
+}
+
+.requirementCheck {
+  width: 18px;
+
+  height: 18px;
+
+  border-radius: 50%;
+
+  border:
+    1.5px solid
+    #1e965b;
+
+  color: #1e965b;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   SECTION LABEL
+============================================================ */
+
+.sectionLabel {
+  margin-top: 20px;
+
+  margin-bottom: 10px;
+
+  color: #152137;
+
+  font-size: 15px;
+
+  font-weight: 750;
+}
+
+/* ============================================================
+   SELECTED DOCUMENT
+============================================================ */
+
+.selectedDocument {
+  min-height: 63px;
+
+  border:
+    1px solid
+    #dfe5ed;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  padding:
+    10px 15px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 18px;
+}
+
+.ninBadge {
+  min-width: 42px;
+
+  height: 28px;
+
+  padding:
+    0 7px;
+
+  border-radius: 4px;
+
+  background: #07854b;
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 12px;
+
+  font-weight: 800;
+}
+
+.selectedDocumentName {
+  flex: 1;
+
+  min-width: 0;
+
+  color: #25334b;
+
+  font-size: 14px;
+}
+
+.changeButton {
+  border: 0;
+
+  background: transparent;
+
+  color: #0877ee;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  padding: 4px 0;
+}
+
+.changeButton:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   UPLOAD AREA
+============================================================ */
+
+.uploadArea {
+  min-height: 265px;
+
+  border:
+    1.5px dashed
+    #2783ed;
+
+  border-radius: 8px;
+
+  background: #f8fbff;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 25px;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.uploadAreaActive {
+  background: #eef6ff;
+
+  border-color: #086bf0;
+}
+
+.uploadAreaSelected {
+  background: #f5faff;
+}
+
+.uploadIconCircle {
+  width: 68px;
+
+  height: 68px;
+
+  border-radius: 50%;
+
+  background: #eaf3ff;
+
+  color: #1471ed;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  margin-bottom: 12px;
+}
+
+.dragText {
+  color: #111d36;
+
+  font-size: 16px;
+
+  font-weight: 700;
+
+  text-align: center;
+}
+
+.orText {
+  margin-top: 5px;
+
+  color: #67758b;
+
+  font-size: 13px;
+}
+
+.chooseFileButton {
+  margin-top: 10px;
+
+  min-width: 230px;
+
+  height: 48px;
+
+  padding:
+    0 20px;
+
+  border-radius: 6px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0879f9,
+      #1269e7
+    );
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  font-size: 16px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 7px 20px
+    rgba(0, 108, 245, 0.15);
+}
+
+.chooseFileButton:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #086ee8,
+      #0c5ed0
+    );
+}
+
+.fileTypes {
+  margin-top: 9px;
+
+  color: #64738a;
+
+  font-size: 13px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.fileTypes span {
+  color: #65748b;
+}
+
+.fileName {
+  max-width: 90%;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+  color: #14213a;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  text-align: center;
+}
+
+.fileSize {
+  margin-top: 5px;
+
+  color: #68788e;
+
+  font-size: 12px;
+}
+
+/* ============================================================
+   ERROR
+============================================================ */
+
+.errorMessage {
+  margin-top: 9px;
+
+  padding:
+    9px 12px;
+
+  border-radius: 6px;
+
+  background: #fff1f2;
+
+  color: #c6283c;
+
+  font-size: 11px;
+}
+
+/* ============================================================
+   SECURITY
+============================================================ */
+
+.securityBox {
+  margin-top: 17px;
+
+  min-height: 57px;
+
+  border:
+    1px solid
+    #cde6d7;
+
+  background: #eff9f2;
+
+  border-radius: 7px;
+
+  padding:
+    11px 16px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+.securityLock {
+  width: 28px;
+
+  height: 28px;
+
+  flex-shrink: 0;
+
+  color: #13814a;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.securityBox p {
+  margin: 0;
+
+  color: #187844;
+
+  font-size: 13px;
+
+  line-height: 1.45;
+}
+
+/* ============================================================
+   CONTINUE
+============================================================ */
+
+.continueRow {
+  margin-top: 17px;
+
+  display: flex;
+
+  justify-content: flex-end;
+}
+
+.continueButton {
+  min-width: 410px;
+
+  height: 54px;
+
+  border: 0;
+
+  border-radius: 7px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0879f9,
+      #1269e7
+    );
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 0;
+
+  position: relative;
+
+  font-size: 17px;
+
+  font-weight: 750;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 7px 20px
+    rgba(0, 108, 245, 0.15);
+}
+
+.continueButton:hover:not(:disabled) {
+  background:
+    linear-gradient(
+      135deg,
+      #086ee8,
+      #0c5ed0
+    );
+}
+
+.continueButton:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+.continueArrow {
+  position: absolute;
+
+  right: 22px;
+
+  font-size: 29px;
+
+  line-height: 1;
+
+  font-weight: 400;
+}
+
+/* ============================================================
+   MOBILE MENU
+============================================================ */
+
+.mobileMenu {
+  display: none;
+}
+
+/* ============================================================
+   MOBILE BOTTOM NAV
+============================================================ */
+
+.mobileBottomNav {
+  display: none;
+}
+
+/* ============================================================
+   TABLET
+============================================================ */
+
+@media (max-width: 900px) {
+
+  .mobileHeader {
+    padding:
+      0 20px;
+  }
+
+  .content {
+    padding:
+      32px 24px 100px;
+  }
+
+  .pageIntro h1 {
+    font-size: 32px;
+  }
+
+  .requirementsGrid {
+    column-gap: 30px;
+  }
+
+  .continueButton {
+    min-width: 350px;
+  }
+
+}
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media (max-width: 700px) {
+
+  .mobileHeader {
+    height: 72px;
+
+    padding:
+      0 14px;
+
+    grid-template-columns:
+      44px
+      minmax(0, 1fr)
+      44px;
+  }
+
+  .mobileLogoButton {
+    gap: 7px;
+
+    font-size: 17px;
+  }
+
+  .mobileBrandName {
+    font-size: 17px;
+  }
+
+  .mobileLogoDiamond {
+    font-size: 23px;
+  }
+
+  .mobileBell .icon {
+    font-size: 17px !important;
+  }
+
+  .main {
+    min-height:
+      calc(100vh - 72px);
+  }
+
+  .content {
+    padding:
+      27px 15px 100px;
+  }
+
+  /* ========================================================
+     INTRO
+     
+     HARD ORDER:
+     
+     1. TITLE
+     2. DESCRIPTION
+     3. BACK TO ACCOUNT
+     4. NOT VERIFIED
+  ======================================================== */
+
+  .pageIntro {
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    align-items: flex-start !important;
+
+    justify-content: flex-start !important;
+
+    width: 100% !important;
+
+    padding: 0 !important;
+
+    margin: 0 !important;
+  }
+
+  .pageIntro h1 {
+    width: 100%;
+
+    font-size: 27px;
+
+    line-height: 1.2;
+
+    margin: 0 !important;
+  }
+
+  .pageIntro p {
+    width: 100%;
+
+    font-size: 13px;
+
+    line-height: 1.55;
+
+    margin-top: 9px !important;
+
+    margin-bottom: 0 !important;
+  }
+
+  /* ========================================================
+     BACK TO ACCOUNT
+  ======================================================== */
+
+  .pageIntro > .backLink {
+    display: inline-flex !important;
+
+    position: static !important;
+
+    width: fit-content !important;
+
+    height: auto !important;
+
+    margin-top: 20px !important;
+
+    margin-left: 0 !important;
+
+    margin-right: 0 !important;
+
+    margin-bottom: 0 !important;
+
+    padding: 0 !important;
+
+    align-self: flex-start !important;
+
+    flex: 0 0 auto !important;
+
+    white-space: nowrap !important;
+
+    float: none !important;
+
+    clear: none !important;
+  }
+
+  .backLink .icon {
+    font-size: 18px !important;
+  }
+
+  /* ========================================================
+     NOT VERIFIED
+     
+     NEVER BESIDE BACK TO ACCOUNT
+  ======================================================== */
+
+  .pageIntro > .statusBadge {
+    display: inline-flex !important;
+
+    position: static !important;
+
+    width: fit-content !important;
+
+    max-width: 100% !important;
+
+    height: auto !important;
+
+    margin-top: 17px !important;
+
+    margin-left: 0 !important;
+
+    margin-right: 0 !important;
+
+    margin-bottom: 0 !important;
+
+    padding:
+      9px 12px !important;
+
+    align-self: flex-start !important;
+
+    flex: 0 0 auto !important;
+
+    white-space: nowrap !important;
+
+    float: none !important;
+
+    clear: both !important;
+  }
+
+  .statusDiamond {
+    font-size: 19px;
+  }
+
+  /* ========================================================
+     FIVE STEPS
+     
+     FIVE COLUMNS.
+     
+     Each column contains:
+     
+     STEP + CONNECTOR
+     
+     Therefore there is physically no second row.
+  ======================================================== */
+
+  .steps {
+    width: 100% !important;
+
+    margin-top: 27px !important;
+
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 1fr) !important;
+
+    grid-template-rows: auto !important;
+
+    align-items: start !important;
+
+    gap: 0 !important;
+
+    overflow: visible !important;
+  }
+
+  .stepItem {
+    min-width: 0 !important;
+
+    width: 100% !important;
+
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(5px, 0.45fr) !important;
+
+    align-items: start !important;
+
+    gap: 0 !important;
+
+    grid-row: 1 !important;
+  }
+
+  .stepItemLast {
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+  }
+
+  .step {
+    min-width: 0 !important;
+
+    width: 100% !important;
+
+    display: block !important;
+
+    text-align: center !important;
+  }
+
+  .stepCircle {
+    width: 38px !important;
+
+    height: 38px !important;
+
+    margin:
+      0 auto !important;
+
+    font-size: 13px !important;
+  }
+
+  .stepCircleCompleted {
+    font-size: 19px !important;
+  }
+
+  .stepLabel {
+    margin-top: 8px !important;
+
+    font-size: 9px !important;
+
+    line-height: 1.4 !important;
+
+    white-space: normal !important;
+
+    text-align: center !important;
+  }
+
+  .stepLine {
+    display: block !important;
+
+    width: 100% !important;
+
+    height: 1px !important;
+
+    margin-top: 19px !important;
+
+    background: #d9e1eb;
+
+    align-self: start !important;
+  }
+
+  .stepLineActive {
+    background: #1675f2 !important;
+  }
+
+  /* ========================================================
+     CARD
+  ======================================================== */
+
+  .verificationCard {
+    margin-top: 28px;
+
+    padding:
+      17px;
+
+    border-radius: 10px;
+  }
+
+  .cardHeader {
+    gap: 13px;
+
+    align-items: center;
+  }
+
+  .cardHeaderIcon {
+    width: 53px;
+
+    height: 53px;
+  }
+
+  .cardHeaderIcon svg {
+    width: 26px;
+
+    height: 26px;
+  }
+
+  .cardHeaderText h2 {
+    font-size: 17px;
+  }
+
+  .cardHeaderText p {
+    margin-top: 5px;
+
+    font-size: 11px;
+
+    line-height: 1.45;
+  }
+
+  .divider {
+    margin:
+      20px 0;
+  }
+
+  /* ========================================================
+     REQUIREMENTS
+  ======================================================== */
+
+  .requirementsBox {
+    padding:
+      13px;
+
+    gap: 10px;
+  }
+
+  .infoIcon {
+    width: 23px;
+
+    height: 23px;
+  }
+
+  .infoIcon svg {
+    width: 22px;
+
+    height: 22px;
+  }
+
+  .requirementsContent h3 {
+    font-size: 11px;
+  }
+
+  .requirementsGrid {
+    margin-top: 9px;
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    column-gap: 10px;
+
+    row-gap: 8px;
+  }
+
+  .requirement {
+    gap: 5px;
+
+    font-size: 9px;
+  }
+
+  .requirementCheck {
+    width: 15px;
+
+    height: 15px;
+
+    font-size: 9px;
+  }
+
+  /* ========================================================
+     SELECTED DOCUMENT
+  ======================================================== */
+
+  .sectionLabel {
+    margin-top: 17px;
+
+    margin-bottom: 8px;
+
+    font-size: 12px;
+  }
+
+  .selectedDocument {
+    min-height: 58px;
+
+    padding:
+      9px 11px;
+
+    gap: 10px;
+  }
+
+  .ninBadge {
+    min-width: 38px;
+
+    height: 25px;
+
+    font-size: 10px;
+  }
+
+  .selectedDocumentName {
+    font-size: 10px;
+
+    line-height: 1.4;
+  }
+
+  .changeButton {
+    font-size: 11px;
+  }
+
+  /* ========================================================
+     UPLOAD
+  ======================================================== */
+
+  .uploadArea {
+    min-height: 215px;
+
+    padding: 18px 12px;
+  }
+
+  .uploadIconCircle {
+    width: 55px;
+
+    height: 55px;
+
+    margin-bottom: 9px;
+  }
+
+  .uploadIconCircle svg {
+    width: 27px;
+
+    height: 27px;
+  }
+
+  .dragText {
+    font-size: 12px;
+  }
+
+  .orText {
+    font-size: 10px;
+  }
+
+  .chooseFileButton {
+    min-width: 190px;
+
+    height: 42px;
+
+    padding:
+      0 14px;
+
+    margin-top: 8px;
+
+    font-size: 12px;
+  }
+
+  .chooseFileButton svg {
+    width: 16px;
+
+    height: 16px;
+  }
+
+  .fileTypes {
+    margin-top: 8px;
+
+    font-size: 9px;
+  }
+
+  .fileName {
+    max-width: 85%;
+
+    font-size: 11px;
+  }
+
+  .fileSize {
+    font-size: 9px;
+  }
+
+  /* ========================================================
+     SECURITY
+  ======================================================== */
+
+  .securityBox {
+    margin-top: 13px;
+
+    min-height: auto;
+
+    padding:
+      10px;
+
+    gap: 8px;
+
+    align-items: center;
+  }
+
+  .securityLock {
+    width: 24px;
+
+    height: 24px;
+  }
+
+  .securityLock svg {
+    width: 19px;
+
+    height: 19px;
+  }
+
+  .securityBox p {
+    font-size: 9px;
+
+    line-height: 1.5;
+  }
+
+  /* ========================================================
+     CONTINUE
+  ======================================================== */
+
+  .continueRow {
+    margin-top: 13px;
+
+    display: block;
+  }
+
+  .continueButton {
+    width: 100%;
+
+    min-width: 0;
+
+    height: 50px;
+
+    font-size: 13px;
+  }
+
+  .continueArrow {
+    right: 17px;
+
+    font-size: 25px;
+  }
+
+  /* ========================================================
+     MOBILE MENU
+  ======================================================== */
+
+  .mobileMenu {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 300;
+
+    display: block;
+
+    padding: 22px;
+
+    background: #031229;
+
+    color: #ffffff;
+
+    overflow-y: auto;
+  }
+
+  .mobileMenuHeader {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+  }
+
+  .mobileMenuLogo {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+  }
+
+  .mobileMenuLogo > span {
+    color: #168eff;
+
+    font-size: 25px;
+  }
+
+  .mobileMenuLogo strong {
+    color: #168eff;
+  }
+
+  .closeMenu {
+    border: 0;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 30px;
+
+    cursor: pointer;
+
+    padding: 0;
+  }
+
+  .mobileMenuSubtitle {
+    display: block;
+
+    margin-top: 9px;
+
+    color: #91a7c2;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+  }
+
+  .mobileMenuNav {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    margin-top: 30px;
+  }
+
+  .mobileNavItem {
+    width: 100%;
+
+    min-height: 50px;
+
+    padding:
+      0 14px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    background: transparent;
+
+    color: #b9c8dc;
+
+    font-size: 14px;
+
+    text-align: left;
+
+    cursor: pointer;
+  }
+
+  .mobileNavItem:hover {
+    background:
+      rgba(26, 119, 220, 0.14);
+
+    color: #ffffff;
+  }
+
+  .navIcon {
+    width: 20px;
+
+    min-width: 20px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #8db9e9;
+  }
+
+  .mobileAccountLabel {
+    display: block;
+
+    color: #607897;
+
+    font-size: 10px;
+
+    letter-spacing: 1.5px;
+
+    margin:
+      25px 14px 10px;
+  }
+
+  /* ========================================================
+     BOTTOM NAV
+  ======================================================== */
+
+  .mobileBottomNav {
+    position: fixed;
+
+    left: 0;
+
+    right: 0;
+
+    bottom: 0;
+
+    height: 74px;
+
+    z-index: 200;
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(5, 1fr);
+
+    align-items: center;
+
+    background: #031229;
+
+    border-top:
+      1px solid
+      rgba(255, 255, 255, 0.1);
+
+    backdrop-filter:
+      blur(15px);
+  }
+
+  .mobileBottomNav button {
+    height: 100%;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #7d93ae;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 4px;
+
+    cursor: pointer;
+  }
+
+  .mobileBottomNav button .icon {
+    font-size: 20px !important;
+  }
+
+  .mobileBottomNav button span:last-child {
+    font-size: 8px;
+  }
+
+  .mobileBottomNav .activeBottom {
+    color: #168eff;
+
+    font-weight: 700;
+  }
+}
+
+/* ============================================================
+   SMALL PHONES
+============================================================ */
+
+@media (max-width: 380px) {
+
+  .mobileBrandName {
+    font-size: 15px;
+  }
+
+  .mobileLogoDiamond {
+    font-size: 21px;
+  }
+
+  .content {
+    padding-left: 12px;
+
+    padding-right: 12px;
+  }
+
+  .pageIntro h1 {
+    font-size: 25px;
+  }
+
+  .pageIntro p {
+    font-size: 12px;
+  }
+
+  .verificationCard {
+    padding: 14px;
+  }
+
+  /* ========================================================
+     STATUS
+  ======================================================== */
+
+  .pageIntro > .backLink {
+    display: inline-flex !important;
+
+    align-self: flex-start !important;
+
+    margin-top: 18px !important;
+  }
+
+  .pageIntro > .statusBadge {
+    display: inline-flex !important;
+
+    align-self: flex-start !important;
+
+    margin-top: 15px !important;
+  }
+
+  /* ========================================================
+     FIVE STEPS
+     
+     STILL FIVE COLUMNS.
+     NO WRAPPING.
+  ======================================================== */
+
+  .steps {
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 1fr) !important;
+
+    grid-template-rows: auto !important;
+
+    width: 100% !important;
+
+    gap: 0 !important;
+  }
+
+  .stepItem {
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(4px, 0.35fr) !important;
+
+    grid-row: 1 !important;
+
+    width: 100% !important;
+
+    min-width: 0 !important;
+  }
+
+  .stepItemLast {
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+  }
+
+  .step {
+    width: 100% !important;
+
+    min-width: 0 !important;
+  }
+
+  .stepCircle {
+    width: 34px !important;
+
+    height: 34px !important;
+
+    font-size: 12px !important;
+  }
+
+  .stepCircleCompleted {
+    font-size: 17px !important;
+  }
+
+  .stepLabel {
+    font-size: 8px !important;
+
+    line-height: 1.4 !important;
+  }
+
+  .stepLine {
+    width: 100% !important;
+
+    min-width: 4px !important;
+
+    margin-top: 17px !important;
+  }
+
+  .mobileBottomNav {
+    height: 66px;
+  }
+}

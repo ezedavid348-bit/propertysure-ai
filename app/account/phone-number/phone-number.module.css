@@ -1,0 +1,1347 @@
+.page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  background: #ffffff;
+  color: #101827;
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+.page button,
+.page input,
+.page select {
+  font-family: inherit;
+}
+
+/* =========================================================
+   ICON SYSTEM
+========================================================= */
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 1em;
+  line-height: 1;
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background:
+    linear-gradient(
+      180deg,
+      #031229 0%,
+      #061b3b 100%
+    );
+  color: #ffffff;
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.loadingBrand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.loadingBrand strong {
+  color: #168eff;
+}
+
+.loadingLogo {
+  color: #168eff;
+  font-size: 40px;
+  line-height: 1;
+}
+
+.loadingText {
+  color: #9eb1c9;
+  font-size: 14px;
+}
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.sidebar {
+  width: 285px;
+  min-width: 285px;
+  min-height: 100vh;
+  padding: 30px 20px 20px;
+  background:
+    linear-gradient(
+      180deg,
+      #031229 0%,
+      #061b3b 100%
+    );
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  border-right:
+    1px solid
+    rgba(24, 142, 255, 0.12);
+}
+
+.brandButton {
+  border: 0;
+  background: transparent;
+  color: white;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.brandName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  white-space: nowrap;
+}
+
+.brandName strong {
+  color: #168eff;
+}
+
+.brandLogoDiamond {
+  color: #168eff;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.brandSubtitle {
+  margin-top: 10px;
+  padding-left: 3px;
+  color: #9eb1c9;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   SIDEBAR NAVIGATION
+========================================================= */
+
+.sidebarNav {
+  margin-top: 40px;
+}
+
+.navItem {
+  width: 100%;
+  min-height: 50px;
+  margin-bottom: 5px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #b9c8dc;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.navItem:hover {
+  background:
+    rgba(26, 119, 220, 0.14);
+  color: white;
+}
+
+.navIcon {
+  width: 20px;
+  min-width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8db9e9;
+}
+
+.accountLabel {
+  color: #607897;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  margin: 28px 14px 10px;
+}
+
+/* =========================================================
+   SUPPORT
+========================================================= */
+
+.helpBox {
+  margin-top: auto;
+  padding: 18px;
+  border:
+    1px solid
+    rgba(95, 157, 222, 0.25);
+  border-radius: 10px;
+  background:
+    rgba(10, 51, 103, 0.28);
+}
+
+.helpTitle {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 9px;
+}
+
+.helpText {
+  color: #91a7c2;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.supportButton {
+  width: 100%;
+  height: 40px;
+  margin-top: 15px;
+  border:
+    1px solid
+    #168eff;
+  border-radius: 7px;
+  background: transparent;
+  color: #48a7ff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.supportButton:hover {
+  background:
+    rgba(22, 142, 255, 0.08);
+}
+
+/* =========================================================
+   SIDEBAR USER
+========================================================= */
+
+.sidebarUser {
+  width: 100%;
+  min-height: 68px;
+  margin-top: 20px;
+  padding: 8px 5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-top:
+    1px solid
+    rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #147de2;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.userInfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.userName {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userPlan {
+  margin-top: 3px;
+  color: #8ca1bc;
+  font-size: 11px;
+}
+
+.userChevron {
+  color: #a7b9cf;
+  font-size: 18px;
+}
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+.main {
+  flex: 1;
+  min-width: 0;
+  min-height: 100vh;
+  background: #ffffff;
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   TOP BAR
+========================================================= */
+
+.topBar {
+  height: 70px;
+  padding: 0 30px 0 45px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom:
+    1px solid
+    #e5eaf0;
+  background: #ffffff;
+}
+
+.topBarTitle {
+  color: #111827;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.topBarRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topNotification {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: #334155;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.topNotificationDot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  top: 5px;
+  right: 7px;
+  border-radius: 50%;
+  background: #168eff;
+  border:
+    2px solid
+    #ffffff;
+}
+
+.topUser {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  color: #111827;
+  cursor: pointer;
+  padding: 3px;
+}
+
+.topAvatar {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #147de2;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.topUserText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.topUserText strong {
+  color: #111827;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.topUserText span {
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 10px;
+}
+
+.topChevron {
+  margin-left: 2px;
+  color: #64748b;
+  font-size: 17px;
+}
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.content {
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 35px 42px 55px;
+}
+
+.pageIntro h1 {
+  margin: 0;
+  color: #111827;
+  font-size:
+    clamp(28px, 3vw, 34px);
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.7px;
+}
+
+.pageIntro p {
+  max-width: 650px;
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   BACK LINK
+========================================================= */
+
+.backLink {
+  margin-top: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  color: #168eff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   PHONE CARD
+========================================================= */
+
+.phoneCard {
+  width: 100%;
+  min-height: 360px;
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(360px, 0.88fr);
+  border:
+    1px solid
+    #dce3eb;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow:
+    0 2px 8px
+    rgba(15, 23, 42, 0.035);
+  overflow: hidden;
+}
+
+/* =========================================================
+   FORM SECTION
+========================================================= */
+
+.phoneFormSection {
+  padding: 28px 24px;
+}
+
+.formHeading h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.formHeading p {
+  margin: 7px 0 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.fieldGroup {
+  margin-top: 24px;
+}
+
+.fieldGroup + .fieldGroup {
+  margin-top: 19px;
+}
+
+.fieldGroup label {
+  display: block;
+  margin-bottom: 8px;
+  color: #172033;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.selectWrapper {
+  position: relative;
+  width: 100%;
+  max-width: 410px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  border:
+    1px solid
+    #cfd9e5;
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.countryFlag {
+  position: absolute;
+  left: 13px;
+  z-index: 2;
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.countrySelect {
+  width: 100%;
+  height: 100%;
+  padding: 0 40px 0 42px;
+  border: 0;
+  outline: none;
+  appearance: none;
+  background: transparent;
+  color: #334155;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.countrySelect:focus {
+  box-shadow:
+    0 0 0 3px
+    rgba(22, 142, 255, 0.1);
+}
+
+.selectChevron {
+  position: absolute;
+  right: 14px;
+  color: #64748b;
+  font-size: 17px;
+  pointer-events: none;
+}
+
+.phoneInputWrapper {
+  width: 100%;
+  max-width: 410px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  border:
+    1px solid
+    #cfd9e5;
+  border-radius: 7px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.phoneInputWrapper:focus-within {
+  border-color: #168eff;
+  box-shadow:
+    0 0 0 3px
+    rgba(22, 142, 255, 0.1);
+}
+
+.dialCode {
+  height: 100%;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  border-right:
+    1px solid
+    #e1e7ee;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  background: #f8fafc;
+}
+
+.phoneInput {
+  min-width: 0;
+  flex: 1;
+  height: 100%;
+  padding: 0 13px;
+  border: 0;
+  outline: none;
+  color: #172033;
+  background: transparent;
+  font-size: 13px;
+}
+
+.phoneInput::placeholder {
+  color: #94a3b8;
+}
+
+/* =========================================================
+   INFO / ERRORS
+========================================================= */
+
+.infoMessage {
+  width: 100%;
+  max-width: 410px;
+  min-height: 38px;
+  margin-top: 17px;
+  padding: 8px 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border:
+    1px solid
+    #cfe3ff;
+  border-radius: 6px;
+  background: #edf6ff;
+  color: #168eff;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.errorMessage {
+  width: 100%;
+  max-width: 410px;
+  margin-top: 10px;
+  padding: 9px 11px;
+  border:
+    1px solid
+    #fecaca;
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.successMessage {
+  width: 100%;
+  max-width: 410px;
+  margin-top: 10px;
+  padding: 9px 11px;
+  border:
+    1px solid
+    #bbf7d0;
+  border-radius: 6px;
+  background: #f0fdf4;
+  color: #16a34a;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   SUBMIT BUTTON
+========================================================= */
+
+.submitButton {
+  width: 100%;
+  max-width: 410px;
+  height: 46px;
+  margin-top: 15px;
+  border: 0;
+  border-radius: 6px;
+  background: #168eff;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.1s ease;
+}
+
+.submitButton:hover {
+  background: #087be5;
+}
+
+.submitButton:active {
+  transform: translateY(1px);
+}
+
+.submitButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   SECURITY PANEL
+========================================================= */
+
+.securityPanel {
+  min-height: 360px;
+  padding: 28px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-left:
+    1px solid
+    #e3e8ef;
+}
+
+.phoneIllustration {
+  width: 150px;
+  height: 150px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #edf5ff;
+}
+
+.phoneIllustrationBody {
+  width: 61px;
+  height: 100px;
+  position: relative;
+  border:
+    4px solid
+    #168eff;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+.phoneSpeaker {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 20px;
+  height: 3px;
+  transform: translateX(-50%);
+  border-radius: 4px;
+  background: #168eff;
+}
+
+.phoneScreen {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 21px;
+  bottom: 19px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: #f4f8ff;
+  color: #8cbef4;
+  font-size: 13px;
+  letter-spacing: 2px;
+}
+
+.phoneHome {
+  position: absolute;
+  left: 50%;
+  bottom: 7px;
+  width: 10px;
+  height: 3px;
+  transform: translateX(-50%);
+  border-radius: 3px;
+  background: #168eff;
+}
+
+.securityBadge {
+  position: absolute;
+  right: 4px;
+  bottom: 10px;
+  width: 49px;
+  height: 49px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border:
+    3px solid
+    #ffffff;
+  border-radius: 12px;
+  background: #168eff;
+  color: #ffffff;
+  box-shadow:
+    0 4px 10px
+    rgba(22, 142, 255, 0.22);
+}
+
+.securityBadge .icon {
+  transform: translateX(-2px);
+}
+
+.securityBadge span {
+  position: absolute;
+  right: 5px;
+  bottom: 4px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.securityPanel h3 {
+  max-width: 360px;
+  margin: 25px 0 0;
+  color: #172033;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.securityBenefits {
+  width: 100%;
+  max-width: 330px;
+  margin-top: 19px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.benefitItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #334155;
+  font-size: 12px;
+}
+
+.benefitCheck {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border:
+    1px solid
+    #35ad69;
+  border-radius: 50%;
+  color: #35ad69;
+}
+
+/* =========================================================
+   PRIVACY CARD
+========================================================= */
+
+.privacyCard {
+  width: 100%;
+  min-height: 100px;
+  margin-top: 18px;
+  padding: 20px 25px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border:
+    1px solid
+    #dce3eb;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow:
+    0 2px 8px
+    rgba(15, 23, 42, 0.035);
+}
+
+.privacyIcon {
+  width: 55px;
+  height: 55px;
+  flex: 0 0 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #edf5ff;
+  color: #168eff;
+}
+
+.privacyText h3 {
+  margin: 0;
+  color: #172033;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.privacyText p {
+  max-width: 600px;
+  margin: 7px 0 0;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+.mobileHeader,
+.mobileMenu,
+.mobileBottomNav {
+  display: none;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1050px) {
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+  }
+
+  .content {
+    padding: 30px 25px 45px;
+  }
+
+  .topBar {
+    padding: 0 22px;
+  }
+
+  .phoneCard {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(300px, 0.85fr);
+  }
+
+  .securityPanel {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+/* =========================================================
+   PHONE
+========================================================= */
+
+@media (max-width: 700px) {
+  .page {
+    display: block;
+    min-height: 100vh;
+    padding-bottom: 74px;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .main {
+    width: 100%;
+    min-height: calc(100vh - 74px);
+  }
+
+  /* =======================================================
+     MOBILE HEADER
+  ======================================================= */
+
+  .mobileHeader {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 68px;
+    padding: 0 12px;
+    display: grid;
+    grid-template-columns:
+      42px
+      minmax(0, 1fr)
+      42px;
+    align-items: center;
+    background: #ffffff;
+    border-bottom:
+      1px solid
+      #e5eaf0;
+  }
+
+  .menuButton {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: #1e293b;
+    cursor: pointer;
+  }
+
+  .mobileLogoButton {
+    min-width: 0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 0;
+    background: transparent;
+    color: #111827;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .mobileLogoButton strong {
+    color: #168eff;
+  }
+
+  .mobileLogoDiamond {
+    color: #168eff;
+    font-size: 22px;
+  }
+
+  .mobileBell {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: #334155;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .mobileNotificationDot {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    top: 5px;
+    right: 5px;
+    border-radius: 50%;
+    background: #168eff;
+    border:
+      2px solid
+      #ffffff;
+  }
+
+  /* =======================================================
+     MOBILE MENU
+  ======================================================= */
+
+  .mobileMenu {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: block;
+    padding: 22px;
+    background: #031229;
+    color: white;
+    overflow-y: auto;
+  }
+
+  .mobileMenuHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .mobileMenuLogo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .mobileMenuLogo > span {
+    color: #168eff;
+    font-size: 25px;
+  }
+
+  .mobileMenuLogo strong {
+    color: #168eff;
+  }
+
+  .closeMenu {
+    border: 0;
+    background: transparent;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+  }
+
+  .mobileMenuSubtitle {
+    margin-top: 9px;
+    color: #91a7c2;
+    font-size: 11px;
+  }
+
+  .mobileMenuNav {
+    margin-top: 30px;
+  }
+
+  .mobileNavItem {
+    width: 100%;
+    min-height: 50px;
+    margin-bottom: 5px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #b9c8dc;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .mobileNavItem:hover {
+    background:
+      rgba(26, 119, 220, 0.14);
+  }
+
+  .mobileAccountLabel {
+    color: #607897;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    margin: 25px 14px 10px;
+  }
+
+  .logoutItem {
+    color: #ff7d86;
+  }
+
+  /* =======================================================
+     MOBILE CONTENT
+  ======================================================= */
+
+  .topBar {
+    display: none;
+  }
+
+  .content {
+    width: 100%;
+    padding: 27px 15px 30px;
+  }
+
+  .pageIntro h1 {
+    font-size: 27px;
+  }
+
+  .pageIntro p {
+    max-width: 95%;
+    font-size: 13px;
+  }
+
+  .backLink {
+    margin-top: 20px;
+  }
+
+  /* =======================================================
+     MOBILE PHONE CARD
+  ======================================================= */
+
+  .phoneCard {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .phoneFormSection {
+    padding: 20px 16px;
+  }
+
+  .formHeading h2 {
+    font-size: 15px;
+  }
+
+  .formHeading p {
+    font-size: 11px;
+  }
+
+  .fieldGroup {
+    margin-top: 20px;
+  }
+
+  .fieldGroup label {
+    font-size: 11px;
+  }
+
+  .selectWrapper,
+  .phoneInputWrapper,
+  .infoMessage,
+  .errorMessage,
+  .successMessage,
+  .submitButton {
+    max-width: none;
+  }
+
+  .securityPanel {
+    min-height: auto;
+    padding: 28px 20px 30px;
+    border-top:
+      1px solid
+      #e3e8ef;
+    border-left: 0;
+  }
+
+  .phoneIllustration {
+    width: 125px;
+    height: 125px;
+  }
+
+  .securityPanel h3 {
+    margin-top: 20px;
+    font-size: 12px;
+  }
+
+  .securityBenefits {
+    max-width: 260px;
+  }
+
+  .benefitItem {
+    font-size: 11px;
+  }
+
+  /* =======================================================
+     PRIVACY
+  ======================================================= */
+
+  .privacyCard {
+    min-height: auto;
+    padding: 16px;
+    align-items: flex-start;
+    gap: 13px;
+  }
+
+  .privacyIcon {
+    width: 45px;
+    height: 45px;
+    flex-basis: 45px;
+  }
+
+  .privacyText h3 {
+    font-size: 12px;
+  }
+
+  .privacyText p {
+    font-size: 10px;
+  }
+
+  /* =======================================================
+     MOBILE BOTTOM NAV
+  ======================================================= */
+
+  .mobileBottomNav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 150;
+    height: 74px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: #031229;
+    border-top:
+      1px solid
+      rgba(255, 255, 255, 0.1);
+  }
+
+  .mobileBottomNav button {
+    flex: 1;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #7d93ae;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+
+  .mobileBottomNav button span:last-child {
+    font-size: 8px;
+  }
+
+  .mobileBottomNav .activeBottom {
+    color: #168eff;
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 380px) {
+  .content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .pageIntro h1 {
+    font-size: 25px;
+  }
+
+  .phoneFormSection {
+    padding: 18px 13px;
+  }
+
+  .securityPanel {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .privacyCard {
+    padding: 13px;
+  }
+}

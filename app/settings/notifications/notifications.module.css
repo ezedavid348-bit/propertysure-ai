@@ -1,0 +1,1011 @@
+/* ============================================================
+   PROPERTYSURE AI
+   NOTIFICATIONS PAGE
+   SETTINGS UI
+   ============================================================ */
+
+.page {
+  min-height: 100vh;
+  background: #ffffff;
+  color: #17243b;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+/* ============================================================
+   ICON
+   ============================================================ */
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+
+.topBar {
+  height: 72px;
+  width: 100%;
+  background: #06152f;
+  border-bottom: 1px solid #193650;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 42px;
+  box-sizing: border-box;
+}
+
+.topBrand {
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.topBrand strong {
+  color: #168eff;
+}
+
+.topDiamond {
+  color: #168eff;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.topBell {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: #f2b500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.topBellDot {
+  position: absolute;
+  top: 4px;
+  right: 3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #168eff;
+}
+
+/* ============================================================
+   MAIN
+   ============================================================ */
+
+.main {
+  min-height: calc(100vh - 72px);
+  padding: 34px 34px 70px;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.pageHeader {
+  width: 100%;
+  max-width: 1010px;
+  margin: 0 auto;
+}
+
+.pageHeader h1 {
+  margin: 0;
+  color: #17243b;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+}
+
+.pageHeader p {
+  margin: 8px 0 0;
+  color: #7d90ac;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.backButton {
+  margin-top: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #168eff;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.backButton:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   CONTENT
+   ============================================================ */
+
+.content {
+  width: 100%;
+  max-width: 1010px;
+  margin: 27px auto 0;
+}
+
+/* ============================================================
+   SECTION
+   ============================================================ */
+
+.notificationSection,
+.deliverySection {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.sectionLabel {
+  margin: 0 0 9px 2px;
+  color: #718bb0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  line-height: 1.2;
+}
+
+.notificationCard,
+.deliveryCard {
+  width: 100%;
+  border: 1px solid #dfe6ee;
+  border-radius: 10px;
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow:
+    0 1px 3px
+      rgba(20, 45, 80, 0.035);
+  box-sizing: border-box;
+}
+
+/* ============================================================
+   SECTION HEADER
+   ============================================================
+
+   No icon here.
+   This is intentional to avoid duplicate visual symbols.
+   ============================================================ */
+
+.sectionHeader {
+  min-height: 76px;
+  padding: 17px 28px 16px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.sectionHeaderText {
+  min-width: 0;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  color: #17243b;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.sectionHeader p {
+  margin: 4px 0 0;
+  color: #8193ad;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   ROW CONTAINER
+   ============================================================ */
+
+.sectionRows {
+  padding: 0 28px;
+}
+
+/* ============================================================
+   CHANNEL ROW
+   ============================================================ */
+
+.channelRow {
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  border-top: 1px solid #e9edf2;
+  box-sizing: border-box;
+}
+
+.channelIcon {
+  width: 31px;
+  height: 31px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.channelIcon.green {
+  background: #e6f8ee;
+  color: #20a35a;
+}
+
+.channelIcon.yellow {
+  background: #fff1d8;
+  color: #efa000;
+}
+
+.channelIcon.purple {
+  background: #f0e5ff;
+  color: #7635d3;
+}
+
+.rowText {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowText strong {
+  display: block;
+  color: #1b2941;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.rowText span {
+  display: block;
+  margin-top: 3px;
+  color: #8192ac;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+/* ============================================================
+   TOGGLE
+   ============================================================ */
+
+.toggle {
+  width: 36px;
+  height: 21px;
+  padding: 2px;
+  border: 0;
+  border-radius: 999px;
+  background: #c8d2df;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.toggleKnob {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 1px 3px
+      rgba(0, 0, 0, 0.18);
+  transition:
+    transform 0.18s ease;
+}
+
+.toggleOn {
+  background: #168eff;
+  box-shadow:
+    0 2px 7px
+      rgba(22, 142, 255, 0.22);
+}
+
+.toggleOn .toggleKnob {
+  transform: translateX(15px);
+}
+
+/* ============================================================
+   CHECK ROW
+   ============================================================ */
+
+.checkRow {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid #e9edf2;
+  box-sizing: border-box;
+}
+
+.checkboxButton {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 17px;
+  height: 17px;
+  border: 1.5px solid #b8c5d5;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.checkboxChecked .checkbox {
+  border-color: #168eff;
+  background: #168eff;
+}
+
+.checkText {
+  min-width: 0;
+  padding: 8px 0;
+}
+
+.checkText strong {
+  display: block;
+  color: #1b2941;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.checkText span {
+  display: block;
+  margin-top: 3px;
+  color: #8192ac;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   DELIVERY
+   ============================================================ */
+
+.deliverySection {
+  margin-bottom: 0;
+}
+
+.deliveryCard {
+  padding: 0 28px;
+}
+
+.deliveryItem {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #e9edf2;
+}
+
+.deliveryItem:last-child {
+  border-bottom: 0;
+}
+
+.deliveryIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.deliveryBlue {
+  color: #168eff;
+  background: #e7f1ff;
+}
+
+.deliveryOrange {
+  color: #ef9a00;
+  background: #fff0d9;
+}
+
+.deliveryPurple {
+  color: #7835d5;
+  background: #f0e6ff;
+}
+
+.deliveryItem strong,
+.deliveryItem span,
+.deliveryItem small {
+  display: block;
+}
+
+.deliveryItem strong {
+  color: #1b2941;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.deliveryItem span {
+  margin-top: 3px;
+  color: #8192ac;
+  font-size: 9px;
+  line-height: 1.3;
+}
+
+.deliveryItem small {
+  margin-top: 3px;
+  color: #20a35a;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* ============================================================
+   MOBILE HEADER
+   ============================================================ */
+
+.mobileHeader {
+  display: none;
+}
+
+/* ============================================================
+   MOBILE MENU
+   ============================================================ */
+
+.mobileMenu {
+  display: none;
+}
+
+/* ============================================================
+   MOBILE BOTTOM NAV
+   ============================================================ */
+
+.mobileBottomNav {
+  display: none;
+}
+
+/* ============================================================
+   LOADING
+   ============================================================ */
+
+.loading {
+  min-height: 100vh;
+  background: #06152f;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.loadingBrand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.loadingBrand strong {
+  color: #168eff;
+}
+
+.loadingDiamond {
+  color: #168eff;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.loading p {
+  margin: 13px 0 0;
+  color: #8ea4c3;
+  font-size: 12px;
+}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 700px) {
+  .topBar {
+    display: none;
+  }
+
+  .main {
+    min-height: 100vh;
+    padding:
+      0
+      0
+      88px;
+    background: #ffffff;
+  }
+
+  /* ----------------------------------------------------------
+     MOBILE HEADER
+     ---------------------------------------------------------- */
+
+  .mobileHeader {
+    position: sticky;
+    top: 0;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    background: #06152f;
+    border-bottom: 1px solid #193650;
+    z-index: 100;
+  }
+
+  .menuButton,
+  .mobileBell {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobileBell .icon {
+    color: #f2b500;
+  }
+
+  .mobileLogo {
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .mobileLogo strong {
+    color: #168eff;
+  }
+
+  .mobileDiamond {
+    color: #168eff;
+    font-size: 21px;
+    line-height: 1;
+  }
+
+  .mobileBellDot {
+    position: absolute;
+    top: 4px;
+    right: 2px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #168eff;
+  }
+
+  /* ----------------------------------------------------------
+     PAGE HEADER
+     ---------------------------------------------------------- */
+
+  .pageHeader {
+    padding:
+      28px
+      30px
+      0;
+  }
+
+  .pageHeader h1 {
+    font-size: 27px;
+    font-weight: 600;
+    letter-spacing: -0.6px;
+  }
+
+  .pageHeader p {
+    margin-top: 9px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .backButton {
+    margin-top: 15px;
+    font-size: 11px;
+  }
+
+  /* ----------------------------------------------------------
+     CONTENT
+     ---------------------------------------------------------- */
+
+  .content {
+    padding:
+      0
+      30px;
+    margin-top: 27px;
+  }
+
+  .notificationSection,
+  .deliverySection {
+    margin-bottom: 20px;
+  }
+
+  .sectionLabel {
+    margin:
+      0
+      0
+      9px
+      1px;
+    font-size: 10px;
+    letter-spacing: 2px;
+  }
+
+  .notificationCard,
+  .deliveryCard {
+    border-radius: 10px;
+  }
+
+  /* ----------------------------------------------------------
+     SECTION HEADER
+     ---------------------------------------------------------- */
+
+  .sectionHeader {
+    min-height: 76px;
+    padding:
+      17px
+      14px
+      16px;
+  }
+
+  .sectionHeader h2 {
+    font-size: 16px;
+  }
+
+  .sectionHeader p {
+    margin-top: 5px;
+    font-size: 10px;
+  }
+
+  .sectionRows {
+    padding:
+      0
+      14px;
+  }
+
+  /* ----------------------------------------------------------
+     CHANNEL ROWS
+     ---------------------------------------------------------- */
+
+  .channelRow {
+    min-height: 72px;
+    gap: 11px;
+  }
+
+  .channelIcon {
+    width: 31px;
+    height: 31px;
+  }
+
+  .rowText strong {
+    font-size: 11px;
+  }
+
+  .rowText span {
+    margin-top: 4px;
+    font-size: 9px;
+    line-height: 1.4;
+  }
+
+  .toggle {
+    width: 36px;
+    height: 21px;
+  }
+
+  /* ----------------------------------------------------------
+     CHECK ROWS
+     ---------------------------------------------------------- */
+
+  .checkRow {
+    min-height: 76px;
+    gap: 11px;
+  }
+
+  .checkbox {
+    width: 18px;
+    height: 18px;
+  }
+
+  .checkText {
+    padding:
+      9px
+      0;
+  }
+
+  .checkText strong {
+    font-size: 11px;
+  }
+
+  .checkText span {
+    margin-top: 4px;
+    font-size: 9px;
+    line-height: 1.4;
+  }
+
+  /* ----------------------------------------------------------
+     DELIVERY
+     ---------------------------------------------------------- */
+
+  .deliveryCard {
+    padding:
+      0
+      14px;
+  }
+
+  .deliveryItem {
+    min-height: 72px;
+  }
+
+  .deliveryIcon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .deliveryItem strong {
+    font-size: 11px;
+  }
+
+  .deliveryItem span {
+    font-size: 9px;
+  }
+
+  .deliveryItem small {
+    font-size: 9px;
+  }
+
+  /* ----------------------------------------------------------
+     MOBILE MENU
+     ---------------------------------------------------------- */
+
+  .mobileMenu {
+    position: fixed;
+    inset: 0;
+    display: block;
+    padding:
+      25px
+      22px;
+    background: #06152f;
+    color: #ffffff;
+    z-index: 300;
+    overflow-y: auto;
+  }
+
+  .mobileMenuTop {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .mobileMenuLogo {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  .mobileMenuLogo > span {
+    color: #168eff;
+    font-size: 22px;
+  }
+
+  .mobileMenuLogo b {
+    color: #168eff;
+  }
+
+  .mobileMenuSubtitle {
+    margin:
+      12px
+      0
+      0;
+    color: #8ea4c3;
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  .closeButton {
+    width: 40px;
+    height: 40px;
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    font-size: 31px;
+    font-weight: 200;
+    cursor: pointer;
+  }
+
+  .mobileMenuNav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 45px;
+  }
+
+  .mobileMenuNav button,
+  .mobileMenuItem {
+    width: 100%;
+    height: 48px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #aebed4;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding:
+      0
+      14px;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .mobileMenuNav button:hover,
+  .mobileMenuItem:hover {
+    background:
+      rgba(22, 142, 255, 0.12);
+    color: #ffffff;
+  }
+
+  .mobileMenuLabel {
+    margin:
+      32px
+      14px
+      8px;
+    color: #6f87a9;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+  }
+
+  .mobileMenuItem {
+    margin-bottom: 4px;
+  }
+
+  .logoutItem {
+    color: #ff8b91 !important;
+    margin-top: 10px;
+  }
+
+  /* ----------------------------------------------------------
+     MOBILE BOTTOM NAV
+     ---------------------------------------------------------- */
+
+  .mobileBottomNav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 74px;
+    display: grid;
+    grid-template-columns:
+      repeat(5, 1fr);
+    background:
+      rgba(3, 18, 40, 0.98);
+    border-top: 1px solid #193650;
+    backdrop-filter: blur(15px);
+    z-index: 150;
+  }
+
+  .mobileBottomNav button {
+    border: 0;
+    background: transparent;
+    color: #7990ad;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 8px;
+    cursor: pointer;
+  }
+
+  .mobileBottomNav button .icon {
+    font-size: 20px;
+  }
+
+  .mobileBottomNav .bottomActive {
+    color: #168eff;
+  }
+}
+
+/* ============================================================
+   SMALL PHONES
+   ============================================================ */
+
+@media (max-width: 380px) {
+  .mobileHeader {
+    padding:
+      0
+      14px;
+  }
+
+  .mobileLogo {
+    font-size: 15px;
+  }
+
+  .pageHeader {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .content {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .pageHeader h1 {
+    font-size: 25px;
+  }
+
+  .pageHeader p {
+    font-size: 12px;
+  }
+
+  .sectionHeader {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  .sectionRows {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  .deliveryCard {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+}

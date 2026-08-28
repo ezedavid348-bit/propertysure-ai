@@ -1,0 +1,1155 @@
+.page {
+  min-height: 100vh;
+  width: 100%;
+  background: #ffffff;
+  color: #101827;
+  overflow-x: hidden;
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+.page button {
+  font-family: inherit;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 1em;
+  line-height: 1;
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   MOBILE HEADER
+============================================================ */
+
+.mobileHeader {
+  width: 100%;
+  height: 72px;
+  padding: 0 14px;
+  display: grid;
+  grid-template-columns:
+    44px
+    minmax(0, 1fr)
+    44px;
+  align-items: center;
+  background: #061b38;
+  border-bottom: 1px solid #193650;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.menuButton,
+.mobileBell {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  border-radius: 50%;
+}
+
+.menuButton:hover,
+.mobileBell:hover {
+  background: rgba(22, 142, 255, 0.08);
+}
+
+/* IMPORTANT:
+   Hamburger must remain clearly visible on blue header.
+*/
+
+.menuButton .icon {
+  color: #ffffff !important;
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+  font-size: 24px !important;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.mobileLogoButton {
+  min-width: 0;
+  width: 100%;
+  height: 42px;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.mobileBrandName {
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.mobileBrandName strong {
+  color: #168eff;
+}
+
+.mobileLogoDiamond {
+  color: #168eff;
+  font-size: 23px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   NOTIFICATION BELL
+============================================================ */
+
+.mobileBell .icon {
+  width: 20px;
+  height: 20px;
+  color: #ffffff !important;
+  font-size: 17px !important;
+}
+
+.mobileNotificationDot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  top: 5px;
+  right: 3px;
+  border-radius: 50%;
+  background: #168eff;
+  box-shadow:
+    0 0 8px
+    rgba(22, 142, 255, 0.7);
+}
+
+/* ============================================================
+   MAIN
+============================================================ */
+
+.main {
+  width: 100%;
+  min-height: calc(100vh - 72px);
+  background: #ffffff;
+}
+
+.content {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 34px 34px 110px;
+}
+
+/* ============================================================
+   PAGE INTRO
+============================================================ */
+
+.pageIntro {
+  width: 100%;
+}
+
+.pageIntro h1 {
+  margin: 0;
+  color: #111827;
+  font-size: 31px;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+  font-weight: 800;
+}
+
+.pageIntro p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 550px;
+}
+
+/* ============================================================
+   BACK TO ACCOUNT
+============================================================ */
+
+.backLink {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  gap: 7px;
+  margin-top: 20px;
+  border: 0;
+  background: transparent;
+  color: #168eff;
+  text-decoration: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.backLink .icon {
+  font-size: 18px !important;
+}
+
+/* ============================================================
+   STATUS
+   NOT VERIFIED IS BELOW BACK TO ACCOUNT
+============================================================ */
+
+.statusBadge {
+  position: static;
+  width: fit-content;
+  margin-top: 14px;
+  border-radius: 8px;
+  padding: 10px 13px;
+  background: #fff7e8;
+  color: #dc8b00;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.statusDiamond {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* ============================================================
+   STEPS
+============================================================ */
+
+.steps {
+  width: 100%;
+  margin-top: 38px;
+  display: grid;
+  grid-template-columns:
+    minmax(85px, 1fr)
+    minmax(20px, 1fr)
+    minmax(85px, 1fr)
+    minmax(20px, 1fr)
+    minmax(85px, 1fr)
+    minmax(20px, 1fr)
+    minmax(85px, 1fr)
+    minmax(20px, 1fr)
+    minmax(85px, 1fr);
+  align-items: start;
+}
+
+.step {
+  min-width: 0;
+  text-align: center;
+}
+
+.stepCircle {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto;
+  border-radius: 50%;
+  border: 1px solid #d8dfe8;
+  background: #ffffff;
+  color: #526178;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.stepCircleActive {
+  background: #146df5;
+  border-color: #146df5;
+  color: #ffffff;
+  box-shadow:
+    0 5px 16px
+    rgba(20, 109, 245, 0.18);
+}
+
+.stepLabel {
+  margin-top: 10px;
+  color: #4f6078;
+  font-size: 11px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.stepActive .stepLabel {
+  color: #096bf4;
+  font-weight: 750;
+}
+
+.stepLine {
+  height: 1px;
+  background: #d9e1eb;
+  margin-top: 29px;
+}
+
+/* ============================================================
+   VERIFICATION CARD
+============================================================ */
+
+.verificationCard {
+  margin-top: 42px;
+  border: 1px solid #dfe6ef;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 28px;
+  box-shadow:
+    0 3px 12px
+    rgba(15, 36, 64, 0.035);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.cardHeaderIcon {
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #edf5ff;
+  color: #146df5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardHeaderText {
+  min-width: 0;
+}
+
+.cardHeaderText h2 {
+  margin: 0;
+  color: #14213a;
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+
+.cardHeaderText p {
+  margin: 7px 0 0;
+  color: #65748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: #edf0f4;
+  margin: 25px 0;
+}
+
+/* ============================================================
+   DOCUMENT SECTION
+============================================================ */
+
+.documentSection h3 {
+  margin: 0 0 18px;
+  color: #152137;
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.documentGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.documentOption {
+  min-width: 0;
+  min-height: 112px;
+  border: 1px solid #dfe5ed;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #152137;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.documentOption:hover {
+  border-color: #b8d4f8;
+  background: #fbfdff;
+  transform: translateY(-1px);
+}
+
+.documentOptionSelected {
+  border-color: #146df5;
+  background: #f5f9ff;
+  box-shadow:
+    0 0 0 2px
+    rgba(20, 109, 245, 0.08);
+}
+
+.documentIcon {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.documentIcon_nin {
+  background: #edf5ff;
+  color: #ffffff;
+}
+
+.documentIcon_nin span {
+  padding: 4px 6px;
+  border-radius: 3px;
+  background: #07854b;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.documentIcon_id {
+  background: #eef9f4;
+  color: #168b58;
+}
+
+.documentIcon_car {
+  background: #eef9f4;
+  color: #168b58;
+}
+
+.documentIcon_passport {
+  background: #eef9f4;
+  color: #168b58;
+}
+
+.documentText {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.documentText strong {
+  color: #152137;
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 750;
+}
+
+.documentText span {
+  color: #65748b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.documentArrow {
+  color: #61738b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.documentOptionSelected .documentArrow {
+  color: #146df5;
+}
+
+/* ============================================================
+   SECURITY
+============================================================ */
+
+.securityBox {
+  margin-top: 26px;
+  border: 1px solid #cfe0f8;
+  background: #f6faff;
+  border-radius: 8px;
+  padding: 17px 18px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.securityIcon {
+  width: 47px;
+  height: 47px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #146df5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.securityBox h3 {
+  margin: 0;
+  color: #14213a;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.securityBox p {
+  margin: 5px 0 0;
+  color: #61728a;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+/* ============================================================
+   CONTINUE
+============================================================ */
+
+.continueButton {
+  width: 100%;
+  height: 54px;
+  margin-top: 27px;
+  border: 0;
+  border-radius: 8px;
+  background: #146df5;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.continueButton:hover:not(:disabled) {
+  background: #0f62df;
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 22px
+    rgba(20, 109, 245, 0.2);
+}
+
+.continueButton:disabled {
+  cursor: not-allowed;
+}
+
+.continueDisabled {
+  opacity: 0.55;
+}
+
+.buttonDiamond {
+  font-size: 25px;
+  line-height: 1;
+}
+
+/* ============================================================
+   PRIVACY
+============================================================ */
+
+.privacyBox {
+  margin-top: 27px;
+  min-height: 74px;
+  border: 1px solid #e0e6ee;
+  background: #fbfcfe;
+  border-radius: 8px;
+  padding: 15px 17px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: #66748a;
+}
+
+.privacyBox svg {
+  color: #52657f;
+  flex-shrink: 0;
+}
+
+.privacyBox p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+/* ============================================================
+   MOBILE MENU
+============================================================ */
+
+.mobileMenu {
+  display: none;
+}
+
+.mobileMenuHeader,
+.mobileMenuNav,
+.mobileAccountLabel {
+  display: none;
+}
+
+/* ============================================================
+   MOBILE BOTTOM NAV
+============================================================ */
+
+.mobileBottomNav {
+  display: none;
+}
+
+/* ============================================================
+   TABLET
+============================================================ */
+
+@media (max-width: 900px) {
+  .content {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .documentGrid {
+    gap: 10px;
+  }
+
+  .documentOption {
+    padding: 13px;
+  }
+
+  .documentText strong {
+    font-size: 12px;
+  }
+}
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media (max-width: 700px) {
+  .mobileHeader {
+    height: 72px;
+    padding: 0 14px;
+    grid-template-columns:
+      44px
+      minmax(0, 1fr)
+      44px;
+  }
+
+  .menuButton .icon {
+    color: #ffffff !important;
+    font-size: 24px !important;
+  }
+
+  .mobileBrandName {
+    font-size: 17px;
+  }
+
+  .mobileLogoDiamond {
+    font-size: 23px;
+  }
+
+  .main {
+    min-height: calc(100vh - 72px);
+  }
+
+  .content {
+    padding: 27px 15px 100px;
+  }
+
+  /* ========================================================
+     INTRO
+  ======================================================== */
+
+  .pageIntro {
+    padding-right: 0;
+  }
+
+  .pageIntro h1 {
+    font-size: 27px;
+    line-height: 1.2;
+  }
+
+  .pageIntro p {
+    font-size: 13px;
+    line-height: 1.55;
+    margin-top: 9px;
+  }
+
+  /* ========================================================
+     BACK TO ACCOUNT
+  ======================================================== */
+
+  .backLink {
+    margin-top: 20px;
+    font-size: 13px;
+  }
+
+  /* ========================================================
+     NOT VERIFIED
+     ALWAYS UNDER BACK TO ACCOUNT
+  ======================================================== */
+
+  .statusBadge {
+    position: static;
+    display: inline-flex;
+    margin-top: 14px;
+    width: fit-content;
+    padding: 9px 12px;
+  }
+
+  /* ========================================================
+     STEPS
+     ALL FIVE STAY ON ONE ROW
+  ======================================================== */
+
+  .steps {
+    width: 100%;
+    margin-top: 27px;
+    display: grid;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(8px, 0.45fr)
+      minmax(0, 1fr)
+      minmax(8px, 0.45fr)
+      minmax(0, 1fr)
+      minmax(8px, 0.45fr)
+      minmax(0, 1fr)
+      minmax(8px, 0.45fr)
+      minmax(0, 1fr);
+
+    gap: 0;
+    align-items: start;
+  }
+
+  .step {
+    min-width: 0;
+    display: block;
+    text-align: center;
+  }
+
+  .stepCircle {
+    width: 38px;
+    height: 38px;
+    font-size: 13px;
+    margin: 0 auto;
+  }
+
+  .stepLabel {
+    margin-top: 8px;
+    font-size: 9px;
+    line-height: 1.4;
+    white-space: normal;
+  }
+
+  .stepLine {
+    display: block;
+    width: 100%;
+    height: 1px;
+    margin-top: 19px;
+    background: #d9e1eb;
+  }
+
+  /* ========================================================
+     CARD
+  ======================================================== */
+
+  .verificationCard {
+    margin-top: 28px;
+    padding: 17px;
+    border-radius: 10px;
+  }
+
+  .cardHeader {
+    gap: 13px;
+    align-items: center;
+  }
+
+  .cardHeaderIcon {
+    width: 53px;
+    height: 53px;
+  }
+
+  .cardHeaderIcon svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .cardHeaderText h2 {
+    font-size: 17px;
+  }
+
+  .cardHeaderText p {
+    margin-top: 5px;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .divider {
+    margin: 20px 0;
+  }
+
+  /* ========================================================
+     DOCUMENTS
+  ======================================================== */
+
+  .documentSection h3 {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .documentGrid {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .documentOption {
+    min-height: 82px;
+    padding: 11px;
+    gap: 11px;
+  }
+
+  .documentIcon {
+    width: 43px;
+    height: 43px;
+  }
+
+  .documentIcon_nin span {
+    font-size: 9px;
+  }
+
+  .documentIcon svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .documentText strong {
+    font-size: 12px;
+  }
+
+  .documentText span {
+    font-size: 10px;
+  }
+
+  .documentArrow svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* ========================================================
+     SECURITY
+  ======================================================== */
+
+  .securityBox {
+    margin-top: 18px;
+    padding: 13px;
+    gap: 11px;
+    align-items: flex-start;
+  }
+
+  .securityIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .securityIcon svg {
+    width: 23px;
+    height: 23px;
+  }
+
+  .securityBox h3 {
+    font-size: 11px;
+  }
+
+  .securityBox p {
+    font-size: 9px;
+    line-height: 1.5;
+  }
+
+  /* ========================================================
+     CONTINUE
+  ======================================================== */
+
+  .continueButton {
+    height: 50px;
+    margin-top: 19px;
+    font-size: 13px;
+  }
+
+  .buttonDiamond {
+    font-size: 22px;
+  }
+
+  /* ========================================================
+     PRIVACY
+  ======================================================== */
+
+  .privacyBox {
+    min-height: auto;
+    margin-top: 18px;
+    padding: 11px 12px;
+    align-items: flex-start;
+    gap: 9px;
+  }
+
+  .privacyBox p {
+    font-size: 9px;
+    line-height: 1.5;
+  }
+
+  .privacyBox svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  /* ========================================================
+     MOBILE MENU
+     DASHBOARD NAVIGATION
+  ======================================================== */
+
+  .mobileMenu {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: block;
+    padding: 22px;
+    background: #031229;
+    color: #ffffff;
+    overflow-y: auto;
+  }
+
+  .mobileMenuHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .mobileMenuLogo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .mobileMenuLogo > span {
+    color: #168eff;
+    font-size: 25px;
+  }
+
+  .mobileMenuLogo strong {
+    color: #168eff;
+  }
+
+  .closeMenu {
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    font-size: 30px;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .mobileMenuSubtitle {
+    display: block;
+    margin-top: 9px;
+    color: #91a7c2;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .mobileMenuNav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 30px;
+  }
+
+  .mobileNavItem {
+    width: 100%;
+    min-height: 50px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #b9c8dc;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .mobileNavItem:hover {
+    background:
+      rgba(26, 119, 220, 0.14);
+    color: #ffffff;
+  }
+
+  .navIcon {
+    width: 20px;
+    min-width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8db9e9;
+  }
+
+  .mobileAccountLabel {
+    display: block;
+    color: #607897;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    margin: 25px 14px 10px;
+  }
+
+  /* ========================================================
+     BOTTOM NAV
+  ======================================================== */
+
+  .mobileBottomNav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 74px;
+    z-index: 200;
+    display: grid;
+    grid-template-columns:
+      repeat(5, 1fr);
+    align-items: center;
+    background: #031229;
+    border-top:
+      1px solid
+      rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+  }
+
+  .mobileBottomNav button {
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #7d93ae;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+
+  .mobileBottomNav button .icon {
+    font-size: 20px !important;
+  }
+
+  .mobileBottomNav button span:last-child {
+    font-size: 8px;
+  }
+
+  .mobileBottomNav .activeBottom {
+    color: #168eff;
+    font-weight: 700;
+  }
+}
+
+/* ============================================================
+   SMALL PHONES
+============================================================ */
+
+@media (max-width: 380px) {
+  .mobileBrandName {
+    font-size: 15px;
+  }
+
+  .mobileLogoDiamond {
+    font-size: 21px;
+  }
+
+  .content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .pageIntro h1 {
+    font-size: 25px;
+  }
+
+  .pageIntro p {
+    font-size: 12px;
+  }
+
+  .verificationCard {
+    padding: 14px;
+  }
+
+  .stepLabel {
+    font-size: 8px;
+  }
+
+  .stepCircle {
+    width: 34px;
+    height: 34px;
+    font-size: 12px;
+  }
+
+  .stepLine {
+    margin-top: 17px;
+  }
+
+  .documentOption {
+    min-height: 78px;
+  }
+
+  .documentText strong {
+    font-size: 11px;
+  }
+
+  .documentText span {
+    font-size: 9px;
+  }
+
+  .mobileBottomNav {
+    height: 66px;
+  }
+}
