@@ -1,0 +1,747 @@
+/* =========================================================
+   PAGE
+========================================================= */
+
+.signout-page {
+  min-height: 100vh;
+  width: 100%;
+
+  background: #ffffff;
+  color: #18253a;
+
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.signout-page *,
+.signout-page *::before,
+.signout-page *::after {
+  box-sizing: border-box;
+}
+
+.signout-page button {
+  font-family: inherit;
+}
+
+
+/* =========================================================
+   LOADING PAGE
+   SHARED PROPERTYSURE AI LOADING SCREEN
+========================================================= */
+
+.loadingPage {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(22, 142, 255, 0.10),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      #061b38 0%,
+      #031229 100%
+    );
+
+  color: #ffffff;
+
+  text-align: center;
+}
+
+.loadingBrand {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  color: #ffffff;
+
+  font-size: 24px;
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: -0.025em;
+}
+
+.loadingBrand strong {
+  color: #168eff;
+}
+
+.loadingDiamond {
+  width: 15px;
+  height: 15px;
+
+  display: inline-block;
+
+  flex: 0 0 15px;
+
+  background: #168eff;
+
+  transform: rotate(45deg);
+
+  border-radius: 2px;
+
+  box-shadow:
+    0 0 18px rgba(22, 142, 255, 0.35);
+
+  animation:
+    loadingDiamondPulse
+    1.6s
+    ease-in-out
+    infinite;
+}
+
+.loadingIndicator {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  margin-top: 22px;
+
+  height: 14px;
+}
+
+.loadingIndicator span {
+  width: 6px;
+  height: 6px;
+
+  display: block;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  box-shadow:
+    0 0 8px rgba(22, 142, 255, 0.45);
+
+  animation:
+    loadingDot
+    1.2s
+    ease-in-out
+    infinite;
+}
+
+.loadingIndicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.loadingIndicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.loadingText {
+  margin: 10px 0 0;
+
+  color: #91a7c3;
+
+  font-size: 12px;
+  line-height: 1.3;
+
+  font-weight: 500;
+
+  letter-spacing: 0.01em;
+}
+
+@keyframes loadingDot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes loadingDiamondPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: rotate(45deg) scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1.08);
+  }
+}
+
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+.signout-main {
+  width: min(900px, calc(100% - 40px));
+
+  margin: 0 auto;
+
+  padding:
+    30px 0 60px;
+}
+
+
+/* =========================================================
+   PAGE HEADING
+========================================================= */
+
+.signout-heading {
+  padding:
+    0 2px 22px;
+}
+
+.signout-heading h1 {
+  margin: 0;
+
+  color: #18253a;
+
+  font-size:
+    clamp(26px, 3vw, 32px);
+
+  line-height: 1.15;
+
+  font-weight: 700;
+
+  letter-spacing: -0.7px;
+}
+
+.signout-heading p {
+  margin:
+    8px 0 0;
+
+  color: #71849e;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   SIGN OUT CARD
+========================================================= */
+
+.signout-card {
+  width: 100%;
+
+  min-height: 285px;
+
+  padding:
+    32px 25px;
+
+  border:
+    1px solid
+    #dce4ed;
+
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   SIGN OUT ICON
+========================================================= */
+
+.signout-card-icon {
+  width: 50px;
+  height: 50px;
+
+  margin-bottom: 17px;
+
+  border-radius: 12px;
+
+  background:
+    rgba(255, 68, 80, 0.12);
+
+  color: #e34e59;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* =========================================================
+   SIGN OUT CARD TITLE
+========================================================= */
+
+.signout-card h2 {
+  margin: 0;
+
+  color: #18253a;
+
+  font-size: 16px;
+
+  line-height: 1.3;
+
+  font-weight: 700;
+}
+
+.signout-card-description {
+  margin:
+    8px 0 0;
+
+  color: #71849e;
+
+  font-size: 10px;
+
+  line-height: 1.65;
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.signout-actions {
+  width: 295px;
+
+  max-width: 100%;
+
+  margin-top: 21px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 9px;
+}
+
+
+/* =========================================================
+   SIGN OUT BUTTON
+========================================================= */
+
+.signout-button {
+  width: 100%;
+
+  height: 42px;
+
+  padding:
+    0 16px;
+
+  border:
+    1px solid
+    #d94d57;
+
+  border-radius: 7px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ee5949,
+      #e74d59
+    );
+
+  color: #ffffff;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.signout-button:hover:not(:disabled) {
+  box-shadow:
+    0 5px 16px
+    rgba(220, 73, 84, 0.2);
+
+  transform: translateY(-1px);
+}
+
+.signout-button:disabled {
+  opacity: 0.7;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   CANCEL BUTTON
+========================================================= */
+
+.cancel-button {
+  width: 100%;
+
+  height: 42px;
+
+  padding:
+    0 16px;
+
+  border:
+    1px solid
+    #cfdbe8;
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #3d6cae;
+
+  font-size: 10px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background: #f7fafd;
+
+  border-color: #168eff;
+}
+
+.cancel-button:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   ACTIVE SESSIONS NOTICE
+========================================================= */
+
+.sessions-notice {
+  width: 100%;
+
+  min-height: 82px;
+
+  margin-top: 17px;
+
+  padding:
+    15px 17px;
+
+  border:
+    1px solid
+    #dce4ed;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+
+/* =========================================================
+   INFO ICON
+========================================================= */
+
+.sessions-icon {
+  width: 36px;
+  height: 36px;
+
+  flex: 0 0 36px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(35, 105, 255, 0.12);
+
+  color: #166cff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* =========================================================
+   SESSION CONTENT
+========================================================= */
+
+.sessions-content {
+  min-width: 0;
+
+  flex: 1;
+}
+
+.sessions-content h3 {
+  margin: 0;
+
+  color: #18253a;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  line-height: 1.25;
+}
+
+.sessions-content p {
+  margin:
+    5px 0 0;
+
+  color: #71849e;
+
+  font-size: 8.5px;
+
+  line-height: 1.5;
+}
+
+.sessions-link {
+  margin-top: 7px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #3d6cae;
+
+  font-size: 9px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 5px;
+}
+
+.sessions-link:hover {
+  color: #168eff;
+}
+
+.sessions-link span {
+  font-size: 14px;
+
+  line-height: 1;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1050px) {
+  .signout-main {
+    width: min(
+      850px,
+      calc(100% - 44px)
+    );
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .signout-page {
+    min-height: 100vh;
+
+    background: #ffffff;
+  }
+
+
+  /* =======================================================
+     MAIN
+  ======================================================= */
+
+  .signout-main {
+    width: 100%;
+
+    padding:
+      28px 15px 30px;
+
+    margin: 0;
+  }
+
+
+  /* =======================================================
+     HEADING
+  ======================================================= */
+
+  .signout-heading {
+    padding:
+      0 2px 22px;
+  }
+
+
+  .signout-heading h1 {
+    font-size: 30px;
+
+    letter-spacing: -0.7px;
+  }
+
+
+  .signout-heading p {
+    margin-top: 8px;
+
+    font-size: 12px;
+  }
+
+
+  /* =======================================================
+     SIGN OUT CARD
+  ======================================================= */
+
+  .signout-card {
+    min-height: 285px;
+
+    padding:
+      30px 17px;
+  }
+
+
+  .signout-card-icon {
+    width: 48px;
+    height: 48px;
+
+    margin-bottom: 16px;
+  }
+
+
+  .signout-card h2 {
+    font-size: 16px;
+  }
+
+
+  .signout-card-description {
+    font-size: 9px;
+
+    line-height: 1.6;
+  }
+
+
+  .signout-actions {
+    width: 100%;
+
+    max-width: 295px;
+
+    margin-top: 20px;
+  }
+
+
+  /* =======================================================
+     SESSIONS
+  ======================================================= */
+
+  .sessions-notice {
+    align-items: flex-start;
+
+    padding:
+      15px;
+
+    gap: 10px;
+  }
+
+
+  .sessions-icon {
+    width: 34px;
+    height: 34px;
+
+    flex-basis: 34px;
+  }
+
+
+  .sessions-content h3 {
+    font-size: 11px;
+  }
+
+
+  .sessions-content p {
+    font-size: 8.5px;
+  }
+
+
+  .sessions-link {
+    font-size: 9px;
+  }
+}
+
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .signout-main {
+    padding-left: 12px;
+
+    padding-right: 12px;
+  }
+
+
+  .signout-heading h1 {
+    font-size: 28px;
+  }
+
+
+  .signout-card {
+    padding:
+      27px 14px;
+  }
+
+
+  .signout-card h2 {
+    font-size: 15px;
+  }
+
+
+  .signout-card-description {
+    font-size: 8.5px;
+  }
+
+
+  .signout-actions {
+    max-width: 100%;
+  }
+}

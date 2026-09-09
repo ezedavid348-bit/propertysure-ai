@@ -1,54 +1,141 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+
 import {
   ArrowLeft,
   ArrowRight,
+  Check,
   CheckCircle2,
   FileCheck2,
-  FileText,
-  Landmark,
-  Scale,
-  Search,
-  Shield,
   ThumbsDown,
   ThumbsUp,
-  UserRound,
-  BadgeCheck,
-  Info,
 } from "lucide-react";
 
 import styles from "./what-you-can-verify.module.css";
 
+type Article = {
+  title: string;
+  slug: string;
+};
+
+/*
+============================================================
+PROPERTY VERIFICATION ARTICLES
+============================================================
+*/
+
+const propertyVerificationArticles: Article[] = [
+  {
+    title: "What Is Property Verification?",
+    slug: "what-is-property-verification",
+  },
+  {
+    title: "Why Verify a Property?",
+    slug: "why-verify",
+  },
+  {
+    title: "What You Can Verify",
+    slug: "what-you-can-verify",
+  },
+  {
+    title: "What You Can't Verify?",
+    slug: "what-you-cant-verify",
+  },
+  {
+    title: "How It Works (Overview)",
+    slug: "how-it-works",
+  },
+  {
+    title: "Verification Results",
+    slug: "verification-results",
+  },
+  {
+    title: "What Happens After Verification?",
+    slug: "what-happens-after",
+  },
+  {
+    title: "Need More Help?",
+    slug: "need-more-help",
+  },
+];
+
+/*
+============================================================
+PATHS
+============================================================
+*/
+
+const basePath =
+  "/settings/support-help/help-center/property-verification";
+
+const propertyVerificationPath =
+  "/settings/support-help/help-center/property-verification";
+
+/*
+============================================================
+PAGE
+============================================================
+*/
+
 export default function WhatYouCanVerifyArticle() {
   const router = useRouter();
 
-  const [feedback, setFeedback] = useState<"yes" | "no" | null>(null);
+  const [feedback, setFeedback] = useState<
+    "yes" | "no" | null
+  >(null);
 
-  /* =========================================================
-     ARTICLE ROUTES
-  ========================================================= */
+  const [search, setSearch] = useState("");
 
-  const goToHelpCenter = () => {
-    router.push("/settings/support-help/help-center");
+  /*
+  ============================================================
+  CURRENT ARTICLE
+  ============================================================
+  */
+
+  const currentIndex = 2;
+
+  const currentArticle =
+    propertyVerificationArticles[currentIndex];
+
+  const previousArticle =
+    propertyVerificationArticles[currentIndex - 1];
+
+  const nextArticle =
+    propertyVerificationArticles[currentIndex + 1];
+
+  /*
+  ============================================================
+  NAVIGATION
+  ============================================================
+  */
+
+  const goToPropertyVerification = () => {
+    router.push(propertyVerificationPath);
+  };
+
+  const goToArticle = (article: Article) => {
+    router.push(`${basePath}/${article.slug}`);
   };
 
   const goToPreviousArticle = () => {
-    router.push(
-      "/settings/support-help/help-center/property-verification/how-it-works"
-    );
+    if (previousArticle) {
+      goToArticle(previousArticle);
+    }
   };
 
   const goToNextArticle = () => {
-    router.push(
-      "/settings/support-help/help-center/property-verification/what-happens-after"
-    );
+    if (nextArticle) {
+      goToArticle(nextArticle);
+    }
   };
 
-  /* =========================================================
-     SECTION NAVIGATION
-  ========================================================= */
+  /*
+  ============================================================
+  SECTION NAVIGATION
+  ============================================================
+  */
 
   const scrollToSection = (sectionId: string) => {
     const section = document.getElementById(sectionId);
@@ -61,17 +148,39 @@ export default function WhatYouCanVerifyArticle() {
     });
   };
 
-  /* =========================================================
-     FEEDBACK
-  ========================================================= */
+  /*
+  ============================================================
+  SEARCH
+  ============================================================
+  */
+
+  const filteredArticles = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!query) {
+      return propertyVerificationArticles;
+    }
+
+    return propertyVerificationArticles.filter((article) =>
+      article.title.toLowerCase().includes(query)
+    );
+  }, [search]);
+
+  /*
+  ============================================================
+  FEEDBACK
+  ============================================================
+  */
 
   const handleFeedback = (value: "yes" | "no") => {
     setFeedback(value);
   };
 
-  /* =========================================================
-     PAGE
-  ========================================================= */
+  /*
+  ============================================================
+  RENDER
+  ============================================================
+  */
 
   return (
     <main className={styles.page}>
@@ -81,19 +190,58 @@ export default function WhatYouCanVerifyArticle() {
 
       <header className={styles.topHeader}>
         <div className={styles.searchBox}>
-          <Search
-            size={21}
-            strokeWidth={2}
+          <svg
             className={styles.searchIcon}
+            width="21"
+            height="21"
+            viewBox="0 0 24 24"
+            fill="none"
             aria-hidden="true"
-          />
+          >
+            <circle
+              cx="11"
+              cy="11"
+              r="7"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+
+            <path
+              d="M16.5 16.5L21 21"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
 
           <input
             type="text"
+            value={search}
+            onChange={(event) =>
+              setSearch(event.target.value)
+            }
             placeholder="Search for articles, guides, and topics"
-            aria-label="Search help articles"
+            aria-label="Search Property Verification help articles"
           />
         </div>
+
+        {search.trim() && (
+          <div className={styles.searchResults}>
+            {filteredArticles.length > 0 ? (
+              filteredArticles.map((article) => (
+                <button
+                  key={article.slug}
+                  type="button"
+                  onClick={() => goToArticle(article)}
+                >
+                  {article.title}
+                </button>
+              ))
+            ) : (
+              <span>No matching articles found.</span>
+            )}
+          </div>
+        )}
       </header>
 
       {/* =====================================================
@@ -107,356 +255,372 @@ export default function WhatYouCanVerifyArticle() {
 
         <article className={styles.article}>
           {/* =================================================
-              HEADER
+              ARTICLE HEADER
           ================================================= */}
 
           <header className={styles.articleHeader}>
-            <h1>What You Can Verify</h1>
+            <h1>{currentArticle.title}</h1>
 
             <p>
-              PropertySure AI verifies real information using
-              official sources, reliable data, and advanced
-              technology. Here are the key things we can verify
-              for you.
+              PropertySure AI helps you review important
+              property documents and identify information
+              that may require further verification.
             </p>
+
+            {/* =================================================
+                BACK TO PROPERTY VERIFICATION
+            ================================================= */}
 
             <button
               type="button"
               className={styles.backButton}
-              onClick={goToHelpCenter}
+              onClick={goToPropertyVerification}
             >
-              <ArrowLeft size={16} />
-              Back to Help Center
+              <ArrowLeft size={17} />
+
+              Back to Property Verification
             </button>
           </header>
 
           <div className={styles.divider} />
 
           {/* =================================================
-              INTRODUCTION
+              MAIN CONTENT
           ================================================= */}
 
           <section
-            id="verification-scope"
-            className={styles.introSection}
+            id="what-you-can-verify"
+            className={styles.contentCard}
           >
-            <div className={styles.introIcon}>
-              <Shield size={38} strokeWidth={1.8} />
-            </div>
-
-            <div className={styles.introContent}>
-              <h2>We Verify Facts You Can Trust</h2>
+            <div className={styles.contentText}>
+              <p className={styles.mainParagraph}>
+                PropertySure AI can help you review
+                information contained in property
+                documents and identify areas that may
+                require additional attention before you
+                make an important property decision.
+              </p>
 
               <p>
-                Our verification process is built on official
-                records, trusted data sources, and proven
-                technology to give you accurate, reliable
-                results.
+                The verification process is designed to
+                examine the documents and information
+                submitted for a property rather than
+                relying on a single document in isolation.
               </p>
-            </div>
-          </section>
 
-          {/* =================================================
-              WHAT WE CAN VERIFY
-          ================================================= */}
-
-          <section
-            id="what-we-can-verify"
-            className={styles.contentSection}
-          >
-            <h2>What We Can Verify</h2>
-
-            <p className={styles.sectionDescription}>
-              Our verification covers key areas that help you
-              make informed property decisions.
-            </p>
-
-            <div className={styles.verifyGrid}>
               {/* =================================================
-                  OWNERSHIP & TITLE
+                  DOCUMENTS
               ================================================= */}
 
-              <div className={styles.verifyCard}>
-                <div
-                  className={`${styles.verifyIcon} ${styles.blueIcon}`}
-                >
-                  <UserRound size={28} />
+              <h2 id="documents">
+                Property Documents
+              </h2>
 
-                  <span className={styles.iconBadge}>
-                    <BadgeCheck size={13} />
+              <ul className={styles.checkList}>
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
                   </span>
+
+                  Certificate of Occupancy (C of O) and
+                  other relevant title documents.
+                </li>
+
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Deed of Assignment and related
+                  ownership documents.
+                </li>
+
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Survey Plans and property identification
+                  information.
+                </li>
+
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Allocation letters or other relevant
+                  property documentation.
+                </li>
+
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Other supporting documents submitted as
+                  part of the property's verification
+                  package.
+                </li>
+              </ul>
+
+              {/* =================================================
+                  INFORMATION CHECKS
+              ================================================= */}
+
+              <h2 id="information-checks">
+                Information We Can Review
+              </h2>
+
+              <div className={styles.processList}>
+                <div className={styles.processItem}>
+                  <div className={styles.processNumber}>
+                    1
+                  </div>
+
+                  <div className={styles.processContent}>
+                    <h3>
+                      Document Consistency
+                    </h3>
+
+                    <p>
+                      Review information across submitted
+                      documents to identify inconsistencies
+                      in names, dates, property descriptions,
+                      reference numbers, or other relevant
+                      details.
+                    </p>
+                  </div>
                 </div>
 
-                <h3>Ownership &amp; Title</h3>
+                <div className={styles.processItem}>
+                  <div className={styles.processNumber}>
+                    2
+                  </div>
 
-                <p>
-                  We verify rightful ownership and title
-                  information through official records and
-                  registries.
-                </p>
+                  <div className={styles.processContent}>
+                    <h3>
+                      Document Authenticity Indicators
+                    </h3>
 
-                <div
-                  className={`${styles.sourceTag} ${styles.blueTag}`}
-                >
-                  <Landmark size={13} />
-                  Official Records
+                    <p>
+                      Examine available document features
+                      and information for indicators that
+                      may suggest alteration, fabrication,
+                      inconsistency, or other concerns.
+                    </p>
+                  </div>
+                </div>
+
+                <div className={styles.processItem}>
+                  <div className={styles.processNumber}>
+                    3
+                  </div>
+
+                  <div className={styles.processContent}>
+                    <h3>
+                      Property Identification
+                    </h3>
+
+                    <p>
+                      Review available property
+                      identifiers, descriptions, survey
+                      information, and other details
+                      supplied for the verification.
+                    </p>
+                  </div>
+                </div>
+
+                <div className={styles.processItem}>
+                  <div className={styles.processNumber}>
+                    4
+                  </div>
+
+                  <div className={styles.processContent}>
+                    <h3>
+                      Ownership-Related Information
+                    </h3>
+
+                    <p>
+                      Review ownership information contained
+                      in the submitted documentation and
+                      identify issues that may require
+                      further professional or official
+                      investigation.
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {/* =================================================
-                  DOCUMENT AUTHENTICITY
+                  IMPORTANT LIMITATION
               ================================================= */}
 
-              <div className={styles.verifyCard}>
-                <div
-                  className={`${styles.verifyIcon} ${styles.greenIcon}`}
-                >
-                  <FileCheck2 size={29} />
+              <div
+                id="verification-limits"
+                className={styles.successBox}
+              >
+                <div className={styles.successIcon}>
+                  <FileCheck2
+                    size={23}
+                    strokeWidth={1.8}
+                  />
                 </div>
-
-                <h3>Document Authenticity</h3>
 
                 <p>
-                  We check the authenticity, legitimacy, and
-                  validity of submitted documents.
+                  <strong>
+                    Important:
+                  </strong>{" "}
+                  A PropertySure AI verification does not
+                  automatically mean that every aspect of a
+                  property has been legally or physically
+                  confirmed. Some matters require official
+                  searches, professional inspection, or
+                  advice from qualified property
+                  professionals.
                 </p>
-
-                <div
-                  className={`${styles.sourceTag} ${styles.greenTag}`}
-                >
-                  <Search size={13} />
-                  AI + Official Checks
-                </div>
               </div>
 
               {/* =================================================
-                  PROPERTY DETAILS & LOCATION
+                  WHAT VERIFICATION CAN HELP IDENTIFY
               ================================================= */}
 
-              <div className={styles.verifyCard}>
-                <div
-                  className={`${styles.verifyIcon} ${styles.yellowIcon}`}
-                >
-                  <Landmark size={29} />
-                </div>
+              <h2 id="issues">
+                What Verification Can Help Identify
+              </h2>
 
-                <h3>Property Details &amp; Location</h3>
+              <ul className={styles.checkList}>
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
 
-                <p>
-                  We confirm property details, address,
-                  boundaries, and location accuracy.
-                </p>
+                  Potential inconsistencies between
+                  submitted documents.
+                </li>
 
-                <div
-                  className={`${styles.sourceTag} ${styles.yellowTag}`}
-                >
-                  <Landmark size={13} />
-                  Verified Data Sources
-                </div>
-              </div>
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Possible signs that a document requires
+                  additional scrutiny.
+                </li>
+
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Missing or incomplete information in the
+                  submitted verification package.
+                </li>
+
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Conflicting property or ownership
+                  information.
+                </li>
+
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Issues that may justify additional
+                  investigation before proceeding.
+                </li>
+              </ul>
 
               {/* =================================================
-                  ENCUMBRANCES & LIENS
+                  PROFESSIONAL REVIEW
               ================================================= */}
 
-              <div className={styles.verifyCard}>
-                <div
-                  className={`${styles.verifyIcon} ${styles.purpleIcon}`}
-                >
-                  <Scale size={29} />
-                </div>
+              <h2 id="professional-review">
+                When Further Review May Be Needed
+              </h2>
 
-                <h3>Encumbrances &amp; Liens</h3>
+              <p>
+                If the verification process identifies
+                inconsistencies, missing information, or
+                other potential concerns, the result may
+                indicate that additional investigation is
+                appropriate.
+              </p>
 
-                <p>
-                  We check for any liens, legal restrictions,
-                  mortgages, or encumbrances on the property.
-                </p>
-
-                <div
-                  className={`${styles.sourceTag} ${styles.purpleTag}`}
-                >
-                  <FileText size={13} />
-                  Official Databases
-                </div>
-              </div>
+              <p>
+                Depending on the property and the issue
+                identified, further review may involve a
+                property lawyer, licensed surveyor, relevant
+                government authority, or physical property
+                inspection.
+              </p>
 
               {/* =================================================
-                  DISPUTES & CLAIMS
+                  IMPORTANT NOTE
               ================================================= */}
 
-              <div className={styles.verifyCard}>
-                <div
-                  className={`${styles.verifyIcon} ${styles.blueIcon}`}
-                >
-                  <Shield size={29} />
+              <div
+                id="important-note"
+                className={styles.noteBox}
+              >
+                <div className={styles.noteIcon}>
+                  <CheckCircle2
+                    size={22}
+                    strokeWidth={1.8}
+                  />
                 </div>
-
-                <h3>Disputes &amp; Claims</h3>
 
                 <p>
-                  We identify any disputes, claims, or legal
-                  cases related to the property.
+                  <strong>
+                    Important:
+                  </strong>{" "}
+                  PropertySure AI is designed to provide an
+                  additional layer of property due diligence.
+                  A verification result should not be
+                  interpreted as a substitute for legal
+                  advice, official government searches,
+                  professional surveying, valuation, or
+                  physical inspection where those services
+                  are appropriate.
                 </p>
-
-                <div
-                  className={`${styles.sourceTag} ${styles.blueTag}`}
-                >
-                  <Landmark size={13} />
-                  Court &amp; Public Records
-                </div>
-              </div>
-
-              {/* =================================================
-                  COMPLIANCE CHECKS
-              ================================================= */}
-
-              <div className={styles.verifyCard}>
-                <div
-                  className={`${styles.verifyIcon} ${styles.greenIcon}`}
-                >
-                  <BadgeCheck size={29} />
-                </div>
-
-                <h3>Compliance Checks</h3>
-
-                <p>
-                  We verify compliance with applicable
-                  regulations, approvals, and permits.
-                </p>
-
-                <div
-                  className={`${styles.sourceTag} ${styles.greenTag}`}
-                >
-                  <CheckCircle2 size={13} />
-                  Regulatory Sources
-                </div>
               </div>
             </div>
           </section>
-
-          {/* =================================================
-              WHY THIS MATTERS
-          ================================================= */}
-
-          <section
-            id="why-this-matters"
-            className={styles.contentSection}
-          >
-            <h2>Why This Matters</h2>
-
-            <p className={styles.sectionDescription}>
-              Knowing what we can verify helps you understand
-              the reliability and scope of your verification
-              report.
-            </p>
-
-            <div className={styles.benefitsGrid}>
-              {/* =================================================
-                  BENEFIT 1
-              ================================================= */}
-
-              <div className={styles.benefitItem}>
-                <div
-                  className={`${styles.benefitIcon} ${styles.benefitBlue}`}
-                >
-                  <Shield size={23} />
-                </div>
-
-                <div>
-                  <h3>Accurate &amp; Reliable</h3>
-
-                  <p>
-                    We focus on verifiable facts, not
-                    assumptions or opinions.
-                  </p>
-                </div>
-              </div>
-
-              {/* =================================================
-                  BENEFIT 2
-              ================================================= */}
-
-              <div className={styles.benefitItem}>
-                <div
-                  className={`${styles.benefitIcon} ${styles.benefitGreen}`}
-                >
-                  <CheckCircle2 size={23} />
-                </div>
-
-                <div>
-                  <h3>Decision Confidence</h3>
-
-                  <p>
-                    Verified information helps you make better
-                    property decisions.
-                  </p>
-                </div>
-              </div>
-
-              {/* =================================================
-                  BENEFIT 3
-              ================================================= */}
-
-              <div className={styles.benefitItem}>
-                <div
-                  className={`${styles.benefitIcon} ${styles.benefitYellow}`}
-                >
-                  <Shield size={23} />
-                </div>
-
-                <div>
-                  <h3>Secure &amp; Private</h3>
-
-                  <p>
-                    Your data is encrypted and handled with
-                    the highest security.
-                  </p>
-                </div>
-              </div>
-
-              {/* =================================================
-                  BENEFIT 4
-              ================================================= */}
-
-              <div className={styles.benefitItem}>
-                <div
-                  className={`${styles.benefitIcon} ${styles.benefitPurple}`}
-                >
-                  <Search size={23} />
-                </div>
-
-                <div>
-                  <h3>Fast &amp; Efficient</h3>
-
-                  <p>
-                    Most verifications are completed in
-                    minutes, not weeks.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* =================================================
-              IMPORTANT NOTE / TIP
-          ================================================= */}
-
-          <div
-            id="important-note"
-            className={styles.tipBox}
-          >
-            <div className={styles.tipIcon}>
-              <Info size={23} />
-            </div>
-
-            <p>
-              <strong>Tip:</strong>{" "}
-              The more accurate and complete the information
-              and documents you provide, the more accurate and
-              comprehensive your verification report will be.
-            </p>
-          </div>
 
           {/* =================================================
               BOTTOM ARTICLE NAVIGATION
@@ -465,39 +629,50 @@ export default function WhatYouCanVerifyArticle() {
           <div className={styles.bottomNavigation}>
             {/* PREVIOUS */}
 
-            <button
-              type="button"
-              className={styles.previousBottom}
-              onClick={goToPreviousArticle}
-            >
-              <ArrowLeft size={18} />
+            {previousArticle && (
+              <button
+                type="button"
+                className={styles.previousBottom}
+                onClick={goToPreviousArticle}
+              >
+                <ArrowLeft
+                  className={styles.bottomPreviousArrow}
+                  size={19}
+                />
 
-              <span>
-                <small>Previous Article</small>
+                <span>
+                  <small>
+                    Previous Article
+                  </small>
 
-                <strong>
-                  How It Works (Overview)
-                </strong>
-              </span>
-            </button>
+                  <strong>
+                    {previousArticle.title}
+                  </strong>
+                </span>
+              </button>
+            )}
 
             {/* NEXT */}
 
-            <button
-              type="button"
-              className={styles.nextBottom}
-              onClick={goToNextArticle}
-            >
-              <span>
-                <small>Next Article</small>
+            {nextArticle && (
+              <button
+                type="button"
+                className={styles.nextBottom}
+                onClick={goToNextArticle}
+              >
+                <span>
+                  <small>
+                    Next Article
+                  </small>
 
-                <strong>
-                  What Happens After You Verify
-                </strong>
-              </span>
+                  <strong>
+                    {nextArticle.title}
+                  </strong>
+                </span>
 
-              <ArrowRight size={20} />
-            </button>
+                <ArrowRight size={20} />
+              </button>
+            )}
           </div>
         </article>
 
@@ -511,87 +686,162 @@ export default function WhatYouCanVerifyArticle() {
           ================================================= */}
 
           <section className={styles.sideCard}>
-            <h3>In this article</h3>
+            <h3>
+              In this article
+            </h3>
 
             <nav className={styles.articleNav}>
-              {/* INTRO */}
-
-              <button
-                type="button"
-                onClick={() =>
-                  scrollToSection("verification-scope")
-                }
-              >
-                <span />
-                We Verify Facts You Can Trust
-              </button>
-
-              {/* ACTIVE SECTION */}
-
               <button
                 type="button"
                 className={styles.activeArticle}
                 onClick={() =>
-                  scrollToSection("what-we-can-verify")
+                  scrollToSection(
+                    "what-you-can-verify"
+                  )
                 }
               >
-                <span className={styles.activeDot} />
-                What We Can Verify
-              </button>
+                <span
+                  className={styles.activeDot}
+                />
 
-              {/* WHY THIS MATTERS */}
+                What You Can Verify
+              </button>
 
               <button
                 type="button"
                 onClick={() =>
-                  scrollToSection("why-this-matters")
+                  scrollToSection("documents")
                 }
               >
-                <span />
-                Why This Matters
-              </button>
+                <span
+                  className={styles.articleDot}
+                />
 
-              {/* IMPORTANT NOTE */}
+                Property Documents
+              </button>
 
               <button
                 type="button"
                 onClick={() =>
-                  scrollToSection("important-note")
+                  scrollToSection(
+                    "information-checks"
+                  )
                 }
               >
-                <span />
+                <span
+                  className={styles.articleDot}
+                />
+
+                Information We Can Review
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  scrollToSection(
+                    "verification-limits"
+                  )
+                }
+              >
+                <span
+                  className={styles.articleDot}
+                />
+
+                Verification Limits
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  scrollToSection("issues")
+                }
+              >
+                <span
+                  className={styles.articleDot}
+                />
+
+                What Verification Can Help
+                Identify
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  scrollToSection(
+                    "professional-review"
+                  )
+                }
+              >
+                <span
+                  className={styles.articleDot}
+                />
+
+                When Further Review May
+                Be Needed
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  scrollToSection(
+                    "important-note"
+                  )
+                }
+              >
+                <span
+                  className={styles.articleDot}
+                />
+
                 Important Note
               </button>
             </nav>
           </section>
 
           {/* =================================================
-              FEEDBACK
+              WAS THIS HELPFUL?
           ================================================= */}
 
           <section className={styles.sideCard}>
-            <h3>Was this helpful?</h3>
+            <h3>
+              Was this helpful?
+            </h3>
 
             {feedback === null ? (
               <div className={styles.feedback}>
                 <button
                   type="button"
-                  onClick={() => handleFeedback("yes")}
+                  onClick={() =>
+                    handleFeedback("yes")
+                  }
                 >
-                  <ThumbsUp size={18} />
+                  <ThumbsUp
+                    size={18}
+                    strokeWidth={1.8}
+                  />
+
                   Yes
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => handleFeedback("no")}
+                  onClick={() =>
+                    handleFeedback("no")
+                  }
                 >
-                  <ThumbsDown size={18} />
+                  <ThumbsDown
+                    size={18}
+                    strokeWidth={1.8}
+                  />
+
                   No
                 </button>
               </div>
             ) : (
-              <div className={styles.feedbackMessage}>
+              <div
+                className={
+                  styles.feedbackMessage
+                }
+              >
                 <CheckCircle2 size={18} />
 
                 <span>
@@ -606,43 +856,74 @@ export default function WhatYouCanVerifyArticle() {
           ================================================= */}
 
           <section className={styles.sideCard}>
-            {/* PREVIOUS ARTICLE */}
+            {/* PREVIOUS */}
 
-            <button
-              type="button"
-              className={styles.sidePrevious}
-              onClick={goToPreviousArticle}
-            >
-              <ArrowLeft size={16} />
+            {previousArticle && (
+              <button
+                type="button"
+                className={
+                  styles.previousArticle
+                }
+                onClick={goToPreviousArticle}
+              >
+                <ArrowLeft
+                  className={
+                    styles.sidebarPreviousArrow
+                  }
+                  size={16}
+                />
 
-              <span>
-                <small>Previous Article</small>
+                <span>
+                  <small>
+                    Previous Article
+                  </small>
 
-                <strong>
-                  How It Works (Overview)
-                </strong>
-              </span>
-            </button>
+                  <strong>
+                    {previousArticle.title}
+                  </strong>
+                </span>
+              </button>
+            )}
 
-            <div className={styles.sideDivider} />
+            {/* DIVIDER */}
 
-            {/* NEXT ARTICLE */}
+            {previousArticle &&
+              nextArticle && (
+                <div
+                  className={
+                    styles.sideDivider
+                  }
+                />
+              )}
 
-            <button
-              type="button"
-              className={styles.sideNext}
-              onClick={goToNextArticle}
-            >
-              <span>
-                <small>Next Article</small>
+            {/* NEXT */}
 
-                <strong>
-                  What Happens After You Verify
-                </strong>
-              </span>
+            {nextArticle && (
+              <button
+                type="button"
+                className={
+                  styles.nextArticle
+                }
+                onClick={goToNextArticle}
+              >
+                <span>
+                  <small>
+                    Next Article
+                  </small>
 
-              <ArrowRight size={17} />
-            </button>
+                  <strong>
+                    {nextArticle.title}
+                  </strong>
+                </span>
+
+                <ArrowRight
+                  className={
+                    styles.sidebarNextArrow
+                  }
+                  size={17}
+                />
+              </button>
+            )}
           </section>
         </aside>
       </div>

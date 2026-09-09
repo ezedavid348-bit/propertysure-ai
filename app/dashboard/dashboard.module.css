@@ -1,0 +1,3370 @@
+/* =========================================================
+   PROPERTYSURE AI — DASHBOARD
+   app/dashboard/dashboard.module.css
+========================================================= */
+
+:global(*) {
+  box-sizing: border-box;
+}
+
+:global(html),
+:global(body) {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+:global(body) {
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+/* =========================================================
+   ROOT / PAGE
+========================================================= */
+
+.dashboard {
+  min-height: 100vh;
+  display: flex;
+  background: #f7f9fc;
+  color: #101827;
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   LOADING SCREEN
+========================================================= */
+
+.loadingPage {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(22, 142, 255, 0.10),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      #061b38 0%,
+      #031229 100%
+    );
+
+  color: #ffffff;
+
+  text-align: center;
+}
+
+.loadingBrand {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  color: #ffffff;
+
+  font-size: 24px;
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: -0.025em;
+}
+
+.loadingBrand strong {
+  color: #168eff;
+}
+
+.loadingDiamond {
+  width: 15px;
+  height: 15px;
+
+  display: inline-block;
+
+  flex: 0 0 15px;
+
+  background: #168eff;
+
+  transform: rotate(45deg);
+
+  border-radius: 2px;
+
+  box-shadow:
+    0 0 18px rgba(22, 142, 255, 0.35);
+
+  animation:
+    loadingDiamondPulse
+    1.6s
+    ease-in-out
+    infinite;
+}
+
+.loadingIndicator {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  margin-top: 22px;
+
+  height: 14px;
+}
+
+.loadingIndicator span {
+  width: 6px;
+  height: 6px;
+
+  display: block;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  box-shadow:
+    0 0 8px rgba(22, 142, 255, 0.45);
+
+  animation:
+    loadingDot
+    1.2s
+    ease-in-out
+    infinite;
+}
+
+.loadingIndicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.loadingIndicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.loadingText {
+  margin: 10px 0 0;
+
+  color: #91a7c3;
+
+  font-size: 12px;
+  line-height: 1.3;
+
+  font-weight: 500;
+
+  letter-spacing: 0.01em;
+}
+
+@keyframes loadingDot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes loadingDiamondPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: rotate(45deg) scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1.08);
+  }
+}
+
+/* =========================================================
+   GLOBAL ICON
+========================================================= */
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* =========================================================
+   DESKTOP SIDEBAR
+========================================================= */
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 50;
+
+  width: 245px;
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 25px 15px 16px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #061b38 0%,
+      #031229 100%
+    );
+
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+
+  color: #ffffff;
+
+  overflow-y: auto;
+}
+
+.brand {
+  width: 100%;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 10px;
+
+  margin: 0 0 27px;
+  padding: 0 8px;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.brandDiamond {
+  width: 16px;
+  height: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 16px;
+
+  color: #168eff;
+
+  font-size: 17px;
+  line-height: 1;
+
+  margin-top: 3px;
+}
+
+.brandName {
+  color: #ffffff;
+
+  font-size: 17px;
+  line-height: 1.15;
+
+  font-weight: 800;
+
+  letter-spacing: -0.025em;
+}
+
+.brandName strong {
+  color: #168eff;
+}
+
+.brandSubtitle {
+  margin-top: 6px;
+
+  color: #7d93ae;
+
+  font-size: 8px;
+  line-height: 1.45;
+
+  font-weight: 500;
+}
+
+/* =========================================================
+   SIDEBAR NAV
+========================================================= */
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.navItem {
+  width: 100%;
+  min-height: 40px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 0 11px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #b7c6d8;
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.navItem:hover {
+  background: rgba(22, 142, 255, 0.09);
+  color: #ffffff;
+}
+
+.navItem.active {
+  background:
+    linear-gradient(
+      135deg,
+      #168eff,
+      #1269e7
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 8px 20px rgba(22, 142, 255, 0.18);
+}
+
+.navIcon {
+  width: 18px;
+  height: 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 18px;
+
+  color: #8db9e9;
+
+  font-size: 13px;
+}
+
+.navItem.active .navIcon {
+  color: #ffffff;
+}
+
+.accountLabel {
+  margin: 24px 10px 7px;
+
+  color: #617a99;
+
+  font-size: 8px;
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: 0.15em;
+}
+
+/* =========================================================
+   HELP BOX
+========================================================= */
+
+.helpBox {
+  margin: auto 4px 13px;
+  padding: 16px 12px 13px;
+
+  border: 1px solid rgba(83, 157, 255, 0.11);
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(22, 142, 255, 0.08),
+      rgba(255, 255, 255, 0.025)
+    );
+}
+
+.helpTitle {
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.helpText {
+  margin-top: 6px;
+
+  color: #7188a4;
+
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.supportButton {
+  margin-top: 11px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #168eff;
+
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   SIDEBAR USER
+========================================================= */
+
+.sidebarUser {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 8px 7px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.sidebarUser:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.avatar {
+  width: 31px;
+  height: 31px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 31px;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      135deg,
+      #168eff,
+      #1269e7
+    );
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.sidebarUserInfo {
+  min-width: 0;
+}
+
+.userName {
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 10px;
+  line-height: 1.2;
+
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userPlan {
+  margin-top: 3px;
+
+  color: #7d93ae;
+
+  font-size: 8px;
+  line-height: 1.2;
+}
+
+/* =========================================================
+   MAIN CONTENT
+========================================================= */
+
+.content {
+  width: calc(100% - 245px);
+  min-height: 100vh;
+
+  margin-left: 245px;
+
+  background: #f8fafc;
+}
+
+/* =========================================================
+   DESKTOP TOP BAR
+========================================================= */
+
+.topBar {
+  min-height: 76px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 31px;
+
+  background:
+    radial-gradient(
+      circle at 78% 0%,
+      rgba(22, 142, 255, 0.17),
+      transparent 34%
+    ),
+    linear-gradient(
+      135deg,
+      #06152f,
+      #08244a
+    );
+
+  border-bottom: 1px solid rgba(83, 157, 255, 0.22);
+
+  color: #ffffff;
+}
+
+.topBarLeft {
+  min-width: 0;
+}
+
+.eyebrow {
+  color: #91a7c3;
+
+  font-size: 8px;
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: 0.18em;
+}
+
+.headerPageTitle {
+  margin-top: 4px;
+
+  color: #ffffff;
+
+  font-size: 16px;
+  line-height: 1.2;
+
+  font-weight: 700;
+}
+
+.headerDescription {
+  margin-top: 3px;
+
+  color: #91a7c3;
+
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+/* =========================================================
+   TOP ACTIONS
+========================================================= */
+
+.topActions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.headerDate {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  color: #91a7c3;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.headerDate .icon {
+  color: #168eff;
+  font-size: 12px;
+}
+
+.notificationButton {
+  position: relative;
+
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid rgba(60, 143, 232, 0.35);
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  font-size: 15px;
+
+  cursor: pointer;
+}
+
+.notificationButton:hover {
+  background: rgba(22, 142, 255, 0.09);
+}
+
+.notificationDot {
+  position: absolute;
+
+  top: 7px;
+  right: 7px;
+
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  box-shadow:
+    0 0 7px rgba(22, 142, 255, 0.7);
+}
+
+.profileButton {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 4px 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  font-family: inherit;
+
+  cursor: pointer;
+}
+
+.profileAvatar {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      135deg,
+      #168eff,
+      #1269e7
+    );
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.profileInfo {
+  min-width: 70px;
+
+  text-align: left;
+}
+
+.profileName {
+  color: #ffffff;
+
+  font-size: 10px;
+  line-height: 1.2;
+
+  font-weight: 700;
+}
+
+.profilePlan {
+  margin-top: 3px;
+
+  color: #91a7c3;
+
+  font-size: 8px;
+  line-height: 1.2;
+}
+
+.profileChevron {
+  margin-left: 3px;
+
+  color: #91a7c3;
+
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* =========================================================
+   MAIN CONTENT AREA
+========================================================= */
+
+.mainContent {
+  width: 100%;
+  max-width: 1500px;
+
+  margin: 0 auto;
+
+  padding: 30px 32px 45px;
+}
+
+/* =========================================================
+   WELCOME SECTION
+========================================================= */
+
+.welcomeSection {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 25px;
+
+  margin-bottom: 18px;
+}
+
+.welcomeSection h2 {
+  margin: 0;
+
+  color: #101827;
+
+  font-size: 23px;
+  line-height: 1.15;
+
+  font-weight: 700;
+
+  letter-spacing: -0.035em;
+}
+
+/* =========================================================
+   DESKTOP HERO CARD
+========================================================= */
+
+.heroCard {
+  position: relative;
+
+  min-height: 188px;
+  height: 188px;
+
+  display: flex;
+  align-items: center;
+
+  overflow: hidden;
+
+  margin-bottom: 18px;
+
+  padding: 22px 34px;
+
+  border: 1px solid rgba(22, 142, 255, 0.08);
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f5faff 0%,
+      #edf6ff 55%,
+      #ffffff 100%
+    );
+
+  box-shadow:
+    0 12px 35px rgba(14, 53, 94, 0.07);
+}
+
+.heroText {
+  position: relative;
+
+  z-index: 5;
+
+  width: 47%;
+}
+
+.heroEyebrow {
+  margin-bottom: 7px;
+
+  color: #168eff;
+
+  font-size: 8px;
+  line-height: 1.2;
+
+  font-weight: 800;
+
+  letter-spacing: 0.15em;
+}
+
+.heroText h3 {
+  margin: 0;
+
+  color: #081b3d;
+
+  font-size: 23px;
+  line-height: 1.12;
+
+  font-weight: 800;
+
+  letter-spacing: -0.035em;
+}
+
+.heroText p {
+  max-width: 390px;
+
+  margin: 8px 0 13px;
+
+  color: #607086;
+
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.primaryButton {
+  min-height: 38px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 0 15px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #168eff,
+      #1269e7
+    );
+
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  box-shadow:
+    0 8px 20px rgba(22, 142, 255, 0.22);
+
+  cursor: pointer;
+}
+
+.primaryButton > span {
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* =========================================================
+   DESKTOP HERO VISUAL
+========================================================= */
+
+.heroVisual {
+  position: absolute;
+
+  top: 0;
+  right: 0;
+
+  width: 48%;
+  height: 100%;
+
+  overflow: hidden;
+
+  border-radius: 0 18px 18px 0;
+
+  background: #eaf3fb;
+}
+
+.heroHouseImage {
+  position: absolute;
+
+  right: -3px;
+  bottom: 2px;
+
+  z-index: 1;
+
+  width: 335px;
+  height: 205px;
+
+  display: block;
+
+  object-fit: contain;
+  object-position: center;
+
+  border-radius: 18px;
+
+  filter: saturate(0.98);
+
+  box-shadow:
+    0 16px 35px rgba(24, 65, 100, 0.16);
+}
+
+.heroImageOverlay {
+  position: absolute;
+  inset: 0;
+
+  z-index: 2;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(237, 246, 255, 0.96) 0%,
+      rgba(237, 246, 255, 0.25) 30%,
+      rgba(255, 255, 255, 0.03) 65%,
+      rgba(255, 255, 255, 0.06) 100%
+    );
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   VERIFICATION CHECKLIST
+========================================================= */
+
+.verificationChecklist {
+  position: absolute;
+
+  top: 12px;
+  right: 92px;
+
+  z-index: 5;
+
+  width: 155px;
+
+  padding: 8px 10px;
+
+  border: 1px solid rgba(22, 142, 255, 0.08);
+
+  border-radius: 11px;
+
+  background: rgba(255, 255, 255, 0.94);
+
+  box-shadow:
+    0 10px 25px rgba(20, 50, 80, 0.13);
+
+  backdrop-filter: blur(8px);
+}
+
+.verificationChecklist div {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  margin: 4px 0;
+
+  color: #526276;
+
+  font-size: 8px;
+  line-height: 1.15;
+
+  font-weight: 600;
+}
+
+.verificationChecklist span {
+  width: 13px;
+  height: 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 13px;
+
+  border-radius: 50%;
+
+  background: #dff7e8;
+
+  color: #20a15a;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.heroSlogan {
+  position: absolute;
+
+  right: 25px;
+  bottom: 9px;
+
+  z-index: 5;
+
+  text-align: right;
+
+  color: #1269e7;
+
+  font-size: 10px;
+  line-height: 1.02;
+
+  font-weight: 800;
+
+  letter-spacing: -0.02em;
+
+  text-shadow:
+    0 1px 5px rgba(255, 255, 255, 0.7);
+}
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+.statsGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 13px;
+
+  margin-bottom: 18px;
+}
+
+.statCard {
+  min-height: 128px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  padding: 15px;
+
+  border: 1px solid #e6edf4;
+
+  border-radius: 13px;
+
+  background: #ffffff;
+
+  color: #101827;
+
+  text-align: left;
+
+  box-shadow:
+    0 5px 20px rgba(20, 50, 80, 0.035);
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 25px rgba(20, 50, 80, 0.07);
+}
+
+.statIcon {
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 10px;
+
+  border-radius: 9px;
+
+  font-size: 12px;
+}
+
+.green {
+  background: #e5f8ed;
+  color: #20a15a;
+}
+
+.orange {
+  background: #fff4dc;
+  color: #d99a1e;
+}
+
+.red {
+  background: #ffebeb;
+  color: #d95757;
+}
+
+.blue {
+  background: #e8f2ff;
+  color: #168eff;
+}
+
+.statTitle {
+  color: #718096;
+
+  font-size: 8px;
+  line-height: 1.25;
+
+  font-weight: 600;
+}
+
+.statNumber {
+  margin-top: 5px;
+
+  color: #101827;
+
+  font-size: 20px;
+  line-height: 1;
+
+  font-weight: 700;
+}
+
+.statSubtext {
+  margin-top: 4px;
+
+  color: #a0adbc;
+
+  font-size: 7px;
+}
+
+.statLink {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  margin-top: auto;
+  padding-top: 9px;
+
+  color: #4f82ba;
+
+  font-size: 7px;
+  line-height: 1.2;
+
+  font-weight: 600;
+}
+
+.statLink span {
+  color: #168eff;
+  font-size: 10px;
+}
+
+/* =========================================================
+   LOWER GRID
+========================================================= */
+
+.lowerGrid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.55fr)
+    minmax(0, 1fr);
+
+  gap: 15px;
+
+  margin-bottom: 18px;
+}
+
+.dashboardCard {
+  position: relative;
+
+  min-height: 175px;
+
+  padding: 17px;
+
+  overflow: hidden;
+
+  border: 1px solid #e6edf4;
+
+  border-radius: 13px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 5px 20px rgba(20, 50, 80, 0.035);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 15px;
+}
+
+.cardTitleGroup {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  min-width: 0;
+}
+
+.cardIcon {
+  width: 29px;
+  height: 29px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 29px;
+
+  border-radius: 8px;
+
+  font-size: 11px;
+}
+
+.blueIcon {
+  background: #e8f2ff;
+  color: #168eff;
+}
+
+/* =========================================================
+   PLAN ICON
+========================================================= */
+
+.crownIcon {
+  background:
+    linear-gradient(
+      135deg,
+      #fff3bf,
+      #ffe49a
+    );
+
+  color: #a87508;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(168, 117, 8, 0.08);
+}
+
+.cardTitleGroup h3 {
+  margin: 0;
+
+  color: #101827;
+
+  font-size: 11px;
+  line-height: 1.25;
+
+  font-weight: 800;
+}
+
+.cardLink {
+  flex-shrink: 0;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #4f82ba;
+
+  font-family: inherit;
+
+  font-size: 8px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   FRAUD EMPTY
+========================================================= */
+
+.fraudEmpty {
+  min-height: 90px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 12px;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f0fbf5,
+      #f7fcf9
+    );
+
+  border: 1px solid #e0f1e7;
+}
+
+.fraudCheck {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 38px;
+
+  border-radius: 50%;
+
+  background: #23b76d;
+
+  color: #ffffff;
+
+  font-size: 16px;
+}
+
+.fraudEmpty strong {
+  display: block;
+
+  color: #286847;
+
+  font-size: 9px;
+}
+
+.fraudEmpty p {
+  max-width: 420px;
+
+  margin: 4px 0 0;
+
+  color: #748a7c;
+
+  font-size: 7px;
+  line-height: 1.5;
+}
+
+.fraudShield {
+  margin-left: auto;
+
+  color: #bce5ce;
+
+  font-size: 38px;
+}
+
+/* =========================================================
+   PREMIUM PLAN CARD
+========================================================= */
+
+.planCard {
+  overflow: hidden;
+
+  border-color: #ead59a;
+
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(255, 255, 255, 0.78),
+      transparent 38%
+    ),
+    linear-gradient(
+      135deg,
+      #fffdf4 0%,
+      #fff8dc 48%,
+      #fff0bd 100%
+    );
+
+  box-shadow:
+    0 9px 28px rgba(184, 143, 42, 0.10);
+}
+
+.paidPlanCard {
+  border-color: #dfc16c;
+
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(255, 255, 255, 0.78),
+      transparent 35%
+    ),
+    linear-gradient(
+      135deg,
+      #fffdf4 0%,
+      #fff5c9 45%,
+      #ffe59a 100%
+    );
+
+  box-shadow:
+    0 12px 32px rgba(180, 133, 28, 0.15);
+}
+
+.freePlanCard {
+  border-color: #ead8a8;
+
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(255, 255, 255, 0.86),
+      transparent 40%
+    ),
+    linear-gradient(
+      135deg,
+      #fffef8 0%,
+      #fff9e7 55%,
+      #fff2ca 100%
+    );
+}
+
+.planBadge {
+  padding: 5px 8px;
+
+  border: 1px solid rgba(169, 122, 13, 0.18);
+
+  border-radius: 20px;
+
+  background:
+    rgba(255, 255, 255, 0.68);
+
+  color: #9b6e08;
+
+  font-size: 7px;
+  line-height: 1;
+
+  font-weight: 800;
+
+  box-shadow:
+    0 2px 7px rgba(145, 102, 5, 0.06);
+}
+
+.planContent h4 {
+  margin: 3px 0 7px;
+
+  color: #3b2d0b;
+
+  font-size: 12px;
+  line-height: 1.3;
+
+  font-weight: 800;
+}
+
+.planContent p {
+  max-width: 300px;
+
+  margin: 0;
+
+  color: #786a4b;
+
+  font-size: 8px;
+  line-height: 1.5;
+}
+
+.managePlanButton {
+  margin-top: 12px;
+
+  min-height: 31px;
+
+  padding: 0 11px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  border: 1px solid #d2a943;
+
+  border-radius: 8px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff,
+      #fffaf0
+    );
+
+  color: #8b6407;
+
+  font-family: inherit;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 12px rgba(154, 110, 12, 0.08);
+}
+
+.managePlanButton:hover {
+  background: #ffffff;
+
+  border-color: #b98a20;
+}
+
+.planDecoration {
+  position: absolute;
+
+  right: -15px;
+  bottom: -22px;
+
+  width: 125px;
+  height: 90px;
+
+  opacity: 0.5;
+}
+
+.planDecoration span {
+  position: absolute;
+
+  width: 48px;
+  height: 48px;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(214, 168, 46, 0.26),
+      rgba(214, 168, 46, 0.05)
+    );
+
+  transform: rotate(45deg);
+}
+
+.planDecoration span:nth-child(1) {
+  right: 55px;
+  bottom: 7px;
+}
+
+.planDecoration span:nth-child(2) {
+  right: 19px;
+  bottom: -7px;
+}
+
+.planDecoration span:nth-child(3) {
+  right: 1px;
+  bottom: 29px;
+}
+
+/* =========================================================
+   ACTIVITY CARD
+========================================================= */
+
+.activityCard {
+  min-height: 220px;
+
+  padding: 17px;
+
+  border: 1px solid #e6edf4;
+
+  border-radius: 13px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 5px 20px rgba(20, 50, 80, 0.035);
+}
+
+.activityEmpty {
+  min-height: 145px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.emptyDocument {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 9px;
+
+  border-radius: 10px;
+
+  background: #f1f5f9;
+
+  color: #8ba0b8;
+
+  font-size: 16px;
+}
+
+.activityEmpty h4 {
+  margin: 0;
+
+  color: #526276;
+
+  font-size: 10px;
+  line-height: 1.3;
+
+  font-weight: 800;
+}
+
+.activityEmpty p {
+  max-width: 300px;
+
+  margin: 5px 0 11px;
+
+  color: #8a99aa;
+
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.emptyVerifyButton {
+  min-height: 31px;
+
+  padding: 0 13px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #168eff,
+      #1269e7
+    );
+
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   MOBILE ELEMENTS
+========================================================= */
+
+.mobileHeader {
+  display: none;
+}
+
+.mobileMenu {
+  display: none;
+}
+
+.mobileContent {
+  display: none;
+}
+
+.bottomNav {
+  display: none;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .dashboard {
+    display: block;
+
+    width: 100%;
+    min-height: 100vh;
+
+    background: #f8fafc;
+
+    overflow-x: hidden;
+  }
+
+  .sidebar,
+  .content {
+    display: none;
+  }
+
+  /* =======================================================
+     MOBILE HEADER
+  ======================================================= */
+
+  .mobileHeader {
+    position: sticky;
+    top: 0;
+
+    z-index: 100;
+
+    width: 100%;
+    height: 72px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 16px;
+
+    background:
+      linear-gradient(
+        135deg,
+        #061b38,
+        #082b58
+      );
+
+    border-bottom: 1px solid rgba(83, 157, 255, 0.2);
+
+    color: #ffffff;
+  }
+
+  .mobileMenuButton {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 20px;
+
+    cursor: pointer;
+  }
+
+  .mobileBrand {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 17px;
+
+    font-weight: 800;
+
+    letter-spacing: -0.025em;
+
+    cursor: pointer;
+  }
+
+  .mobileBrand strong {
+    color: #168eff;
+  }
+
+  .mobileDiamond {
+    color: #168eff;
+
+    font-size: 17px;
+
+    line-height: 1;
+  }
+
+  .mobileNotificationButton {
+    position: relative;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 18px;
+
+    cursor: pointer;
+  }
+
+  .mobileNotificationDot {
+    position: absolute;
+
+    top: 5px;
+    right: 5px;
+
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: #168eff;
+
+    box-shadow:
+      0 0 8px rgba(22, 142, 255, 0.75);
+  }
+
+  /* =======================================================
+     MOBILE CONTENT
+  ======================================================= */
+
+  .mobileContent {
+    width: 100%;
+
+    display: block;
+
+    padding:
+      18px
+      16px
+      96px;
+  }
+
+  /* =======================================================
+     MOBILE WELCOME
+  ======================================================= */
+
+  .mobileWelcomeHeader {
+    position: relative;
+
+    width: 100%;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-bottom: 14px;
+  }
+
+  .mobileWelcomeText {
+    min-width: 0;
+
+    flex: 1;
+  }
+
+  .mobileWelcomeEyebrow {
+    display: none;
+  }
+
+  .mobileWelcomeText h1 {
+    margin: 0;
+
+    color: #081b3d;
+
+    font-size: 28px;
+    line-height: 1.1;
+
+    font-weight: 800;
+
+    letter-spacing: -0.04em;
+  }
+
+  .mobileWelcomeText p {
+    max-width: 275px;
+
+    margin: 6px 0 0;
+
+    color: #64748b;
+
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  .mobileHeaderDate {
+    flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 6px;
+
+    min-height: 40px;
+
+    margin-top: 0;
+
+    padding: 0 10px;
+
+    border: 1px solid #dce6f1;
+
+    border-radius: 10px;
+
+    background: #f8fbff;
+
+    color: #53657c;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    box-shadow:
+      0 2px 8px rgba(20, 50, 80, 0.03);
+  }
+
+  .mobileHeaderDate .icon {
+    color: #168eff;
+    font-size: 12px;
+  }
+
+  /* =======================================================
+     MOBILE VERIFY PROPERTY
+  ======================================================= */
+
+  .mobileHeroCard {
+    position: relative;
+
+    width: 100%;
+
+    height: 195px;
+    min-height: 195px;
+
+    overflow: visible;
+
+    margin-bottom: 10px;
+
+    padding: 17px 16px;
+
+    border: 1px solid rgba(22, 142, 255, 0.08);
+
+    border-radius: 15px;
+
+    background:
+      linear-gradient(
+        135deg,
+        #f5faff 0%,
+        #edf6ff 58%,
+        #ffffff 100%
+      );
+
+    box-shadow:
+      0 7px 22px rgba(14, 53, 94, 0.055);
+  }
+
+  .mobileHeroText {
+    position: relative;
+
+    z-index: 10;
+
+    width: 61%;
+  }
+
+  .mobileHeroEyebrow {
+    margin-bottom: 5px;
+
+    color: #168eff;
+
+    font-size: 6.5px;
+    line-height: 1.2;
+
+    font-weight: 800;
+
+    letter-spacing: 0.14em;
+  }
+
+  .mobileHeroText h2 {
+    margin: 0;
+
+    color: #081b3d;
+
+    font-size: 19px;
+    line-height: 1.1;
+
+    font-weight: 800;
+
+    letter-spacing: -0.035em;
+  }
+
+  .mobileHeroText p {
+    max-width: 200px;
+
+    margin: 6px 0 8px;
+
+    color: #607086;
+
+    font-size: 8px;
+    line-height: 1.38;
+  }
+
+  .mobileHeroButton {
+    min-height: 33px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    padding: 0 11px;
+
+    border: 0;
+
+    border-radius: 8px;
+
+    background:
+      linear-gradient(
+        135deg,
+        #168eff,
+        #1269e7
+      );
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 8.5px;
+
+    font-weight: 800;
+
+    box-shadow:
+      0 6px 16px rgba(22, 142, 255, 0.19);
+
+    cursor: pointer;
+  }
+
+  .mobileHeroButton > span {
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  .mobileHeroButton .icon {
+    font-size: 10px;
+  }
+
+  /* =======================================================
+     MOBILE HERO VISUAL
+  ======================================================= */
+
+  .mobileHeroVisual {
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: visible;
+
+    z-index: 1;
+
+    pointer-events: none;
+  }
+
+  .mobileHeroHouseImage {
+    position: absolute;
+
+    right: -7px;
+    bottom: 25px;
+
+    z-index: 2;
+
+    width: 220px;
+    height: 145px;
+
+    display: block;
+
+    object-fit: contain;
+
+    object-position: center center;
+
+    border-radius: 14px;
+
+    filter: saturate(0.98);
+
+    box-shadow:
+      0 10px 24px rgba(24, 65, 100, 0.13);
+  }
+
+  .mobileHeroImageOverlay {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 3;
+
+    background:
+      linear-gradient(
+        180deg,
+        rgba(237, 246, 255, 0.96) 0%,
+        rgba(237, 246, 255, 0.32) 19%,
+        rgba(255, 255, 255, 0.02) 52%,
+        rgba(255, 255, 255, 0.01) 100%
+      );
+
+    pointer-events: none;
+  }
+
+  .mobileVerificationChecklist {
+    position: absolute;
+
+    top: -7px;
+    right: 7px;
+
+    z-index: 20;
+
+    width: 145px;
+
+    padding: 6px 8px;
+
+    border: 1px solid rgba(22, 142, 255, 0.08);
+
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.97);
+
+    box-shadow:
+      0 8px 18px rgba(20, 50, 80, 0.12);
+
+    backdrop-filter: blur(7px);
+  }
+
+  .mobileVerificationChecklist div {
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+
+    margin: 2.5px 0;
+
+    color: #526276;
+
+    font-size: 6.7px;
+    line-height: 1.1;
+
+    font-weight: 600;
+  }
+
+  .mobileVerificationChecklist span {
+    width: 11px;
+    height: 11px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 11px;
+
+    border-radius: 50%;
+
+    background: #dff7e8;
+
+    color: #20a15a;
+
+    font-size: 6.5px;
+
+    font-weight: 800;
+  }
+
+  .mobileHeroSlogan {
+    position: absolute;
+
+    right: 8px;
+    bottom: 17px;
+
+    z-index: 20;
+
+    color: #1269e7;
+
+    font-size: 7px;
+
+    line-height: 1.02;
+
+    font-weight: 800;
+
+    text-align: right;
+
+    text-shadow:
+      0 1px 5px rgba(255, 255, 255, 0.8);
+  }
+
+  /* =======================================================
+     MOBILE STATISTICS
+  ======================================================= */
+
+  .mobileStats {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+
+    margin: 0 0 12px;
+  }
+
+  .mobileStats button {
+    width: 100%;
+
+    min-height: 100px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    padding: 10px;
+
+    border: 1px solid #e3eaf2;
+
+    border-radius: 12px;
+
+    background: #ffffff;
+
+    color: #101827;
+
+    text-align: left;
+
+    box-shadow:
+      0 4px 14px rgba(20, 50, 80, 0.04);
+
+    cursor: pointer;
+
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+
+  .mobileStats button:active {
+    transform: scale(0.985);
+  }
+
+  .mobileStatIcon {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 6px;
+
+    border-radius: 50%;
+
+    font-size: 12px;
+  }
+
+  .mobileStats button > span {
+    color: #53657c;
+
+    font-size: 8.5px;
+    line-height: 1.2;
+
+    font-weight: 700;
+  }
+
+  .mobileStats button > strong {
+    margin-top: 2px;
+
+    color: #081b3d;
+
+    font-size: 20px;
+    line-height: 1;
+
+    font-weight: 800;
+  }
+
+  .mobileStats button > small {
+    margin-top: auto;
+
+    padding-top: 4px;
+
+    color: #168eff;
+
+    font-size: 6.8px;
+    line-height: 1.2;
+
+    font-weight: 600;
+  }
+
+  /* =======================================================
+     MOBILE CARDS
+  ======================================================= */
+
+  .mobileCard {
+    width: 100%;
+
+    margin-top: 12px;
+
+    padding: 15px;
+
+    border: 1px solid #e3eaf2;
+
+    border-radius: 14px;
+
+    background: #ffffff;
+
+    box-shadow:
+      0 5px 18px rgba(20, 50, 80, 0.04);
+  }
+
+  .mobileCardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-bottom: 12px;
+  }
+
+  .mobileCardHeader > div {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+  }
+
+  .mobileCardIcon {
+    width: 31px;
+    height: 31px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 31px;
+
+    border-radius: 9px;
+
+    background: #e8f2ff;
+
+    color: #168eff;
+
+    font-size: 12px;
+  }
+
+  .mobileCardIcon.crown {
+    background:
+      linear-gradient(
+        135deg,
+        #fff3bf,
+        #ffe49a
+      );
+
+    color: #a87508;
+  }
+
+  .mobileCardHeader h2 {
+    margin: 0;
+
+    color: #101827;
+
+    font-size: 12px;
+    line-height: 1.25;
+
+    font-weight: 800;
+  }
+
+  .mobileCardHeader > button {
+    flex-shrink: 0;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #168eff;
+
+    font-family: inherit;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+  }
+
+  /* =======================================================
+     MOBILE FRAUD WATCH
+  ======================================================= */
+
+  .mobileFraudEmpty {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 10px;
+
+    padding: 13px;
+
+    border: 1px solid #e0f1e7;
+
+    border-radius: 10px;
+
+    background:
+      linear-gradient(
+        135deg,
+        #f0fbf5,
+        #f8fcf9
+      );
+  }
+
+  .mobileFraudCheck {
+    width: 35px;
+    height: 35px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 35px;
+
+    border-radius: 50%;
+
+    background: #23b76d;
+
+    color: #ffffff;
+
+    font-size: 14px;
+  }
+
+  .mobileFraudEmpty strong {
+    display: block;
+
+    color: #286847;
+
+    font-size: 10px;
+    line-height: 1.3;
+  }
+
+  .mobileFraudEmpty p {
+    margin: 5px 0 0;
+
+    color: #748a7c;
+
+    font-size: 8px;
+    line-height: 1.5;
+  }
+
+  /* =======================================================
+     MOBILE PLAN
+  ======================================================= */
+
+  .mobileFreePlanCard,
+  .mobilePaidPlanCard {
+    border-color: #ead59a;
+
+    background:
+      radial-gradient(
+        circle at 100% 0%,
+        rgba(255, 255, 255, 0.86),
+        transparent 40%
+      ),
+      linear-gradient(
+        135deg,
+        #fffef8 0%,
+        #fff8df 50%,
+        #ffedba 100%
+      );
+
+    box-shadow:
+      0 9px 26px rgba(184, 143, 42, 0.10);
+  }
+
+  .mobilePaidPlanCard {
+    border-color: #dfc16c;
+
+    background:
+      radial-gradient(
+        circle at 100% 0%,
+        rgba(255, 255, 255, 0.84),
+        transparent 35%
+      ),
+      linear-gradient(
+        135deg,
+        #fffdf4 0%,
+        #fff4c8 48%,
+        #ffe49a 100%
+      );
+
+    box-shadow:
+      0 11px 30px rgba(180, 133, 28, 0.14);
+  }
+
+  .mobilePlanBadge {
+    padding: 5px 8px;
+
+    border: 1px solid rgba(169, 122, 13, 0.18);
+
+    border-radius: 20px;
+
+    background:
+      rgba(255, 255, 255, 0.68);
+
+    color: #9b6e08;
+
+    font-size: 7px;
+    line-height: 1;
+
+    font-weight: 800;
+  }
+
+  .mobilePlanContent {
+    padding-left: 40px;
+  }
+
+  .mobilePlanContent h3 {
+    margin: 3px 0 7px;
+
+    color: #3b2d0b;
+
+    font-size: 13px;
+    line-height: 1.3;
+
+    font-weight: 800;
+  }
+
+  .mobilePlanContent p {
+    max-width: 290px;
+
+    margin: 0;
+
+    color: #786a4b;
+
+    font-size: 8px;
+    line-height: 1.5;
+  }
+
+  .mobilePlanContent button {
+    min-height: 33px;
+
+    margin-top: 12px;
+
+    padding: 0 13px;
+
+    border: 1px solid #d2a943;
+
+    border-radius: 8px;
+
+    background:
+      linear-gradient(
+        135deg,
+        #ffffff,
+        #fffaf0
+      );
+
+    color: #8b6407;
+
+    font-family: inherit;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+      0 4px 12px rgba(154, 110, 12, 0.08);
+  }
+
+  /* =======================================================
+     MOBILE RECENT ACTIVITY
+  ======================================================= */
+
+  .mobileActivityEmpty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding:
+      12px
+      5px
+      5px;
+
+    text-align: center;
+  }
+
+  .mobileEmptyIcon {
+    width: 43px;
+    height: 43px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 9px;
+
+    border-radius: 11px;
+
+    background: #f1f5f9;
+
+    color: #8ba0b8;
+
+    font-size: 17px;
+  }
+
+  .mobileActivityEmpty h3 {
+    margin: 0;
+
+    color: #526276;
+
+    font-size: 11px;
+    line-height: 1.3;
+
+    font-weight: 800;
+  }
+
+  .mobileActivityEmpty p {
+    max-width: 280px;
+
+    margin: 5px 0 11px;
+
+    color: #8a99aa;
+
+    font-size: 8px;
+    line-height: 1.5;
+  }
+
+  .mobileActivityEmpty button {
+    min-height: 33px;
+
+    padding: 0 13px;
+
+    border: 0;
+
+    border-radius: 8px;
+
+    background:
+      linear-gradient(
+        135deg,
+        #168eff,
+        #1269e7
+      );
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+  }
+
+  /* =======================================================
+     MOBILE BOTTOM NAV
+  ======================================================= */
+
+  .bottomNav {
+    position: fixed;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    z-index: 90;
+
+    height: 72px;
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(5, 1fr);
+
+    align-items: stretch;
+
+    background:
+      linear-gradient(
+        180deg,
+        #08244a,
+        #061b38
+      );
+
+    border-top: 1px solid rgba(83, 157, 255, 0.2);
+
+    box-shadow:
+      0 -8px 25px rgba(3, 18, 41, 0.15);
+  }
+
+  .bottomNavItem {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 4px;
+
+    padding: 6px 2px;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #8fa5bd;
+
+    font-family: inherit;
+
+    cursor: pointer;
+  }
+
+  .bottomNavItem .icon {
+    font-size: 15px;
+  }
+
+  .bottomNavItem span {
+    font-size: 7px;
+    line-height: 1.2;
+
+    font-weight: 600;
+  }
+
+  .bottomNavItem.active {
+    color: #168eff;
+  }
+
+  /* =======================================================
+     MOBILE FULLSCREEN MENU
+  ======================================================= */
+
+  .mobileMenu {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 200;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 25px 20px;
+
+    overflow-y: auto;
+
+    background:
+      linear-gradient(
+        180deg,
+        #061b38,
+        #031229
+      );
+
+    color: #ffffff;
+  }
+
+  .mobileMenuHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 27px;
+  }
+
+  .mobileMenuBrand {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+  }
+
+  .mobileMenuBrand > span {
+    color: #168eff;
+  }
+
+  .mobileMenuBrand strong {
+    color: #168eff;
+  }
+
+  .mobileMenuSubtitle {
+    margin:
+      7px
+      0
+      0
+      27px;
+
+    color: #7188a4;
+
+    font-size: 8px;
+
+    line-height: 1.45;
+  }
+
+  .closeMenu {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 9px;
+
+    background: rgba(255, 255, 255, 0.04);
+
+    color: #ffffff;
+
+    font-size: 20px;
+
+    cursor: pointer;
+  }
+
+  .mobileMenuNav {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+  }
+
+  .mobileNavItem {
+    width: 100%;
+    min-height: 45px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 0 12px;
+
+    border: 0;
+
+    border-radius: 10px;
+
+    background: transparent;
+
+    color: #b7c6d8;
+
+    font-family: inherit;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    text-align: left;
+
+    cursor: pointer;
+  }
+
+  .mobileNavItem.active {
+    background:
+      linear-gradient(
+        135deg,
+        #168eff,
+        #1269e7
+      );
+
+    color: #ffffff;
+  }
+
+  .mobileNavIcon {
+    width: 19px;
+    height: 19px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #8db9e9;
+  }
+
+  .mobileNavItem.active .mobileNavIcon {
+    color: #ffffff;
+  }
+
+  .mobileAccountLabel {
+    margin:
+      27px
+      12px
+      7px;
+
+    color: #617a99;
+
+    font-size: 8px;
+
+    line-height: 1;
+
+    font-weight: 800;
+
+    letter-spacing: 0.15em;
+  }
+
+  .mobileHelpBox {
+    margin-top: auto;
+
+    padding: 16px 13px;
+
+    border: 1px solid rgba(83, 157, 255, 0.11);
+
+    border-radius: 12px;
+
+    background: rgba(22, 142, 255, 0.07);
+  }
+
+  .mobileHelpTitle {
+    color: #ffffff;
+
+    font-size: 11px;
+
+    font-weight: 800;
+  }
+
+  .mobileHelpText {
+    margin-top: 5px;
+
+    color: #7188a4;
+
+    font-size: 8px;
+
+    line-height: 1.45;
+  }
+
+  .mobileHelpBox button {
+    margin-top: 10px;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #168eff;
+
+    font-family: inherit;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+  }
+
+  .mobileUser {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 15px;
+
+    padding: 9px 6px;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    text-align: left;
+
+    cursor: pointer;
+  }
+
+  .mobileAvatar {
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+      linear-gradient(
+        135deg,
+        #168eff,
+        #1269e7
+      );
+
+    color: #ffffff;
+
+    font-size: 11px;
+
+    font-weight: 800;
+  }
+
+  .mobileUser strong {
+    display: block;
+
+    color: #ffffff;
+
+    font-size: 10px;
+  }
+
+  .mobileUser span {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #7188a4;
+
+    font-size: 8px;
+  }
+
+  .mobileSignOut {
+    min-height: 43px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    margin-top: 9px;
+
+    padding: 0 12px;
+
+    border: 1px solid rgba(255, 255, 255, 0.07);
+
+    border-radius: 9px;
+
+    background: rgba(255, 255, 255, 0.03);
+
+    color: #9fb0c4;
+
+    font-family: inherit;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .mobileHeader {
+    height: 68px;
+
+    padding: 0 13px;
+  }
+
+  .mobileBrand {
+    font-size: 16px;
+  }
+
+  .mobileContent {
+    padding:
+      16px
+      12px
+      94px;
+  }
+
+  .mobileWelcomeHeader {
+    gap: 8px;
+
+    margin-bottom: 12px;
+  }
+
+  .mobileWelcomeText h1 {
+    font-size: 25px;
+  }
+
+  .mobileWelcomeText p {
+    max-width: 230px;
+
+    font-size: 9px;
+  }
+
+  .mobileHeaderDate {
+    min-height: 36px;
+
+    padding: 0 8px;
+
+    font-size: 7px;
+  }
+
+  .mobileHeroCard {
+    height: 190px;
+
+    min-height: 190px;
+
+    padding:
+      16px
+      14px;
+  }
+
+  .mobileHeroText {
+    width: 63%;
+  }
+
+  .mobileHeroText h2 {
+    font-size: 18px;
+  }
+
+  .mobileHeroText p {
+    max-width: 190px;
+
+    font-size: 7.7px;
+
+    margin-top: 5px;
+    margin-bottom: 7px;
+  }
+
+  .mobileHeroButton {
+    min-height: 32px;
+
+    padding: 0 9px;
+
+    font-size: 7.8px;
+  }
+
+  .mobileHeroHouseImage {
+    width: 205px;
+
+    height: 137px;
+
+    right: -5px;
+
+    bottom: 23px;
+  }
+
+  .mobileVerificationChecklist {
+    top: -6px;
+
+    right: 6px;
+
+    width: 136px;
+
+    padding: 5px 7px;
+  }
+
+  .mobileVerificationChecklist div {
+    font-size: 6.2px;
+  }
+
+  .mobileVerificationChecklist span {
+    width: 10px;
+
+    height: 10px;
+
+    flex-basis: 10px;
+
+    font-size: 5.8px;
+  }
+
+  .mobileHeroSlogan {
+    right: 7px;
+
+    bottom: 14px;
+
+    font-size: 6.8px;
+  }
+
+  .mobileStats {
+    gap: 7px;
+  }
+
+  .mobileStats button {
+    min-height: 94px;
+
+    padding: 9px;
+  }
+
+  .mobileStatIcon {
+    width: 28px;
+
+    height: 28px;
+
+    margin-bottom: 5px;
+
+    font-size: 11px;
+  }
+
+  .mobileStats button > span {
+    font-size: 8px;
+  }
+
+  .mobileStats button > strong {
+    font-size: 19px;
+  }
+
+  .mobileStats button > small {
+    font-size: 6.5px;
+  }
+
+  .mobileCard {
+    padding: 13px;
+  }
+
+  .mobileCardHeader h2 {
+    font-size: 11px;
+  }
+
+  .mobileFraudEmpty {
+    padding: 11px;
+  }
+
+  .mobileFraudEmpty p {
+    font-size: 7px;
+  }
+}
+
+/* =========================================================
+   TABLET / SMALL DESKTOP
+========================================================= */
+
+@media (min-width: 769px) and (max-width: 1100px) {
+
+  .sidebar {
+    width: 215px;
+  }
+
+  .content {
+    width: calc(100% - 215px);
+
+    margin-left: 215px;
+  }
+
+  .mainContent {
+    padding:
+      25px
+      22px
+      40px;
+  }
+
+  .topBar {
+    padding-left: 24px;
+
+    padding-right: 24px;
+  }
+
+  .heroCard {
+    min-height: 178px;
+
+    height: 178px;
+
+    padding:
+      20px
+      27px;
+  }
+
+  .heroText {
+    width: 50%;
+  }
+
+  .heroVisual {
+    width: 50%;
+  }
+
+  .heroHouseImage {
+    width: 295px;
+
+    height: 190px;
+
+    bottom: 0;
+  }
+
+  .verificationChecklist {
+    top: 10px;
+
+    right: 58px;
+  }
+
+  .statsGrid {
+    gap: 9px;
+  }
+
+  .statCard {
+    padding: 13px;
+  }
+}
+
+/* =========================================================
+   LARGE SCREENS
+========================================================= */
+
+@media (min-width: 1500px) {
+
+  .mainContent {
+    max-width: 1580px;
+
+    padding:
+      34px
+      42px
+      55px;
+  }
+
+  .heroCard {
+    min-height: 198px;
+
+    height: 198px;
+  }
+
+  .heroHouseImage {
+    width: 370px;
+
+    height: 215px;
+
+    bottom: 1px;
+  }
+
+  .verificationChecklist {
+    top: 13px;
+  }
+}

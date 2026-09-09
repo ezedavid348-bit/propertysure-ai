@@ -8,7 +8,40 @@ import {
   useState,
 } from "react";
 
+import AppShell from "../../AppShell/AppShell";
 import { supabase } from "../../lib/supabase";
+
+import styles from "./review.module.css";
+
+/*
+ * ============================================================
+ * PROPERTY SURE AI
+ * VERIFICATION REVIEW — STEP 2
+ * ============================================================
+ *
+ * Workflow:
+ *
+ * /verify
+ *    ↓
+ * /verify/review?id=VERIFICATION_ID
+ *    ↓
+ * /verify/select-plan?id=VERIFICATION_ID
+ *    ↓
+ * /verify/checkout?id=VERIFICATION_ID
+ *    ↓
+ * /processing?id=VERIFICATION_ID
+ *    ↓
+ * /result?id=VERIFICATION_ID
+ *
+ * IMPORTANT:
+ * - One verification ID is used throughout the workflow.
+ * - The document package belongs to one verification.
+ * - Uploaded filename is NOT treated as document identity.
+ * - AI classification is performed against the actual file
+ *   contents retrieved from Supabase Storage.
+ * - AppShell is the shared application navigation.
+ * ============================================================
+ */
 
 /*
  * ============================================================
@@ -18,8 +51,7 @@ import { supabase } from "../../lib/supabase";
 
 const STORAGE_BUCKET = "property-documents";
 
-const MAX_FILE_SIZE =
-  20 * 1024 * 1024;
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 const ALLOWED_TYPES = [
   "application/pdf",
@@ -62,10 +94,6 @@ type ClassificationSource =
   | "unknown";
 
 type UploadedDocument = {
-  /*
-   * IMPORTANT:
-   * `name` is ONLY the uploaded filename.
-   */
   name: string;
 
   path: string;
@@ -89,14 +117,13 @@ type UploadedDocument = {
   classificationMessage?: string;
 };
 
-type ReviewDocument =
-  UploadedDocument & {
-    previewUrl?: string;
+type ReviewDocument = UploadedDocument & {
+  previewUrl?: string;
 
-    previewError?: boolean;
+  previewError?: boolean;
 
-    originalIndex: number;
-  };
+  originalIndex: number;
+};
 
 type VerificationFindings = {
   document_package?: UploadedDocument[];
@@ -504,6 +531,12 @@ export default function ReviewPage() {
       null,
     );
 
+  /*
+   * ============================================================
+   * VERIFICATION ID
+   * ============================================================
+   */
+
   const verificationId =
     useMemo(() => {
       if (
@@ -518,6 +551,12 @@ export default function ReviewPage() {
       ).get("id");
     }, []);
 
+  /*
+   * ============================================================
+   * REFS
+   * ============================================================
+   */
+
   useEffect(() => {
     documentsRef.current =
       documents;
@@ -527,6 +566,12 @@ export default function ReviewPage() {
     verificationRef.current =
       verification;
   }, [verification]);
+
+  /*
+   * ============================================================
+   * LOAD PAGE
+   * ============================================================
+   */
 
   useEffect(() => {
     if (!verificationId) {
@@ -590,30 +635,6 @@ export default function ReviewPage() {
    * ============================================================
    * AI CLASSIFIER
    * ============================================================
-   *
-   * IMPORTANT CHANGE:
-   *
-   * We no longer send the Supabase URL directly to the
-   * classification API.
-   *
-   * We first download the ACTUAL FILE from Supabase.
-   *
-   * Then we send that actual file using multipart/form-data.
-   *
-   * This means:
-   *
-   * Supabase
-   *    ↓
-   * actual File
-   *    ↓
-   * Classification API
-   *    ↓
-   * OpenAI
-   *    ↓
-   * document analysis
-   *
-   * The filename is never used as evidence.
-   * ============================================================
    */
 
   async function classifyDocument(
@@ -626,12 +647,6 @@ export default function ReviewPage() {
         "A secure document URL is required for AI identification.",
       );
     }
-
-    /*
-     * ==========================================================
-     * DOWNLOAD ACTUAL FILE FROM SUPABASE
-     * ==========================================================
-     */
 
     const fileResponse =
       await fetch(documentUrl);
@@ -654,12 +669,6 @@ export default function ReviewPage() {
       );
     }
 
-    /*
-     * ==========================================================
-     * CREATE REAL FILE OBJECT
-     * ==========================================================
-     */
-
     const actualMimeType =
       mimeType ||
       blob.type ||
@@ -676,12 +685,6 @@ export default function ReviewPage() {
         },
       );
 
-    /*
-     * ==========================================================
-     * SEND ACTUAL FILE TO CLASSIFICATION API
-     * ==========================================================
-     */
-
     const formData =
       new FormData();
 
@@ -690,22 +693,12 @@ export default function ReviewPage() {
       file,
     );
 
-    /*
-     * IMPORTANT:
-     *
-     * Do NOT manually set Content-Type.
-     *
-     * The browser creates the multipart boundary.
-     */
-
     const response =
       await fetch(
         "/api/verify-document/classify-document",
         {
           method: "POST",
-
-          body:
-            formData,
+          body: formData,
         },
       );
 
@@ -755,12 +748,6 @@ export default function ReviewPage() {
           })
         : {};
 
-    /*
-     * ==========================================================
-     * API ERROR
-     * ==========================================================
-     */
-
     if (!response.ok) {
       throw new Error(
         resultData.error ||
@@ -768,12 +755,6 @@ export default function ReviewPage() {
           `Document classification failed (${response.status}).`,
       );
     }
-
-    /*
-     * ==========================================================
-     * RESULT CHECK
-     * ==========================================================
-     */
 
     if (
       !resultData.result
@@ -787,12 +768,6 @@ export default function ReviewPage() {
     const raw =
       resultData.result;
 
-    /*
-     * ==========================================================
-     * CONFIDENCE
-     * ==========================================================
-     */
-
     const confidenceNumber =
       Number(
         raw.documentTypeConfidence,
@@ -805,12 +780,6 @@ export default function ReviewPage() {
         ? confidenceNumber
         : 0;
 
-    /*
-     * ==========================================================
-     * DOCUMENT TYPE
-     * ==========================================================
-     */
-
     const documentType =
       isValidDocumentType(
         raw.documentType,
@@ -818,23 +787,11 @@ export default function ReviewPage() {
         ? raw.documentType
         : undefined;
 
-    /*
-     * ==========================================================
-     * CLASSIFICATION STATUS
-     * ==========================================================
-     */
-
     const status =
       documentType &&
       confidence >= 75
         ? "identified"
         : "uncertain";
-
-    /*
-     * ==========================================================
-     * ACTUAL NAME FROM DOCUMENT
-     * ==========================================================
-     */
 
     const nameDetected =
       typeof raw.nameDetected ===
@@ -842,40 +799,28 @@ export default function ReviewPage() {
         ? raw.nameDetected.trim()
         : "";
 
-    /*
-     * ==========================================================
-     * ACTUAL DOCUMENT TITLE
-     * ==========================================================
-     */
-
     const documentTitleDetected =
       typeof raw.documentTitleDetected ===
       "string"
         ? raw.documentTitleDetected.trim()
         : "";
 
-    /*
-     * ==========================================================
-     * DEBUG LOG
-     * ==========================================================
-     *
-     * This is intentional.
-     *
-     * When we test, the terminal will show us exactly what
-     * the AI returned.
-     * ==========================================================
-     */
-
     console.log(
       "PROPERTY SURE AI CLASSIFICATION RESULT:",
       {
         fileName,
+
         mimeType:
           actualMimeType,
+
         documentType,
+
         confidence,
+
         status,
+
         documentTitleDetected,
+
         nameDetected,
       },
     );
@@ -982,30 +927,31 @@ export default function ReviewPage() {
 
     const {
       error: updateError,
-    } = await supabase
-      .from("verifications")
-      .update({
-        doc_name:
-          firstDocument?.name ||
-          null,
+    } =
+      await supabase
+        .from("verifications")
+        .update({
+          doc_name:
+            firstDocument?.name ||
+            null,
 
-        file_url:
-          firstDocument?.path ||
-          null,
+          file_url:
+            firstDocument?.path ||
+            null,
 
-        doc_type:
-          firstDocument?.documentType ||
-          null,
+          doc_type:
+            firstDocument?.documentType ||
+            null,
 
-        findings:
-          updatedFindings,
+          findings:
+            updatedFindings,
 
-        status: "review",
-      })
-      .eq(
-        "id",
-        activeVerification.id,
-      );
+          status: "review",
+        })
+        .eq(
+          "id",
+          activeVerification.id,
+        );
 
     if (
       updateError
@@ -1065,7 +1011,6 @@ export default function ReviewPage() {
         data: {
           user,
         },
-
         error: authError,
       } =
         await supabase.auth.getUser();
@@ -1135,7 +1080,9 @@ export default function ReviewPage() {
           : [];
 
       /*
-       * Legacy single-document fallback.
+       * ========================================================
+       * LEGACY SINGLE-DOCUMENT FALLBACK
+       * ========================================================
        */
 
       if (
@@ -1184,6 +1131,12 @@ export default function ReviewPage() {
 
       const prepared:
         ReviewDocument[] = [];
+
+      /*
+       * ========================================================
+       * PREPARE DOCUMENTS
+       * ========================================================
+       */
 
       for (
         let index = 0;
@@ -1315,6 +1268,12 @@ export default function ReviewPage() {
       );
 
       setLoading(false);
+
+      /*
+       * ========================================================
+       * IDENTIFY UNKNOWN DOCUMENTS
+       * ========================================================
+       */
 
       const unknownDocuments =
         prepared.filter(
@@ -1622,7 +1581,7 @@ export default function ReviewPage() {
             3600,
           );
       } catch {
-        // Preview is optional.
+        // Preview remains optional.
       }
 
       const newDocument:
@@ -1697,12 +1656,6 @@ export default function ReviewPage() {
 
         throw databaseError;
       }
-
-      /*
-       * ========================================================
-       * AI CLASSIFICATION
-       * ========================================================
-       */
 
       try {
         const classificationUrl =
@@ -1980,16 +1933,13 @@ export default function ReviewPage() {
     const currentDocuments =
       documentsRef.current;
 
-    if (
-      currentDocuments.length <=
-      1
-    ) {
-      setError(
-        "At least one document must remain in the verification package.",
-      );
-
-      return;
-    }
+    /*
+     * IMPORTANT:
+     * A document can be removed even when it is
+     * the only document currently in the package.
+     *
+     * The user can then upload another document.
+     */
 
     const confirmed =
       window.confirm(
@@ -2111,11 +2061,11 @@ export default function ReviewPage() {
 
   /*
    * ============================================================
-   * CONTINUE TO PROCESSING
+   * CONTINUE TO SELECT PLAN
    * ============================================================
    */
 
-  async function continueToProcessing(): Promise<void> {
+  async function continueToPlan(): Promise<void> {
     const activeVerification =
       verificationRef.current;
 
@@ -2159,104 +2109,25 @@ export default function ReviewPage() {
           activeVerification,
         );
 
-      const storedDocuments =
-        currentDocuments.map(
-          toStoredDocument,
-        );
-
-      const finalFindings:
-        VerificationFindings = {
-        ...(storedRecord.findings ||
-          {}),
-
-        document_package:
-          storedDocuments,
-
-        document_count:
-          storedDocuments.length,
-
-        processing: {
-          ...(storedRecord
-            .findings
-            ?.processing ||
-            {}),
-
-          stage:
-            "queued",
-
-          progress:
-            10,
-
-          message:
-            "Your document package has been submitted for AI analysis.",
-        },
-
-        ai_classification: {
-          status:
-            "completed",
-
-          completed_at:
-            new Date().toISOString(),
-
-          documents_classified:
-            storedDocuments.filter(
-              (document) =>
-                document.classificationStatus ===
-                "identified",
-            ).length,
-
-          message:
-            "Document identification completed before verification analysis.",
-        },
-      };
-
-      const {
-        error:
-          updateError,
-      } =
-        await supabase
-          .from(
-            "verifications",
-          )
-          .update({
-            status:
-              "processing",
-
-            findings:
-              finalFindings,
-          })
-          .eq(
-            "id",
-            storedRecord.id,
-          );
-
-      if (
-        updateError
-      ) {
-        throw new Error(
-          `Could not start verification: ${updateError.message}`,
-        );
-      }
-
       window.location.href =
-        `/processing?id=${encodeURIComponent(
+        `/verify/select-plan?id=${encodeURIComponent(
           storedRecord.id,
         )}`;
     } catch (
-      processingError
+      planError
     ) {
       console.error(
-        "PROCESSING START ERROR:",
-        processingError,
-      );
-
-      setError(
-        processingError instanceof Error
-          ? processingError.message
-          : "Unable to continue to document analysis.",
+        "SELECT PLAN ROUTING ERROR:",
+        planError,
       );
 
       setProcessing(false);
+
+      setError(
+        planError instanceof Error
+          ? planError.message
+          : "Unable to continue to plan selection.",
+      );
     }
   }
 
@@ -2322,16 +2193,35 @@ export default function ReviewPage() {
 
   if (loading) {
     return (
-      <Screen
-        message="Loading your documents"
-        detail="Preparing your document package for review..."
-      />
+      <main className={styles.loadingPage}>
+        <div className={styles.loadingBrand}>
+          <span className={styles.loadingDiamond} />
+
+          <span>
+            PropertySure
+            <strong> AI</strong>
+          </span>
+        </div>
+
+        <div
+          className={styles.loadingIndicator}
+          aria-hidden="true"
+        >
+          <span />
+          <span />
+          <span />
+        </div>
+
+        <p className={styles.loadingText}>
+          Loading...
+        </p>
+      </main>
     );
   }
 
   /*
    * ============================================================
-   * ERROR SCREEN
+   * LOAD ERROR
    * ============================================================
    */
 
@@ -2351,2075 +2241,1041 @@ export default function ReviewPage() {
     );
   }
 
+  const classificationInProgress =
+    documents.some(
+      (document) =>
+        document.classificationStatus ===
+        "classifying",
+    );
+
   /*
    * ============================================================
-   * PAGE
+   * MAIN PAGE
    * ============================================================
    */
 
   return (
-    <main className="reviewPage">
-
-      <header className="mobileHeader">
-
-        <button
-          type="button"
-          className="backButton"
-          onClick={
-            goBackToVerify
+    <AppShell
+      activePath="/verify"
+      headerPath="/verify/review"
+    >
+      <main className={styles.page}>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+          className={
+            styles.hiddenInput
           }
+          onChange={(event) => {
+            void handleAddDocument(
+              event,
+            );
+          }}
           disabled={
             processing ||
             modifyingDocuments
           }
+        />
+
+        <div
+          className={
+            styles.content
+          }
         >
-          ←
-        </button>
-
-        <div className="headerLogo">
-
-          <span className="logoDiamond">
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong>
-              {" "}AI
-            </strong>
-          </span>
-
-        </div>
-
-        <div className="headerStep">
-          2 of 3
-        </div>
-
-      </header>
-
-      <input
-        ref={
-          fileInputRef
-        }
-        type="file"
-        accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-        style={{
-          display:
-            "none",
-        }}
-        onChange={(event) => {
-          void handleAddDocument(
-            event,
-          );
-        }}
-        disabled={
-          processing ||
-          modifyingDocuments
-        }
-      />
-
-      <div className="pageContent">
-
-        <div className="reviewBadge">
-
-          <span>
-            ✓
-          </span>
-
-          DOCUMENT PACKAGE REVIEW
-
-        </div>
-
-        <section className="intro">
-
-          <h1>
-            Review Your{" "}
-            <span>
-              Documents
-            </span>
-          </h1>
-
-          <p>
-            PropertySure AI identifies
-            documents from their actual
-            contents and extracts relevant
-            information from the document
-            itself. Review the package before
-            verification analysis begins.
-          </p>
-
-        </section>
-
-        <section className="summaryCard">
-
-          <div className="summaryIcon">
-            ▤
-          </div>
-
-          <div className="summaryText">
-
-            <strong>
-              Property Document Package
-            </strong>
-
-            <span>
-              {documents.length}{" "}
-              {
-                documents.length ===
-                1
-                  ? "document"
-                  : "documents"
-              }{" "}
-              ready for analysis
-            </span>
-
-          </div>
-
-          <div className="summaryStatus">
-            Ready
-          </div>
-
-        </section>
-
-        <section className="documentsSection">
-
-          <div className="sectionHeader">
-
-            <div>
-
-              <h2>
-                Submitted Documents
-              </h2>
-
-              <p>
-                AI identifies the document
-                from its contents. The
-                uploaded filename is not used
-                as the document identity.
-              </p>
-
-            </div>
-
-            <span className="documentCount">
-              {documents.length}
-            </span>
-
-          </div>
-
-          <div className="documentList">
-
-            {documents.map(
-              (
-                document,
-                index,
-              ) => {
-
-                const title =
-                  getDisplayTitle(
-                    document,
-                    index,
-                  );
-
-                const detectedTitle =
-                  getDetectedTitle(
-                    document,
-                  );
-
-                const detectedName =
-                  getDetectedName(
-                    document,
-                  );
-
-                const isClassifying =
-                  document.classificationStatus ===
-                  "classifying";
-
-                const classificationFailed =
-                  document.classificationStatus ===
-                    "failed" ||
-                  document.classificationStatus ===
-                    "uncertain";
-
-                return (
-                  <div
-                    className="documentCard"
-                    key={`${document.path}-${index}`}
-                  >
-
-                    <button
-                      type="button"
-                      className="documentMainButton"
-                      onClick={() =>
-                        setSelectedDocument(
-                          document,
-                        )
-                      }
-                      disabled={
-                        modifyingDocuments
-                      }
-                    >
-
-                      <div className="documentIcon">
-
-                        {isImage(
-                          document.type,
-                        )
-                          ? "IMG"
-                          : isPdf(
-                                document.type,
-                              )
-                            ? "PDF"
-                            : getExtension(
-                                document.name,
-                              )}
-
-                      </div>
-
-                      <div className="documentInfo">
-
-                        <strong>
-                          {isClassifying
-                            ? "Identifying document..."
-                            : title}
-                        </strong>
-
-                        <span>
-                          Document{" "}
-                          {index + 1}
-                          {" • "}
-                          {document.type}
-
-                          {document.size >
-                            0
-                            ? ` • ${formatFileSize(
-                                document.size,
-                              )}`
-                            : ""}
-                        </span>
-
-                        {/*
-                         * ACTUAL DOCUMENT TITLE
-                         */}
-
-                        {detectedTitle &&
-                          !isClassifying && (
-                            <small className="detectedDocumentTitle">
-
-                              AI detected title:{" "}
-                              <strong>
-                                {detectedTitle}
-                              </strong>
-
-                            </small>
-                          )}
-
-                        {/*
-                         * ACTUAL PERSON NAME
-                         */}
-
-                        {detectedName &&
-                          !isClassifying && (
-                            <small className="detectedPersonName">
-
-                              Name detected in
-                              document:{" "}
-                              <strong>
-                                {detectedName}
-                              </strong>
-
-                            </small>
-                          )}
-
-                        {/*
-                         * UPLOADED FILENAME
-                         *
-                         * This is deliberately separate
-                         * from the AI-detected name.
-                         */}
-
-                        <small>
-                          Uploaded file:{" "}
-                          {document.name}
-                        </small>
-
-                        {isClassifying && (
-                          <small className="classificationStatus">
-
-                            <span className="miniSpinner" />
-
-                            PropertySure AI is
-                            reading the actual
-                            document contents
-
-                          </small>
-                        )}
-
-                        {!isClassifying &&
-                          document.classificationStatus ===
-                            "identified" &&
-                          document.classificationSource ===
-                            "ai" && (
-                            <small className="classificationSuccess">
-
-                              ✓ Automatically identified
-                              from document contents
-
-                              {document.classificationConfidence !==
-                                undefined
-                                ? ` • ${document.classificationConfidence}% confidence`
-                                : ""}
-
-                            </small>
-                          )}
-
-                        {classificationFailed && (
-                          <small className="classificationWarning">
-
-                            ⚠ Document type could not be
-                            confidently identified
-
-                          </small>
-                        )}
-
-                      </div>
-
-                      <div className="documentArrow">
-                        ›
-                      </div>
-
-                    </button>
-
-                    <div className="documentActions">
-
-                      <button
-                        type="button"
-                        className={
-                          document.documentType
-                            ? "typeButton identified"
-                            : "typeButton needsType"
-                        }
-                        onClick={() =>
-                          setDocumentTypeOpen(
-                            documentTypeOpen ===
-                              document.path
-                              ? null
-                              : document.path,
-                          )
-                        }
-                        disabled={
-                          modifyingDocuments ||
-                          isClassifying
-                        }
-                      >
-
-                        <span>
-                          Type
-                        </span>
-
-                        <strong>
-                          {
-                            document.documentType ||
-                            "Select type"
-                          }
-                        </strong>
-
-                        <span className="typeChevron">
-                          {documentTypeOpen ===
-                          document.path
-                            ? "⌃"
-                            : "⌄"}
-                        </span>
-
-                      </button>
-
-                      {documentTypeOpen ===
-                        document.path && (
-
-                        <div className="typeMenu">
-
-                          <div className="typeMenuTitle">
-                            Correct document type
-                          </div>
-
-                          {DOCUMENT_TYPE_OPTIONS.map(
-                            (
-                              option,
-                            ) => (
-
-                              <button
-                                type="button"
-                                key={
-                                  option
-                                }
-                                className={
-                                  document.documentType ===
-                                  option
-                                    ? "typeOption active"
-                                    : "typeOption"
-                                }
-                                onClick={() => {
-                                  void changeDocumentType(
-                                    document.path,
-                                    option,
-                                  );
-                                }}
-                              >
-
-                                <span>
-                                  {document.documentType ===
-                                  option
-                                    ? "✓"
-                                    : ""}
-                                </span>
-
-                                {option}
-
-                              </button>
-
-                            ),
-                          )}
-
-                        </div>
-
-                      )}
-
-                      <button
-                        type="button"
-                        className="removeButton"
-                        onClick={() => {
-                          void removeDocument(
-                            document,
-                          );
-                        }}
-                        disabled={
-                          modifyingDocuments ||
-                          documents.length <=
-                            1 ||
-                          deletingDocumentId ===
-                            document.path
-                        }
-                      >
-
-                        {deletingDocumentId ===
-                        document.path
-                          ? "Removing..."
-                          : "Remove"}
-
-                      </button>
-
-                    </div>
-
-                  </div>
-                );
-              },
-            )}
-
-          </div>
-
           <button
             type="button"
-            className="addDocumentButton"
-            onClick={
-              openAddDocumentPicker
+            className={
+              styles.backButton
             }
             disabled={
               processing ||
               modifyingDocuments
             }
-          >
-
-            <span className="addDocumentPlus">
-              +
-            </span>
-
-            {addingDocument
-              ? "Uploading & identifying..."
-              : "Add another document"}
-
-          </button>
-
-        </section>
-
-        {successMessage && (
-
-          <div className="successMessage">
-
-            <span>
-              ✓
-            </span>
-
-            {successMessage}
-
-          </div>
-
-        )}
-
-        {error && (
-
-          <div className="inlineError">
-
-            <span>
-              !
-            </span>
-
-            <div>
-              {error}
-            </div>
-
-          </div>
-
-        )}
-
-        <section className="nextCard">
-
-          <div className="nextIcon">
-            ✦
-          </div>
-
-          <div>
-
-            <strong>
-              What happens next?
-            </strong>
-
-            <p>
-              After you continue,
-              PropertySure AI will analyze
-              the entire document package for
-              structure, consistency,
-              signatures, stamps, completeness,
-              duplicate indicators and
-              potential forgery risks.
-            </p>
-
-          </div>
-
-        </section>
-
-        <button
-          type="button"
-          className="continueButton"
-          disabled={
-            processing ||
-            modifyingDocuments ||
-            documents.length ===
-              0 ||
-            documents.some(
-              (document) =>
-                document.classificationStatus ===
-                "classifying",
-            )
-          }
-          onClick={() => {
-            void continueToProcessing();
-          }}
-        >
-
-          <span>
-            {processing
-              ? "Starting AI Analysis..."
-              : "Continue to AI Analysis"}
-          </span>
-
-          {!processing && (
-            <span className="buttonArrow">
-              →
-            </span>
-          )}
-
-        </button>
-
-        <button
-          type="button"
-          className="backToVerify"
-          disabled={
-            processing ||
-            modifyingDocuments
-          }
-          onClick={
-            goBackToVerify
-          }
-        >
-          ← Back to Upload Documents
-        </button>
-
-        <div className="securityNotice">
-
-          <span>
-            🔒
-          </span>
-
-          Your documents remain securely
-          stored while your verification is
-          being processed.
-
-        </div>
-
-      </div>
-
-      {selectedDocument && (
-
-        <div
-          className="modalOverlay"
-          onClick={() =>
-            setSelectedDocument(
-              null,
-            )
-          }
-        >
-
-          <div
-            className="previewModal"
-            onClick={(event) =>
-              event.stopPropagation()
+            onClick={
+              goBackToVerify
             }
           >
+            <span>←</span>
+            Back to Verify Property
+          </button>
 
-            <div className="previewHeader">
-
-              <div>
-
-                <strong>
-                  {getDisplayTitle(
-                    selectedDocument,
-                    selectedDocument.originalIndex,
-                  )}
-                </strong>
-
-                {selectedDocument.documentTitleDetected && (
-                  <span className="modalDetectedTitle">
-
-                    AI detected title:
-                    {" "}
-                    {
-                      selectedDocument.documentTitleDetected
-                    }
-
-                  </span>
-                )}
-
-                {selectedDocument.nameDetected && (
-                  <span className="modalDetectedName">
-
-                    Name detected:
-                    {" "}
-                    {
-                      selectedDocument.nameDetected
-                    }
-
-                  </span>
-                )}
-
-                <span>
-                  {
-                    selectedDocument.type
-                  }
-                  {" • "}
-                  {
-                    selectedDocument.name
-                  }
-                </span>
-
-              </div>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setSelectedDocument(
-                    null,
-                  )
+          <section
+            className={
+              styles.workflow
+            }
+          >
+            <div
+              className={
+                styles.workflowItem
+              }
+            >
+              <span
+                className={
+                  styles.workflowNumberDone
                 }
               >
-                ×
-              </button>
+                ✓
+              </span>
 
+              <div>
+                <strong>
+                  Upload Documents
+                </strong>
+
+                <span>
+                  Add your property
+                  documents
+                </span>
+              </div>
             </div>
 
-            <div className="previewBody">
+            <div
+              className={
+                styles.workflowLineActive
+              }
+            />
 
-              {selectedDocument.previewUrl &&
-              isImage(
-                selectedDocument.type,
-              ) ? (
+            <div
+              className={`${styles.workflowItem} ${styles.workflowCurrent}`}
+            >
+              <span
+                className={
+                  styles.workflowNumberActive
+                }
+              >
+                2
+              </span>
 
-                <img
-                  src={
-                    selectedDocument.previewUrl
-                  }
-                  alt={getDisplayTitle(
-                    selectedDocument,
-                    selectedDocument.originalIndex,
-                  )}
-                />
+              <div>
+                <strong>
+                  Review Package
+                </strong>
 
-              ) : selectedDocument.previewUrl &&
-                isPdf(
-                  selectedDocument.type,
-                ) ? (
+                <span>
+                  Confirm your
+                  documents
+                </span>
+              </div>
+            </div>
 
-                <iframe
-                  src={
-                    selectedDocument.previewUrl
-                  }
-                  title={getDisplayTitle(
-                    selectedDocument,
-                    selectedDocument.originalIndex,
-                  )}
-                />
+            <div
+              className={
+                styles.workflowLine
+              }
+            />
 
-              ) : (
+            <div
+              className={
+                styles.workflowItem
+              }
+            >
+              <span
+                className={
+                  styles.workflowNumber
+                }
+              >
+                3
+              </span>
 
-                <div className="previewUnavailable">
+              <div>
+                <strong>
+                  Select Plan
+                </strong>
 
-                  <div>
-                    📄
-                  </div>
+                <span>
+                  Choose your
+                  service
+                </span>
+              </div>
+            </div>
 
-                  <p>
-                    Preview unavailable
-                  </p>
+            <div
+              className={
+                styles.workflowLine
+              }
+            />
 
-                  <span>
-                    The file was uploaded,
-                    but the preview could not
-                    be retrieved. The document
-                    remains in the verification
-                    package.
-                  </span>
+            <div
+              className={
+                styles.workflowItem
+              }
+            >
+              <span
+                className={
+                  styles.workflowNumber
+                }
+              >
+                4
+              </span>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSelectedDocument(
-                        null,
-                      )
-                    }
-                  >
-                    Close
-                  </button>
+              <div>
+                <strong>
+                  Secure Checkout
+                </strong>
 
-                </div>
+                <span>
+                  Complete payment
+                </span>
+              </div>
+            </div>
 
+            <div
+              className={
+                styles.workflowLine
+              }
+            />
+
+            <div
+              className={
+                styles.workflowItem
+              }
+            >
+              <span
+                className={
+                  styles.workflowNumber
+                }
+              >
+                5
+              </span>
+
+              <div>
+                <strong>
+                  Verification
+                </strong>
+
+                <span>
+                  AI analysis and
+                  results
+                </span>
+              </div>
+            </div>
+          </section>
+
+          <section
+            className={
+              styles.intro
+            }
+          >
+            <div
+              className={
+                styles.reviewBadge
+              }
+            >
+              <span>✓</span>
+              DOCUMENT PACKAGE REVIEW
+            </div>
+
+            <h1>
+              Review Your{" "}
+              <span>
+                Documents
+              </span>
+            </h1>
+
+            <p>
+              PropertySure AI
+              identifies documents
+              from their actual
+              contents and extracts
+              relevant information
+              from the document
+              itself. Review the
+              package before
+              verification analysis
+              begins.
+            </p>
+          </section>
+
+          <section
+            className={
+              styles.summaryCard
+            }
+          >
+            <div
+              className={
+                styles.summaryIcon
+              }
+            >
+              ▤
+            </div>
+
+            <div
+              className={
+                styles.summaryText
+              }
+            >
+              <strong>
+                Property Document
+                Package
+              </strong>
+
+              <span>
+                {documents.length}{" "}
+                {documents.length ===
+                1
+                  ? "document"
+                  : "documents"}{" "}
+                ready for analysis
+              </span>
+            </div>
+
+            <div
+              className={
+                styles.summaryStatus
+              }
+            >
+              {classificationInProgress
+                ? "Identifying"
+                : "Ready"}
+            </div>
+          </section>
+
+          <section
+            className={
+              styles.documentsSection
+            }
+          >
+            <div
+              className={
+                styles.sectionHeader
+              }
+            >
+              <div>
+                <h2>
+                  Submitted
+                  Documents
+                </h2>
+
+                <p>
+                  AI identifies each
+                  document from its
+                  contents. The
+                  uploaded filename is
+                  not used as the
+                  document identity.
+                </p>
+              </div>
+
+              <span
+                className={
+                  styles.documentCount
+                }
+              >
+                {documents.length}
+              </span>
+            </div>
+
+            <div
+              className={
+                styles.documentList
+              }
+            >
+              {documents.map(
+                (
+                  document,
+                  index,
+                ) => {
+                  const title =
+                    getDisplayTitle(
+                      document,
+                      index,
+                    );
+
+                  const detectedTitle =
+                    getDetectedTitle(
+                      document,
+                    );
+
+                  const detectedName =
+                    getDetectedName(
+                      document,
+                    );
+
+                  const isClassifying =
+                    document.classificationStatus ===
+                    "classifying";
+
+                  const classificationFailed =
+                    document.classificationStatus ===
+                      "failed" ||
+                    document.classificationStatus ===
+                      "uncertain";
+
+                  return (
+                    <article
+                      className={
+                        styles.documentCard
+                      }
+                      key={`${document.path}-${index}`}
+                    >
+                      <button
+                        type="button"
+                        className={
+                          styles.documentMainButton
+                        }
+                        onClick={() =>
+                          setSelectedDocument(
+                            document,
+                          )
+                        }
+                        disabled={
+                          modifyingDocuments
+                        }
+                      >
+                        <div
+                          className={
+                            styles.documentIcon
+                          }
+                        >
+                          <div
+                            className={
+                              styles.documentIconFallback
+                            }
+                          >
+                            {isImage(
+                              document.type,
+                            )
+                              ? "IMG"
+                              : isPdf(
+                                    document.type,
+                                  )
+                                ? "PDF"
+                                : getExtension(
+                                    document.name,
+                                  )}
+                          </div>
+
+                          {document.previewUrl &&
+                            isImage(
+                              document.type,
+                            ) && (
+                              <img
+                                src={
+                                  document.previewUrl
+                                }
+                                alt={`${title} document preview`}
+                                className={
+                                  styles.documentThumbnail
+                                }
+                                onError={(
+                                  event,
+                                ) => {
+                                  event.currentTarget.style.display =
+                                    "none";
+                                }}
+                              />
+                            )}
+
+                          {document.previewUrl &&
+                            isPdf(
+                              document.type,
+                            ) && (
+                              <div
+                                className={
+                                  styles.pdfThumbnail
+                                }
+                              >
+                                <div
+                                  className={
+                                    styles.pdfThumbnailTop
+                                  }
+                                >
+                                  PDF
+                                </div>
+
+                                <div
+                                  className={
+                                    styles.pdfThumbnailLines
+                                  }
+                                >
+                                  <span />
+                                  <span />
+                                  <span />
+                                  <span />
+                                  <span />
+                                </div>
+                              </div>
+                            )}
+                        </div>
+
+                        <div
+                          className={
+                            styles.documentInfo
+                          }
+                        >
+                          <strong>
+                            {isClassifying
+                              ? "Identifying document..."
+                              : title}
+                          </strong>
+
+                          <span>
+                            Document{" "}
+                            {index + 1}
+                            {" • "}
+                            {document.type}
+
+                            {document.size >
+                            0
+                              ? ` • ${formatFileSize(
+                                  document.size,
+                                )}`
+                              : ""}
+                          </span>
+
+                          {detectedTitle &&
+                            !isClassifying && (
+                              <small
+                                className={
+                                  styles.detectedDocumentTitle
+                                }
+                              >
+                                AI detected
+                                title:{" "}
+                                <strong>
+                                  {
+                                    detectedTitle
+                                  }
+                                </strong>
+                              </small>
+                            )}
+
+                          {detectedName &&
+                            !isClassifying && (
+                              <small
+                                className={
+                                  styles.detectedPersonName
+                                }
+                              >
+                                Name detected
+                                in document:{" "}
+                                <strong>
+                                  {
+                                    detectedName
+                                  }
+                                </strong>
+                              </small>
+                            )}
+
+                          <small>
+                            Uploaded file:{" "}
+                            {document.name}
+                          </small>
+
+                          {isClassifying && (
+                            <small
+                              className={
+                                styles.classificationStatus
+                              }
+                            >
+                              <span
+                                className={
+                                  styles.miniSpinner
+                                }
+                              />
+
+                              PropertySure AI
+                              is reading
+                              the actual
+                              document
+                              contents
+                            </small>
+                          )}
+
+                          {!isClassifying &&
+                            document.classificationStatus ===
+                              "identified" &&
+                            document.classificationSource ===
+                              "ai" && (
+                              <small
+                                className={
+                                  styles.classificationSuccess
+                                }
+                              >
+                                ✓ Automatically
+                                identified
+                                from document
+                                contents
+
+                                {document.classificationConfidence !==
+                                undefined
+                                  ? ` • ${document.classificationConfidence}% confidence`
+                                  : ""}
+                              </small>
+                            )}
+
+                          {classificationFailed && (
+                            <small
+                              className={
+                                styles.classificationWarning
+                              }
+                            >
+                              ⚠ Document type
+                              could not be
+                              confidently
+                              identified
+                            </small>
+                          )}
+                        </div>
+
+                        <div
+                          className={
+                            styles.documentArrow
+                          }
+                        >
+                          ›
+                        </div>
+                      </button>
+
+                      <div
+                        className={
+                          styles.documentActions
+                        }
+                      >
+                        <div
+                          className={
+                            styles.typeControlWrap
+                          }
+                        >
+                          <button
+                            type="button"
+                            className={`${styles.typeButton} ${
+                              document.documentType
+                                ? styles.identified
+                                : styles.needsType
+                            }`}
+                            onClick={() =>
+                              setDocumentTypeOpen(
+                                documentTypeOpen ===
+                                  document.path
+                                  ? null
+                                  : document.path,
+                              )
+                            }
+                            disabled={
+                              modifyingDocuments ||
+                              isClassifying
+                            }
+                          >
+                            <span>
+                              Type
+                            </span>
+
+                            <strong>
+                              {
+                                document.documentType ||
+                                "Select type"
+                              }
+                            </strong>
+
+                            <span
+                              className={
+                                styles.typeChevron
+                              }
+                            >
+                              {documentTypeOpen ===
+                              document.path
+                                ? "⌃"
+                                : "⌄"}
+                            </span>
+                          </button>
+
+                          {documentTypeOpen ===
+                            document.path && (
+                            <div
+                              className={
+                                styles.typeMenu
+                              }
+                            >
+                              <div
+                                className={
+                                  styles.typeMenuTitle
+                                }
+                              >
+                                Correct
+                                document
+                                type
+                              </div>
+
+                              {DOCUMENT_TYPE_OPTIONS.map(
+                                (
+                                  option,
+                                ) => (
+                                  <button
+                                    type="button"
+                                    key={
+                                      option
+                                    }
+                                    className={
+                                      document.documentType ===
+                                      option
+                                        ? `${styles.typeOption} ${styles.typeOptionActive}`
+                                        : styles.typeOption
+                                    }
+                                    onClick={() => {
+                                      void changeDocumentType(
+                                        document.path,
+                                        option,
+                                      );
+                                    }}
+                                  >
+                                    <span>
+                                      {document.documentType ===
+                                      option
+                                        ? "✓"
+                                        : ""}
+                                    </span>
+
+                                    {
+                                      option
+                                    }
+                                  </button>
+                                ),
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* ==================================================
+                            REMOVE DOCUMENT
+                            ================================================== */}
+
+                        <button
+                          type="button"
+                          className={
+                            styles.removeButton
+                          }
+                          onClick={() => {
+                            void removeDocument(
+                              document,
+                            );
+                          }}
+                          disabled={
+                            modifyingDocuments ||
+                            deletingDocumentId ===
+                              document.path
+                          }
+                        >
+                          {deletingDocumentId ===
+                          document.path
+                            ? "Removing..."
+                            : "Remove"}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                },
               )}
-
             </div>
 
-          </div>
+            <button
+              type="button"
+              className={
+                styles.addDocumentButton
+              }
+              onClick={
+                openAddDocumentPicker
+              }
+              disabled={
+                processing ||
+                modifyingDocuments
+              }
+            >
+              <span
+                className={
+                  styles.addDocumentPlus
+                }
+              >
+                +
+              </span>
 
+              {addingDocument
+                ? "Uploading & identifying..."
+                : "Add another document"}
+            </button>
+          </section>
+
+          {successMessage && (
+            <div
+              className={
+                styles.successMessage
+              }
+            >
+              <span>✓</span>
+
+              {successMessage}
+            </div>
+          )}
+
+          {error && (
+            <div
+              className={
+                styles.inlineError
+              }
+            >
+              <span>!</span>
+
+              <div>
+                {error}
+              </div>
+            </div>
+          )}
+
+          <section
+            className={
+              styles.nextCard
+            }
+          >
+            <div
+              className={
+                styles.nextIcon
+              }
+            >
+              ✦
+            </div>
+
+            <div>
+              <strong>
+                What happens next?
+              </strong>
+
+              <p>
+                After you continue,
+                PropertySure AI will
+                analyze the entire
+                document package for
+                structure,
+                consistency,
+                signatures, stamps,
+                completeness,
+                duplicate indicators
+                and potential forgery
+                risks.
+              </p>
+            </div>
+          </section>
+
+          <button
+            type="button"
+            className={
+              styles.continueButton
+            }
+            disabled={
+              processing ||
+              modifyingDocuments ||
+              documents.length ===
+                0 ||
+              documents.some(
+                (document) =>
+                  document.classificationStatus ===
+                  "classifying",
+              )
+            }
+            onClick={() => {
+              void continueToPlan();
+            }}
+          >
+            <span>
+              {processing
+                ? "Preparing Select Plan..."
+                : "Continue to Select Plan"}
+            </span>
+
+            {!processing && (
+              <span
+                className={
+                  styles.buttonArrow
+                }
+              >
+                →
+              </span>
+            )}
+          </button>
+
+          <div
+            className={
+              styles.securityNotice
+            }
+          >
+            <span>🔒</span>
+
+            Your documents remain
+            securely stored while
+            your verification is
+            being processed.
+          </div>
         </div>
 
-      )}
-
-      <style jsx>{`
-
-        * {
-          box-sizing: border-box;
-        }
-
-        .reviewPage {
-          min-height: 100vh;
-          padding-bottom: 45px;
-          color: #f8fafc;
-
-          background:
-            radial-gradient(
-              circle at 50% -20%,
-              rgba(17, 105, 190, 0.22),
-              transparent 40%
-            ),
-            linear-gradient(
-              180deg,
-              #031328 0%,
-              #041a34 50%,
-              #021124 100%
-            );
-
-          font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
-        }
-
-        .mobileHeader {
-          height: 76px;
-
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-
-          padding: 0 24px;
-
-          border-bottom:
-            1px solid
-            rgba(70, 145, 230, 0.16);
-
-          background:
-            rgba(2, 16, 35, 0.94);
-
-          position: sticky;
-          top: 0;
-          z-index: 20;
-        }
-
-        .backButton {
-          width: 42px;
-          height: 42px;
-
-          border: none;
-
-          background:
-            rgba(22, 142, 255, 0.08);
-
-          border:
-            1px solid
-            rgba(22, 142, 255, 0.2);
-
-          border-radius: 10px;
-
-          color: #d9e9fb;
-
-          font-size: 23px;
-          cursor: pointer;
-        }
-
-        .backButton:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-
-        .headerLogo {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-
-          font-size: 19px;
-          font-weight: 700;
-        }
-
-        .logoDiamond {
-          color: #168eff;
-          font-size: 25px;
-        }
-
-        .headerLogo strong {
-          color: #168eff;
-        }
-
-        .headerStep {
-          color: #7189a5;
-          font-size: 11px;
-          font-weight: 700;
-        }
-
-        .pageContent {
-          width: 100%;
-          max-width: 760px;
-
-          margin: 0 auto;
-
-          padding:
-            38px 28px 30px;
-        }
-
-        .reviewBadge {
-          width: max-content;
-
-          display: flex;
-          align-items: center;
-          gap: 8px;
-
-          padding:
-            9px 14px;
-
-          border-radius: 999px;
-
-          border:
-            1px solid
-            rgba(32, 217, 129, 0.28);
-
-          background:
-            rgba(32, 217, 129, 0.06);
-
-          color: #20d981;
-
-          font-size: 11px;
-          font-weight: 800;
-
-          letter-spacing: 0.4px;
-        }
-
-        .reviewBadge span {
-          width: 18px;
-          height: 18px;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 50%;
-
-          background:
-            rgba(32, 217, 129, 0.15);
-        }
-
-        .intro {
-          text-align: center;
-          padding:
-            35px 0 28px;
-        }
-
-        .intro h1 {
-          margin: 0;
-
-          font-size:
-            clamp(34px, 6vw, 47px);
-
-          line-height: 1.08;
-
-          letter-spacing: -1.7px;
-        }
-
-        .intro h1 span {
-          color: #20a7ff;
-        }
-
-        .intro p {
-          max-width: 610px;
-
-          margin:
-            16px auto 0;
-
-          color: #94aac3;
-
-          font-size: 14px;
-          line-height: 1.65;
-        }
-
-        .summaryCard,
-        .documentCard {
-          border:
-            1px solid
-            rgba(48, 130, 205, 0.25);
-
-          background:
-            rgba(5, 29, 56, 0.75);
-        }
-
-        .summaryCard {
-          display: flex;
-          align-items: center;
-          gap: 13px;
-
-          padding:
-            15px 16px;
-
-          border-radius: 13px;
-        }
-
-        .summaryIcon,
-        .documentIcon {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          background:
-            rgba(22, 142, 255, 0.1);
-
-          border:
-            1px solid
-            rgba(22, 142, 255, 0.25);
-
-          color: #36aaff;
-        }
-
-        .summaryIcon {
-          width: 47px;
-          height: 47px;
-
-          flex-shrink: 0;
-
-          border-radius: 11px;
-
-          font-size: 22px;
-        }
-
-        .summaryText {
-          flex: 1;
-
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-        }
-
-        .summaryText strong {
-          font-size: 14px;
-        }
-
-        .summaryText span {
-          color: #8098b4;
-          font-size: 11px;
-        }
-
-        .summaryStatus {
-          padding:
-            6px 10px;
-
-          border-radius: 999px;
-
-          background:
-            rgba(32, 217, 129, 0.08);
-
-          color: #20d981;
-
-          border:
-            1px solid
-            rgba(32, 217, 129, 0.2);
-
-          font-size: 10px;
-          font-weight: 700;
-        }
-
-        .documentsSection {
-          margin-top: 20px;
-        }
-
-        .sectionHeader {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-
-          margin-bottom: 10px;
-        }
-
-        .sectionHeader h2 {
-          margin: 0;
-          font-size: 17px;
-        }
-
-        .sectionHeader p {
-          margin:
-            5px 0 0;
-
-          color: #718aa6;
-
-          font-size: 10px;
-          line-height: 1.5;
-        }
-
-        .documentCount {
-          width: 30px;
-          height: 30px;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 9px;
-
-          background:
-            rgba(22, 142, 255, 0.1);
-
-          color: #39aaff;
-
-          font-size: 12px;
-          font-weight: 800;
-        }
-
-        .documentList {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-
-        .documentCard {
-          position: relative;
-          width: 100%;
-
-          border-radius: 13px;
-
-          overflow: visible;
-        }
-
-        .documentMainButton {
-          width: 100%;
-
-          display: flex;
-          align-items: center;
-          gap: 12px;
-
-          padding: 12px;
-
-          border: none;
-
-          border-radius:
-            13px 13px 0 0;
-
-          background: transparent;
-
-          color: white;
-
-          text-align: left;
-
-          cursor: pointer;
-        }
-
-        .documentMainButton:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .documentIcon {
-          width: 48px;
-          height: 48px;
-
-          flex-shrink: 0;
-
-          border-radius: 10px;
-
-          font-size: 9px;
-          font-weight: 800;
-        }
-
-        .documentInfo {
-          flex: 1;
-          min-width: 0;
-
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .documentInfo > strong {
-          color: #e9f2fc;
-
-          font-size: 13px;
-          line-height: 1.35;
-        }
-
-        .documentInfo > span {
-          color: #7089a5;
-          font-size: 9px;
-        }
-
-        .documentInfo small {
-          color: #55718f;
-
-          font-size: 8px;
-
-          overflow: hidden;
-
-          white-space: nowrap;
-
-          text-overflow: ellipsis;
-        }
-
-        .detectedDocumentTitle {
-          color: #b9cde3 !important;
-
-          white-space: normal !important;
-
-          line-height: 1.45;
-
-          overflow: visible !important;
-        }
-
-        .detectedDocumentTitle strong {
-          color: #dcecff;
-        }
-
-        .detectedPersonName {
-          color: #7ee7b2 !important;
-
-          white-space: normal !important;
-
-          line-height: 1.45;
-
-          overflow: visible !important;
-        }
-
-        .detectedPersonName strong {
-          color: #b7f7d5;
-        }
-
-        .classificationStatus {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-
-          color: #56b8ff !important;
-        }
-
-        .classificationSuccess {
-          color: #20d981 !important;
-        }
-
-        .classificationWarning {
-          color: #fbbf24 !important;
-        }
-
-        .miniSpinner {
-          width: 10px;
-          height: 10px;
-
-          flex-shrink: 0;
-
-          border:
-            1.5px solid
-            rgba(86, 184, 255, 0.2);
-
-          border-top-color:
-            #56b8ff;
-
-          border-radius: 50%;
-
-          animation:
-            miniSpin
-            0.7s
-            linear
-            infinite;
-        }
-
-        .documentArrow {
-          color: #7590ad;
-          font-size: 27px;
-          font-weight: 300;
-        }
-
-        .documentActions {
-          position: relative;
-
-          display: flex;
-          align-items: center;
-          gap: 8px;
-
-          padding:
-            8px 10px 10px;
-
-          border-top:
-            1px solid
-            rgba(48, 130, 205, 0.14);
-        }
-
-        .typeButton {
-          position: relative;
-
-          flex: 1;
-          min-width: 0;
-
-          display: flex;
-          align-items: center;
-          gap: 7px;
-
-          padding:
-            8px 10px;
-
-          border:
-            1px solid
-            rgba(48, 130, 205, 0.25);
-
-          border-radius: 8px;
-
-          background:
-            rgba(3, 20, 40, 0.7);
-
-          color: #91a8c1;
-
-          text-align: left;
-
-          cursor: pointer;
-        }
-
-        .typeButton.identified {
-          border-color:
-            rgba(32, 217, 129, 0.22);
-        }
-
-        .typeButton.needsType {
-          border-color:
-            rgba(251, 191, 36, 0.3);
-        }
-
-        .typeButton:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .typeButton > span:first-child {
-          color: #5f7b99;
-          font-size: 8px;
-        }
-
-        .typeButton strong {
-          flex: 1;
-          min-width: 0;
-
-          color: #dbeafe;
-
-          font-size: 9px;
-
-          overflow: hidden;
-
-          white-space: nowrap;
-
-          text-overflow: ellipsis;
-        }
-
-        .typeButton.needsType strong {
-          color: #fbbf24;
-        }
-
-        .typeChevron {
-          color: #48aaff;
-          font-size: 13px;
-        }
-
-        .typeMenu {
-          position: absolute;
-
-          left: 10px;
-          right: 78px;
-
-          top: calc(100% - 2px);
-
-          z-index: 50;
-
-          max-height: 280px;
-
-          overflow-y: auto;
-
-          padding: 5px;
-
-          border:
-            1px solid
-            rgba(59, 151, 231, 0.35);
-
-          border-radius: 10px;
-
-          background: #071d36;
-
-          box-shadow:
-            0 18px 45px
-            rgba(0, 0, 0, 0.45);
-        }
-
-        .typeMenuTitle {
-          padding:
-            8px 9px;
-
-          color: #5f7b99;
-
-          font-size: 8px;
-
-          font-weight: 700;
-
-          text-transform: uppercase;
-
-          letter-spacing: 0.5px;
-        }
-
-        .typeOption {
-          width: 100%;
-
-          display: flex;
-          align-items: center;
-          gap: 8px;
-
-          padding: 9px;
-
-          border: none;
-
-          border-radius: 7px;
-
-          background: transparent;
-
-          color: #a9bdd3;
-
-          text-align: left;
-
-          font-size: 9px;
-
-          cursor: pointer;
-        }
-
-        .typeOption:hover,
-        .typeOption.active {
-          background:
-            rgba(22, 142, 255, 0.12);
-
-          color: #42aaff;
-        }
-
-        .typeOption > span {
-          width: 12px;
-
-          color: #20d981;
-
-          font-weight: 800;
-        }
-
-        .removeButton {
-          flex-shrink: 0;
-
-          padding:
-            8px 10px;
-
-          border:
-            1px solid
-            rgba(248, 113, 113, 0.2);
-
-          border-radius: 8px;
-
-          background:
-            rgba(127, 29, 29, 0.08);
-
-          color: #f87171;
-
-          font-size: 9px;
-          font-weight: 700;
-
-          cursor: pointer;
-        }
-
-        .removeButton:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-
-        .addDocumentButton {
-          width: 100%;
-          min-height: 48px;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-
-          margin-top: 10px;
-
-          border:
-            1px dashed
-            rgba(42, 156, 239, 0.42);
-
-          border-radius: 10px;
-
-          background:
-            rgba(22, 142, 255, 0.04);
-
-          color: #42aaff;
-
-          font-size: 11px;
-          font-weight: 700;
-
-          cursor: pointer;
-        }
-
-        .addDocumentButton:disabled {
-          opacity: 0.45;
-          cursor: not-allowed;
-        }
-
-        .addDocumentPlus {
-          width: 22px;
-          height: 22px;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 50%;
-
-          background:
-            rgba(22, 142, 255, 0.12);
-
-          font-size: 18px;
-        }
-
-        .successMessage,
-        .inlineError {
-          display: flex;
-          align-items: flex-start;
-          gap: 9px;
-
-          margin-top: 12px;
-
-          padding:
-            10px 12px;
-
-          border-radius: 9px;
-
-          font-size: 10px;
-          line-height: 1.5;
-        }
-
-        .successMessage {
-          align-items: center;
-
-          border:
-            1px solid
-            rgba(32, 217, 129, 0.2);
-
-          background:
-            rgba(32, 217, 129, 0.06);
-
-          color: #63e6a2;
-        }
-
-        .successMessage span {
-          width: 21px;
-          height: 21px;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 50%;
-
-          background:
-            rgba(32, 217, 129, 0.12);
-        }
-
-        .inlineError {
-          border:
-            1px solid
-            rgba(248, 113, 113, 0.25);
-
-          background:
-            rgba(127, 29, 29, 0.15);
-
-          color: #fca5a5;
-        }
-
-        .inlineError > span {
-          width: 22px;
-          height: 22px;
-
-          flex-shrink: 0;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 50%;
-
-          background:
-            rgba(239, 68, 68, 0.15);
-
-          color: #ff747b;
-
-          font-weight: 800;
-        }
-
-        .nextCard {
-          display: flex;
-          gap: 12px;
-
-          margin-top: 16px;
-
-          padding: 15px;
-
-          border:
-            1px solid
-            rgba(165, 107, 255, 0.2);
-
-          border-radius: 12px;
-
-          background:
-            rgba(94, 52, 152, 0.07);
-        }
-
-        .nextIcon {
-          width: 39px;
-          height: 39px;
-
-          flex-shrink: 0;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 10px;
-
-          background:
-            rgba(165, 107, 255, 0.1);
-
-          color: #b57aff;
-
-          font-size: 19px;
-        }
-
-        .nextCard strong {
-          font-size: 12px;
-        }
-
-        .nextCard p {
-          margin:
-            6px 0 0;
-
-          color: #8299b4;
-
-          font-size: 10px;
-          line-height: 1.6;
-        }
-
-        .continueButton {
-          width: 100%;
-          height: 58px;
-
-          position: relative;
-
-          margin-top: 15px;
-
-          border: none;
-
-          border-radius: 10px;
-
-          background:
-            linear-gradient(
-              90deg,
-              #0875df,
-              #0c65cf
-            );
-
-          color: white;
-
-          font-size: 15px;
-          font-weight: 700;
-
-          cursor: pointer;
-        }
-
-        .continueButton:disabled {
-          opacity: 0.55;
-          cursor: not-allowed;
-        }
-
-        .buttonArrow {
-          position: absolute;
-          right: 20px;
-
-          font-size: 27px;
-        }
-
-        .backToVerify {
-          display: block;
-
-          margin:
-            13px auto 0;
-
-          border: none;
-
-          background: transparent;
-
-          color: #6f8eaf;
-
-          font-size: 11px;
-
-          cursor: pointer;
-        }
-
-        .backToVerify:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-
-        .securityNotice {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 7px;
-
-          margin-top: 19px;
-
-          color: #6f88a5;
-
-          text-align: center;
-
-          font-size: 9px;
-          line-height: 1.5;
-        }
-
-        .modalOverlay {
-          position: fixed;
-          inset: 0;
-
-          z-index: 100;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          padding: 18px;
-
-          background:
-            rgba(0, 7, 17, 0.88);
-
-          backdrop-filter:
-            blur(8px);
-        }
-
-        .previewModal {
-          width: 100%;
-          max-width: 900px;
-
-          height: 90vh;
-
-          display: flex;
-          flex-direction: column;
-
-          overflow: hidden;
-
-          border:
-            1px solid
-            rgba(59, 151, 231, 0.35);
-
-          border-radius: 15px;
-
-          background: #061a32;
-
-          box-shadow:
-            0 30px 90px
-            rgba(0, 0, 0, 0.55);
-        }
-
-        .previewHeader {
-          min-height: 62px;
-
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-
-          gap: 15px;
-
-          padding:
-            10px 14px;
-
-          border-bottom:
-            1px solid
-            rgba(76, 149, 235, 0.15);
-        }
-
-        .previewHeader > div {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-
-          min-width: 0;
-        }
-
-        .previewHeader strong,
-        .previewHeader span {
-          overflow: hidden;
-
-          white-space: nowrap;
-
-          text-overflow: ellipsis;
-        }
-
-        .previewHeader strong {
-          font-size: 13px;
-        }
-
-        .previewHeader span {
-          color: #718aa6;
-          font-size: 9px;
-        }
-
-        .modalDetectedTitle {
-          color: #b9cde3 !important;
-
-          white-space: normal !important;
-        }
-
-        .modalDetectedName {
-          color: #7ee7b2 !important;
-
-          white-space: normal !important;
-        }
-
-        .previewHeader button {
-          width: 36px;
-          height: 36px;
-
-          flex-shrink: 0;
-
-          border: none;
-
-          border-radius: 50%;
-
-          background:
-            rgba(255, 255, 255, 0.06);
-
-          color: white;
-
-          font-size: 24px;
-
-          cursor: pointer;
-        }
-
-        .previewBody {
-          flex: 1;
-          min-height: 0;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          padding: 10px;
-
-          overflow: auto;
-
-          background: #020c19;
-        }
-
-        .previewBody img {
-          max-width: 100%;
-          max-height: 100%;
-
-          object-fit: contain;
-
-          border-radius: 5px;
-        }
-
-        .previewBody iframe {
-          width: 100%;
-          height: 100%;
-
-          border: none;
-
-          background: white;
-        }
-
-        .previewUnavailable {
-          text-align: center;
-
-          max-width: 320px;
-
-          padding: 25px;
-        }
-
-        .previewUnavailable div {
-          font-size: 42px;
-        }
-
-        .previewUnavailable p {
-          margin:
-            10px 0 5px;
-
-          color: white;
-
-          font-size: 15px;
-        }
-
-        .previewUnavailable span {
-          color: #7891ad;
-
-          font-size: 11px;
-          line-height: 1.5;
-        }
-
-        .previewUnavailable button {
-          margin-top: 18px;
-
-          border: none;
-
-          padding:
-            9px 18px;
-
-          border-radius: 8px;
-
-          background: #168eff;
-
-          color: white;
-
-          font-size: 11px;
-          font-weight: 700;
-
-          cursor: pointer;
-        }
-
-        @keyframes miniSpin {
-          to {
-            transform:
-              rotate(360deg);
-          }
-        }
-
-        @media (max-width: 600px) {
-
-          .mobileHeader {
-            height: 70px;
-
-            padding:
-              0 16px;
-          }
-
-          .headerLogo {
-            font-size: 17px;
-          }
-
-          .logoDiamond {
-            font-size: 23px;
-          }
-
-          .pageContent {
-            padding:
-              25px 16px 28px;
-          }
-
-          .reviewBadge {
-            font-size: 9px;
-
-            padding:
-              8px 11px;
-          }
-
-          .intro {
-            padding:
-              27px 0 22px;
-          }
-
-          .intro h1 {
-            font-size:
-              clamp(
-                29px,
-                8.5vw,
-                38px
-              );
-          }
-
-          .intro p {
-            font-size: 11px;
-          }
-
-          .summaryCard {
-            padding: 12px;
-          }
-
-          .summaryIcon {
-            width: 42px;
-            height: 42px;
-            font-size: 19px;
-          }
-
-          .summaryText strong {
-            font-size: 11px;
-          }
-
-          .summaryText span {
-            font-size: 9px;
-          }
-
-          .summaryStatus {
-            font-size: 8px;
-
-            padding:
-              5px 8px;
-          }
-
-          .sectionHeader h2 {
-            font-size: 15px;
-          }
-
-          .sectionHeader p {
-            font-size: 9px;
-          }
-
-          .documentMainButton {
-            padding: 10px;
-          }
-
-          .documentIcon {
-            width: 43px;
-            height: 43px;
-          }
-
-          .documentInfo > strong {
-            font-size: 10px;
-          }
-
-          .documentInfo > span {
-            font-size: 8px;
-          }
-
-          .documentInfo small {
-            font-size: 7px;
-          }
-
-          .detectedDocumentTitle,
-          .detectedPersonName {
-            white-space: normal !important;
-          }
-
-          .documentActions {
-            padding:
-              7px 8px 8px;
-          }
-
-          .typeButton {
-            padding:
-              7px 8px;
-          }
-
-          .typeButton strong {
-            font-size: 8px;
-          }
-
-          .removeButton {
-            padding:
-              7px 8px;
-
-            font-size: 8px;
-          }
-
-          .typeMenu {
-            left: 8px;
-            right: 72px;
-          }
-
-          .nextCard p {
-            font-size: 9px;
-          }
-
-          .continueButton {
-            height: 56px;
-            font-size: 13px;
-          }
-
-          .previewModal {
-            height: 92vh;
-            border-radius: 12px;
-          }
-        }
-
-        @media (max-width: 380px) {
-
-          .pageContent {
-            padding-left: 12px;
-            padding-right: 12px;
-          }
-
-          .headerLogo {
-            font-size: 16px;
-          }
-
-          .documentInfo > strong {
-            font-size: 9px;
-          }
-
-          .typeButton strong {
-            max-width: 110px;
-          }
-        }
-
-      `}</style>
-
-    </main>
+        {/* ====================================================
+            DOCUMENT PREVIEW MODAL
+            ==================================================== */}
+
+        {selectedDocument && (
+          <div
+            className={
+              styles.modalOverlay
+            }
+            onClick={() =>
+              setSelectedDocument(
+                null,
+              )
+            }
+          >
+            <div
+              className={
+                styles.previewModal
+              }
+              onClick={(event) =>
+                event.stopPropagation()
+              }
+            >
+              <div
+                className={
+                  styles.previewHeader
+                }
+              >
+                <div>
+                  <strong>
+                    {getDisplayTitle(
+                      selectedDocument,
+                      selectedDocument.originalIndex,
+                    )}
+                  </strong>
+
+                  {selectedDocument.documentTitleDetected && (
+                    <span
+                      className={
+                        styles.modalDetectedTitle
+                      }
+                    >
+                      AI detected
+                      title:{" "}
+                      {
+                        selectedDocument.documentTitleDetected
+                      }
+                    </span>
+                  )}
+
+                  {selectedDocument.nameDetected && (
+                    <span
+                      className={
+                        styles.modalDetectedName
+                      }
+                    >
+                      Name detected:{" "}
+                      {
+                        selectedDocument.nameDetected
+                      }
+                    </span>
+                  )}
+
+                  <span>
+                    {
+                      selectedDocument.type
+                    }
+                    {" • "}
+                    {
+                      selectedDocument.name
+                    }
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedDocument(
+                      null,
+                    )
+                  }
+                  aria-label="Close document preview"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div
+                className={
+                  styles.previewBody
+                }
+              >
+                {selectedDocument.previewUrl &&
+                isImage(
+                  selectedDocument.type,
+                ) ? (
+                  <img
+                    src={
+                      selectedDocument.previewUrl
+                    }
+                    alt={getDisplayTitle(
+                      selectedDocument,
+                      selectedDocument.originalIndex,
+                    )}
+                  />
+                ) : selectedDocument.previewUrl &&
+                  isPdf(
+                    selectedDocument.type,
+                  ) ? (
+                  <iframe
+                    src={
+                      selectedDocument.previewUrl
+                    }
+                    title={getDisplayTitle(
+                      selectedDocument,
+                      selectedDocument.originalIndex,
+                    )}
+                  />
+                ) : (
+                  <div
+                    className={
+                      styles.previewUnavailable
+                    }
+                  >
+                    <div>
+                      📄
+                    </div>
+
+                    <p>
+                      Preview
+                      unavailable
+                    </p>
+
+                    <span>
+                      The file was
+                      uploaded, but
+                      the preview
+                      could not be
+                      retrieved. The
+                      document
+                      remains in the
+                      verification
+                      package.
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedDocument(
+                          null,
+                        )
+                      }
+                    >
+                      Close
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </AppShell>
   );
 }
 
 /*
  * ============================================================
- * SCREEN
+ * LOADING / ERROR SCREEN
  * ============================================================
  */
 
@@ -4437,17 +3293,46 @@ function Screen({
 
   onBack?: () => void;
 }) {
-  return (
-    <main className="screen">
+  if (!error) {
+    return (
+      <main className={styles.loadingPage}>
+        <div className={styles.loadingBrand}>
+          <span className={styles.loadingDiamond} />
 
+          <span>
+            PropertySure
+            <strong> AI</strong>
+          </span>
+        </div>
+
+        <div
+          className={styles.loadingIndicator}
+          aria-hidden="true"
+        >
+          <span />
+          <span />
+          <span />
+        </div>
+
+        <p className={styles.loadingText}>
+          Loading...
+        </p>
+      </main>
+    );
+  }
+
+  return (
+    <main
+      className={
+        styles.screen
+      }
+    >
       <div
         className={
-          error
-            ? "errorIcon"
-            : "spinner"
+          styles.errorIcon
         }
       >
-        {error ? "!" : ""}
+        !
       </div>
 
       <h2>
@@ -4458,136 +3343,16 @@ function Screen({
         {detail}
       </p>
 
-      {error && (
+      {onBack && (
         <button
           type="button"
-          onClick={onBack}
+          onClick={
+            onBack
+          }
         >
           Back to Verify
         </button>
       )}
-
-      <style jsx>{`
-
-        .screen {
-          min-height: 100vh;
-
-          display: flex;
-
-          flex-direction: column;
-
-          align-items: center;
-
-          justify-content: center;
-
-          text-align: center;
-
-          padding: 30px;
-
-          background:
-            linear-gradient(
-              180deg,
-              #031328,
-              #021124
-            );
-
-          color: white;
-
-          font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
-        }
-
-        .spinner {
-          width: 44px;
-          height: 44px;
-
-          border:
-            3px solid
-            rgba(22, 142, 255, 0.18);
-
-          border-top-color:
-            #168eff;
-
-          border-radius: 50%;
-
-          animation:
-            spin
-            0.8s
-            linear
-            infinite;
-
-          margin-bottom: 20px;
-        }
-
-        .errorIcon {
-          width: 58px;
-          height: 58px;
-
-          display: flex;
-
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 50%;
-
-          background:
-            rgba(239, 68, 68, 0.12);
-
-          border:
-            1px solid
-            rgba(239, 68, 68, 0.35);
-
-          color: #ff6b73;
-
-          font-size: 28px;
-          font-weight: 700;
-
-          margin-bottom: 18px;
-        }
-
-        .screen h2 {
-          margin: 0;
-          font-size: 22px;
-        }
-
-        .screen p {
-          max-width: 500px;
-
-          color: #91a8c2;
-
-          line-height: 1.6;
-
-          font-size: 13px;
-        }
-
-        .screen button {
-          border: none;
-
-          padding:
-            12px 22px;
-
-          border-radius: 9px;
-
-          background: #168eff;
-
-          color: white;
-
-          font-weight: 700;
-
-          cursor: pointer;
-        }
-
-        @keyframes spin {
-          to {
-            transform:
-              rotate(360deg);
-          }
-        }
-
-      `}</style>
-
     </main>
   );
 }

@@ -1,10 +1,13 @@
+/* =========================================================
+   SETTINGS PAGE
+   PropertySure AI
+========================================================= */
+
 .page {
   min-height: 100vh;
   width: 100%;
-  display: flex;
 
   background: #ffffff;
-
   color: #18253a;
 
   font-family:
@@ -20,8 +23,7 @@
   box-sizing: border-box;
 }
 
-.page button,
-.page select {
+.page button {
   font-family: inherit;
 }
 
@@ -52,36 +54,33 @@
 
 /* =========================================================
    LOADING
+   SAME PROPERTYsure AI STANDARD
 ========================================================= */
 
-.loading {
+.loadingPage {
   min-height: 100vh;
 
-  background:
-    radial-gradient(
-      circle at 70% 0%,
-      rgba(0, 123, 255, 0.18),
-      transparent 30%
-    ),
-    #06152f;
-
-  color: #ffffff;
-
-  font-family:
-    Inter,
-    Arial,
-    Helvetica,
-    sans-serif;
-
   display: flex;
-
   flex-direction: column;
 
   align-items: center;
-
   justify-content: center;
 
-  gap: 10px;
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(22, 142, 255, 0.10),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      #061b38 0%,
+      #031229 100%
+    );
+
+  color: #ffffff;
+
+  text-align: center;
 }
 
 .loadingBrand {
@@ -89,475 +88,64 @@
 
   align-items: center;
 
-  gap: 8px;
+  gap: 10px;
 
-  font-size: 22px;
+  color: #ffffff;
 
-  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: -0.025em;
 }
 
 .loadingBrand strong {
   color: #168eff;
 }
 
-.loadingLogo {
-  color: #168eff;
+.loadingDiamond {
+  width: 15px;
+  height: 15px;
 
-  font-size: 42px;
+  display: inline-block;
 
-  line-height: 1;
-}
+  flex: 0 0 15px;
 
-.loadingText {
-  color: #8ea4c3;
+  background: #168eff;
 
-  font-size: 14px;
-}
+  transform: rotate(45deg);
 
-/* =========================================================
-   SIDEBAR
-========================================================= */
-
-.sidebar {
-  width: 245px;
-
-  min-width: 245px;
-
-  min-height: 100vh;
-
-  padding:
-    28px 20px;
-
-  background:
-    rgba(4, 20, 47, 0.98);
-
-  border-right:
-    1px solid
-    rgba(83, 157, 255, 0.18);
-
-  display: flex;
-
-  flex-direction: column;
-}
-
-.brandButton {
-  border: none;
-
-  background: transparent;
-
-  color: white;
-
-  padding: 0;
-
-  text-align: left;
-
-  cursor: pointer;
-}
-
-.brandName {
-  display: flex;
-
-  align-items: center;
-
-  gap: 7px;
-
-  font-size: 22px;
-
-  font-weight: 700;
-
-  letter-spacing: -0.35px;
-
-  white-space: nowrap;
-}
-
-.brandName strong {
-  color: #168eff;
-}
-
-.brandLogoDiamond {
-  color: #168eff;
-
-  font-size: 25px;
-
-  line-height: 1;
-}
-
-.brandSubtitle {
-  margin-top: 10px;
-
-  padding-left: 2px;
-
-  color: #8ea4c3;
-
-  font-size: 12px;
-
-  line-height: 1.5;
-}
-
-/* =========================================================
-   SIDEBAR NAV
-========================================================= */
-
-.sidebarNav {
-  margin-top: 28px;
-}
-
-.navItem {
-  width: 100%;
-
-  min-height: 48px;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 14px;
-
-  padding:
-    0 14px;
-
-  margin-bottom: 5px;
-
-  border: none;
-
-  border-radius: 10px;
-
-  background: transparent;
-
-  color: #aebed4;
-
-  font-size: 14px;
-
-  cursor: pointer;
-
-  text-align: left;
-
-  transition:
-    background 0.2s,
-    color 0.2s;
-}
-
-.navItem:hover {
-  background:
-    rgba(24, 112, 200, 0.14);
-
-  color: white;
-}
-
-.navActive {
-  color: white !important;
-
-  background:
-    linear-gradient(
-      90deg,
-      #0879df,
-      #1268b7
-    );
+  border-radius: 2px;
 
   box-shadow:
-    0 5px 20px
-    rgba(0, 120, 255, 0.2);
+    0 0 18px
+    rgba(22, 142, 255, 0.35);
+
+  animation:
+    loadingDiamondPulse
+    1.6s
+    ease-in-out
+    infinite;
 }
 
-.navIcon {
-  width: 20px;
-
-  min-width: 20px;
-
-  height: 20px;
-
-  text-align: center;
-
-  color: #82b9f2;
-
-  flex-shrink: 0;
-
+.loadingIndicator {
   display: flex;
 
   align-items: center;
 
-  justify-content: center;
+  gap: 5px;
 
-  line-height: 1;
+  margin-top: 22px;
+
+  height: 14px;
 }
 
-.navIcon .icon {
-  width: 20px;
-
-  min-width: 20px;
-
-  height: 20px;
-
-  font-size: 18px;
-
-  line-height: 1;
-}
-
-.navActive .navIcon {
-  color: #ffffff;
-}
-
-.accountLabel {
-  color: #5f789a;
-
-  font-size: 10px;
-
-  letter-spacing: 1.5px;
-
-  margin:
-    28px 14px 10px;
-}
-
-/* =========================================================
-   SUPPORT
-========================================================= */
-
-.helpBox {
-  margin-top: auto;
-
-  padding: 16px;
-
-  border:
-    1px solid
-    rgba(71, 151, 255, 0.25);
-
-  border-radius: 12px;
-
-  background:
-    rgba(16, 88, 170, 0.08);
-}
-
-.helpTitle {
-  font-size: 13px;
-
-  font-weight: 600;
-
-  margin-bottom: 7px;
-
-  color: #ffffff;
-}
-
-.helpText {
-  color: #849ab8;
-
-  font-size: 11px;
-
-  line-height: 1.5;
-}
-
-.supportButton {
-  width: 100%;
-
-  margin-top: 12px;
-
-  padding: 9px;
-
-  border-radius: 7px;
-
-  border:
-    1px solid
-    #1678df;
-
-  background: transparent;
-
-  color: #7eb9f5;
-
-  cursor: pointer;
-}
-
-/* =========================================================
-   SIDEBAR USER
-========================================================= */
-
-.sidebarUser {
-  width: 100%;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 10px;
-
-  margin-top: 20px;
-
-  padding: 5px;
-
-  border: none;
-
-  background: transparent;
-
-  color: white;
-
-  text-align: left;
-
-  cursor: pointer;
-}
-
-.avatar {
-  width: 36px;
-
-  height: 36px;
-
-  flex-shrink: 0;
-
-  border-radius: 50%;
-
-  background: #0879d8;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  font-weight: 700;
-
-  color: white;
-}
-
-.userInfo {
-  min-width: 0;
-}
-
-.userName {
-  font-size: 13px;
-
-  font-weight: 600;
-
-  white-space: nowrap;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-}
-
-.userPlan {
-  color: #7f96b4;
-
-  font-size: 11px;
-
-  margin-top: 3px;
-}
-
-/* =========================================================
-   MAIN
-========================================================= */
-
-.main {
-  flex: 1;
-
-  min-width: 0;
-
-  padding:
-    30px 34px 50px;
-
-  overflow-x: hidden;
-
-  background: #ffffff;
-
-  color: #18253a;
-}
-
-/* =========================================================
-   DESKTOP HEADER
-========================================================= */
-
-.desktopHeader {
-  display: flex;
-
-  justify-content: space-between;
-
-  align-items: flex-start;
-
-  gap: 25px;
-
-  padding-bottom: 22px;
-
-  border-bottom:
-    1px solid
-    #dce4ed;
-
-  margin-bottom: 22px;
-
-  background: #ffffff;
-}
-
-.eyebrow {
-  color: #7791b3;
-
-  font-size: 11px;
-
-  letter-spacing: 1.5px;
-
-  margin-bottom: 8px;
-}
-
-.desktopHeader h1 {
-  margin: 0;
-
-  color: #18253a;
-
-  font-size:
-    clamp(24px, 3vw, 32px);
-
-  font-weight: 700;
-}
-
-.desktopHeader p {
-  color: #71849e;
-
-  margin:
-    8px 0 0;
-
-  font-size: 13px;
-}
-
-/* =========================================================
-   NOTIFICATION
-========================================================= */
-
-.notification {
-  width: 40px;
-
-  height: 40px;
-
-  border:
-    1px solid
-    #cfdbe8;
-
-  border-radius: 50%;
-
-  background: #ffffff;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  position: relative;
-
-  cursor: pointer;
-
-  padding: 0;
-
-  color: #18253a;
-}
-
-.notification .icon {
-  font-size: 17px;
-}
-
-.notificationDot {
-  position: absolute;
-
-  width: 8px;
-
-  height: 8px;
-
-  top: 5px;
-
-  right: 3px;
+.loadingIndicator span {
+  width: 6px;
+  height: 6px;
+
+  display: block;
 
   border-radius: 50%;
 
@@ -565,86 +153,208 @@
 
   box-shadow:
     0 0 8px
-    rgba(22, 142, 255, 0.6);
+    rgba(22, 142, 255, 0.45);
+
+  animation:
+    loadingDot
+    1.2s
+    ease-in-out
+    infinite;
 }
 
-.notification:hover {
-  border-color:
-    #168eff;
+.loadingIndicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
 
-  background:
-    #f5f9fd;
+.loadingIndicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.loadingText {
+  margin: 10px 0 0;
+
+  color: #91a7c3;
+
+  font-size: 12px;
+  line-height: 1.3;
+
+  font-weight: 500;
+
+  letter-spacing: 0.01em;
+}
+
+@keyframes loadingDot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes loadingDiamondPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: rotate(45deg) scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1.08);
+  }
 }
 
 /* =========================================================
-   CONTENT GRID
+   MAIN CONTENT
 ========================================================= */
 
-.contentGrid {
-  display: grid;
+.content {
+  width: 100%;
 
-  grid-template-columns:
-    270px
-    minmax(0, 1fr);
-
-  gap: 14px;
-
-  align-items: start;
+  padding:
+    30px 34px 55px;
 
   background: #ffffff;
 }
 
 /* =========================================================
-   CATEGORIES
+   PAGE INTRODUCTION
 ========================================================= */
 
-.categoriesCard {
+/*
+   IMPORTANT:
+
+   AppShell already provides the desktop page title:
+   "Settings"
+
+   Therefore this page-level heading is hidden on desktop.
+
+   It is shown only on mobile because the mobile AppShell
+   contains only the PropertySure AI brand/header.
+*/
+
+.mobilePageHeader {
+  display: none;
+
+  width: 100%;
+
+  margin: 0 auto;
+
+  padding:
+    0 0 22px;
+}
+
+.mobileEyebrow {
+  color: #7791b3;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  letter-spacing: 1.5px;
+
+  line-height: 1.2;
+
+  margin-bottom: 8px;
+}
+
+.mobilePageHeader h1 {
+  margin: 0;
+
+  color: #18253a;
+
+  font-size: 30px;
+  font-weight: 700;
+
+  line-height: 1.1;
+
+  letter-spacing: -0.7px;
+}
+
+.mobilePageHeader p {
+  margin:
+    8px 0 0;
+
+  color: #71849e;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+/* =========================================================
+   SETTINGS CARD
+========================================================= */
+
+.settingsCard {
+  width: min(
+    900px,
+    100%
+  );
+
+  margin:
+    0 auto;
+
   border:
     1px solid
     #dce4ed;
 
-  border-radius: 12px;
+  border-radius: 14px;
 
   background: #ffffff;
 
-  padding:
-    12px 9px;
-
   overflow: hidden;
+
+  box-shadow:
+    0 3px 14px
+    rgba(19, 48, 82, 0.035);
 }
 
-.cardLabel {
-  color: #5f789a;
+/* =========================================================
+   SETTINGS CARD HEADER
+========================================================= */
 
-  font-size: 10px;
+/*
+   The AppShell/page heading already identifies this page.
 
-  font-weight: 700;
+   The inner "Settings" heading is therefore removed to
+   prevent the page from showing Settings twice.
+*/
 
-  letter-spacing: 1.5px;
-
-  padding:
-    6px 10px 11px;
+.settingsCardHeader {
+  display: none;
 }
 
-.categoryList {
-  display: flex;
+/* =========================================================
+   SETTINGS LIST
+========================================================= */
 
-  flex-direction: column;
-
-  gap: 4px;
-}
-
-.categoryItem {
+.settingsList {
   width: 100%;
 
-  min-height: 67px;
+  padding:
+    8px 0;
+}
 
-  padding: 10px;
+.settingsRow,
+.signOutRow {
+  width: 100%;
 
-  border:
-    1px solid transparent;
+  min-height: 78px;
 
-  border-radius: 10px;
+  padding:
+    12px 24px;
+
+  border: none;
+
+  border-bottom:
+    1px solid
+    #e6ebf0;
 
   background: #ffffff;
 
@@ -654,54 +364,49 @@
 
   align-items: center;
 
-  gap: 10px;
+  gap: 14px;
 
   text-align: left;
 
   cursor: pointer;
 
   transition:
-    background 0.2s,
-    color 0.2s;
+    background 0.2s ease;
 }
 
-.categoryItem:hover {
-  background:
-    #f5f9fd;
+.settingsRow:hover {
+  background: #f8fbfe;
 }
 
-.categoryActive {
-  color: #18253a;
-
-  background: #ffffff;
-
-  border-color: transparent;
-
-  box-shadow: none;
+.settingsRow:focus,
+.signOutRow:focus {
+  outline: none;
 }
 
-.categoryActive:hover {
-  background:
-    #f5f9fd;
-}
+/* =========================================================
+   SETTINGS ICON
+========================================================= */
 
-.categoryIcon {
-  width: 34px;
+.settingsRowIcon {
+  width: 42px;
+  height: 42px;
 
-  height: 34px;
+  flex:
+    0 0 42px;
 
-  flex: 0 0 34px;
-
-  border-radius: 10px;
+  border-radius: 11px;
 
   display: flex;
 
   align-items: center;
-
   justify-content: center;
 }
 
-.categoryText {
+/* =========================================================
+   SETTINGS TEXT
+========================================================= */
+
+.settingsRowText {
   min-width: 0;
 
   flex: 1;
@@ -711,57 +416,91 @@
   flex-direction: column;
 }
 
-.categoryText strong {
+.settingsRowText strong {
   color: #18253a;
 
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 700;
 
   line-height: 1.25;
-
-  font-weight: 700;
 }
 
-.categoryText small {
+.settingsRowText small {
   margin-top: 4px;
 
-  color: #72849d;
+  color: #71849e;
 
-  font-size: 8px;
+  font-size: 10px;
 
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
-.categoryActive .categoryText small {
-  color: #72849d;
-}
+/* =========================================================
+   CHEVRON
+========================================================= */
 
-.categoryChevron {
-  color: #70839c;
+.settingsRowArrow {
+  width: 24px;
+  height: 24px;
 
-  display: none;
+  flex:
+    0 0 24px;
+
+  display: flex;
 
   align-items: center;
-
   justify-content: center;
 
-  flex: 0 0 auto;
+  color: #8295aa;
+}
 
-  line-height: 1;
+.settingsRowArrow .icon {
+  font-size: 22px !important;
 
   font-weight: 400;
 }
 
-.categoryChevron .icon {
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+/* =========================================================
+   SIGN OUT
+========================================================= */
 
-  font-size: 24px !important;
+.signOutRow {
+  border-bottom: none;
 
-  font-weight: 400;
+  margin-top: 4px;
 
-  line-height: 1;
+  color: #ff5963;
+}
+
+.signOutRow:hover {
+  background:
+    rgba(255, 65, 75, 0.045);
+}
+
+.signOutIcon {
+  width: 42px;
+  height: 42px;
+
+  flex:
+    0 0 42px;
+
+  border-radius: 11px;
+
+  background:
+    rgba(255, 68, 80, 0.12);
+
+  color: #ff5963;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.signOutRow
+  .settingsRowText
+  strong {
+  color: #ff5963;
 }
 
 /* =========================================================
@@ -811,919 +550,81 @@
 }
 
 /* =========================================================
-   SIGN OUT
+   TABLET
 ========================================================= */
 
-.signOutCategory {
-  width: 100%;
-
-  min-height: 67px;
-
-  margin-top: 4px;
-
-  padding: 10px;
-
-  border:
-    1px solid transparent;
-
-  border-radius: 10px;
-
-  background: #ffffff;
-
-  color: #ff5963;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 10px;
-
-  text-align: left;
-
-  cursor: pointer;
-}
-
-.signOutCategory:hover {
-  background:
-    rgba(255, 65, 75, 0.06);
-}
-
-.signOutIcon {
-  width: 34px;
-
-  height: 34px;
-
-  flex: 0 0 34px;
-
-  border-radius: 10px;
-
-  background:
-    rgba(255, 68, 80, 0.12);
-
-  color: #ff5963;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-}
-
-.signOutText {
-  display: flex;
-
-  flex-direction: column;
-
-  min-width: 0;
-}
-
-.signOutText strong {
-  font-size: 11px;
-
-  color: #ff5963;
-}
-
-.signOutText small {
-  margin-top: 4px;
-
-  color: #7389a5;
-
-  font-size: 8px;
-}
-
-/* =========================================================
-   SETTINGS CONTENT
-========================================================= */
-
-.settingsContent {
-  min-width: 0;
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 13px;
-
-  background: #ffffff;
-}
-
-/* =========================================================
-   SETTINGS CARDS
-========================================================= */
-
-.card,
-.dangerCard,
-.saveNotice {
-  border:
-    1px solid
-    #dce4ed;
-
-  border-radius: 12px;
-
-  background: #ffffff;
-
-  color: #18253a;
-}
-
-.card {
-  padding: 18px;
-}
-
-.sectionHeader {
-  margin-bottom: 13px;
-}
-
-.sectionHeader h2 {
-  margin: 0;
-
-  color: #18253a;
-
-  font-size: 16px;
-
-  line-height: 1.2;
-
-  letter-spacing: -0.2px;
-}
-
-.sectionHeader p {
-  margin:
-    6px 0 0;
-
-  color: #71849e;
-
-  font-size: 10px;
-
-  line-height: 1.45;
-}
-
-.settingsRows {
-  border:
-    1px solid
-    #dce4ed;
-
-  border-radius: 10px;
-
-  overflow: hidden;
-
-  background: #ffffff;
-}
-
-.settingRow {
-  min-height: 64px;
-
-  padding:
-    10px 12px;
-
-  border-bottom:
-    1px solid
-    #e1e7ee;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 11px;
-
-  background: #ffffff;
-}
-
-.settingRow:last-child {
-  border-bottom: 0;
-}
-
-.settingIcon {
-  width: 34px;
-
-  height: 34px;
-
-  flex: 0 0 34px;
-
-  border-radius: 50%;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-}
-
-.settingText {
-  min-width: 0;
-
-  flex: 1;
-}
-
-.settingTitle {
-  color: #18253a;
-
-  font-size: 11px;
-
-  font-weight: 700;
-
-  line-height: 1.2;
-}
-
-.settingDescription {
-  margin-top: 4px;
-
-  color: #71849e;
-
-  font-size: 8.5px;
-
-  line-height: 1.35;
-}
-
-.settingControl {
-  flex: 0 0 auto;
-
-  display: flex;
-
-  align-items: center;
-}
-
-/* =========================================================
-   PROFILE BUTTON
-========================================================= */
-
-.profileButton {
-  height: 32px;
-
-  padding:
-    0 13px;
-
-  border:
-    1px solid
-    rgba(53, 208, 126, 0.45);
-
-  border-radius: 7px;
-
-  background: transparent;
-
-  color: #15945f;
-
-  font-size: 9px;
-
-  cursor: pointer;
-}
-
-.profileButton:hover {
-  background:
-    rgba(49, 202, 123, 0.08);
-}
-
-/* =========================================================
-   SELECTS
-========================================================= */
-
-.select {
-  width: 135px;
-
-  height: 32px;
-
-  padding:
-    0 8px;
-
-  border:
-    1px solid
-    #cfdbe8;
-
-  border-radius: 7px;
-
-  outline: none;
-
-  background: #ffffff;
-
-  color: #18253a;
-
-  font-size: 9px;
-}
-
-.select.timezone {
-  width: 185px;
-}
-
-.select:focus {
-  border-color:
-    #168eff;
-}
-
-/* =========================================================
-   TOGGLE
-========================================================= */
-
-.toggle {
-  width: 40px;
-
-  height: 23px;
-
-  padding: 2px;
-
-  border: 0;
-
-  border-radius: 99px;
-
-  background: #d3dce6;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: flex-start;
-
-  cursor: pointer;
-
-  transition: 0.2s ease;
-}
-
-.toggle span {
-  width: 19px;
-
-  height: 19px;
-
-  border-radius: 50%;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 1px 3px
-    rgba(0, 0, 0, 0.15);
-
-  transition: 0.2s ease;
-}
-
-.toggleOn {
-  background: #168eff;
-
-  justify-content: flex-end;
-
-  box-shadow:
-    0 0 10px
-    rgba(22, 142, 255, 0.25);
-}
-
-/* =========================================================
-   DANGER ZONE
-========================================================= */
-
-.dangerCard {
-  padding: 18px;
-}
-
-.dangerRow {
-  min-height: 70px;
-
-  margin-top: 11px;
-
-  padding:
-    10px 11px;
-
-  border:
-    1px solid
-    #dce4ed;
-
-  border-radius: 8px;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 11px;
-
-  background: #ffffff;
-}
-
-.dangerIcon {
-  width: 36px;
-
-  height: 36px;
-
-  flex: 0 0 36px;
-
-  border-radius: 10px;
-
-  background:
-    rgba(255, 62, 74, 0.13);
-
-  color: #ff5963;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-}
-
-.dangerText {
-  min-width: 0;
-
-  flex: 1;
-
-  display: flex;
-
-  flex-direction: column;
-}
-
-.dangerText strong {
-  color: #18253a;
-
-  font-size: 10px;
-}
-
-.dangerText span {
-  margin-top: 4px;
-
-  color: #71869f;
-
-  font-size: 8px;
-
-  line-height: 1.4;
-}
-
-.deleteButton {
-  min-width: 135px;
-
-  height: 34px;
-
-  padding:
-    0 12px;
-
-  border:
-    1px solid
-    #b53e49;
-
-  border-radius: 7px;
-
-  background: transparent;
-
-  color: #ff5963;
-
-  font-size: 9px;
-
-  cursor: pointer;
-}
-
-.deleteButton:hover {
-  background:
-    rgba(255, 70, 80, 0.07);
-}
-
-/* =========================================================
-   SAVE NOTICE
-========================================================= */
-
-.saveNotice {
-  min-height: 76px;
-
-  padding:
-    13px 15px;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 12px;
-
-  background: #ffffff;
-}
-
-.saveIcon {
-  width: 36px;
-
-  height: 36px;
-
-  flex: 0 0 36px;
-
-  border-radius: 50%;
-
-  color: #168eff;
-
-  background:
-    rgba(35, 135, 255, 0.12);
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-}
-
-.saveNotice strong {
-  font-size: 10px;
-
-  color: #18253a;
-}
-
-.saveNotice p {
-  margin:
-    4px 0 0;
-
-  color: #71869f;
-
-  font-size: 8px;
+@media (max-width: 1050px) {
+
+  .content {
+    padding:
+      25px 24px 45px;
+  }
+
+  .settingsCard {
+    width: min(
+      900px,
+      100%
+    );
+  }
 }
 
 /* =========================================================
    MOBILE
 ========================================================= */
 
-.mobileHeader,
-.mobileMenu,
-.mobileContent,
-.mobileBottomNav {
-  display: none;
-}
-
-/* =========================================================
-   TABLET
-========================================================= */
-
-@media (max-width: 1050px) {
-  .sidebar {
-    width: 210px;
-
-    min-width: 210px;
-  }
-
-  .main {
-    padding:
-      25px 22px 40px;
-
-    background: #ffffff;
-  }
-
-  .contentGrid {
-    grid-template-columns:
-      235px
-      minmax(0, 1fr);
-
-    background: #ffffff;
-  }
-
-  .select {
-    width: 115px;
-  }
-
-  .select.timezone {
-    width: 165px;
-  }
-}
-
-/* =========================================================
-   PHONE
-========================================================= */
-
 @media (max-width: 700px) {
-  .page {
-    display: block;
 
+  .page {
     min-height: 100vh;
 
-    padding-bottom: 75px;
+    padding-bottom: 0;
 
     background: #ffffff;
-
-    color: #18253a;
-  }
-
-  .sidebar {
-    display: none;
-  }
-
-  .main {
-    width: 100%;
-
-    padding:
-      0 15px 30px;
-
-    background: #ffffff;
-
-    color: #18253a;
-  }
-
-  /* =======================================================
-     MOBILE HEADER
-  ======================================================= */
-
-  .mobileHeader {
-    position: sticky;
-
-    top: 0;
-
-    z-index: 100;
-
-    height: 72px;
-
-    margin:
-      0 -15px;
-
-    padding:
-      0 14px;
-
-    display: grid;
-
-    grid-template-columns:
-      44px
-      minmax(0, 1fr)
-      44px;
-
-    align-items: center;
-
-    background: #06152f;
-
-    border-bottom:
-      1px solid
-      #193650;
-  }
-
-  .menuButton {
-    width: 40px;
-
-    height: 40px;
-
-    border: 0;
-
-    background: transparent;
-
-    color: #ffffff;
-
-    padding: 5px;
-
-    cursor: pointer;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-  }
-
-  .mobileLogoButton {
-    height: 40px;
-
-    border: none;
-
-    background: transparent;
-
-    color: #ffffff;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 7px;
-
-    font-size: 17px;
-
-    font-weight: 700;
-
-    letter-spacing: -0.2px;
-
-    cursor: pointer;
-
-    min-width: 0;
-  }
-
-  .mobileLogoButton strong {
-    color: #168eff;
-  }
-
-  .mobileLogoDiamond {
-    color: #168eff;
-
-    font-size: 23px;
-
-    line-height: 1;
-
-    flex-shrink: 0;
-  }
-
-  .mobileBell {
-    width: 40px;
-
-    height: 40px;
-
-    border: 0;
-
-    background: transparent;
-
-    color: #ffffff;
-
-    position: relative;
-
-    display: grid;
-
-    place-items: center;
-
-    cursor: pointer;
-
-    padding: 0;
-  }
-
-  .mobileNotificationDot {
-    position: absolute;
-
-    width: 8px;
-
-    height: 8px;
-
-    top: 5px;
-
-    right: 3px;
-
-    border-radius: 50%;
-
-    background: #168eff;
-
-    box-shadow:
-      0 0 8px
-      rgba(22, 142, 255, 0.6);
-  }
-
-  /* =======================================================
-     MOBILE MENU
-  ======================================================= */
-
-  .mobileMenu {
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 200;
-
-    display: block;
-
-    background: #06152f;
-
-    color: #ffffff;
-
-    padding: 22px;
-
-    overflow-y: auto;
-  }
-
-  .mobileMenuHeader {
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: flex-start;
-  }
-
-  .mobileMenuLogo {
-    border: 0;
-
-    background: transparent;
-
-    color: white;
-
-    padding: 0;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    font-size: 20px;
-
-    font-weight: 700;
-
-    cursor: pointer;
-  }
-
-  .mobileMenuLogo > span {
-    color: #168eff;
-
-    font-size: 25px;
-
-    line-height: 1;
-  }
-
-  .mobileMenuLogo strong {
-    color: #168eff;
-  }
-
-  .mobileMenuSubtitle {
-    color: #8fa5c2;
-
-    font-size: 11px;
-
-    line-height: 1.5;
-
-    margin-top: 8px;
-  }
-
-  .closeMenu {
-    border: 0;
-
-    background: transparent;
-
-    color: white;
-
-    font-size: 30px;
-
-    cursor: pointer;
-  }
-
-  .mobileMenuNav {
-    margin-top: 35px;
-  }
-
-  .mobileNavItem {
-    width: 100%;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 14px;
-
-    padding:
-      16px 14px;
-
-    border-radius: 10px;
-
-    border: none;
-
-    background: transparent;
-
-    color: #b3c3d8;
-
-    font-size: 14px;
-
-    margin-bottom: 5px;
-
-    cursor: pointer;
-
-    text-align: left;
-  }
-
-  .mobileNavItem:hover {
-    background:
-      rgba(25, 111, 200, 0.14);
-  }
-
-  .mobileNavActive {
-    background:
-      linear-gradient(
-        90deg,
-        #0879df,
-        #1268b7
-      );
-
-    color: white;
-  }
-
-  .mobileNavActive .navIcon {
-    color: white;
-  }
-
-  .logoutItem {
-    color: #ff8b91;
-  }
-
-  .mobileAccountLabel {
-    color: #617996;
-
-    font-size: 10px;
-
-    letter-spacing: 1.5px;
-
-    margin:
-      28px 14px 10px;
   }
 
   /* =======================================================
      MOBILE CONTENT
   ======================================================= */
 
-  .desktopHeader,
-  .contentGrid {
-    display: none;
-  }
-
-  .mobileContent {
-    display: block;
+  .content {
+    width: 100%;
 
     padding:
-      28px 0 25px;
+      28px 15px 28px;
 
     background: #ffffff;
-
-    color: #18253a;
   }
 
   /* =======================================================
-     MOBILE SETTINGS TITLE
+     MOBILE PAGE HEADER
+
+     This is the ONLY Settings heading on mobile.
   ======================================================= */
 
   .mobilePageHeader {
+    display: block;
+
+    width: 100%;
+
+    max-width: none;
+
+    margin: 0;
+
     padding:
       0 2px 22px;
+  }
 
-    background: #ffffff;
+  .mobileEyebrow {
+    color: #7791b3;
+
+    font-size: 10px;
+    font-weight: 600;
+
+    letter-spacing: 1.5px;
+
+    line-height: 1.2;
+
+    margin-bottom: 8px;
   }
 
   .mobilePageHeader h1 {
@@ -1732,10 +633,9 @@
     color: #18253a;
 
     font-size: 30px;
+    font-weight: 700;
 
     line-height: 1.1;
-
-    font-weight: 700;
 
     letter-spacing: -0.7px;
   }
@@ -1752,423 +652,105 @@
   }
 
   /* =======================================================
-     MOBILE CATEGORIES
+     MOBILE SETTINGS CARD
+
+     No inner Settings heading.
+     The list begins immediately inside the card.
   ======================================================= */
 
-  .mobileCategoriesCard,
-  .quickCard,
-  .mobileDanger {
+  .settingsCard {
     width: 100%;
+
+    margin: 0;
 
     border:
       1px solid
       #dce4ed;
 
-    border-radius: 11px;
+    border-radius: 12px;
 
     background: #ffffff;
 
     overflow: hidden;
 
-    color: #18253a;
+    box-shadow:
+      0 2px 10px
+      rgba(19, 48, 82, 0.03);
   }
 
-  .mobileCategoriesCard
-    .categoryItem {
-    min-height: 74px;
-
-    padding:
-      11px 13px;
-
-    border-radius: 0;
-
-    border: 0;
-
-    border-bottom:
-      1px solid
-      #e1e7ee;
-
-    background: #ffffff;
-
-    color: #18253a;
-  }
-
-  .mobileCategoriesCard
-    .categoryItem:hover {
-    background: #f8fbfe;
-  }
-
-  .mobileCategoriesCard
-    .categoryActive {
-    background: #ffffff;
-
-    color: #18253a;
-
-    border-color: transparent;
-
-    box-shadow: none;
-  }
-
-  .mobileCategoriesCard
-    .categoryActive:hover {
-    background: #f8fbfe;
-  }
-
-  .mobileCategoriesCard
-    .categoryText
-    strong {
-    color: #18253a;
-
-    font-size: 12px;
-  }
-
-  .mobileCategoriesCard
-    .categoryText
-    small {
-    margin-top: 4px;
-
-    color: #71849e;
-
-    font-size: 9px;
-  }
-
-  .categoryChevron {
-    display: flex;
-
-    color: #72849c;
-  }
-
-  .mobileCategoriesCard
-    .categoryIcon {
-    width: 34px;
-
-    height: 34px;
-
-    flex-basis: 34px;
+  .settingsCardHeader {
+    display: none;
   }
 
   /* =======================================================
-     MOBILE SIGN OUT
+     MOBILE SETTINGS LIST
   ======================================================= */
 
-  .mobileSignOut {
+  .settingsList {
     width: 100%;
 
-    min-height: 75px;
+    padding:
+      4px 0;
+  }
+
+  .settingsList
+    .settingsRow,
+  .settingsList
+    .signOutRow {
+
+    min-height: 73px;
 
     padding:
-      11px 13px;
-
-    border: 0;
-
-    background: #ffffff;
-
-    color: #ff5963;
-
-    display: flex;
-
-    align-items: center;
+      10px 13px;
 
     gap: 10px;
-
-    text-align: left;
   }
 
-  .mobileSignOut .signOutText {
-    flex: 1;
+  .settingsList
+    .settingsRowIcon,
+  .settingsList
+    .signOutIcon {
+
+    width: 36px;
+    height: 36px;
+
+    flex:
+      0 0 36px;
+
+    border-radius: 9px;
   }
 
-  .mobileSignOut .signOutText strong {
+  .settingsList
+    .settingsRowText
+    strong {
+
     font-size: 12px;
   }
 
-  .mobileSignOut .signOutText small {
-    font-size: 9px;
-  }
+  .settingsList
+    .settingsRowText
+    small {
 
-  .mobileSignOut > .icon {
-    color: #72849c;
-
-    font-size: 24px !important;
-  }
-
-  /* =======================================================
-     QUICK SETTINGS
-  ======================================================= */
-
-  .quickLabel {
-    margin:
-      28px 4px 12px;
-
-    color: #168eff;
+    margin-top: 3px;
 
     font-size: 9px;
-
-    font-weight: 700;
-
-    letter-spacing: 1.5px;
   }
 
-  .quickCard .settingRow {
-    min-height: 76px;
+  .settingsList
+    .settingsRowArrow {
 
-    padding:
-      13px;
+    width: 22px;
+    height: 22px;
 
-    background: #ffffff;
-
-    border-bottom:
-      1px solid
-      #e1e7ee;
+    flex:
+      0 0 22px;
   }
 
-  .quickCard .settingTitle {
-    color: #18253a;
-
-    font-size: 11px;
-  }
-
-  .quickCard .settingDescription {
-    color: #71849e;
-
-    font-size: 8.5px;
-  }
-
-  .themeRow {
-    width: 100%;
-
-    min-height: 76px;
-
-    padding:
-      13px;
-
-    border: 0;
-
-    border-top:
-      1px solid
-      #e1e7ee;
-
-    background: #ffffff;
-
-    color: #18253a;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 11px;
-
-    text-align: left;
-  }
-
-  .themeText {
-    min-width: 0;
-
-    flex: 1;
-
-    display: flex;
-
-    flex-direction: column;
-  }
-
-  .themeText strong {
-    color: #18253a;
-
-    font-size: 11px;
-  }
-
-  .themeText small {
-    margin-top: 4px;
-
-    color: #71879a;
-
-    font-size: 8.5px;
-  }
-
-  .themeValue {
-    color: #596d86;
-
-    font-size: 10px;
-  }
-
-  .themeRow > .icon {
-    color: #72849c;
-
-    font-size: 24px !important;
-  }
-
-  /* =======================================================
-     MOBILE DANGER
-  ======================================================= */
-
-  .mobileDanger {
-    margin-top: 17px;
-
-    padding:
-      17px 15px 15px;
-
-    background: #ffffff;
-  }
-
-  .mobileDanger
-    .sectionHeader {
-    margin-bottom: 0;
-  }
-
-  .mobileDanger
-    .sectionHeader
-    h2 {
-    color: #18253a;
-
-    font-size: 16px;
-  }
-
-  .mobileDanger
-    .sectionHeader
-    p {
-    color: #71849e;
-
-    font-size: 9px;
-
-    margin-top: 6px;
-  }
-
-  .mobileDangerInfo {
-    margin-top: 19px;
-
-    display: flex;
-
-    align-items: flex-start;
-
-    gap: 11px;
-  }
-
-  .mobileDangerInfo
-    .dangerText {
-    padding-top: 2px;
-  }
-
-  .mobileDangerInfo
-    .dangerText
-    strong {
-    color: #18253a;
-
-    font-size: 11px;
-  }
-
-  .mobileDangerInfo
-    .dangerText
-    span {
-    color: #71849e;
-
-    font-size: 8.5px;
-
-    line-height: 1.45;
-  }
-
-  .mobileDeleteButton {
-    width: 100%;
-
-    height: 45px;
-
-    margin-top: 17px;
-
-    border:
-      1px solid
-      #bc414c;
-
-    border-radius: 7px;
-
-    background: transparent;
-
-    color: #ff5963;
-
-    font-size: 10px;
-
-    cursor: pointer;
-  }
-
-  /* =======================================================
-     MOBILE BOTTOM NAV
-  ======================================================= */
-
-  .mobileBottomNav {
-    position: fixed;
-
-    display: flex;
-
-    left: 0;
-
-    right: 0;
-
-    bottom: 0;
-
-    height: 74px;
-
-    z-index: 150;
-
-    background:
-      rgba(3, 18, 40, 0.98);
-
-    border-top:
-      1px solid
-      #193650;
-
-    justify-content:
-      space-around;
-
-    align-items: center;
-
-    backdrop-filter:
-      blur(15px);
-  }
-
-  .mobileBottomNav button {
-    flex: 1;
-
-    height: 100%;
-
-    border: none;
-
-    background: transparent;
-
-    text-align: center;
-
-    color: #7990ad;
-
-    cursor: pointer;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 4px;
-  }
-
-  .mobileBottomNav button .icon {
-    font-size: 20px;
-  }
-
-  .mobileBottomNav
-    button span:last-child {
-    font-size: 8px;
-  }
-
-  .mobileBottomNav
-    button.activeBottom {
-    color: #168eff;
-  }
-
-  /* =======================================================
-     MOBILE MODAL BUTTON FIX
-  ======================================================= */
-
-  .modal {
-    padding: 22px;
+  .settingsList
+    .settingsRowArrow
+    .icon {
+
+    font-size: 20px !important;
   }
 }
 
@@ -2177,199 +759,28 @@
 ========================================================= */
 
 @media (max-width: 380px) {
-  .main {
+
+  .content {
     padding-left: 12px;
-
     padding-right: 12px;
-
-    background: #ffffff;
   }
 
-  .mobileHeader {
-    margin-left: -12px;
-
-    margin-right: -12px;
-  }
-
-  .mobileLogoButton {
-    font-size: 15px;
-  }
-
-  .mobileLogoDiamond {
-    font-size: 21px;
+  .mobilePageHeader {
+    padding-bottom: 20px;
   }
 
   .mobilePageHeader h1 {
     font-size: 28px;
   }
 
-  .mobileCategoriesCard
-    .categoryItem {
+  .settingsList
+    .settingsRow,
+  .settingsList
+    .signOutRow {
+
     min-height: 70px;
 
     padding-left: 11px;
-
     padding-right: 11px;
-  }
-
-  .quickCard
-    .settingRow {
-    min-height: 72px;
-  }
-
-  .toggle {
-    width: 37px;
-
-    height: 22px;
-  }
-
-  .toggle span {
-    width: 18px;
-
-    height: 18px;
-  }
-}
-
-/* =========================================================
-   MODAL
-========================================================= */
-
-.modalBackdrop {
-  position: fixed;
-
-  inset: 0;
-
-  z-index: 300;
-
-  padding: 20px;
-
-  background:
-    rgba(0, 0, 0, 0.72);
-
-  backdrop-filter:
-    blur(5px);
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-}
-
-.modal {
-  width:
-    min(420px, 100%);
-
-  padding: 25px;
-
-  border:
-    1px solid
-    #cfdbe8;
-
-  border-radius: 12px;
-
-  background: #ffffff;
-
-  color: #18253a;
-
-  box-shadow:
-    0 25px 70px
-    rgba(0, 0, 0, 0.25);
-}
-
-.modalIcon {
-  width: 46px;
-
-  height: 46px;
-
-  border-radius: 12px;
-
-  color: #ff5963;
-
-  background:
-    rgba(255, 62, 74, 0.14);
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-}
-
-.modal h3 {
-  margin:
-    16px 0 7px;
-
-  font-size: 18px;
-
-  color: #18253a;
-}
-
-.modal p {
-  margin: 0;
-
-  color: #71849e;
-
-  font-size: 10px;
-
-  line-height: 1.6;
-}
-
-.modalActions {
-  margin-top: 21px;
-
-  display: flex;
-
-  justify-content: flex-end;
-
-  gap: 8px;
-}
-
-.cancelButton,
-.confirmDelete {
-  height: 36px;
-
-  padding:
-    0 15px;
-
-  border-radius: 6px;
-
-  font-size: 9px;
-
-  cursor: pointer;
-}
-
-.cancelButton {
-  border:
-    1px solid
-    #cfdbe8;
-
-  background: #ffffff;
-
-  color: #18253a;
-}
-
-.confirmDelete {
-  border:
-    1px solid
-    #bd414b;
-
-  background: #bd414b;
-
-  color: white;
-}
-
-/* =========================================================
-   FINAL MOBILE MODAL BUTTON FIX
-========================================================= */
-
-@media (max-width: 520px) {
-  .modalActions {
-    flex-direction: column-reverse;
-  }
-
-  .cancelButton,
-  .confirmDelete {
-    width: 100%;
   }
 }

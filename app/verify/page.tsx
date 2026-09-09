@@ -1,15 +1,21 @@
 "use client";
 
 import {
-  ChangeEvent,
-  DragEvent,
   useEffect,
   useRef,
   useState,
 } from "react";
 
-import { useRouter } from "next/navigation";
+import type {
+  ChangeEvent,
+  DragEvent,
+} from "react";
+
 import { supabase } from "../lib/supabase";
+
+import AppShell from "../AppShell/AppShell";
+
+import styles from "./verify.module.css";
 
 type SelectedDocument = {
   file: File;
@@ -29,7 +35,6 @@ type UploadedDocument = {
 type VerificationFindings = {
   document_package: UploadedDocument[];
   document_count: number;
-
   checks: {
     documentStructure: boolean | null;
     dataConsistency: boolean | null;
@@ -39,7 +44,6 @@ type VerificationFindings = {
     noDuplicate: boolean | null;
     documentCompleteness: boolean | null;
   };
-
   processing: {
     stage: "received";
     progress: 8;
@@ -49,8 +53,7 @@ type VerificationFindings = {
 
 const STORAGE_BUCKET = "property-documents";
 
-const MAX_FILE_SIZE =
-  20 * 1024 * 1024;
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 const ALLOWED_TYPES = [
   "application/pdf",
@@ -58,49 +61,30 @@ const ALLOWED_TYPES = [
   "image/png",
 ];
 
-function getDocumentType(
-  file: File
-): string {
-  if (
-    file.type ===
-    "application/pdf"
-  ) {
+function getDocumentType(file: File): string {
+  if (file.type === "application/pdf") {
     return "PDF";
   }
 
-  if (
-    file.type ===
-    "image/jpeg"
-  ) {
+  if (file.type === "image/jpeg") {
     return "JPG";
   }
 
-  if (
-    file.type ===
-    "image/png"
-  ) {
+  if (file.type === "image/png") {
     return "PNG";
   }
 
-  const extension =
-    file.name
-      .split(".")
-      .pop()
-      ?.toUpperCase();
+  const extension = file.name
+    .split(".")
+    .pop()
+    ?.toUpperCase();
 
   return extension || "FILE";
 }
 
-function formatFileSize(
-  bytes: number
-): string {
-  if (
-    bytes <
-    1024 * 1024
-  ) {
-    return `${Math.round(
-      bytes / 1024
-    )} KB`;
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024 * 1024) {
+    return `${Math.round(bytes / 1024)} KB`;
   }
 
   return `${(
@@ -109,11 +93,8 @@ function formatFileSize(
   ).toFixed(2)} MB`;
 }
 
-function createSafeFileName(
-  fileName: string
-): string {
-  const lastDot =
-    fileName.lastIndexOf(".");
+function createSafeFileName(fileName: string): string {
+  const lastDot = fileName.lastIndexOf(".");
 
   const extension =
     lastDot >= 0
@@ -124,46 +105,37 @@ function createSafeFileName(
 
   const baseName =
     lastDot >= 0
-      ? fileName.slice(
-          0,
-          lastDot
-        )
+      ? fileName.slice(0, lastDot)
       : fileName;
 
-  const safeBase =
-    baseName
-      .normalize("NFKD")
-      .replace(
-        /[^a-zA-Z0-9_-]/g,
-        "-"
-      )
-      .replace(
-        /-+/g,
-        "-"
-      )
-      .replace(
-        /^-+|-+$/g,
-        ""
-      );
+  const safeBase = baseName
+    .normalize("NFKD")
+    .replace(
+      /[^a-zA-Z0-9_-]/g,
+      "-"
+    )
+    .replace(
+      /-+/g,
+      "-"
+    )
+    .replace(
+      /^-+|-+$/g,
+      ""
+    );
 
   return `${
-    safeBase ||
-    "property-document"
+    safeBase || "property-document"
   }${extension}`;
 }
 
-function getFileKey(
-  file: File
-): string {
+function getFileKey(file: File): string {
   return `${file.name}__${file.size}__${file.lastModified}`;
 }
 
 function createDocumentId(): string {
   if (
-    typeof crypto !==
-      "undefined" &&
-    typeof crypto.randomUUID ===
-      "function"
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
   ) {
     return crypto.randomUUID();
   }
@@ -174,139 +146,85 @@ function createDocumentId(): string {
 }
 
 export default function VerifyPage() {
-  const router =
-    useRouter();
+  const [loadingPage, setLoadingPage] =
+    useState(true);
 
-  const [
-    menuOpen,
-    setMenuOpen,
-  ] = useState(false);
+  const [documents, setDocuments] =
+    useState<SelectedDocument[]>([]);
 
-  const [
-    loadingPage,
-    setLoadingPage,
-  ] = useState(true);
-
-  const fileInputRef =
-    useRef<HTMLInputElement>(
-      null
-    );
-
-  const [
-    documents,
-    setDocuments,
-  ] =
-    useState<SelectedDocument[]>(
-      []
-    );
-
-  const [
-    isDragging,
-    setIsDragging,
-  ] =
+  const [isDragging, setIsDragging] =
     useState(false);
 
-  const [
-    isUploading,
-    setIsUploading,
-  ] =
+  const [isUploading, setIsUploading] =
     useState(false);
 
-  const [
-    uploadError,
-    setUploadError,
-  ] =
+  const [uploadError, setUploadError] =
     useState("");
 
+  const fileInputRef =
+    useRef<HTMLInputElement>(null);
+
+  /*
+   * ============================================================
+   * PAGE INITIALIZATION
+   * ============================================================
+   */
+
   useEffect(() => {
-    const timer =
-      window.setTimeout(() => {
-        setLoadingPage(false);
-      }, 350);
+    const timer = window.setTimeout(() => {
+      setLoadingPage(false);
+    }, 350);
 
     return () => {
-      window.clearTimeout(
-        timer
-      );
+      window.clearTimeout(timer);
     };
   }, []);
 
-  function navigateTo(
-    path: string
-  ) {
-    setMenuOpen(false);
-
-    window.location.href =
-      path;
-  }
+  /*
+   * ============================================================
+   * ADD DOCUMENTS
+   * ============================================================
+   */
 
   function addDocuments(
-    selectedFiles:
-      | FileList
-      | File[]
+    selectedFiles: FileList | File[]
   ) {
     setUploadError("");
 
     const incomingFiles =
-      Array.from(
-        selectedFiles
-      );
+      Array.from(selectedFiles);
 
-    if (
-      incomingFiles.length ===
-      0
-    ) {
+    if (incomingFiles.length === 0) {
       return;
     }
 
-    const invalidFiles:
-      string[] = [];
-
-    const duplicateFiles:
-      string[] = [];
+    const invalidFiles: string[] = [];
+    const duplicateFiles: string[] = [];
 
     const existingFileKeys =
       new Set(
-        documents.map(
-          (
-            document
-          ) =>
-            getFileKey(
-              document.file
-            )
+        documents.map((document) =>
+          getFileKey(document.file)
         )
       );
 
     const currentSelectionKeys =
       new Set<string>();
 
-    const validFiles:
-      File[] = [];
+    const validFiles: File[] = [];
 
-    for (
-      const file of
-      incomingFiles
-    ) {
-      if (
-        !ALLOWED_TYPES.includes(
-          file.type
-        )
-      ) {
+    for (const file of incomingFiles) {
+      if (!ALLOWED_TYPES.includes(file.type)) {
         invalidFiles.push(
           `${file.name}: unsupported file type`
         );
-
         continue;
       }
 
-      if (
-        file.size >
-        MAX_FILE_SIZE
-      ) {
+      if (file.size > MAX_FILE_SIZE) {
         invalidFiles.push(
           `${file.name}: exceeds 20 MB`
         );
-
         continue;
       }
 
@@ -314,56 +232,27 @@ export default function VerifyPage() {
         getFileKey(file);
 
       if (
-        existingFileKeys.has(
-          fileKey
-        )
+        existingFileKeys.has(fileKey) ||
+        currentSelectionKeys.has(fileKey)
       ) {
-        duplicateFiles.push(
-          file.name
-        );
-
+        duplicateFiles.push(file.name);
         continue;
       }
 
-      if (
-        currentSelectionKeys.has(
-          fileKey
-        )
-      ) {
-        duplicateFiles.push(
-          file.name
-        );
+      currentSelectionKeys.add(fileKey);
 
-        continue;
-      }
-
-      currentSelectionKeys.add(
-        fileKey
-      );
-
-      validFiles.push(
-        file
-      );
+      validFiles.push(file);
     }
 
-    const messages:
-      string[] = [];
+    const messages: string[] = [];
 
-    if (
-      invalidFiles.length >
-      0
-    ) {
+    if (invalidFiles.length > 0) {
       messages.push(
-        invalidFiles.join(
-          " • "
-        )
+        invalidFiles.join(" • ")
       );
     }
 
-    if (
-      duplicateFiles.length >
-      0
-    ) {
+    if (duplicateFiles.length > 0) {
       messages.push(
         `Already selected: ${duplicateFiles.join(
           ", "
@@ -371,66 +260,54 @@ export default function VerifyPage() {
       );
     }
 
-    if (
-      messages.length >
-      0
-    ) {
+    if (messages.length > 0) {
       setUploadError(
-        messages.join(
-          " • "
-        )
+        messages.join(" • ")
       );
     }
 
-    if (
-      validFiles.length ===
-      0
-    ) {
+    if (validFiles.length === 0) {
       return;
     }
 
     const newDocuments =
-      validFiles.map(
-        (
-          file
-        ) => ({
-          file,
-          id:
-            createDocumentId(),
-        })
-      );
+      validFiles.map((file) => ({
+        file,
+        id: createDocumentId(),
+      }));
 
-    setDocuments(
-      (
-        current
-      ) => [
-        ...current,
-        ...newDocuments,
-      ]
-    );
+    setDocuments((current) => [
+      ...current,
+      ...newDocuments,
+    ]);
   }
 
+  /*
+   * ============================================================
+   * FILE INPUT
+   * ============================================================
+   */
+
   function handleFileInput(
-    event:
-      ChangeEvent<HTMLInputElement>
+    event: ChangeEvent<HTMLInputElement>
   ) {
-    if (
-      event.target.files
-    ) {
-      addDocuments(
-        event.target.files
-      );
+    if (event.target.files) {
+      addDocuments(event.target.files);
     }
 
     event.target.value = "";
   }
 
+  /*
+   * ============================================================
+   * DRAG / DROP
+   * ============================================================
+   */
+
   function handleDragOver(
-    event:
-      DragEvent<HTMLLabelElement>
+    event: DragEvent<HTMLLabelElement>
   ) {
     event.preventDefault();
-
     setIsDragging(true);
   }
 
@@ -439,148 +316,126 @@ export default function VerifyPage() {
   }
 
   function handleDrop(
-    event:
-      DragEvent<HTMLLabelElement>
+    event: DragEvent<HTMLLabelElement>
   ) {
     event.preventDefault();
 
     setIsDragging(false);
 
-    if (
-      event.dataTransfer.files
-    ) {
+    if (event.dataTransfer.files) {
       addDocuments(
         event.dataTransfer.files
       );
     }
   }
 
+  /*
+   * ============================================================
+   * REMOVE DOCUMENT
+   * ============================================================
+   */
+
   function removeDocument(
     documentId: string
   ) {
-    if (
-      isUploading
-    ) {
+    if (isUploading) {
       return;
     }
 
-    setDocuments(
-      (
-        current
-      ) =>
-        current.filter(
-          (
-            document
-          ) =>
-            document.id !==
-            documentId
-        )
+    setDocuments((current) =>
+      current.filter(
+        (document) =>
+          document.id !== documentId
+      )
     );
 
     setUploadError("");
   }
 
+  /*
+   * ============================================================
+   * FILE PICKER
+   * ============================================================
+   */
+
   function openFilePicker() {
-    if (
-      isUploading
-    ) {
+    if (isUploading) {
       return;
     }
 
     fileInputRef.current?.click();
   }
 
+  /*
+   * ============================================================
+   * VERIFICATION / SUPABASE UPLOAD
+   * ============================================================
+   */
+
   async function handleVerification() {
     if (
-      documents.length ===
-        0 ||
+      documents.length === 0 ||
       isUploading
     ) {
       return;
     }
 
     setIsUploading(true);
-
     setUploadError("");
 
-    const uploadedStoragePaths:
-      string[] = [];
+    const uploadedStoragePaths: string[] =
+      [];
 
     try {
       /*
-       * ======================================================
-       * 1. GET EXISTING SESSION
-       * ======================================================
+       * 1. Get existing session.
        */
 
-      const {
-        data: {
-          session,
-        },
-        error:
-          sessionError,
+      let {
+        data: { session },
+        error: sessionError,
       } =
         await supabase.auth.getSession();
 
-      if (
-        sessionError
-      ) {
-        console.error(
-          "PROPERTY SURE AI: SESSION CHECK ERROR:",
+      if (sessionError) {
+        console.warn(
+          "SESSION CHECK WARNING:",
           sessionError
         );
-
-        throw new Error(
-          "We could not verify your account session. Please sign in again."
-        );
       }
 
       /*
-       * ======================================================
-       * 2. REQUIRE REAL AUTHENTICATED USER
-       *
-       * IMPORTANT:
-       * NO anonymous fallback.
-       * ======================================================
+       * 2. Create anonymous session if needed.
        */
 
-      if (
-        !session?.user ||
-        session.user.is_anonymous ===
-          true
-      ) {
-        router.replace(
-          "/signin"
-        );
+      if (!session?.user) {
+        const {
+          data: anonymousData,
+          error: anonymousError,
+        } =
+          await supabase.auth.signInAnonymously();
 
-        return;
+        if (anonymousError) {
+          throw new Error(
+            `We could not start your secure verification session: ${anonymousError.message}`
+          );
+        }
+
+        session =
+          anonymousData.session;
+
+        if (!session?.user) {
+          throw new Error(
+            "We could not create a secure verification session. Please try again."
+          );
+        }
       }
 
-      /*
-       * ======================================================
-       * 3. USER ID
-       * ======================================================
-       */
-
-      const user =
+      const authUser =
         session.user;
 
-      console.log(
-        "PROPERTY SURE AI: Verification user:",
-        {
-          userId:
-            user.id,
-
-          anonymous:
-            user.is_anonymous ===
-            true,
-        }
-      );
-
       /*
-       * ======================================================
-       * 4. UPLOAD COMPLETE DOCUMENT PACKAGE
-       * ======================================================
+       * 3. Upload the complete document package.
        */
 
       const uploadedDocuments:
@@ -588,8 +443,7 @@ export default function VerifyPage() {
 
       for (
         let index = 0;
-        index <
-        documents.length;
+        index < documents.length;
         index++
       ) {
         const selectedDocument =
@@ -610,48 +464,25 @@ export default function VerifyPage() {
           selectedDocument.id;
 
         const filePath =
-          `${user.id}/verification-uploads/${documentId}/${safeFileName}`;
-
-        console.log(
-          "PROPERTY SURE AI: UPLOADING DOCUMENT:",
-          {
-            documentId,
-            originalFileName,
-            safeFileName,
-            filePath,
-            mimeType:
-              file.type,
-            size:
-              file.size,
-          }
-        );
+          `${authUser.id}/verification-uploads/${documentId}/${safeFileName}`;
 
         const {
-          error:
-            storageError,
+          error: storageError,
         } =
           await supabase.storage
-            .from(
-              STORAGE_BUCKET
-            )
+            .from(STORAGE_BUCKET)
             .upload(
               filePath,
               file,
               {
-                cacheControl:
-                  "3600",
-
-                upsert:
-                  false,
-
+                cacheControl: "3600",
+                upsert: false,
                 contentType:
                   file.type,
               }
             );
 
-        if (
-          storageError
-        ) {
+        if (storageError) {
           console.error(
             "SUPABASE STORAGE UPLOAD ERROR:",
             storageError
@@ -666,16 +497,16 @@ export default function VerifyPage() {
           filePath
         );
 
+        /*
+         * Confirm stored file can be accessed.
+         */
+
         const {
-          data:
-            signedUrlData,
-          error:
-            signedUrlError,
+          data: signedUrlData,
+          error: signedUrlError,
         } =
           await supabase.storage
-            .from(
-              STORAGE_BUCKET
-            )
+            .from(STORAGE_BUCKET)
             .createSignedUrl(
               filePath,
               60 * 10
@@ -699,108 +530,71 @@ export default function VerifyPage() {
         }
 
         uploadedDocuments.push({
-          id:
-            documentId,
-
-          name:
-            originalFileName,
-
+          id: documentId,
+          name: originalFileName,
           original_name:
             originalFileName,
-
-          path:
-            filePath,
-
-          type:
-            getDocumentType(
-              file
-            ),
-
-          mime_type:
-            file.type,
-
-          size:
-            file.size,
+          path: filePath,
+          type: getDocumentType(file),
+          mime_type: file.type,
+          size: file.size,
         });
       }
 
       if (
-        uploadedDocuments.length ===
-        0
+        uploadedDocuments.length === 0
       ) {
         throw new Error(
           "No documents were uploaded."
         );
       }
 
+      /*
+       * 4. Initial findings.
+       */
+
       const findings:
-        VerificationFindings =
-        {
-          document_package:
-            uploadedDocuments,
+        VerificationFindings = {
+        document_package:
+          uploadedDocuments,
 
-          document_count:
-            uploadedDocuments.length,
+        document_count:
+          uploadedDocuments.length,
 
-          checks: {
-            documentStructure:
-              null,
+        checks: {
+          documentStructure: null,
+          dataConsistency: null,
+          signatureValid: null,
+          stampValid: null,
+          noForgery: null,
+          noDuplicate: null,
+          documentCompleteness: null,
+        },
 
-            dataConsistency:
-              null,
-
-            signatureValid:
-              null,
-
-            stampValid:
-              null,
-
-            noForgery:
-              null,
-
-            noDuplicate:
-              null,
-
-            documentCompleteness:
-              null,
-          },
-
-          processing: {
-            stage:
-              "received",
-
-            progress:
-              8,
-
-            message:
-              "Your property document package has been securely received.",
-          },
-        };
+        processing: {
+          stage: "received",
+          progress: 8,
+          message:
+            "Your property document package has been securely received.",
+        },
+      };
 
       const primaryDocument =
         uploadedDocuments[0];
 
-      if (
-        !primaryDocument
-      ) {
-        throw new Error(
-          "No primary document was found."
-        );
-      }
+      /*
+       * 5. Create verification record.
+       */
 
       const {
-        data:
-          verificationRecord,
-        error:
-          verificationError,
+        data: verificationRecord,
+        error: verificationError,
       } =
         await supabase
-          .from(
-            "verifications"
-          )
+          .from("verifications")
           .insert({
             user_id:
-              user.id,
+              authUser.id,
 
             doc_name:
               primaryDocument.name,
@@ -811,52 +605,38 @@ export default function VerifyPage() {
             doc_type:
               primaryDocument.type,
 
-            status:
-              "review",
+            status: "review",
 
-            trust_score:
-              null,
+            trust_score: null,
 
-            confidence:
-              null,
+            confidence: null,
 
-            risk:
-              null,
+            risk: null,
 
             findings,
           })
-          .select(
-            "id"
-          )
+          .select("id")
           .single();
 
-      if (
-        verificationError
-      ) {
+      if (verificationError) {
         console.error(
           "VERIFICATION RECORD ERROR:",
           verificationError
         );
 
         if (
-          uploadedStoragePaths.length >
-          0
+          uploadedStoragePaths.length > 0
         ) {
           const {
-            error:
-              rollbackError,
+            error: rollbackError,
           } =
             await supabase.storage
-              .from(
-                STORAGE_BUCKET
-              )
+              .from(STORAGE_BUCKET)
               .remove(
                 uploadedStoragePaths
               );
 
-          if (
-            rollbackError
-          ) {
+          if (rollbackError) {
             console.warn(
               "STORAGE ROLLBACK WARNING:",
               rollbackError
@@ -877,59 +657,15 @@ export default function VerifyPage() {
         );
       }
 
-      console.log(
-        "PROPERTY SURE AI: VERIFICATION CREATED:",
-        {
-          verificationId:
-            verificationRecord.id,
-
-          userId:
-            user.id,
-
-          anonymous:
-            user.is_anonymous ===
-            true,
-
-          documentCount:
-            uploadedDocuments.length,
-
-          documents:
-            uploadedDocuments.map(
-              (
-                document
-              ) => ({
-                id:
-                  document.id,
-
-                name:
-                  document.name,
-
-                original_name:
-                  document.original_name,
-
-                path:
-                  document.path,
-
-                type:
-                  document.type,
-
-                mime_type:
-                  document.mime_type,
-
-                size:
-                  document.size,
-              })
-            ),
-        }
-      );
+      /*
+       * 6. Continue to Review.
+       */
 
       window.location.href =
         `/verify/review?id=${encodeURIComponent(
           verificationRecord.id
         )}`;
-    } catch (
-      error
-    ) {
+    } catch (error) {
       console.error(
         "VERIFICATION START ERROR:",
         error
@@ -951,579 +687,517 @@ export default function VerifyPage() {
   const hasDocuments =
     documentCount > 0;
 
+  /*
+   * ============================================================
+   * DASHBOARD-STYLE LOADING
+   * ============================================================
+   */
+
   if (loadingPage) {
     return (
-      <main className="dashboardLoading">
-        <div className="loadingBrand">
-          <div className="loadingLogo">
-            ◆
-          </div>
+      <main className={styles.loadingPage}>
+        <div className={styles.loadingBrand}>
+          <span
+            className={
+              styles.loadingDiamond
+            }
+          />
 
-          <div className="loadingTitle">
-            <span>
-              PropertySure
-            </span>
-
-            <strong>
-              AI
-            </strong>
-          </div>
+          <span>
+            PropertySure
+            <strong> AI</strong>
+          </span>
         </div>
 
-        <div className="loadingText">
-          Loading verification...
+        <div
+          className={
+            styles.loadingIndicator
+          }
+          aria-hidden="true"
+        >
+          <span />
+          <span />
+          <span />
         </div>
 
-        <style jsx>{`
-          .dashboardLoading {
-            min-height: 100vh;
-
-            background:
-              radial-gradient(
-                circle at 70% 0%,
-                rgba(
-                  0,
-                  123,
-                  255,
-                  0.18
-                ),
-                transparent 30%
-              ),
-              #06152f;
-
-            color: #ffffff;
-
-            font-family:
-              Inter,
-              Arial,
-              Helvetica,
-              sans-serif;
-
-            display: flex;
-
-            flex-direction: column;
-
-            align-items: center;
-
-            justify-content: center;
-
-            gap: 10px;
+        <p
+          className={
+            styles.loadingText
           }
-
-          .loadingBrand {
-            display: flex;
-
-            align-items: center;
-
-            gap: 8px;
-          }
-
-          .loadingLogo {
-            color: #168eff;
-
-            font-size: 42px;
-
-            line-height: 1;
-          }
-
-          .loadingTitle {
-            font-size: 22px;
-
-            font-weight: 700;
-
-            letter-spacing: -0.2px;
-          }
-
-          .loadingTitle span {
-            color: #ffffff;
-          }
-
-          .loadingTitle strong {
-            color: #168eff;
-          }
-
-          .loadingText {
-            color: #8ea4c3;
-
-            font-size: 14px;
-          }
-        `}</style>
+        >
+          Loading...
+        </p>
       </main>
     );
   }
 
+  /*
+   * ============================================================
+   * PAGE
+   * ============================================================
+   */
+
   return (
-    <main className="verifyPage">
-
-      <header className="mobileHeader">
-
-        <button
-          className="menuButton"
-          type="button"
-          onClick={() =>
-            setMenuOpen(true)
-          }
-          aria-label="Open navigation"
-        >
-          ☰
-        </button>
-
-        <button
-          className="mobileLogoButton"
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/dashboard"
-            )
+    <AppShell activePath="/verify">
+      <main className={styles.page}>
+        <div
+          className={
+            styles.content
           }
         >
-          <span className="mobileLogoDiamond">
-            ◆
-          </span>
+          {/* WORKFLOW */}
 
-          <span className="mobileBrandName">
-            PropertySure
-            <strong>
-              AI
-            </strong>
-          </span>
-        </button>
+          <section
+            className={
+              styles.workflowCard
+            }
+          >
+            <div
+              className={`${styles.workflowStep} ${styles.workflowActive}`}
+            >
+              <div
+                className={
+                  styles.workflowNumber
+                }
+              >
+                1
+              </div>
 
-        <button
-          className="mobileBell"
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/account/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-          <span className="bellIcon">
-            🔔
-          </span>
-
-          <span className="mobileNotificationDot" />
-        </button>
-
-      </header>
-
-      {menuOpen && (
-
-        <div className="mobileMenu">
-
-          <div className="mobileMenuHeader">
-
-            <div>
-
-              <div className="mobileMenuLogo">
-
-                <span className="mobileMenuDiamond">
-                  ◆
-                </span>
+              <div>
+                <strong>
+                  Upload Documents
+                </strong>
 
                 <span>
-                  PropertySure
-                  <strong>
-                    AI
-                  </strong>
+                  Add your property
+                  documents
                 </span>
-
               </div>
-
-              <div className="mobileMenuSubtitle">
-                AI-Powered Property Due Diligence
-              </div>
-
             </div>
 
-            <button
-              className="closeMenu"
-              type="button"
-              onClick={() =>
-                setMenuOpen(false)
-              }
-              aria-label="Close navigation"
-            >
-              ×
-            </button>
-
-          </div>
-
-          <nav className="mobileMenuNav">
-
-            <button
-              className="mobileNavItem"
-              type="button"
-              onClick={() =>
-                navigateTo(
-                  "/dashboard"
-                )
-              }
-            >
-              <span className="navIcon">
-                ▦
-              </span>
-
-              Dashboard
-            </button>
-
-            <button
-              className="mobileNavItem active"
-              type="button"
-              onClick={() =>
-                setMenuOpen(false)
-              }
-            >
-              <span className="navIcon">
-                ⇧
-              </span>
-
-              Verify Property
-            </button>
-
-            <button
-              className="mobileNavItem"
-              type="button"
-              onClick={() =>
-                navigateTo(
-                  "/my-properties"
-                )
-              }
-            >
-              <span className="navIcon">
-                ⌂
-              </span>
-
-              My Properties
-            </button>
-
-            <button
-              className="mobileNavItem"
-              type="button"
-              onClick={() =>
-                navigateTo(
-                  "/verification-history"
-                )
-              }
-            >
-              <span className="navIcon">
-                ◷
-              </span>
-
-              Verification History
-            </button>
-
-            <button
-              className="mobileNavItem"
-              type="button"
-              onClick={() =>
-                navigateTo(
-                  "/fraud-watch"
-                )
-              }
-            >
-              <span className="navIcon">
-                ◈
-              </span>
-
-              Fraud Watch
-            </button>
-
-            <button
-              className="mobileNavItem"
-              type="button"
-              onClick={() =>
-                navigateTo(
-                  "/reports"
-                )
-              }
-            >
-              <span className="navIcon">
-                ▤
-              </span>
-
-              Reports
-            </button>
-
-          </nav>
-
-          <div className="mobileAccountLabel">
-            ACCOUNT
-          </div>
-
-          <button
-            className="mobileNavItem"
-            type="button"
-            onClick={() =>
-              navigateTo(
-                "/account"
-              )
-            }
-          >
-            <span className="navIcon">
-              ◯
-            </span>
-
-            Account
-          </button>
-
-          <button
-            className="mobileNavItem"
-            type="button"
-            onClick={() =>
-              navigateTo(
-                "/settings"
-              )
-            }
-          >
-            <span className="navIcon">
-              ⚙
-            </span>
-
-            Settings
-          </button>
-
-        </div>
-      )}
-
-      <div className="pageContent">
-
-        <div className="verificationBadge">
-
-          <span className="badgeDiamond">
-            ◇
-          </span>
-
-          AI-POWERED VERIFICATION
-
-        </div>
-
-        <section className="intro">
-
-          <h1>
-            Let's{" "}
-            <span>
-              Verify
-            </span>{" "}
-            Your Property
-          </h1>
-
-          <p>
-            Upload your complete property
-            document package and let
-            PropertySure AI analyze the
-            submitted documents for
-            authenticity, consistency,
-            completeness and potential
-            risk indicators.
-          </p>
-
-        </section>
-
-        <section
-          className={`uploadCard ${
-            isDragging
-              ? "uploadCardDragging"
-              : ""
-          }`}
-        >
-
-          <label
-            className={`uploadZone ${
-              isDragging
-                ? "dragging"
-                : ""
-            }`}
-            onDragOver={
-              handleDragOver
-            }
-            onDragLeave={
-              handleDragLeave
-            }
-            onDrop={
-              handleDrop
-            }
-          >
-
-            <input
-              ref={
-                fileInputRef
-              }
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png"
-              multiple
-              onChange={
-                handleFileInput
-              }
-              disabled={
-                isUploading
+            <div
+              className={
+                styles.workflowLine
               }
             />
 
-            <div className="uploadIllustration">
-
-              <div className="documentBack">
-
-                <div className="documentLines">
-
-                  <span />
-                  <span />
-                  <span />
-
-                </div>
-
+            <div
+              className={
+                styles.workflowStep
+              }
+            >
+              <div
+                className={
+                  styles.workflowNumber
+                }
+              >
+                2
               </div>
 
-              <div className="documentFront">
-
-                <div className="documentLines">
-
-                  <span />
-                  <span />
-                  <span />
-
-                </div>
-
-              </div>
-
-              <div className="uploadCircle">
-                ↑
-              </div>
-
-            </div>
-
-            <h2>
-              Upload Document Package
-            </h2>
-
-            <p className="uploadInstruction">
-              Tap to browse or drag & drop
-              your property documents
-            </p>
-
-            <div className="fileTypes">
-
-              <span className="fileType pdf">
-                PDF
-              </span>
-
-              <span className="fileType jpg">
-                JPG
-              </span>
-
-              <span className="fileType png">
-                PNG
-              </span>
-
-            </div>
-
-            <div className="uploadLimit">
-              Upload all relevant documents • 20 MB each
-            </div>
-
-          </label>
-
-          {hasDocuments && (
-
-            <div className="selectedDocuments">
-
-              <div className="selectedHeader">
-
-                <div>
-                  Documents selected
-                </div>
+              <div>
+                <strong>
+                  Review Package
+                </strong>
 
                 <span>
-                  {documentCount}{" "}
-                  {documentCount ===
-                  1
-                    ? "document"
-                    : "documents"}
+                  Confirm your
+                  documents
                 </span>
+              </div>
+            </div>
 
+            <div
+              className={
+                styles.workflowLine
+              }
+            />
+
+            <div
+              className={
+                styles.workflowStep
+              }
+            >
+              <div
+                className={
+                  styles.workflowNumber
+                }
+              >
+                3
               </div>
 
-              {documents.map(
-                (
-                  document,
-                  index
-                ) => (
+              <div>
+                <strong>
+                  Select Plan
+                </strong>
 
-                  <div
-                    className="documentRow"
-                    key={
-                      document.id
-                    }
-                  >
+                <span>
+                  Choose your
+                  service
+                </span>
+              </div>
+            </div>
 
-                    <div className="documentRowIcon">
+            <div
+              className={
+                styles.workflowLine
+              }
+            />
 
-                      {getDocumentType(
-                        document.file
-                      )}
+            <div
+              className={
+                styles.workflowStep
+              }
+            >
+              <div
+                className={
+                  styles.workflowNumber
+                }
+              >
+                4
+              </div>
 
-                    </div>
+              <div>
+                <strong>
+                  Secure Checkout
+                </strong>
 
-                    <div className="documentRowInfo">
+                <span>
+                  Complete payment
+                </span>
+              </div>
+            </div>
 
-                      <div className="documentRowName">
+            <div
+              className={
+                styles.workflowLine
+              }
+            />
 
-                        {
-                          document
-                            .file
-                            .name
-                        }
+            <div
+              className={
+                styles.workflowStep
+              }
+            >
+              <div
+                className={
+                  styles.workflowNumber
+                }
+              >
+                5
+              </div>
 
-                      </div>
+              <div>
+                <strong>
+                  Verification
+                </strong>
 
-                      <div className="documentRowMeta">
+                <span>
+                  AI analysis and
+                  results
+                </span>
+              </div>
+            </div>
+          </section>
 
-                        Document{" "}
-                        {index + 1}
+          {/* UPLOAD + SECURITY */}
 
-                        {" • "}
+          <section
+            className={
+              styles.uploadLayout
+            }
+          >
+            <div
+              className={
+                styles.uploadCard
+              }
+            >
+              <div
+                className={
+                  styles.sectionHeading
+                }
+              >
+                <div>
+                  <span>
+                    DOCUMENT UPLOAD
+                  </span>
 
+                  <h2>
+                    Upload Property
+                    Documents
+                  </h2>
+
+                  <p>
+                    Upload the complete
+                    document package
+                    for the property.
+                  </p>
+                </div>
+              </div>
+
+              <label
+                className={`${styles.uploadZone} ${
+                  isDragging
+                    ? styles.dragging
+                    : ""
+                }`}
+                onDragOver={
+                  handleDragOver
+                }
+                onDragLeave={
+                  handleDragLeave
+                }
+                onDrop={
+                  handleDrop
+                }
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple
+                  onChange={
+                    handleFileInput
+                  }
+                  disabled={
+                    isUploading
+                  }
+                />
+
+                <div
+                  className={
+                    styles.uploadIcon
+                  }
+                >
+                  <span>
+                    ▧
+                  </span>
+
+                  <b>
+                    ↑
+                  </b>
+                </div>
+
+                <h3>
+                  Drag & drop your
+                  documents here
+                </h3>
+
+                <p>
+                  or{" "}
+                  <span>
+                    tap to browse
+                  </span>
+                </p>
+
+                <div
+                  className={
+                    styles.supportedFormats
+                  }
+                >
+                  <span>
+                    Supported formats:
+                  </span>
+
+                  <b className={styles.pdf}>
+                    PDF
+                  </b>
+
+                  <b className={styles.jpg}>
+                    JPG
+                  </b>
+
+                  <b className={styles.png}>
+                    PNG
+                  </b>
+                </div>
+
+                <small>
+                  Maximum file size:
+                  20 MB per document
+                </small>
+              </label>
+            </div>
+
+            {/* SECURITY */}
+
+            <aside
+              className={
+                styles.securityCard
+              }
+            >
+              <div
+                className={
+                  styles.securityIcon
+                }
+              >
+                ◈
+              </div>
+
+              <h2>
+                Your Documents
+                Are Secure
+              </h2>
+
+              <p>
+                All documents are
+                encrypted and
+                processed securely
+                through the
+                PropertySure AI
+                verification workflow.
+              </p>
+
+              <ul>
+                <li>
+                  <span>✓</span>
+                  Bank-level encryption
+                </li>
+
+                <li>
+                  <span>✓</span>
+                  Secure cloud storage
+                </li>
+
+                <li>
+                  <span>✓</span>
+                  Automatic document
+                  deletion after
+                  verification
+                </li>
+
+                <li>
+                  <span>✓</span>
+                  Your privacy is our
+                  priority
+                </li>
+              </ul>
+            </aside>
+          </section>
+
+          {/* UPLOADED DOCUMENTS */}
+
+          {hasDocuments && (
+            <section
+              className={
+                styles.documentsCard
+              }
+            >
+              <div
+                className={
+                  styles.documentsHeader
+                }
+              >
+                <div>
+                  <span>
+                    DOCUMENT PACKAGE
+                  </span>
+
+                  <h2>
+                    Uploaded Documents
+                  </h2>
+                </div>
+
+                <strong>
+                  {documentCount}{" "}
+                  {documentCount === 1
+                    ? "file"
+                    : "files"}
+                </strong>
+              </div>
+
+              <div
+                className={
+                  styles.documentList
+                }
+              >
+                {documents.map(
+                  (
+                    document,
+                    index
+                  ) => (
+                    <div
+                      className={
+                        styles.documentRow
+                      }
+                      key={
+                        document.id
+                      }
+                    >
+                      <div
+                        className={`${styles.documentTypeIcon} ${
+                          getDocumentType(
+                            document.file
+                          ) === "PDF"
+                            ? styles.documentPdf
+                            : styles.documentImage
+                        }`}
+                      >
                         {getDocumentType(
                           document.file
                         )}
-
-                        {" • "}
-
-                        {formatFileSize(
-                          document
-                            .file
-                            .size
-                        )}
-
                       </div>
 
+                      <div
+                        className={
+                          styles.documentInfo
+                        }
+                      >
+                        <strong>
+                          Document{" "}
+                          {index + 1}
+                        </strong>
+
+                        <span>
+                          {document.file.name}
+                        </span>
+
+                        <small>
+                          {getDocumentType(
+                            document.file
+                          )}{" "}
+                          •{" "}
+                          {formatFileSize(
+                            document.file
+                              .size
+                          )}
+                        </small>
+                      </div>
+
+                      <div
+                        className={
+                          styles.documentStatus
+                        }
+                      >
+                        ✓
+                      </div>
+
+                      <button
+                        type="button"
+                        className={
+                          styles.removeDocument
+                        }
+                        onClick={() =>
+                          removeDocument(
+                            document.id
+                          )
+                        }
+                        disabled={
+                          isUploading
+                        }
+                        aria-label={`Remove ${document.file.name}`}
+                      >
+                        ×
+                      </button>
                     </div>
-
-                    <button
-                      type="button"
-                      className="removeDocument"
-                      onClick={() =>
-                        removeDocument(
-                          document.id
-                        )
-                      }
-                      disabled={
-                        isUploading
-                      }
-                      aria-label={`Remove ${document.file.name}`}
-                    >
-                      ×
-                    </button>
-
-                  </div>
-
-                )
-              )}
+                  )
+                )}
+              </div>
 
               <button
                 type="button"
-                className="addMoreButton"
+                className={
+                  styles.addMoreButton
+                }
                 onClick={
                   openFilePicker
                 }
@@ -1531,1900 +1205,218 @@ export default function VerifyPage() {
                   isUploading
                 }
               >
-                + Add another document
+                + Add Another Document
               </button>
+            </section>
+          )}
 
+          {/* ERROR */}
+
+          {uploadError && (
+            <div
+              className={
+                styles.errorMessage
+              }
+            >
+              <span>!</span>
+
+              <p>
+                {uploadError}
+              </p>
+            </div>
+          )}
+
+          {/* CONTINUE TO REVIEW */}
+
+          <button
+            type="button"
+            className={`${styles.reviewButton} ${
+              !hasDocuments ||
+              isUploading
+                ? styles.reviewDisabled
+                : ""
+            }`}
+            disabled={
+              !hasDocuments ||
+              isUploading
+            }
+            onClick={
+              handleVerification
+            }
+          >
+            <span>
+              {isUploading
+                ? "Uploading Documents..."
+                : "Continue to Review"}
+            </span>
+
+            {!isUploading && (
+              <b>→</b>
+            )}
+          </button>
+
+          {/* COMMON DOCUMENTS */}
+
+          <section
+            className={
+              styles.commonDocuments
+            }
+          >
+            <div
+              className={
+                styles.commonIcon
+              }
+            >
+              ◇
             </div>
 
-          )}
+            <div>
+              <span>
+                DOCUMENT GUIDE
+              </span>
 
-        </section>
+              <h2>
+                Common Documents
+              </h2>
 
-        {uploadError && (
+              <p>
+                You may upload the
+                following documents
+                and other relevant
+                property documents:
+              </p>
 
-          <div className="errorMessage">
+              <div
+                className={
+                  styles.commonGrid
+                }
+              >
+                <span>
+                  Certificate of
+                  Occupancy
+                </span>
 
-            <span>
-              !
-            </span>
+                <span>
+                  Deed of Assignment
+                </span>
 
-            <p>
-              {uploadError}
-            </p>
+                <span>
+                  Survey Plan
+                </span>
 
-          </div>
+                <span>
+                  Allocation Letter
+                </span>
 
-        )}
+                <span>
+                  Building Approval
+                </span>
 
-        <button
-          type="button"
-          className={`startButton ${
-            !hasDocuments ||
-            isUploading
-              ? "disabled"
-              : ""
-          }`}
-          disabled={
-            !hasDocuments ||
-            isUploading
-          }
-          onClick={
-            handleVerification
-          }
-        >
+                <span>
+                  Title Documents
+                </span>
 
-          <span className="sparkle">
-            ✦
-          </span>
+                <span>
+                  Other relevant
+                  property documents
+                </span>
+              </div>
+            </div>
+          </section>
 
-          <span>
-            {isUploading
-              ? "Uploading Documents..."
-              : "Continue to Review"}
-          </span>
+          {/* FEATURES */}
 
-          {!isUploading && (
+          <section
+            className={
+              styles.featureGrid
+            }
+          >
+            <div
+              className={
+                styles.featureCard
+              }
+            >
+              <div
+                className={`${styles.featureIcon} ${styles.secureFeature}`}
+              >
+                ◈
+              </div>
 
-            <span className="startArrow">
-              →
-            </span>
+              <strong>
+                Secure
+              </strong>
 
-          )}
+              <span>
+                Protected
+                documents
+              </span>
+            </div>
 
-        </button>
+            <div
+              className={
+                styles.featureCard
+              }
+            >
+              <div
+                className={`${styles.featureIcon} ${styles.fastFeature}`}
+              >
+                ↯
+              </div>
 
-        <div className="securityNotice">
+              <strong>
+                Fast
+              </strong>
 
-          <span className="securityIcon">
-            ♧
-          </span>
+              <span>
+                Automated
+                workflow
+              </span>
+            </div>
 
-          <span>
-            Your documents are securely
-            uploaded and processed through
-            the PropertySure AI verification
-            workflow.
-          </span>
+            <div
+              className={
+                styles.featureCard
+              }
+            >
+              <div
+                className={`${styles.featureIcon} ${styles.aiFeature}`}
+              >
+                ✦
+              </div>
 
+              <strong>
+                AI-Powered
+              </strong>
+
+              <span>
+                Intelligent
+                document analysis
+              </span>
+            </div>
+
+            <div
+              className={
+                styles.featureCard
+              }
+            >
+              <div
+                className={`${styles.featureIcon} ${styles.reliableFeature}`}
+              >
+                ◆
+              </div>
+
+              <strong>
+                Reliable
+              </strong>
+
+              <span>
+                Structured
+                verification report
+              </span>
+            </div>
+          </section>
         </div>
-
-        <section className="benefitsCard">
-
-          <div className="benefit">
-
-            <div className="benefitIcon secureIcon">
-              ♢
-            </div>
-
-            <strong>
-              Secure
-            </strong>
-
-            <span>
-              Protected
-              <br />
-              Documents
-            </span>
-
-          </div>
-
-          <div className="benefitDivider" />
-
-          <div className="benefit">
-
-            <div className="benefitIcon fastIcon">
-              ◷
-            </div>
-
-            <strong>
-              Fast
-            </strong>
-
-            <span>
-              Automated
-              <br />
-              Workflow
-            </span>
-
-          </div>
-
-          <div className="benefitDivider" />
-
-          <div className="benefit">
-
-            <div className="benefitIcon aiIcon">
-              ✤
-            </div>
-
-            <strong>
-              AI-Powered
-            </strong>
-
-            <span>
-              Document
-              <br />
-              Analysis
-            </span>
-
-          </div>
-
-          <div className="benefitDivider" />
-
-          <div className="benefit">
-
-            <div className="benefitIcon reliableIcon">
-              ♢
-            </div>
-
-            <strong>
-              Reliable
-            </strong>
-
-            <span>
-              Structured
-              <br />
-              Findings
-            </span>
-
-          </div>
-
-        </section>
-
-        <button
-          type="button"
-          className="reportCard"
-          onClick={() =>
-            navigateTo(
-              "/reports"
-            )
-          }
-        >
-
-          <div className="reportIcon">
-            ▤
-          </div>
-
-          <div className="reportText">
-
-            <strong>
-              Verification Reports
-            </strong>
-
-            <span>
-              View completed verification
-              reports and results.
-            </span>
-
-          </div>
-
-          <div className="reportArrow">
-            ›
-          </div>
-
-        </button>
-
-      </div>
-
-      <nav className="bottomNav">
-
-        <button
-          type="button"
-          className="bottomItem"
-          onClick={() =>
-            navigateTo(
-              "/dashboard"
-            )
-          }
-        >
-
-          <span>
-            ▦
-          </span>
-
-          <small>
-            Dashboard
-          </small>
-
-        </button>
-
-        <button
-          type="button"
-          className="bottomItem active"
-        >
-
-          <span>
-            ⇧
-          </span>
-
-          <small>
-            Verify
-          </small>
-
-        </button>
-
-        <button
-          type="button"
-          className="bottomItem"
-          onClick={() =>
-            navigateTo(
-              "/my-properties"
-            )
-          }
-        >
-
-          <span>
-            ⌂
-          </span>
-
-          <small>
-            Properties
-          </small>
-
-        </button>
-
-        <button
-          type="button"
-          className="bottomItem"
-          onClick={() =>
-            navigateTo(
-              "/reports"
-            )
-          }
-        >
-
-          <span>
-            ▤
-          </span>
-
-          <small>
-            Reports
-          </small>
-
-        </button>
-
-        <button
-          type="button"
-          className="bottomItem"
-          onClick={() =>
-            navigateTo(
-              "/account"
-            )
-          }
-        >
-
-          <span>
-            ◯
-          </span>
-
-          <small>
-            Account
-          </small>
-
-        </button>
-
-      </nav>
-
-      <style jsx>{`
-
-        * {
-          box-sizing: border-box;
-        }
-
-        .verifyPage {
-          min-height: 100vh;
-          padding-bottom: 80px;
-          color: #f8fafc;
-
-          background:
-            radial-gradient(
-              circle at 50% -20%,
-              rgba(
-                17,
-                105,
-                190,
-                .22
-              ),
-              transparent 40%
-            ),
-            linear-gradient(
-              180deg,
-              #031328 0%,
-              #041a34 50%,
-              #021124 100%
-            );
-
-          font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
-        }
-
-        button {
-          font-family: inherit;
-        }
-
-        .mobileHeader {
-          position: sticky;
-          top: 0;
-          z-index: 100;
-          height: 72px;
-          padding: 0 14px;
-
-          display: grid;
-
-          grid-template-columns:
-            44px
-            minmax(0, 1fr)
-            44px;
-
-          align-items: center;
-
-          background:
-            rgba(
-              3,
-              18,
-              40,
-              0.98
-            );
-
-          border-bottom:
-            1px solid
-            #193650;
-        }
-
-        .menuButton {
-          width: 40px;
-          height: 40px;
-          border: 0;
-          background: transparent;
-          color: white;
-          font-size: 24px;
-          padding: 5px;
-          cursor: pointer;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .mobileLogoButton {
-          height: 40px;
-          border: none;
-          background: transparent;
-          color: white;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          gap: 7px;
-
-          font-size: 17px;
-          font-weight: 700;
-          letter-spacing: -0.2px;
-
-          cursor: pointer;
-          min-width: 0;
-        }
-
-        .mobileLogoDiamond {
-          color: #168eff;
-          font-size: 23px;
-          line-height: 1;
-          flex-shrink: 0;
-        }
-
-        .mobileBrandName {
-          color: #ffffff;
-          white-space: nowrap;
-        }
-
-        .mobileBrandName strong {
-          color: #168eff;
-        }
-
-        .mobileBell {
-          width: 40px;
-          height: 40px;
-          border: 0;
-          border-radius: 50%;
-          background: transparent;
-          color: white;
-          position: relative;
-
-          display: grid;
-          place-items: center;
-
-          cursor: pointer;
-          padding: 0;
-        }
-
-        .mobileBell .bellIcon {
-          font-size: 17px;
-          line-height: 1;
-          display: block;
-        }
-
-        .mobileNotificationDot {
-          position: absolute;
-          width: 8px;
-          height: 8px;
-          top: 5px;
-          right: 3px;
-          border-radius: 50%;
-          background: #168eff;
-
-          box-shadow:
-            0 0 8px
-            rgba(
-              22,
-              142,
-              255,
-              0.6
-            );
-        }
-
-        .mobileBell:hover {
-          background:
-            rgba(
-              22,
-              142,
-              255,
-              0.05
-            );
-        }
-
-        .mobileMenu {
-          position: fixed;
-          inset: 0;
-          z-index: 200;
-          display: block;
-          background: #06152f;
-          padding: 22px;
-          overflow-y: auto;
-        }
-
-        .mobileMenuHeader {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-        }
-
-        .mobileMenuLogo {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 20px;
-          font-weight: 700;
-        }
-
-        .mobileMenuDiamond {
-          color: #168eff;
-          font-size: 25px;
-          line-height: 1;
-        }
-
-        .mobileMenuLogo > span:last-child {
-          color: #ffffff;
-        }
-
-        .mobileMenuLogo strong {
-          color: #168eff;
-        }
-
-        .mobileMenuSubtitle {
-          color: #8fa5c2;
-          font-size: 11px;
-          line-height: 1.5;
-          margin-top: 8px;
-        }
-
-        .closeMenu {
-          border: 0;
-          background: transparent;
-          color: white;
-          font-size: 30px;
-          cursor: pointer;
-        }
-
-        .mobileMenuNav {
-          margin-top: 35px;
-        }
-
-        .mobileNavItem {
-          width: 100%;
-
-          display: flex;
-          align-items: center;
-
-          gap: 15px;
-
-          padding:
-            16px 14px;
-
-          border-radius: 10px;
-          border: none;
-
-          background:
-            transparent;
-
-          color: #b3c3d8;
-          font-size: 15px;
-
-          margin-bottom: 5px;
-
-          cursor: pointer;
-          text-align: left;
-        }
-
-        .mobileNavItem:hover {
-          background:
-            rgba(
-              25,
-              111,
-              200,
-              0.14
-            );
-        }
-
-        .mobileNavItem.active {
-          background: #0c64bd;
-          color: white;
-        }
-
-        .navIcon {
-          width: 20px;
-          text-align: center;
-          color: #82b9f2;
-          flex-shrink: 0;
-        }
-
-        .mobileAccountLabel {
-          color: #617996;
-          font-size: 10px;
-          letter-spacing: 1.5px;
-          margin:
-            28px 14px 10px;
-        }
-
-        .pageContent {
-          width: 100%;
-          max-width: 760px;
-          margin: 0 auto;
-          padding:
-            40px 28px 35px;
-        }
-
-        .verificationBadge {
-          width: fit-content;
-
-          display: flex;
-          align-items: center;
-
-          gap: 9px;
-
-          padding:
-            10px 17px;
-
-          border-radius: 999px;
-
-          border:
-            1px solid
-            rgba(
-              22,
-              142,
-              255,
-              .35
-            );
-
-          background:
-            rgba(
-              10,
-              91,
-              164,
-              .12
-            );
-
-          color: #20d981;
-
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: .4px;
-        }
-
-        .badgeDiamond {
-          color: #20d981;
-          font-size: 16px;
-        }
-
-        .intro {
-          width: 100%;
-          text-align: center;
-          padding:
-            38px 0 32px;
-        }
-
-        .intro h1 {
-          margin: 0;
-          color: #f8fafc;
-
-          font-size:
-            clamp(
-              35px,
-              6vw,
-              48px
-            );
-
-          line-height: 1.08;
-          letter-spacing: -1.8px;
-          font-weight: 750;
-        }
-
-        .intro h1 span {
-          color: #20a7ff;
-        }
-
-        .intro p {
-          max-width: 650px;
-          margin:
-            18px auto 0;
-
-          color: #9aafc7;
-          font-size: 15px;
-          line-height: 1.65;
-        }
-
-        .uploadCard {
-          width: 88%;
-          max-width: 680px;
-          margin: 0 auto;
-          padding: 10px;
-
-          border:
-            1px solid
-            rgba(
-              25,
-              143,
-              255,
-              .48
-            );
-
-          border-radius: 18px;
-
-          background:
-            linear-gradient(
-              145deg,
-              rgba(
-                8,
-                32,
-                62,
-                .94
-              ),
-              rgba(
-                3,
-                18,
-                36,
-                .96
-              )
-            );
-
-          box-shadow:
-            0 20px 55px
-            rgba(
-              0,
-              0,
-              0,
-              .2
-            );
-        }
-
-        .uploadZone {
-          min-height: 380px;
-
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-
-          text-align: center;
-
-          padding:
-            35px 20px;
-
-          border:
-            2px dashed
-            rgba(
-              22,
-              142,
-              255,
-              .7
-            );
-
-          border-radius: 15px;
-
-          cursor: pointer;
-
-          background:
-            radial-gradient(
-              circle at center,
-              rgba(
-                16,
-                111,
-                200,
-                .09
-              ),
-              transparent 65%
-            );
-
-          transition:
-            .2s ease;
-        }
-
-        .uploadZone:hover,
-        .uploadZone.dragging {
-          border-color:
-            #28aaff;
-
-          background:
-            radial-gradient(
-              circle at center,
-              rgba(
-                20,
-                126,
-                221,
-                .16
-              ),
-              transparent 68%
-            );
-        }
-
-        .uploadZone input {
-          display: none;
-        }
-
-        .uploadIllustration {
-          position: relative;
-
-          width: 130px;
-          height: 125px;
-
-          margin-bottom: 20px;
-        }
-
-        .documentBack {
-          position: absolute;
-
-          width: 75px;
-          height: 95px;
-
-          left: 23px;
-          top: 4px;
-
-          border-radius: 9px;
-
-          border:
-            1px solid
-            rgba(
-              41,
-              169,
-              255,
-              .7
-            );
-
-          background:
-            linear-gradient(
-              145deg,
-              #0b4c87,
-              #0a315c
-            );
-
-          transform:
-            rotate(-8deg);
-        }
-
-        .documentFront {
-          position: absolute;
-
-          width: 78px;
-          height: 98px;
-
-          left: 37px;
-          top: 17px;
-
-          border-radius: 9px;
-
-          background:
-            linear-gradient(
-              145deg,
-              #168eff,
-              #0872d8
-            );
-
-          border:
-            1px solid
-            rgba(
-              71,
-              184,
-              255,
-              .75
-            );
-
-          box-shadow:
-            0 12px 25px
-            rgba(
-              0,
-              92,
-              180,
-              .3
-            );
-        }
-
-        .documentLines {
-          position: absolute;
-
-          left: 22px;
-          top: 32px;
-
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-
-        .documentLines span {
-          display: block;
-
-          width: 32px;
-          height: 3px;
-
-          border-radius: 3px;
-
-          background:
-            rgba(
-              255,
-              255,
-              255,
-              .28
-            );
-        }
-
-        .uploadCircle {
-          position: absolute;
-
-          right: 4px;
-          bottom: 3px;
-
-          width: 62px;
-          height: 62px;
-
-          border-radius: 50%;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border:
-            3px solid
-            #1fa7ff;
-
-          background:
-            #06264a;
-
-          color: #35b4ff;
-
-          font-size: 31px;
-          line-height: 1;
-
-          box-shadow:
-            0 0 0 5px
-            rgba(
-              22,
-              142,
-              255,
-              .05
-            );
-        }
-
-        .uploadZone h2 {
-          margin:
-            0 0 9px;
-
-          color:
-            #f8fafc;
-
-          font-size: 23px;
-          font-weight: 700;
-        }
-
-        .uploadInstruction {
-          margin: 0;
-          color: #91a8c2;
-          font-size: 14px;
-        }
-
-        .fileTypes {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          gap: 12px;
-
-          margin-top: 20px;
-        }
-
-        .fileType {
-          min-width: 82px;
-
-          padding:
-            10px 18px;
-
-          border:
-            1px solid
-            rgba(
-              48,
-              139,
-              220,
-              .3
-            );
-
-          border-radius: 8px;
-
-          background:
-            rgba(
-              5,
-              30,
-              58,
-              .7
-            );
-
-          font-size: 12px;
-          font-weight: 700;
-        }
-
-        .fileType.pdf {
-          color: #ff4d55;
-        }
-
-        .fileType.jpg {
-          color: #20d981;
-        }
-
-        .fileType.png {
-          color: #42a6ff;
-        }
-
-        .uploadLimit {
-          margin-top: 20px;
-          color: #6f89a7;
-          font-size: 11px;
-        }
-
-        .selectedDocuments {
-          margin-top: 10px;
-          padding: 14px;
-
-          border-radius: 12px;
-
-          border:
-            1px solid
-            rgba(
-              40,
-              130,
-              211,
-              .28
-            );
-
-          background:
-            rgba(
-              2,
-              18,
-              37,
-              .65
-            );
-        }
-
-        .selectedHeader {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-
-          color: #dbeafe;
-
-          font-size: 12px;
-          font-weight: 700;
-
-          margin-bottom: 9px;
-        }
-
-        .selectedHeader span {
-          color: #20a7ff;
-        }
-
-        .documentRow {
-          display: flex;
-          align-items: center;
-
-          gap: 10px;
-
-          padding: 9px;
-          margin-top: 7px;
-
-          border-radius: 9px;
-
-          background:
-            rgba(
-              7,
-              35,
-              67,
-              .7
-            );
-
-          border:
-            1px solid
-            rgba(
-              57,
-              137,
-              214,
-              .15
-            );
-        }
-
-        .documentRowIcon {
-          width: 40px;
-          height: 40px;
-
-          flex-shrink: 0;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 8px;
-
-          background:
-            rgba(
-              17,
-              115,
-              202,
-              .15
-            );
-
-          color: #36aaff;
-
-          font-size: 9px;
-          font-weight: 800;
-        }
-
-        .documentRowInfo {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .documentRowName {
-          color: #e8f1fb;
-          font-size: 12px;
-          font-weight: 600;
-
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-        }
-
-        .documentRowMeta {
-          margin-top: 4px;
-          color: #708aa7;
-          font-size: 9px;
-        }
-
-        .removeDocument {
-          width: 28px;
-          height: 28px;
-
-          flex-shrink: 0;
-
-          border: none;
-          border-radius: 50%;
-
-          background:
-            rgba(
-              239,
-              68,
-              68,
-              .08
-            );
-
-          color: #f87171;
-
-          font-size: 19px;
-
-          cursor: pointer;
-        }
-
-        .removeDocument:disabled {
-          opacity: .4;
-          cursor:
-            not-allowed;
-        }
-
-        .addMoreButton {
-          width: 100%;
-          margin-top: 9px;
-          padding: 9px;
-
-          border:
-            1px dashed
-            rgba(
-              42,
-              156,
-              239,
-              .35
-            );
-
-          border-radius: 8px;
-
-          background:
-            transparent;
-
-          color: #48aaff;
-
-          font-size: 11px;
-
-          cursor: pointer;
-        }
-
-        .addMoreButton:disabled {
-          opacity: .4;
-          cursor:
-            not-allowed;
-        }
-
-        .errorMessage {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-
-          margin:
-            10px auto 0;
-
-          width: 88%;
-          max-width: 680px;
-
-          padding:
-            11px 13px;
-
-          border-radius: 9px;
-
-          border:
-            1px solid
-            rgba(
-              248,
-              113,
-              113,
-              .25
-            );
-
-          background:
-            rgba(
-              127,
-              29,
-              29,
-              .15
-            );
-
-          color:
-            #fca5a5;
-
-          font-size: 11px;
-        }
-
-        .errorMessage span {
-          width: 22px;
-          height: 22px;
-
-          flex-shrink: 0;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 50%;
-
-          background:
-            rgba(
-              239,
-              68,
-              68,
-              .18
-            );
-
-          color:
-            #ff7178;
-
-          font-weight: 700;
-        }
-
-        .errorMessage p {
-          margin: 0;
-          line-height: 1.5;
-        }
-
-        .startButton {
-          width: 88%;
-          max-width: 680px;
-
-          height: 60px;
-
-          margin:
-            12px auto 0;
-
-          position: relative;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          gap: 10px;
-
-          border: none;
-          border-radius: 10px;
-
-          background:
-            linear-gradient(
-              90deg,
-              #0875df,
-              #0c65cf
-            );
-
-          color: white;
-
-          font-size: 17px;
-          font-weight: 700;
-
-          cursor: pointer;
-
-          box-shadow:
-            0 10px 28px
-            rgba(
-              0,
-              102,
-              225,
-              .2
-            );
-        }
-
-        .startButton:hover:not(
-          .disabled
-        ) {
-          background:
-            linear-gradient(
-              90deg,
-              #168eff,
-              #0872d8
-            );
-        }
-
-        .startButton.disabled {
-          opacity: .55;
-          cursor:
-            not-allowed;
-        }
-
-        .sparkle {
-          font-size: 18px;
-        }
-
-        .startArrow {
-          position: absolute;
-          right: 22px;
-
-          font-size: 29px;
-          font-weight: 300;
-        }
-
-        .securityNotice {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          gap: 9px;
-
-          padding:
-            14px 10px;
-
-          color: #849bb6;
-
-          font-size: 11px;
-          line-height: 1.5;
-
-          text-align: center;
-        }
-
-        .securityIcon {
-          color: #3bb1ff;
-          font-size: 17px;
-          flex-shrink: 0;
-        }
-
-        .benefitsCard {
-          width: 100%;
-          min-height: 150px;
-
-          display: grid;
-
-          grid-template-columns:
-            1fr auto
-            1fr auto
-            1fr auto
-            1fr;
-
-          align-items: center;
-
-          border:
-            1px solid
-            rgba(
-              42,
-              126,
-              205,
-              .3
-            );
-
-          border-radius: 12px;
-
-          background:
-            rgba(
-              5,
-              28,
-              54,
-              .75
-            );
-        }
-
-        .benefit {
-          display: flex;
-
-          flex-direction: column;
-
-          align-items: center;
-          justify-content: center;
-
-          text-align: center;
-
-          padding:
-            16px 8px;
-        }
-
-        .benefitIcon {
-          width: 42px;
-          height: 42px;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 11px;
-
-          margin-bottom: 9px;
-
-          font-size: 24px;
-        }
-
-        .secureIcon {
-          color: #20d981;
-
-          border:
-            1px solid
-            rgba(
-              32,
-              217,
-              129,
-              .3
-            );
-
-          background:
-            rgba(
-              32,
-              217,
-              129,
-              .07
-            );
-        }
-
-        .fastIcon {
-          color: #168eff;
-
-          border:
-            1px solid
-            rgba(
-              22,
-              142,
-              255,
-              .3
-            );
-
-          background:
-            rgba(
-              22,
-              142,
-              255,
-              .07
-            );
-        }
-
-        .aiIcon {
-          color: #a56bff;
-
-          border:
-            1px solid
-            rgba(
-              165,
-              107,
-              255,
-              .3
-            );
-
-          background:
-            rgba(
-              165,
-              107,
-              255,
-              .07
-            );
-        }
-
-        .reliableIcon {
-          color: #ffb52e;
-
-          border:
-            1px solid
-            rgba(
-              255,
-              181,
-              46,
-              .3
-            );
-
-          background:
-            rgba(
-              255,
-              181,
-              46,
-              .07
-            );
-        }
-
-        .benefit strong {
-          color: #f5f8fc;
-          font-size: 12px;
-          margin-bottom: 6px;
-        }
-
-        .benefit span {
-          color: #879bb5;
-          font-size: 10px;
-          line-height: 1.5;
-        }
-
-        .benefitDivider {
-          width: 1px;
-          height: 70px;
-
-          background:
-            rgba(
-              132,
-              157,
-              187,
-              .16
-            );
-        }
-
-        .reportCard {
-          width: 100%;
-          min-height: 92px;
-
-          margin-top: 12px;
-
-          display: flex;
-          align-items: center;
-
-          gap: 14px;
-
-          padding:
-            15px 17px;
-
-          border:
-            1px solid
-            rgba(
-              41,
-              126,
-              205,
-              .3
-            );
-
-          border-radius: 12px;
-
-          background:
-            rgba(
-              5,
-              28,
-              54,
-              .75
-            );
-
-          color: white;
-
-          text-align: left;
-
-          cursor: pointer;
-        }
-
-        .reportIcon {
-          width: 50px;
-          height: 50px;
-
-          flex-shrink: 0;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 10px;
-
-          border:
-            1px solid
-            rgba(
-              22,
-              142,
-              255,
-              .28
-            );
-
-          background:
-            rgba(
-              22,
-              142,
-              255,
-              .1
-            );
-
-          color: #168eff;
-
-          font-size: 24px;
-        }
-
-        .reportText {
-          display: flex;
-          flex-direction: column;
-
-          gap: 6px;
-
-          flex: 1;
-          min-width: 0;
-        }
-
-        .reportText strong {
-          color: #f4f8fd;
-          font-size: 15px;
-        }
-
-        .reportText span {
-          color: #8298b3;
-          font-size: 11px;
-        }
-
-        .reportArrow {
-          color: #8ca4c0;
-          font-size: 30px;
-          font-weight: 300;
-        }
-
-        .bottomNav {
-          position: fixed;
-
-          display: flex;
-
-          left: 0;
-          right: 0;
-          bottom: 0;
-
-          height: 68px;
-
-          z-index: 150;
-
-          background:
-            rgba(
-              4,
-              18,
-              42,
-              .98
-            );
-
-          border-top:
-            1px solid
-            rgba(
-              76,
-              149,
-              235,
-              .18
-            );
-
-          justify-content:
-            space-around;
-
-          align-items: center;
-        }
-
-        .bottomItem {
-          flex: 1;
-          height: 100%;
-
-          border: none;
-
-          background:
-            transparent;
-
-          text-align: center;
-
-          color: #7990ad;
-
-          font-size: 17px;
-
-          cursor: pointer;
-
-          display: flex;
-
-          flex-direction: column;
-
-          align-items: center;
-
-          justify-content: center;
-        }
-
-        .bottomItem span {
-          display: block;
-          margin-bottom: 4px;
-        }
-
-        .bottomItem small {
-          font-size: 8px;
-        }
-
-        .bottomItem.active {
-          color: #42a5ff;
-        }
-
-        @media (max-width: 600px) {
-
-          .pageContent {
-            max-width: 100%;
-
-            padding:
-              26px 16px 25px;
-          }
-
-          .verificationBadge {
-            font-size: 10px;
-
-            padding:
-              9px 13px;
-          }
-
-          .intro {
-            padding:
-              27px 0 24px;
-          }
-
-          .intro h1 {
-            font-size:
-              clamp(
-                30px,
-                8.8vw,
-                39px
-              );
-
-            letter-spacing:
-              -1.3px;
-          }
-
-          .intro p {
-            margin-top: 13px;
-
-            font-size: 12px;
-          }
-
-          .uploadCard {
-            width: 92%;
-
-            padding: 8px;
-          }
-
-          .uploadZone {
-            min-height: 330px;
-
-            padding:
-              25px 12px;
-          }
-
-          .uploadIllustration {
-            transform:
-              scale(.88);
-
-            margin-bottom: 8px;
-          }
-
-          .uploadZone h2 {
-            font-size: 19px;
-          }
-
-          .uploadInstruction {
-            font-size: 12px;
-          }
-
-          .fileTypes {
-            margin-top: 16px;
-
-            gap: 9px;
-          }
-
-          .fileType {
-            min-width: 70px;
-
-            padding:
-              8px 13px;
-
-            font-size: 11px;
-          }
-
-          .uploadLimit {
-            margin-top: 15px;
-
-            font-size: 10px;
-          }
-
-          .startButton {
-            width: 92%;
-
-            height: 58px;
-
-            font-size: 15px;
-          }
-
-          .errorMessage {
-            width: 92%;
-          }
-
-          .securityNotice {
-            font-size: 9px;
-
-            padding:
-              12px 5px;
-          }
-
-          .benefitsCard {
-            min-height: 140px;
-          }
-
-          .benefit {
-            padding:
-              12px 3px;
-          }
-
-          .benefitIcon {
-            width: 35px;
-
-            height: 35px;
-
-            font-size: 19px;
-
-            margin-bottom: 7px;
-          }
-
-          .benefit strong {
-            font-size: 10px;
-          }
-
-          .benefit span {
-            font-size: 8px;
-          }
-
-          .benefitDivider {
-            height: 62px;
-          }
-
-          .reportCard {
-            min-height: 82px;
-
-            padding: 12px;
-          }
-
-          .reportIcon {
-            width: 43px;
-
-            height: 43px;
-
-            font-size: 20px;
-          }
-
-          .reportText strong {
-            font-size: 13px;
-          }
-
-          .reportText span {
-            font-size: 9px;
-          }
-
-          .reportArrow {
-            font-size: 25px;
-          }
-
-        }
-
-        @media (max-width: 380px) {
-
-          .pageContent {
-            padding-left: 12px;
-
-            padding-right: 12px;
-          }
-
-          .mobileLogoButton {
-            font-size: 15px;
-          }
-
-          .mobileLogoDiamond {
-            font-size: 21px;
-          }
-
-          .mobileBell {
-            font-size: 17px;
-          }
-
-          .intro h1 {
-            font-size: 29px;
-          }
-
-          .intro p {
-            font-size: 11px;
-          }
-
-          .uploadCard {
-            width: 94%;
-          }
-
-          .uploadZone {
-            min-height: 315px;
-          }
-
-          .benefit span {
-            font-size: 7px;
-          }
-
-          .benefit strong {
-            font-size: 9px;
-          }
-
-        }
-
-      `}</style>
-
-    </main>
+      </main>
+    </AppShell>
   );
 }

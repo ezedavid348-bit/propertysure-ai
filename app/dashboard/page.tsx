@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
 import { supabase } from "../lib/supabase";
+import styles from "./dashboard.module.css";
 
 type DashboardUser = {
   fullName: string;
@@ -12,89 +14,178 @@ type DashboardUser = {
   plan: string;
 };
 
-type NavItem = {
-  icon: string;
-  label: string;
-  path: string;
-};
+type IconName =
+  | "dashboard"
+  | "verify"
+  | "properties"
+  | "history"
+  | "fraud"
+  | "reports"
+  | "account"
+  | "settings"
+  | "bell"
+  | "calendar"
+  | "check"
+  | "clock"
+  | "warning"
+  | "document"
+  | "shield"
+  | "crown"
+  | "arrow"
+  | "menu"
+  | "close";
+
+function Icon({ name }: { name: IconName }) {
+  const icons: Record<IconName, string> = {
+    dashboard: "▦",
+    verify: "⇧",
+    properties: "⌂",
+    history: "◷",
+    fraud: "◈",
+    reports: "▤",
+    account: "◯",
+    settings: "⚙",
+    bell: "🔔",
+    calendar: "▣",
+    check: "✓",
+    clock: "◷",
+    warning: "!",
+    document: "▤",
+    shield: "◇",
+    crown: "♛",
+    arrow: "→",
+    menu: "☰",
+    close: "×",
+  };
+
+  return (
+    <span
+      aria-hidden="true"
+      className={styles.icon}
+    >
+      {icons[name]}
+    </span>
+  );
+}
+
+function normalizePlanName(value: unknown): string {
+  if (!value) {
+    return "Free Plan";
+  }
+
+  const raw = String(value)
+    .trim()
+    .replace(/\s+/g, " ");
+
+  if (!raw) {
+    return "Free Plan";
+  }
+
+  const lower = raw.toLowerCase();
+
+  if (
+    lower === "free" ||
+    lower === "free plan"
+  ) {
+    return "Free Plan";
+  }
+
+  if (
+    lower === "basic" ||
+    lower === "basic plan"
+  ) {
+    return "Basic Plan";
+  }
+
+  if (
+    lower === "professional" ||
+    lower === "professional plan" ||
+    lower === "pro" ||
+    lower === "pro plan"
+  ) {
+    return "Professional Plan";
+  }
+
+  if (
+    lower === "premium" ||
+    lower === "premium plan"
+  ) {
+    return "Premium Plan";
+  }
+
+  return raw;
+}
+
+function getPlanLabel(plan: string): string {
+  const cleaned = plan
+    .replace(/\s+plan$/i, "")
+    .trim();
+
+  return cleaned || "Free";
+}
 
 export default function DashboardPage() {
   const router = useRouter();
 
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [loadingUser, setLoadingUser] = useState(true);
+  const [user, setUser] =
+    useState<DashboardUser>({
+      fullName: "User",
+      firstName: "User",
+      email: "",
+      initial: "U",
+      plan: "Free Plan",
+    });
 
-  /*
-   * ============================================================
-   * ACCOUNT-PAGE MASTER BRAND / NOTIFICATION VALUES
-   * These values are extracted from the Account page and should
-   * remain consistent across Dashboard, Verify and Reports.
-   * ============================================================
-   */
+  const [loadingUser, setLoadingUser] =
+    useState(true);
 
-  const BRAND_BLUE = "#168eff";
+  const [menuOpen, setMenuOpen] =
+    useState(false);
 
-  const [user, setUser] = useState<DashboardUser>({
-    fullName: "User",
-    firstName: "User",
-    email: "",
-    initial: "U",
-    plan: "Free Plan",
-  });
+  const [currentDate, setCurrentDate] =
+    useState<Date | null>(null);
 
-  const [stats] = useState({
-    verifiedProperties: 0,
-    pendingVerification: 0,
-    fraudAlerts: 0,
-    reportsAvailable: 0,
-  });
+  const navigateTo = (path: string) => {
+    setMenuOpen(false);
+    router.push(path);
+  };
 
-  /*
-   * ============================================================
-   * NAVIGATION
-   * ============================================================
-   */
-
-  const navItems: NavItem[] = [
+  const navItems = [
     {
-      icon: "▦",
+      icon: "dashboard" as IconName,
       label: "Dashboard",
       path: "/dashboard",
     },
     {
-      icon: "⇧",
+      icon: "verify" as IconName,
       label: "Verify Property",
       path: "/verify",
     },
     {
-      icon: "⌂",
+      icon: "properties" as IconName,
       label: "My Properties",
       path: "/my-properties",
     },
     {
-      icon: "◷",
+      icon: "history" as IconName,
       label: "Verification History",
       path: "/verification-history",
     },
     {
-      icon: "◈",
+      icon: "fraud" as IconName,
       label: "Fraud Watch",
       path: "/fraud-watch",
     },
     {
-      icon: "▤",
+      icon: "reports" as IconName,
       label: "Reports",
       path: "/reports",
     },
   ];
 
-  /*
-   * ============================================================
-   * GET LOGGED-IN USER
-   * ============================================================
-   */
-
   useEffect(() => {
+    setCurrentDate(new Date());
+
     let mounted = true;
 
     const loadUser = async () => {
@@ -111,7 +202,6 @@ export default function DashboardPage() {
             "Could not load authenticated user:",
             error
           );
-
           return;
         }
 
@@ -124,7 +214,8 @@ export default function DashboardPage() {
           return;
         }
 
-        const metadata = authUser.user_metadata || {};
+        const metadata =
+          authUser.user_metadata || {};
 
         const metadataName =
           metadata.full_name ||
@@ -132,14 +223,17 @@ export default function DashboardPage() {
           metadata.display_name ||
           "";
 
-        const email = authUser.email || "";
+        const email =
+          authUser.email || "";
 
         const fallbackName = email
           ? email
               .split("@")[0]
               .replace(/[._-]+/g, " ")
-              .replace(/\b\w/g, (letter: string) =>
-                letter.toUpperCase()
+              .replace(
+                /\b\w/g,
+                (letter: string) =>
+                  letter.toUpperCase()
               )
           : "User";
 
@@ -148,12 +242,14 @@ export default function DashboardPage() {
           fallbackName;
 
         const firstName =
-          fullName.trim().split(/\s+/)[0] ||
-          "User";
+          fullName
+            .trim()
+            .split(/\s+/)[0] || "User";
 
         const initial =
-          firstName.charAt(0).toUpperCase() ||
-          "U";
+          firstName
+            .charAt(0)
+            .toUpperCase() || "U";
 
         const metadataPlan =
           metadata.plan ||
@@ -161,16 +257,19 @@ export default function DashboardPage() {
           metadata.account_plan ||
           "Free Plan";
 
+        const plan =
+          normalizePlanName(metadataPlan);
+
         setUser({
           fullName,
           firstName,
           email,
           initial,
-          plan: String(metadataPlan),
+          plan,
         });
       } catch (error) {
         console.error(
-          "Dashboard user loading error:",
+          "User loading error:",
           error
         );
       } finally {
@@ -180,32 +279,17 @@ export default function DashboardPage() {
       }
     };
 
-    loadUser();
+    void loadUser();
 
     return () => {
       mounted = false;
     };
   }, [router]);
 
-  /*
-   * ============================================================
-   * NAVIGATION HANDLER
-   * ============================================================
-   */
-
-  const navigateTo = (path: string) => {
-    setMenuOpen(false);
-    router.push(path);
-  };
-
-  /*
-   * ============================================================
-   * SIGN OUT
-   * ============================================================
-   */
-
   const handleSignOut = async () => {
     try {
+      setMenuOpen(false);
+
       await supabase.auth.signOut();
 
       router.replace("/signin");
@@ -217,488 +301,350 @@ export default function DashboardPage() {
     }
   };
 
-  /*
-   * ============================================================
-   * PLAN DISPLAY
-   * ============================================================
-   */
-
   const planName =
     user.plan || "Free Plan";
 
+  const planLabel =
+    getPlanLabel(planName);
+
+  const isFree =
+    planName
+      .toLowerCase()
+      .includes("free");
+
   const isPremium =
-    planName.toLowerCase().includes("premium");
+    planName
+      .toLowerCase()
+      .includes("premium");
+
+  const isPaid =
+    !isFree;
+
+  const desktopDate = currentDate
+    ? new Intl.DateTimeFormat(
+        "en-GB",
+        {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }
+      ).format(currentDate)
+    : "";
+
+  const mobileDate = currentDate
+    ? new Intl.DateTimeFormat(
+        "en-GB",
+        {
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }
+      ).format(currentDate)
+    : "";
 
   /*
-   * ============================================================
-   * LOADING STATE
-   * ============================================================
+   * =========================================================
+   * LOADING SCREEN
+   * =========================================================
+   *
+   * This is intentionally simple and branded.
+   * The same loading pattern can be reused on other pages.
    */
 
   if (loadingUser) {
     return (
-      <main className="dashboardLoading">
+      <main
+        className={
+          styles.loadingPage
+        }
+      >
+        <div
+          className={
+            styles.loadingBrand
+          }
+        >
+          <span
+            className={
+              styles.loadingDiamond
+            }
+          />
 
-        <div className="loadingBrand">
-
-          <div className="loadingLogo">
-            ◆
-          </div>
-
-          <div className="loadingTitle">
+          <span>
             PropertySure
             <strong> AI</strong>
-          </div>
-
+          </span>
         </div>
 
-        <div className="loadingText">
-          Loading your dashboard...
+        <div
+          className={
+            styles.loadingIndicator
+          }
+          aria-hidden="true"
+        >
+          <span />
+          <span />
+          <span />
         </div>
 
-        <style jsx>{`
-
-          .dashboardLoading {
-            min-height: 100vh;
-
-            background:
-              radial-gradient(
-                circle at 70% 0%,
-                rgba(0, 123, 255, 0.18),
-                transparent 30%
-              ),
-              #06152f;
-
-            color: #ffffff;
-
-            font-family:
-              Inter,
-              Arial,
-              Helvetica,
-              sans-serif;
-
-            display: flex;
-
-            flex-direction: column;
-
-            align-items: center;
-
-            justify-content: center;
-
-            gap: 10px;
-          }
-
-          .loadingBrand {
-            display: flex;
-
-            align-items: center;
-
-            gap: 8px;
-          }
-
-          .loadingLogo {
-            color: #168eff;
-
-            font-size: 42px;
-
-            line-height: 1;
-          }
-
-          .loadingTitle {
-            font-size: 22px;
-
-            font-weight: 700;
-          }
-
-          .loadingTitle strong {
-            color: #168eff;
-          }
-
-          .loadingText {
-            color: #8ea4c3;
-
-            font-size: 14px;
-          }
-
-        `}</style>
-
+        <p className={styles.loadingText}>
+          Loading...
+        </p>
       </main>
     );
   }
 
   return (
-    <main className="dashboard">
+    <main className={styles.dashboard}>
 
-      {/* ========================================================
-          MOBILE HEADER
-      ======================================================== */}
-
-      <header className="mobileHeader">
-
-        <button
-          className="menuButton"
-          onClick={() =>
-            setMenuOpen(!menuOpen)
-          }
-          aria-label="Open navigation"
-        >
-          ☰
-        </button>
-
-        <button
-          className="mobileLogoButton"
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-
-          <span className="mobileLogoDiamond">
-            ◆
-          </span>
-
-          <span className="mobileBrandName">
-            PropertySure
-            <strong> AI</strong>
-          </span>
-
-        </button>
-
-        <button
-          className="mobileBell"
-          onClick={() =>
-            navigateTo(
-              "/account/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-
-          <span className="bellIcon">
-            🔔
-          </span>
-
-          <span className="mobileNotificationDot" />
-
-        </button>
-
-      </header>
-
-      {/* ========================================================
-          MOBILE MENU
-      ======================================================== */}
-
-      {menuOpen && (
-
-        <div className="mobileMenu">
-
-          <div className="mobileMenuHeader">
-
-            <div>
-
-              <div className="mobileMenuLogo">
-
-                <span>
-                  ◆
-                </span>
-
-                <div>
-                  PropertySure
-                  <strong> AI</strong>
-                </div>
-
-              </div>
-
-              <div className="mobileMenuSubtitle">
-                AI-Powered Property Due Diligence
-              </div>
-
-            </div>
-
-            <button
-              className="closeMenu"
-              onClick={() =>
-                setMenuOpen(false)
-              }
-              aria-label="Close navigation"
-            >
-              ×
-            </button>
-
-          </div>
-
-          <nav className="mobileMenuNav">
-
-            {navItems.map(
-              (item) => (
-
-                <button
-                  key={item.label}
-                  className={`mobileNavItem ${
-                    item.path === "/dashboard"
-                      ? "active"
-                      : ""
-                  }`}
-                  onClick={() =>
-                    navigateTo(item.path)
-                  }
-                >
-
-                  <span className="navIcon">
-                    {item.icon}
-                  </span>
-
-                  <span>
-                    {item.label}
-                  </span>
-
-                </button>
-
-              )
-            )}
-
-          </nav>
-
-          <div className="mobileAccountLabel">
-            ACCOUNT
-          </div>
-
-          <button
-            className="mobileNavItem"
-            onClick={() =>
-              navigateTo("/account")
-            }
-          >
-
-            <span className="navIcon">
-              ◯
-            </span>
-
-            Account
-
-          </button>
-
-          <button
-            className="mobileNavItem"
-            onClick={() =>
-              navigateTo("/settings")
-            }
-          >
-
-            <span className="navIcon">
-              ⚙
-            </span>
-
-            Settings
-
-          </button>
-
-          <button
-            className="mobileNavItem logoutItem"
-            onClick={handleSignOut}
-          >
-
-            <span className="navIcon">
-              ↪
-            </span>
-
-            Sign Out
-
-          </button>
-
-        </div>
-
-      )}
-
-      {/* ========================================================
+      {/* ==================================================
           DESKTOP SIDEBAR
-      ======================================================== */}
+      ================================================== */}
 
-      <aside className="sidebar">
-
+      <aside className={styles.sidebar}>
         <button
-          className="brandButton"
+          className={styles.brand}
           onClick={() =>
             navigateTo("/dashboard")
           }
         >
+          <div
+            className={
+              styles.brandDiamond
+            }
+          >
+            ◆
+          </div>
 
-          <div className="brandName">
-
-            <span className="brandLogoDiamond">
-              ◆
-            </span>
-
-            <span>
+          <div>
+            <div
+              className={
+                styles.brandName
+              }
+            >
               PropertySure
               <strong> AI</strong>
-            </span>
+            </div>
 
+            <div
+              className={
+                styles.brandSubtitle
+              }
+            >
+              AI-Powered Property
+              <br />
+              Due Diligence
+            </div>
           </div>
-
-          <div className="brandSubtitle">
-            AI-Powered Property
-            <br />
-            Due Diligence
-          </div>
-
         </button>
 
-        <nav className="sidebarNav">
-
-          {navItems.map(
-            (item) => (
-
-              <button
-                key={item.label}
-                className={`navItem ${
-                  item.path === "/dashboard"
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() =>
-                  navigateTo(item.path)
+        <nav
+          className={
+            styles.sidebarNav
+          }
+        >
+          {navItems.map((item) => (
+            <button
+              key={item.path}
+              className={`${
+                styles.navItem
+              } ${
+                item.path ===
+                "/dashboard"
+                  ? styles.active
+                  : ""
+              }`}
+              onClick={() =>
+                navigateTo(item.path)
+              }
+            >
+              <span
+                className={
+                  styles.navIcon
                 }
               >
+                <Icon
+                  name={item.icon}
+                />
+              </span>
 
-                <span className="navIcon">
-                  {item.icon}
-                </span>
-
-                <span>
-                  {item.label}
-                </span>
-
-              </button>
-
-            )
-          )}
-
+              <span>
+                {item.label}
+              </span>
+            </button>
+          ))}
         </nav>
 
-        <div className="accountLabel">
+        <div
+          className={
+            styles.accountLabel
+          }
+        >
           ACCOUNT
         </div>
 
         <button
-          className="navItem"
+          className={styles.navItem}
           onClick={() =>
             navigateTo("/account")
           }
         >
-
-          <span className="navIcon">
-            ◯
+          <span
+            className={
+              styles.navIcon
+            }
+          >
+            <Icon name="account" />
           </span>
 
-          Account
-
+          <span>Account</span>
         </button>
 
         <button
-          className="navItem"
+          className={styles.navItem}
           onClick={() =>
             navigateTo("/settings")
           }
         >
-
-          <span className="navIcon">
-            ⚙
+          <span
+            className={
+              styles.navIcon
+            }
+          >
+            <Icon name="settings" />
           </span>
 
-          Settings
-
+          <span>Settings</span>
         </button>
 
-        {/* SUPPORT */}
-
-        <div className="helpBox">
-
-          <div className="helpTitle">
+        <div className={styles.helpBox}>
+          <div
+            className={
+              styles.helpTitle
+            }
+          >
             Need Help?
           </div>
 
-          <div className="helpText">
-            Our support team is ready to assist you.
+          <div
+            className={
+              styles.helpText
+            }
+          >
+            Our support team is
+            ready to assist you.
           </div>
 
           <button
-            className="supportButton"
+            className={
+              styles.supportButton
+            }
             onClick={() =>
               navigateTo("/account")
             }
           >
             Contact Support
           </button>
-
         </div>
 
-        {/* USER */}
-
         <button
-          className="sidebarUser"
+          className={
+            styles.sidebarUser
+          }
           onClick={() =>
             navigateTo("/account")
           }
         >
-
-          <div className="avatar">
+          <div className={styles.avatar}>
             {user.initial}
           </div>
 
-          <div>
-
-            <div className="userName">
+          <div
+            className={
+              styles.sidebarUserInfo
+            }
+          >
+            <div
+              className={
+                styles.userName
+              }
+            >
               {user.fullName}
             </div>
 
-            <div className="userPlan">
+            <div
+              className={
+                styles.userPlan
+              }
+            >
               {isPremium
                 ? "♛ Premium Plan"
                 : planName}
             </div>
-
           </div>
-
         </button>
-
       </aside>
 
-      {/* ========================================================
-          MAIN CONTENT
-      ======================================================== */}
+      {/* ==================================================
+          DESKTOP CONTENT
+      ================================================== */}
 
-      <section className="content">
-
-        {/* ======================================================
-            DESKTOP TOP BAR
-        ====================================================== */}
-
-        <header className="topBar">
-
-          <div>
-
-            <div className="eyebrow">
+      <section className={styles.content}>
+        <header className={styles.topBar}>
+          <div
+            className={
+              styles.topBarLeft
+            }
+          >
+            <div
+              className={
+                styles.eyebrow
+              }
+            >
               PROPERTYSURE AI
             </div>
 
-            <h1>
-              Welcome back,{" "}
-              {user.firstName} 👋
-            </h1>
+            <div
+              className={
+                styles.headerPageTitle
+              }
+            >
+              Dashboard
+            </div>
 
-            <p>
-              Stay ahead of property risks with
-              AI-powered due diligence.
-            </p>
-
+            <div
+              className={
+                styles.headerDescription
+              }
+            >
+              Stay ahead of property
+              risks with AI-powered
+              due diligence.
+            </div>
           </div>
 
-          <div className="topActions">
+          <div
+            className={
+              styles.topActions
+            }
+          >
+            <div
+              className={
+                styles.headerDate
+              }
+            >
+              <Icon name="calendar" />
 
-            {/* ACCOUNT-PAGE NOTIFICATION BELL */}
+              <span>
+                {desktopDate}
+              </span>
+            </div>
 
             <button
-              className="notification"
+              className={
+                styles.notificationButton
+              }
               onClick={() =>
                 navigateTo(
                   "/account/notifications"
@@ -706,2150 +652,1463 @@ export default function DashboardPage() {
               }
               aria-label="Notifications"
             >
+              <Icon name="bell" />
 
-              <span className="bellIcon">
-                🔔
-              </span>
-
-              <span className="notificationDot" />
-
+              <span
+                className={
+                  styles.notificationDot
+                }
+              />
             </button>
 
             <button
-              className="profile"
+              className={
+                styles.profileButton
+              }
               onClick={() =>
                 navigateTo("/account")
               }
             >
-
-              <div className="avatar large">
+              <div
+                className={
+                  styles.profileAvatar
+                }
+              >
                 {user.initial}
               </div>
 
-              <div>
-
-                <div className="userName">
+              <div
+                className={
+                  styles.profileInfo
+                }
+              >
+                <div
+                  className={
+                    styles.profileName
+                  }
+                >
                   {user.fullName}
                 </div>
 
-                <div className="userPlan">
+                <div
+                  className={
+                    styles.profilePlan
+                  }
+                >
                   {planName}
                 </div>
-
               </div>
 
-              <span className="chevron">
+              <span
+                className={
+                  styles.profileChevron
+                }
+              >
                 ⌄
               </span>
-
             </button>
-
           </div>
-
         </header>
 
-        {/* ======================================================
-            MOBILE WELCOME
-        ====================================================== */}
+        {/* ==================================================
+            DESKTOP MAIN CONTENT
+        ================================================== */}
 
-        <div className="mobileWelcome">
-
-          <div className="eyebrow">
-            PROPERTYSURE AI
-          </div>
-
-          <h1>
-            Welcome back,{" "}
-            {user.firstName} 👋
-          </h1>
-
-          <p>
-            Stay ahead of property risks with
-            AI-powered due diligence.
-          </p>
-
-        </div>
-
-        {/* ======================================================
-            VERIFY PROPERTY
-        ====================================================== */}
-
-        <div className="verifyArea">
-
-          <button
-            className="verifyButton"
-            onClick={() =>
-              navigateTo("/verify")
+        <div
+          className={
+            styles.mainContent
+          }
+        >
+          <section
+            className={
+              styles.welcomeSection
             }
           >
+            <div>
+              <h2>
+                Hello,{" "}
+                {user.firstName} 👋
+              </h2>
+            </div>
+          </section>
 
-            <span>＋</span>
+          {/* ==================================================
+              DESKTOP VERIFY PROPERTY HERO
+          ================================================== */}
 
-            Verify Property
-
-          </button>
-
-          <div className="verifyHint">
-            Start a new property verification
-          </div>
-
-        </div>
-
-        {/* ======================================================
-            STAT CARDS
-        ====================================================== */}
-
-        <div className="statsGrid">
-
-          <button
-            className="statCard statButton"
-            onClick={() =>
-              navigateTo("/my-properties")
+          <section
+            className={
+              styles.heroCard
             }
           >
+            <div
+              className={
+                styles.heroText
+              }
+            >
+              <div
+                className={
+                  styles.heroEyebrow
+                }
+              >
+                START A NEW VERIFICATION
+              </div>
 
-            <div className="statIcon green">
-              ✓
+              <h3>
+                Verify a Property
+              </h3>
+
+              <p>
+                Upload your property
+                documents and get a
+                comprehensive AI-powered
+                risk analysis in minutes.
+              </p>
+
+              <button
+                className={
+                  styles.primaryButton
+                }
+                onClick={() =>
+                  navigateTo("/verify")
+                }
+              >
+                <span>+</span>
+
+                Verify Property
+
+                <Icon name="arrow" />
+              </button>
             </div>
 
-            <div>
+            <div
+              className={
+                styles.heroVisual
+              }
+            >
+              <img
+                src="/modern-house.png"
+                alt="Modern residential property"
+                className={
+                  styles.heroHouseImage
+                }
+              />
 
-              <div className="statLabel">
+              <div
+                className={
+                  styles.heroImageOverlay
+                }
+              />
+
+              <div
+                className={
+                  styles.verificationChecklist
+                }
+              >
+                <div>
+                  <span>✓</span>
+                  Document Analysis
+                </div>
+
+                <div>
+                  <span>✓</span>
+                  Fraud Detection
+                </div>
+
+                <div>
+                  <span>✓</span>
+                  Ownership Validation
+                </div>
+
+                <div>
+                  <span>✓</span>
+                  Risk Assessment
+                </div>
+              </div>
+
+              <div
+                className={
+                  styles.heroSlogan
+                }
+              >
+                Safer
+                <br />
+                Properties
+                <br />
+                Brighter
+                <br />
+                Futures
+              </div>
+            </div>
+          </section>
+
+          {/* ==================================================
+              DESKTOP STATISTICS
+          ================================================== */}
+
+          <section
+            className={
+              styles.statsGrid
+            }
+          >
+            <button
+              className={
+                styles.statCard
+              }
+              onClick={() =>
+                navigateTo(
+                  "/my-properties"
+                )
+              }
+            >
+              <div
+                className={`${styles.statIcon} ${styles.green}`}
+              >
+                <Icon name="check" />
+              </div>
+
+              <div
+                className={
+                  styles.statTitle
+                }
+              >
                 Verified Properties
               </div>
 
-              <div className="statNumber">
-                {stats.verifiedProperties}
+              <div
+                className={
+                  styles.statNumber
+                }
+              >
+                0
               </div>
 
-              <div className="statLink">
+              <div
+                className={
+                  styles.statLink
+                }
+              >
                 View properties
+                <span>→</span>
+              </div>
+            </button>
+
+            <button
+              className={
+                styles.statCard
+              }
+              onClick={() =>
+                navigateTo(
+                  "/my-properties"
+                )
+              }
+            >
+              <div
+                className={`${styles.statIcon} ${styles.orange}`}
+              >
+                <Icon name="clock" />
               </div>
 
-            </div>
-
-          </button>
-
-          <button
-            className="statCard statButton"
-            onClick={() =>
-              navigateTo(
-                "/verification-history"
-              )
-            }
-          >
-
-            <div className="statIcon orange">
-              ◷
-            </div>
-
-            <div>
-
-              <div className="statLabel">
+              <div
+                className={
+                  styles.statTitle
+                }
+              >
                 Pending Verification
               </div>
 
-              <div className="statNumber">
-                {stats.pendingVerification}
+              <div
+                className={
+                  styles.statNumber
+                }
+              >
+                0
               </div>
 
-              <div className="statLink">
-                View history
+              <div
+                className={
+                  styles.statLink
+                }
+              >
+                View properties
+                <span>→</span>
+              </div>
+            </button>
+
+            <button
+              className={
+                styles.statCard
+              }
+              onClick={() =>
+                navigateTo(
+                  "/fraud-watch"
+                )
+              }
+            >
+              <div
+                className={`${styles.statIcon} ${styles.red}`}
+              >
+                <Icon name="warning" />
               </div>
 
-            </div>
-
-          </button>
-
-          <button
-            className="statCard statButton"
-            onClick={() =>
-              navigateTo("/fraud-watch")
-            }
-          >
-
-            <div className="statIcon red">
-              !
-            </div>
-
-            <div>
-
-              <div className="statLabel">
+              <div
+                className={
+                  styles.statTitle
+                }
+              >
                 Fraud Alerts
               </div>
 
               <div
                 className={
-                  stats.fraudAlerts > 0
-                    ? "statWarning"
-                    : "statLink"
+                  styles.statNumber
                 }
               >
-                {stats.fraudAlerts > 0
-                  ? "Needs attention"
-                  : "No active alerts"}
+                0
               </div>
 
-              <div className="statNumber">
-                {stats.fraudAlerts}
+              <div
+                className={
+                  styles.statSubtext
+                }
+              >
+                No active alerts
               </div>
 
-            </div>
+              <div
+                className={
+                  styles.statLink
+                }
+              >
+                View fraud watch
+                <span>→</span>
+              </div>
+            </button>
 
-          </button>
+            <button
+              className={
+                styles.statCard
+              }
+              onClick={() =>
+                navigateTo("/reports")
+              }
+            >
+              <div
+                className={`${styles.statIcon} ${styles.blue}`}
+              >
+                <Icon name="document" />
+              </div>
 
-          <button
-            className="statCard statButton"
-            onClick={() =>
-              navigateTo("/reports")
-            }
-          >
-
-            <div className="statIcon blue">
-              ▤
-            </div>
-
-            <div>
-
-              <div className="statLabel">
+              <div
+                className={
+                  styles.statTitle
+                }
+              >
                 Reports Available
               </div>
 
-              <div className="statNumber">
-                {stats.reportsAvailable}
-              </div>
-
-              <div className="statLink">
-                View reports
-              </div>
-
-            </div>
-
-          </button>
-
-        </div>
-
-        {/* ======================================================
-            LOWER DASHBOARD
-        ====================================================== */}
-
-        <div className="dashboardGrid">
-
-          {/* FRAUD WATCH */}
-
-          <div className="panel fraudPanel">
-
-            <div className="panelHeader">
-
-              <h2>
-                Fraud Watch
-              </h2>
-
-              <button
-                className="viewLink"
-                onClick={() =>
-                  navigateTo("/fraud-watch")
+              <div
+                className={
+                  styles.statNumber
                 }
               >
-                View all
-              </button>
+                0
+              </div>
 
+              <div
+                className={
+                  styles.statLink
+                }
+              >
+                View reports
+                <span>→</span>
+              </div>
+            </button>
+          </section>
+
+          {/* ==================================================
+              LOWER GRID
+          ================================================== */}
+
+          <section
+            className={
+              styles.lowerGrid
+            }
+          >
+            <div
+              className={
+                styles.dashboardCard
+              }
+            >
+              <div
+                className={
+                  styles.cardHeader
+                }
+              >
+                <div
+                  className={
+                    styles.cardTitleGroup
+                  }
+                >
+                  <div
+                    className={`${styles.cardIcon} ${styles.blueIcon}`}
+                  >
+                    <Icon name="shield" />
+                  </div>
+
+                  <h3>
+                    Fraud Watch
+                  </h3>
+                </div>
+
+                <button
+                  className={
+                    styles.cardLink
+                  }
+                  onClick={() =>
+                    navigateTo(
+                      "/fraud-watch"
+                    )
+                  }
+                >
+                  View all →
+                </button>
+              </div>
+
+              <div
+                className={
+                  styles.fraudEmpty
+                }
+              >
+                <div
+                  className={
+                    styles.fraudCheck
+                  }
+                >
+                  <Icon name="check" />
+                </div>
+
+                <div>
+                  <strong>
+                    No active fraud alerts
+                  </strong>
+
+                  <p>
+                    You currently have no
+                    unresolved fraud
+                    investigations. We
+                    continuously monitor
+                    verified properties for
+                    suspicious activity.
+                  </p>
+                </div>
+
+                <div
+                  className={
+                    styles.fraudShield
+                  }
+                >
+                  ◈
+                </div>
+              </div>
             </div>
 
-            <div className="fraudEmpty">
-
-              <div className="fraudEmptyIcon">
-                ✓
-              </div>
-
-              <div className="fraudEmptyText">
-
-                <h3>
-                  No active fraud alerts
-                </h3>
-
-                <p>
-                  You currently have no unresolved
-                  fraud investigations.
-                </p>
-
-              </div>
-
-              <div className="fraudShield">
-                ◇
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* PLAN */}
-
-          <div className="premiumCard">
+            {/* ==================================================
+                PREMIUM PLAN CARD
+            ================================================== */}
 
             <div
-              className={`premiumShield ${
-                isPremium
-                  ? "premiumIcon"
-                  : "freeIcon"
+              className={`${styles.dashboardCard} ${styles.planCard} ${
+                isPaid
+                  ? styles.paidPlanCard
+                  : styles.freePlanCard
               }`}
             >
-              {isPremium
-                ? "♛"
-                : "♕"}
-            </div>
+              <div
+                className={
+                  styles.cardHeader
+                }
+              >
+                <div
+                  className={
+                    styles.cardTitleGroup
+                  }
+                >
+                  <div
+                    className={`${styles.cardIcon} ${styles.crownIcon}`}
+                  >
+                    <Icon name="crown" />
+                  </div>
 
-            <div className="planContent">
+                  <h3>
+                    Your Plan
+                  </h3>
+                </div>
 
-              <div className="premiumTitle">
-
-                You're on{" "}
-
-                <strong>
-                  {isPremium
-                    ? "Premium Plan"
-                    : planName}
-                </strong>
-
-                {!isPremium && (
-                  <span className="planBadge">
-                    FREE
-                  </span>
-                )}
-
+                <span
+                  className={
+                    styles.planBadge
+                  }
+                >
+                  {isFree
+                    ? "FREE PLAN"
+                    : `${planLabel.toUpperCase()} PLAN`}
+                </span>
               </div>
 
+              <div
+                className={
+                  styles.planContent
+                }
+              >
+                <h4>
+                  You’re on the{" "}
+                  {planName}
+                </h4>
+
+                <p>
+                  {isFree
+                    ? "Choose a PropertySure AI plan that matches your property verification needs."
+                    : `Your ${planLabel} plan is active. Manage your subscription and verification needs from your plan settings.`}
+                </p>
+
+                <button
+                  className={
+                    styles.managePlanButton
+                  }
+                  onClick={() =>
+                    navigateTo("/pricing")
+                  }
+                >
+                  Manage Plan
+                  <span>→</span>
+                </button>
+              </div>
+
+              <div
+                className={
+                  styles.planDecoration
+                }
+              >
+                <span />
+                <span />
+                <span />
+              </div>
+            </div>
+          </section>
+
+          {/* ==================================================
+              RECENT ACTIVITY
+          ================================================== */}
+
+          <section
+            className={
+              styles.activityCard
+            }
+          >
+            <div
+              className={
+                styles.cardHeader
+              }
+            >
+              <div
+                className={
+                  styles.cardTitleGroup
+                }
+              >
+                <div
+                  className={`${styles.cardIcon} ${styles.blueIcon}`}
+                >
+                  <Icon name="clock" />
+                </div>
+
+                <h3>
+                  Recent Verification
+                  Activity
+                </h3>
+              </div>
+
+              <button
+                className={
+                  styles.cardLink
+                }
+                onClick={() =>
+                  navigateTo(
+                    "/verification-history"
+                  )
+                }
+              >
+                View all →
+              </button>
+            </div>
+
+            <div
+              className={
+                styles.activityEmpty
+              }
+            >
+              <div
+                className={
+                  styles.emptyDocument
+                }
+              >
+                <Icon name="document" />
+              </div>
+
+              <h4>
+                No verification
+                activity yet
+              </h4>
+
               <p>
-                {isPremium
-                  ? "Enjoy priority support, advanced fraud detection, and professional verification."
-                  : "Choose a PropertySure AI plan that matches your property verification needs."}
+                Start by verifying
+                your first property
+                to see your activity
+                here.
               </p>
 
               <button
-                className="planButton"
+                className={
+                  styles.emptyVerifyButton
+                }
                 onClick={() =>
-                  navigateTo("/account")
+                  navigateTo("/verify")
                 }
               >
-                Manage Plan
+                + Verify Property
               </button>
-
             </div>
-
-            {isPremium && (
-              <div className="premiumFeatures">
-
-                <div>
-                  ✓ AI + Human Verification
-                </div>
-
-                <div>
-                  ✓ Fraud Watch Monitoring
-                </div>
-
-                <div>
-                  ✓ Priority Report Delivery
-                </div>
-
-                <div>
-                  ✓ On-site Inspection
-                </div>
-
-              </div>
-            )}
-
-          </div>
-
+          </section>
         </div>
-
       </section>
 
-      {/* ========================================================
-          MOBILE BOTTOM NAVIGATION
-      ======================================================== */}
+      {/* ==================================================
+          MOBILE HEADER
+      ================================================== */}
 
-      <nav className="bottomNav">
+      <header
+        className={
+          styles.mobileHeader
+        }
+      >
+        <button
+          className={
+            styles.mobileMenuButton
+          }
+          onClick={() =>
+            setMenuOpen(true)
+          }
+          aria-label="Open navigation"
+        >
+          <Icon name="menu" />
+        </button>
 
         <button
-          className="bottomItem active"
+          className={
+            styles.mobileBrand
+          }
           onClick={() =>
             navigateTo("/dashboard")
           }
         >
-
-          <span>
-            ▦
+          <span
+            className={
+              styles.mobileDiamond
+            }
+          >
+            ◆
           </span>
 
-          <small>
-            Dashboard
-          </small>
-
+          <span>
+            PropertySure
+            <strong> AI</strong>
+          </span>
         </button>
 
         <button
-          className="bottomItem"
+          className={
+            styles.mobileNotificationButton
+          }
+          onClick={() =>
+            navigateTo(
+              "/account/notifications"
+            )
+          }
+          aria-label="Notifications"
+        >
+          <Icon name="bell" />
+
+          <span
+            className={
+              styles.mobileNotificationDot
+            }
+          />
+        </button>
+      </header>
+
+      {/* ==================================================
+          MOBILE MENU
+      ================================================== */}
+
+      {menuOpen && (
+        <div
+          className={
+            styles.mobileMenu
+          }
+        >
+          <div
+            className={
+              styles.mobileMenuHeader
+            }
+          >
+            <div>
+              <button
+                className={
+                  styles.mobileMenuBrand
+                }
+                onClick={() =>
+                  navigateTo(
+                    "/dashboard"
+                  )
+                }
+              >
+                <span>◆</span>
+
+                <div>
+                  PropertySure
+                  <strong> AI</strong>
+                </div>
+              </button>
+
+              <div
+                className={
+                  styles.mobileMenuSubtitle
+                }
+              >
+                AI-Powered Property
+                Due Diligence
+              </div>
+            </div>
+
+            <button
+              className={
+                styles.closeMenu
+              }
+              onClick={() =>
+                setMenuOpen(false)
+              }
+              aria-label="Close navigation"
+            >
+              <Icon name="close" />
+            </button>
+          </div>
+
+          <nav
+            className={
+              styles.mobileMenuNav
+            }
+          >
+            {navItems.map((item) => (
+              <button
+                key={item.path}
+                className={`${
+                  styles.mobileNavItem
+                } ${
+                  item.path ===
+                  "/dashboard"
+                    ? styles.active
+                    : ""
+                }`}
+                onClick={() =>
+                  navigateTo(item.path)
+                }
+              >
+                <span
+                  className={
+                    styles.mobileNavIcon
+                  }
+                >
+                  <Icon
+                    name={item.icon}
+                  />
+                </span>
+
+                <span>
+                  {item.label}
+                </span>
+              </button>
+            ))}
+          </nav>
+
+          <div
+            className={
+              styles.mobileAccountLabel
+            }
+          >
+            ACCOUNT
+          </div>
+
+          <button
+            className={
+              styles.mobileNavItem
+            }
+            onClick={() =>
+              navigateTo("/account")
+            }
+          >
+            <span
+              className={
+                styles.mobileNavIcon
+              }
+            >
+              <Icon name="account" />
+            </span>
+
+            <span>Account</span>
+          </button>
+
+          <button
+            className={
+              styles.mobileNavItem
+            }
+            onClick={() =>
+              navigateTo("/settings")
+            }
+          >
+            <span
+              className={
+                styles.mobileNavIcon
+              }
+            >
+              <Icon name="settings" />
+            </span>
+
+            <span>Settings</span>
+          </button>
+
+          <div
+            className={
+              styles.mobileHelpBox
+            }
+          >
+            <div
+              className={
+                styles.mobileHelpTitle
+              }
+            >
+              Need Help?
+            </div>
+
+            <div
+              className={
+                styles.mobileHelpText
+              }
+            >
+              Our support team is
+              ready to assist you.
+            </div>
+
+            <button
+              onClick={() =>
+                navigateTo("/account")
+              }
+            >
+              Contact Support
+            </button>
+          </div>
+
+          <button
+            className={
+              styles.mobileUser
+            }
+            onClick={() =>
+              navigateTo("/account")
+            }
+          >
+            <div
+              className={
+                styles.mobileAvatar
+              }
+            >
+              {user.initial}
+            </div>
+
+            <div>
+              <strong>
+                {user.fullName}
+              </strong>
+
+              <span>
+                {planName}
+              </span>
+            </div>
+          </button>
+
+          <button
+            className={
+              styles.mobileSignOut
+            }
+            onClick={handleSignOut}
+          >
+            <Icon name="arrow" />
+            Sign Out
+          </button>
+        </div>
+      )}
+
+      {/* ==================================================
+          MOBILE CONTENT
+      ================================================== */}
+
+      <section
+        className={
+          styles.mobileContent
+        }
+      >
+
+        {/* ==================================================
+            MOBILE WELCOME
+        ================================================== */}
+
+        <section
+          className={
+            styles.mobileWelcomeHeader
+          }
+        >
+          <div
+            className={
+              styles.mobileWelcomeText
+            }
+          >
+            <h1>
+              Hello,{" "}
+              {user.firstName} 👋
+            </h1>
+
+            <p>
+              Stay ahead of property
+              risks with AI-powered
+              due diligence.
+            </p>
+          </div>
+
+          <div
+            className={
+              styles.mobileHeaderDate
+            }
+          >
+            <Icon name="calendar" />
+
+            <span>
+              {mobileDate}
+            </span>
+          </div>
+        </section>
+
+        {/* ==================================================
+            MOBILE VERIFY PROPERTY
+        ================================================== */}
+
+        <section
+          className={
+            styles.mobileHeroCard
+          }
+        >
+          <div
+            className={
+              styles.mobileHeroText
+            }
+          >
+            <div
+              className={
+                styles.mobileHeroEyebrow
+              }
+            >
+              START A NEW VERIFICATION
+            </div>
+
+            <h2>
+              Verify a Property
+            </h2>
+
+            <p>
+              Upload your property
+              documents and get a
+              comprehensive AI-powered
+              risk analysis in minutes.
+            </p>
+
+            <button
+              className={
+                styles.mobileHeroButton
+              }
+              onClick={() =>
+                navigateTo("/verify")
+              }
+            >
+              <span>+</span>
+
+              Verify Property
+
+              <Icon name="arrow" />
+            </button>
+          </div>
+
+          <div
+            className={
+              styles.mobileHeroVisual
+            }
+          >
+            <img
+              src="/modern-house.png"
+              alt="Modern residential property"
+              className={
+                styles.mobileHeroHouseImage
+              }
+            />
+
+            <div
+              className={
+                styles.mobileHeroImageOverlay
+              }
+            />
+
+            <div
+              className={
+                styles.mobileVerificationChecklist
+              }
+            >
+              <div>
+                <span>✓</span>
+                Document Analysis
+              </div>
+
+              <div>
+                <span>✓</span>
+                Fraud Detection
+              </div>
+
+              <div>
+                <span>✓</span>
+                Ownership Validation
+              </div>
+
+              <div>
+                <span>✓</span>
+                Risk Assessment
+              </div>
+            </div>
+
+            <div
+              className={
+                styles.mobileHeroSlogan
+              }
+            >
+              Safer
+              <br />
+              Properties
+              <br />
+              Brighter
+              <br />
+              Futures
+            </div>
+          </div>
+        </section>
+
+        {/* ==================================================
+            MOBILE STATS
+        ================================================== */}
+
+        <section
+          className={
+            styles.mobileStats
+          }
+        >
+          <button
+            onClick={() =>
+              navigateTo(
+                "/my-properties"
+              )
+            }
+          >
+            <div
+              className={`${styles.mobileStatIcon} ${styles.green}`}
+            >
+              <Icon name="check" />
+            </div>
+
+            <span>
+              Verified
+            </span>
+
+            <strong>0</strong>
+
+            <small>
+              View properties →
+            </small>
+          </button>
+
+          <button
+            onClick={() =>
+              navigateTo(
+                "/my-properties"
+              )
+            }
+          >
+            <div
+              className={`${styles.mobileStatIcon} ${styles.orange}`}
+            >
+              <Icon name="clock" />
+            </div>
+
+            <span>
+              Pending
+            </span>
+
+            <strong>0</strong>
+
+            <small>
+              View properties →
+            </small>
+          </button>
+
+          <button
+            onClick={() =>
+              navigateTo(
+                "/fraud-watch"
+              )
+            }
+          >
+            <div
+              className={`${styles.mobileStatIcon} ${styles.red}`}
+            >
+              <Icon name="warning" />
+            </div>
+
+            <span>
+              Fraud Alerts
+            </span>
+
+            <strong>0</strong>
+
+            <small>
+              No active alerts
+            </small>
+          </button>
+
+          <button
+            onClick={() =>
+              navigateTo("/reports")
+            }
+          >
+            <div
+              className={`${styles.mobileStatIcon} ${styles.blue}`}
+            >
+              <Icon name="document" />
+            </div>
+
+            <span>
+              Reports
+            </span>
+
+            <strong>0</strong>
+
+            <small>
+              View reports →
+            </small>
+          </button>
+        </section>
+
+        {/* ==================================================
+            MOBILE FRAUD WATCH
+        ================================================== */}
+
+        <section
+          className={
+            styles.mobileCard
+          }
+        >
+          <div
+            className={
+              styles.mobileCardHeader
+            }
+          >
+            <div>
+              <span
+                className={
+                  styles.mobileCardIcon
+                }
+              >
+                <Icon name="shield" />
+              </span>
+
+              <h2>
+                Fraud Watch
+              </h2>
+            </div>
+
+            <button
+              onClick={() =>
+                navigateTo(
+                  "/fraud-watch"
+                )
+              }
+            >
+              View all →
+            </button>
+          </div>
+
+          <div
+            className={
+              styles.mobileFraudEmpty
+            }
+          >
+            <div
+              className={
+                styles.mobileFraudCheck
+              }
+            >
+              <Icon name="check" />
+            </div>
+
+            <div>
+              <strong>
+                No active fraud alerts
+              </strong>
+
+              <p>
+                You currently have no
+                unresolved fraud
+                investigations. We
+                continuously monitor
+                verified properties
+                for suspicious
+                activity.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ==================================================
+            MOBILE PLAN
+        ================================================== */}
+
+        <section
+          className={`${styles.mobileCard} ${
+            isPaid
+              ? styles.mobilePaidPlanCard
+              : styles.mobileFreePlanCard
+          }`}
+        >
+          <div
+            className={
+              styles.mobileCardHeader
+            }
+          >
+            <div>
+              <span
+                className={`${styles.mobileCardIcon} ${styles.crown}`}
+              >
+                <Icon name="crown" />
+              </span>
+
+              <h2>
+                Your Plan
+              </h2>
+            </div>
+
+            <span
+              className={
+                styles.mobilePlanBadge
+              }
+            >
+              {isFree
+                ? "FREE"
+                : planLabel.toUpperCase()}
+            </span>
+          </div>
+
+          <div
+            className={
+              styles.mobilePlanContent
+            }
+          >
+            <h3>
+              You’re on the{" "}
+              {planName}
+            </h3>
+
+            <p>
+              {isFree
+                ? "Choose a PropertySure AI plan that matches your property verification needs."
+                : `Your ${planLabel} plan is active. Manage your subscription and verification needs from your plan settings.`}
+            </p>
+
+            <button
+              onClick={() =>
+                navigateTo("/pricing")
+              }
+            >
+              Manage Plan →
+            </button>
+          </div>
+        </section>
+
+        {/* ==================================================
+            MOBILE RECENT ACTIVITY
+        ================================================== */}
+
+        <section
+          className={
+            styles.mobileCard
+          }
+        >
+          <div
+            className={
+              styles.mobileCardHeader
+            }
+          >
+            <div>
+              <span
+                className={
+                  styles.mobileCardIcon
+                }
+              >
+                <Icon name="clock" />
+              </span>
+
+              <h2>
+                Recent Verification
+                Activity
+              </h2>
+            </div>
+
+            <button
+              onClick={() =>
+                navigateTo(
+                  "/verification-history"
+                )
+              }
+            >
+              View all →
+            </button>
+          </div>
+
+          <div
+            className={
+              styles.mobileActivityEmpty
+            }
+          >
+            <div
+              className={
+                styles.mobileEmptyIcon
+              }
+            >
+              <Icon name="document" />
+            </div>
+
+            <h3>
+              No verification
+              activity yet
+            </h3>
+
+            <p>
+              Start by verifying
+              your first property
+              to see your activity
+              here.
+            </p>
+
+            <button
+              onClick={() =>
+                navigateTo("/verify")
+              }
+            >
+              + Verify Property
+            </button>
+          </div>
+        </section>
+      </section>
+
+      {/* ==================================================
+          MOBILE BOTTOM NAV
+      ================================================== */}
+
+      <nav
+        className={
+          styles.bottomNav
+        }
+      >
+        <button
+          className={`${styles.bottomNavItem} ${styles.active}`}
+          onClick={() =>
+            navigateTo("/dashboard")
+          }
+        >
+          <Icon name="dashboard" />
+          <span>
+            Dashboard
+          </span>
+        </button>
+
+        <button
+          className={
+            styles.bottomNavItem
+          }
           onClick={() =>
             navigateTo("/verify")
           }
         >
-
+          <Icon name="verify" />
           <span>
-            ⇧
-          </span>
-
-          <small>
             Verify
-          </small>
-
+          </span>
         </button>
 
         <button
-          className="bottomItem"
+          className={
+            styles.bottomNavItem
+          }
           onClick={() =>
-            navigateTo("/my-properties")
+            navigateTo(
+              "/my-properties"
+            )
           }
         >
-
+          <Icon name="properties" />
           <span>
-            ⌂
-          </span>
-
-          <small>
             Properties
-          </small>
-
+          </span>
         </button>
 
         <button
-          className="bottomItem"
+          className={
+            styles.bottomNavItem
+          }
           onClick={() =>
             navigateTo("/reports")
           }
         >
-
+          <Icon name="reports" />
           <span>
-            ▤
-          </span>
-
-          <small>
             Reports
-          </small>
-
+          </span>
         </button>
 
         <button
-          className="bottomItem"
+          className={
+            styles.bottomNavItem
+          }
           onClick={() =>
             navigateTo("/account")
           }
         >
-
+          <Icon name="account" />
           <span>
-            ◯
-          </span>
-
-          <small>
             Account
-          </small>
-
+          </span>
         </button>
-
       </nav>
-
-      {/* ========================================================
-          RESPONSIVE CSS
-      ======================================================== */}
-
-      <style jsx>{`
-
-        * {
-          box-sizing: border-box;
-        }
-
-        .dashboard {
-          min-height: 100vh;
-
-          background:
-            radial-gradient(
-              circle at 70% 0%,
-              rgba(0, 123, 255, 0.18),
-              transparent 30%
-            ),
-            #06152f;
-
-          color: #ffffff;
-
-          font-family:
-            Inter,
-            Arial,
-            Helvetica,
-            sans-serif;
-
-          display: flex;
-        }
-
-        button {
-          font-family: inherit;
-        }
-
-        /* ======================================================
-           SIDEBAR
-        ====================================================== */
-
-        .sidebar {
-          width: 245px;
-
-          min-width: 245px;
-
-          min-height: 100vh;
-
-          padding:
-            28px 20px;
-
-          background:
-            rgba(4, 20, 47, 0.96);
-
-          border-right:
-            1px solid
-            rgba(83, 157, 255, 0.18);
-
-          display: flex;
-
-          flex-direction: column;
-        }
-
-        .brandButton {
-          border: none;
-
-          background: transparent;
-
-          color: white;
-
-          padding: 0;
-
-          text-align: left;
-
-          cursor: pointer;
-        }
-
-        .brandName {
-          display: flex;
-
-          align-items: center;
-
-          gap: 7px;
-
-          font-size: 22px;
-
-          font-weight: 700;
-
-          letter-spacing: -0.35px;
-
-          white-space: nowrap;
-        }
-
-        .brandName strong {
-          color: #168eff;
-        }
-
-        .brandLogoDiamond {
-          color: #168eff;
-
-          font-size: 25px;
-
-          line-height: 1;
-        }
-
-        .brandSubtitle {
-          margin-top: 10px;
-
-          padding-left: 2px;
-
-          color: #8ea4c3;
-
-          font-size: 12px;
-
-          line-height: 1.5;
-        }
-
-        .sidebarNav {
-          margin-top: 28px;
-        }
-
-        .navItem {
-          width: 100%;
-
-          min-height: 48px;
-
-          display: flex;
-
-          align-items: center;
-
-          gap: 14px;
-
-          padding:
-            0 14px;
-
-          margin-bottom: 5px;
-
-          border: none;
-
-          border-radius: 10px;
-
-          background: transparent;
-
-          color: #aebed4;
-
-          font-size: 14px;
-
-          cursor: pointer;
-
-          text-align: left;
-
-          transition:
-            background 0.2s,
-            color 0.2s;
-        }
-
-        .navItem:hover {
-          background:
-            rgba(24, 112, 200, 0.14);
-
-          color: white;
-        }
-
-        .navItem.active {
-          color: white;
-
-          background:
-            linear-gradient(
-              90deg,
-              #0879df,
-              #1268b7
-            );
-
-          box-shadow:
-            0 5px 20px
-            rgba(0, 120, 255, 0.2);
-        }
-
-        .navIcon {
-          width: 20px;
-
-          text-align: center;
-
-          color: #82b9f2;
-
-          flex-shrink: 0;
-        }
-
-        .accountLabel {
-          color: #5f789a;
-
-          font-size: 10px;
-
-          letter-spacing: 1.5px;
-
-          margin:
-            28px 14px 10px;
-        }
-
-        /* ======================================================
-           SUPPORT
-        ====================================================== */
-
-        .helpBox {
-          margin-top: auto;
-
-          padding: 16px;
-
-          border:
-            1px solid
-            rgba(71, 151, 255, 0.25);
-
-          border-radius: 12px;
-
-          background:
-            rgba(16, 88, 170, 0.08);
-        }
-
-        .helpTitle {
-          font-size: 13px;
-
-          font-weight: 600;
-
-          margin-bottom: 7px;
-        }
-
-        .helpText {
-          color: #849ab8;
-
-          font-size: 11px;
-
-          line-height: 1.5;
-        }
-
-        .supportButton {
-          width: 100%;
-
-          margin-top: 12px;
-
-          padding: 9px;
-
-          border-radius: 7px;
-
-          border:
-            1px solid #1678df;
-
-          background: transparent;
-
-          color: #7eb9f5;
-
-          cursor: pointer;
-        }
-
-        /* ======================================================
-           SIDEBAR USER
-        ====================================================== */
-
-        .sidebarUser {
-          width: 100%;
-
-          display: flex;
-
-          align-items: center;
-
-          gap: 10px;
-
-          margin-top: 20px;
-
-          padding: 5px;
-
-          border: none;
-
-          background: transparent;
-
-          color: white;
-
-          text-align: left;
-
-          cursor: pointer;
-        }
-
-        .avatar {
-          width: 36px;
-
-          height: 36px;
-
-          flex-shrink: 0;
-
-          border-radius: 50%;
-
-          background: #0879d8;
-
-          display: flex;
-
-          align-items: center;
-
-          justify-content: center;
-
-          font-weight: 700;
-        }
-
-        .avatar.large {
-          width: 40px;
-
-          height: 40px;
-        }
-
-        .userName {
-          font-size: 13px;
-
-          font-weight: 600;
-        }
-
-        .userPlan {
-          color: #7f96b4;
-
-          font-size: 11px;
-
-          margin-top: 3px;
-        }
-
-        /* ======================================================
-           CONTENT
-        ====================================================== */
-
-        .content {
-          flex: 1;
-
-          min-width: 0;
-
-          padding:
-            30px 34px 50px;
-
-          overflow-x: hidden;
-        }
-
-        /* ======================================================
-           TOP BAR
-        ====================================================== */
-
-        .topBar {
-          display: flex;
-
-          justify-content: space-between;
-
-          align-items: flex-start;
-
-          gap: 25px;
-
-          padding-bottom: 22px;
-
-          border-bottom:
-            1px solid
-            rgba(255, 255, 255, 0.08);
-        }
-
-        .eyebrow {
-          color: #7791b3;
-
-          font-size: 11px;
-
-          letter-spacing: 1.5px;
-
-          margin-bottom: 8px;
-        }
-
-        .topBar h1,
-        .mobileWelcome h1 {
-          margin: 0;
-
-          font-size:
-            clamp(24px, 3vw, 32px);
-
-          font-weight: 600;
-        }
-
-        .topBar p,
-        .mobileWelcome p {
-          color: #91a7c3;
-
-          margin:
-            8px 0 0;
-
-          font-size: 13px;
-        }
-
-        .topActions {
-          display: flex;
-
-          align-items: center;
-
-          gap: 20px;
-        }
-
-        /* ======================================================
-           ACCOUNT-PAGE NOTIFICATION BELL
-           ====================================================== */
-
-        .notification {
-          width: 40px;
-
-          height: 40px;
-
-          border:
-            1px solid
-            rgba(60, 143, 232, 0.35);
-
-          border-radius: 50%;
-
-          background: transparent;
-
-          display: flex;
-
-          align-items: center;
-
-          justify-content: center;
-
-          position: relative;
-
-          cursor: pointer;
-
-          padding: 0;
-        }
-
-        .bellIcon {
-          font-size: 17px;
-
-          line-height: 1;
-
-          display: block;
-        }
-
-        .notificationDot {
-          position: absolute;
-
-          width: 8px;
-
-          height: 8px;
-
-          top: 5px;
-
-          right: 3px;
-
-          border-radius: 50%;
-
-          background: #168eff;
-
-          box-shadow:
-            0 0 8px
-            rgba(22, 142, 255, 0.6);
-        }
-
-        .notification:hover {
-          border-color:
-            rgba(22, 142, 255, 0.65);
-
-          background:
-            rgba(22, 142, 255, 0.06);
-        }
-
-        .profile {
-          display: flex;
-
-          align-items: center;
-
-          gap: 9px;
-
-          border: none;
-
-          background: transparent;
-
-          color: white;
-
-          cursor: pointer;
-
-          text-align: left;
-        }
-
-        .chevron {
-          color: #8aa0bb;
-
-          margin-left: 4px;
-        }
-
-        /* ======================================================
-           VERIFY PROPERTY
-        ====================================================== */
-
-        .verifyArea {
-          display: flex;
-
-          align-items: center;
-
-          justify-content: flex-end;
-
-          gap: 15px;
-
-          margin:
-            20px 0;
-        }
-
-        .verifyButton {
-          border: 0;
-
-          border-radius: 8px;
-
-          padding:
-            13px 24px;
-
-          background:
-            linear-gradient(
-              135deg,
-              #168bff,
-              #0866d1
-            );
-
-          color: white;
-
-          font-size: 14px;
-
-          font-weight: 600;
-
-          cursor: pointer;
-
-          box-shadow:
-            0 8px 25px
-            rgba(0, 110, 255, 0.2);
-
-          transition:
-            transform 0.15s,
-            box-shadow 0.15s;
-        }
-
-        .verifyButton:hover {
-          transform:
-            translateY(-1px);
-
-          box-shadow:
-            0 12px 30px
-            rgba(0, 110, 255, 0.3);
-        }
-
-        .verifyButton span {
-          font-size: 19px;
-
-          margin-right: 5px;
-        }
-
-        .verifyHint {
-          color: #7f96b4;
-
-          font-size: 11px;
-        }
-
-        /* ======================================================
-           STATS
-        ====================================================== */
-
-        .statsGrid {
-          display: grid;
-
-          grid-template-columns:
-            repeat(
-              4,
-              minmax(0, 1fr)
-            );
-
-          gap: 12px;
-        }
-
-        .statCard {
-          min-width: 0;
-
-          padding: 18px;
-
-          border-radius: 12px;
-
-          border:
-            1px solid
-            rgba(76, 149, 235, 0.23);
-
-          background:
-            rgba(7, 33, 68, 0.78);
-
-          display: flex;
-
-          align-items: center;
-
-          gap: 13px;
-        }
-
-        .statButton {
-          width: 100%;
-
-          color: white;
-
-          text-align: left;
-
-          cursor: pointer;
-
-          transition:
-            transform 0.15s,
-            border-color 0.15s;
-        }
-
-        .statButton:hover {
-          transform:
-            translateY(-1px);
-
-          border-color:
-            rgba(76, 149, 235, 0.5);
-        }
-
-        .statIcon {
-          width: 40px;
-
-          height: 40px;
-
-          flex-shrink: 0;
-
-          border-radius: 50%;
-
-          display: flex;
-
-          align-items: center;
-
-          justify-content: center;
-
-          font-size: 18px;
-
-          font-weight: 700;
-        }
-
-        .green {
-          background:
-            rgba(30, 190, 125, 0.2);
-
-          color: #39d995;
-        }
-
-        .orange {
-          background:
-            rgba(255, 160, 20, 0.2);
-
-          color: #ffad28;
-        }
-
-        .red {
-          background:
-            rgba(240, 50, 65, 0.2);
-
-          color: #ff5261;
-        }
-
-        .blue {
-          background:
-            rgba(35, 135, 255, 0.2);
-
-          color: #48a0ff;
-        }
-
-        .statLabel {
-          color: #91a6c0;
-
-          font-size: 11px;
-
-          white-space: nowrap;
-        }
-
-        .statNumber {
-          font-size: 25px;
-
-          font-weight: 600;
-
-          margin:
-            2px 0;
-        }
-
-        .statLink {
-          color: #48b2ff;
-
-          font-size: 10px;
-        }
-
-        .statWarning {
-          color: #ff5965;
-
-          font-size: 10px;
-        }
-
-        /* ======================================================
-           DASHBOARD GRID
-        ====================================================== */
-
-        .dashboardGrid {
-          display: grid;
-
-          grid-template-columns:
-            minmax(0, 1.4fr)
-            minmax(300px, 1fr);
-
-          gap: 14px;
-
-          margin-top: 14px;
-        }
-
-        .panel,
-        .premiumCard {
-          border:
-            1px solid
-            rgba(76, 149, 235, 0.23);
-
-          background:
-            rgba(7, 31, 63, 0.8);
-
-          border-radius: 12px;
-
-          overflow: hidden;
-        }
-
-        .panelHeader {
-          display: flex;
-
-          justify-content: space-between;
-
-          align-items: center;
-
-          padding:
-            16px 18px;
-
-          border-bottom:
-            1px solid
-            rgba(255, 255, 255, 0.06);
-        }
-
-        .panelHeader h2 {
-          margin: 0;
-
-          font-size: 15px;
-        }
-
-        .viewLink {
-          border: none;
-
-          background: transparent;
-
-          color: #48aaff;
-
-          font-size: 11px;
-
-          cursor: pointer;
-
-          padding: 0;
-        }
-
-        /* ======================================================
-           FRAUD WATCH
-        ====================================================== */
-
-        .fraudPanel {
-          min-height: 190px;
-        }
-
-        .fraudEmpty {
-          min-height: 130px;
-
-          padding:
-            22px 20px;
-
-          display: flex;
-
-          align-items: center;
-
-          gap: 16px;
-
-          position: relative;
-        }
-
-        .fraudEmptyIcon {
-          width: 54px;
-
-          height: 54px;
-
-          flex-shrink: 0;
-
-          border-radius: 50%;
-
-          background:
-            rgba(30, 190, 125, 0.16);
-
-          color: #39d995;
-
-          display: flex;
-
-          align-items: center;
-
-          justify-content: center;
-
-          font-size: 24px;
-
-          font-weight: 700;
-        }
-
-        .fraudEmptyText {
-          position: relative;
-
-          z-index: 2;
-        }
-
-        .fraudEmpty h3 {
-          margin:
-            0 0 6px;
-
-          font-size: 16px;
-        }
-
-        .fraudEmpty p {
-          color: #8299b6;
-
-          font-size: 11px;
-
-          line-height: 1.6;
-
-          margin: 0;
-
-          max-width: 380px;
-        }
-
-        .fraudShield {
-          margin-left: auto;
-
-          width: 100px;
-
-          height: 100px;
-
-          border-radius: 50%;
-
-          display: flex;
-
-          align-items: center;
-
-          justify-content: center;
-
-          color:
-            rgba(57, 150, 255, 0.3);
-
-          font-size: 65px;
-
-          opacity: 0.8;
-        }
-
-        /* ======================================================
-           PLAN CARD
-        ====================================================== */
-
-        .premiumCard {
-          padding:
-            20px;
-
-          display: flex;
-
-          align-items: center;
-
-          gap: 16px;
-
-          background:
-            linear-gradient(
-              135deg,
-              rgba(5, 55, 108, 0.9),
-              rgba(7, 31, 63, 0.9)
-            );
-        }
-
-        .premiumShield {
-          width: 58px;
-
-          height: 58px;
-
-          flex-shrink: 0;
-
-          border-radius: 16px;
-
-          display: flex;
-
-          align-items: center;
-
-          justify-content: center;
-
-          font-size: 27px;
-        }
-
-        .premiumIcon {
-          border:
-            1px solid
-            rgba(255, 196, 70, 0.4);
-
-          background:
-            rgba(255, 178, 30, 0.08);
-
-          color: #ffca55;
-        }
-
-        .freeIcon {
-          border:
-            1px solid
-            rgba(58, 160, 255, 0.4);
-
-          background:
-            rgba(20, 120, 220, 0.08);
-
-          color: #52aaff;
-        }
-
-        .planContent {
-          min-width: 0;
-
-          flex: 1;
-        }
-
-        .premiumTitle {
-          font-size: 15px;
-
-          line-height: 1.4;
-        }
-
-        .premiumTitle strong {
-          color: #ffca55;
-        }
-
-        .premiumCard p {
-          color: #8fa4be;
-
-          font-size: 11px;
-
-          line-height: 1.6;
-
-          max-width: 440px;
-
-          margin:
-            5px 0 12px;
-        }
-
-        .planBadge {
-          display: inline-flex;
-
-          align-items: center;
-
-          margin-left: 7px;
-
-          padding:
-            3px 7px;
-
-          border-radius: 5px;
-
-          background:
-            rgba(35, 135, 255, 0.18);
-
-          color: #48aaff;
-
-          font-size: 9px;
-
-          font-weight: 700;
-
-          vertical-align: middle;
-        }
-
-        .planButton {
-          border:
-            1px solid
-            #1678df;
-
-          background:
-            transparent;
-
-          color: #70b9ff;
-
-          padding:
-            9px 15px;
-
-          border-radius: 7px;
-
-          font-size: 11px;
-
-          cursor: pointer;
-
-          transition:
-            background 0.2s;
-        }
-
-        .planButton:hover {
-          background:
-            rgba(22, 120, 223, 0.12);
-        }
-
-        .premiumFeatures {
-          color: #7fc0ff;
-
-          font-size: 10px;
-
-          line-height: 2;
-
-          white-space: nowrap;
-
-          margin-left: auto;
-        }
-
-        /* ======================================================
-           MOBILE ELEMENTS
-        ====================================================== */
-
-        .mobileHeader,
-        .mobileMenu,
-        .mobileWelcome,
-        .bottomNav {
-          display: none;
-        }
-
-        /* ======================================================
-           TABLET
-        ====================================================== */
-
-        @media (max-width: 1050px) {
-
-          .sidebar {
-            width: 210px;
-
-            min-width: 210px;
-          }
-
-          .content {
-            padding:
-              25px 22px;
-          }
-
-          .statsGrid {
-            grid-template-columns:
-              repeat(2, 1fr);
-          }
-
-          .dashboardGrid {
-            grid-template-columns:
-              1fr;
-          }
-
-        }
-
-        /* ======================================================
-           PHONE
-        ====================================================== */
-
-        @media (max-width: 700px) {
-
-          .dashboard {
-            display: block;
-
-            min-height: 100vh;
-
-            padding-bottom: 75px;
-          }
-
-          .sidebar {
-            display: none;
-          }
-
-          /* ==================================================
-             MOBILE HEADER
-             ================================================== */
-
-          .mobileHeader {
-            position: sticky;
-
-            top: 0;
-
-            z-index: 100;
-
-            height: 72px;
-
-            padding:
-              0 14px;
-
-            display: grid;
-
-            grid-template-columns:
-              44px
-              minmax(0, 1fr)
-              44px;
-
-            align-items: center;
-
-            background:
-              rgba(3, 18, 40, 0.98);
-
-            border-bottom:
-              1px solid #193650;
-          }
-
-          .menuButton {
-            width: 40px;
-
-            height: 40px;
-
-            border: 0;
-
-            background: transparent;
-
-            color: white;
-
-            font-size: 24px;
-
-            padding: 5px;
-
-            cursor: pointer;
-          }
-
-          .mobileLogoButton {
-            height: 40px;
-
-            border: none;
-
-            background: transparent;
-
-            color: white;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            gap: 7px;
-
-            font-size: 17px;
-
-            font-weight: 700;
-
-            letter-spacing: -0.2px;
-
-            cursor: pointer;
-
-            min-width: 0;
-          }
-
-          .mobileLogoDiamond {
-            color: #168eff;
-
-            font-size: 23px;
-
-            line-height: 1;
-
-            flex-shrink: 0;
-          }
-
-          .mobileBrandName {
-            white-space: nowrap;
-          }
-
-          .mobileBrandName strong {
-            color: #168eff;
-          }
-
-          /* ==================================================
-             MOBILE NOTIFICATION
-             ================================================== */
-
-          .mobileBell {
-            width: 40px;
-
-            height: 40px;
-
-            border: 0;
-
-            background: transparent;
-
-            color: white;
-
-            position: relative;
-
-            display: grid;
-
-            place-items: center;
-
-            cursor: pointer;
-
-            padding: 0;
-          }
-
-          .mobileBell .bellIcon {
-            font-size: 17px;
-
-            line-height: 1;
-          }
-
-          .mobileNotificationDot {
-            position: absolute;
-
-            width: 8px;
-
-            height: 8px;
-
-            top: 5px;
-
-            right: 3px;
-
-            border-radius: 50%;
-
-            background: #168eff;
-
-            box-shadow:
-              0 0 8px
-              rgba(22, 142, 255, 0.6);
-          }
-
-          .mobileBell:hover {
-            background:
-              rgba(22, 142, 255, 0.05);
-
-            border-radius: 50%;
-          }
-
-          /* ==================================================
-             MOBILE MENU
-             ================================================== */
-
-          .mobileMenu {
-            position: fixed;
-
-            inset: 0;
-
-            z-index: 200;
-
-            display: block;
-
-            background: #06152f;
-
-            padding: 22px;
-
-            overflow-y: auto;
-          }
-
-          .mobileMenuHeader {
-            display: flex;
-
-            justify-content: space-between;
-
-            align-items: flex-start;
-          }
-
-          .mobileMenuLogo {
-            display: flex;
-
-            align-items: center;
-
-            gap: 8px;
-
-            font-size: 20px;
-
-            font-weight: 700;
-          }
-
-          .mobileMenuLogo > span {
-            color: #168eff;
-
-            font-size: 25px;
-
-            line-height: 1;
-          }
-
-          .mobileMenuLogo strong {
-            color: #168eff;
-          }
-
-          .mobileMenuSubtitle {
-            color: #8fa5c2;
-
-            font-size: 11px;
-
-            line-height: 1.5;
-
-            margin-top: 8px;
-          }
-
-          .closeMenu {
-            border: 0;
-
-            background: transparent;
-
-            color: white;
-
-            font-size: 30px;
-
-            cursor: pointer;
-          }
-
-          .mobileMenuNav {
-            margin-top: 35px;
-          }
-
-          .mobileNavItem {
-            width: 100%;
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 15px;
-
-            padding:
-              16px 14px;
-
-            border-radius: 10px;
-
-            border: none;
-
-            background: transparent;
-
-            color: #b3c3d8;
-
-            font-size: 15px;
-
-            margin-bottom: 5px;
-
-            cursor: pointer;
-
-            text-align: left;
-          }
-
-          .mobileNavItem:hover {
-            background:
-              rgba(25, 111, 200, 0.14);
-          }
-
-          .mobileNavItem.active {
-            background: #0c64bd;
-
-            color: white;
-          }
-
-          .logoutItem {
-            color: #ff8b91;
-          }
-
-          .mobileAccountLabel {
-            color: #617996;
-
-            font-size: 10px;
-
-            letter-spacing: 1.5px;
-
-            margin:
-              28px 14px 10px;
-          }
-
-          /* ==================================================
-             CONTENT
-             ================================================== */
-
-          .content {
-            width: 100%;
-
-            padding:
-              22px 15px 30px;
-          }
-
-          .topBar {
-            display: none;
-          }
-
-          .mobileWelcome {
-            display: block;
-
-            padding:
-              8px 2px 16px;
-          }
-
-          .mobileWelcome h1 {
-            font-size: 25px;
-
-            line-height: 1.25;
-          }
-
-          .mobileWelcome p {
-            font-size: 12px;
-
-            line-height: 1.5;
-          }
-
-          /* ==================================================
-             VERIFY
-             ================================================== */
-
-          .verifyArea {
-            display: block;
-
-            margin:
-              10px 0 18px;
-          }
-
-          .verifyButton {
-            width: 100%;
-
-            padding:
-              15px;
-          }
-
-          .verifyHint {
-            display: none;
-          }
-
-          /* ==================================================
-             STATS
-             ================================================== */
-
-          .statsGrid {
-            grid-template-columns:
-              repeat(
-                2,
-                minmax(0, 1fr)
-              );
-
-            gap: 9px;
-          }
-
-          .statCard {
-            padding: 12px;
-
-            gap: 9px;
-
-            min-height: 112px;
-          }
-
-          .statIcon {
-            width: 34px;
-
-            height: 34px;
-
-            font-size: 15px;
-          }
-
-          .statLabel {
-            white-space: normal;
-
-            font-size: 9px;
-          }
-
-          .statNumber {
-            font-size: 20px;
-          }
-
-          .statLink,
-          .statWarning {
-            font-size: 10px;
-          }
-
-          /* ==================================================
-             LOWER
-             ================================================== */
-
-          .dashboardGrid {
-            display: block;
-
-            margin-top: 12px;
-          }
-
-          .panel {
-            margin-bottom: 12px;
-          }
-
-          .panelHeader {
-            padding:
-              14px;
-          }
-
-          .panelHeader h2 {
-            font-size: 15px;
-          }
-
-          /* ==================================================
-             FRAUD
-             ================================================== */
-
-          .fraudPanel {
-            min-height: 180px;
-          }
-
-          .fraudEmpty {
-            min-height: 125px;
-
-            padding:
-              20px 14px;
-
-            gap: 14px;
-          }
-
-          .fraudEmptyIcon {
-            width: 48px;
-
-            height: 48px;
-
-            font-size: 21px;
-          }
-
-          .fraudEmpty h3 {
-            font-size: 14px;
-          }
-
-          .fraudEmpty p {
-            font-size: 10px;
-
-            max-width: 245px;
-          }
-
-          .fraudShield {
-            display: none;
-          }
-
-          /* ==================================================
-             PLAN
-             ================================================== */
-
-          .premiumCard {
-            display: flex;
-
-            padding:
-              18px;
-
-            margin-bottom: 12px;
-
-            align-items: center;
-          }
-
-          .premiumShield {
-            width: 50px;
-
-            height: 50px;
-
-            border-radius: 14px;
-
-            font-size: 23px;
-          }
-
-          .premiumTitle {
-            font-size: 14px;
-          }
-
-          .premiumCard p {
-            font-size: 10px;
-
-            margin:
-              4px 0 10px;
-
-            max-width: 320px;
-          }
-
-          .planButton {
-            padding:
-              9px 14px;
-
-            font-size: 10px;
-          }
-
-          .premiumFeatures {
-            display: none;
-          }
-
-          /* ==================================================
-             BOTTOM NAV
-             ================================================== */
-
-          .bottomNav {
-            position: fixed;
-
-            display: flex;
-
-            left: 0;
-
-            right: 0;
-
-            bottom: 0;
-
-            height: 74px;
-
-            z-index: 150;
-
-            background:
-              rgba(3, 18, 40, 0.98);
-
-            border-top:
-              1px solid #193650;
-
-            justify-content:
-              space-around;
-
-            align-items: center;
-
-            backdrop-filter:
-              blur(15px);
-          }
-
-          .bottomItem {
-            flex: 1;
-
-            height: 100%;
-
-            border: none;
-
-            background: transparent;
-
-            text-align: center;
-
-            color: #7990ad;
-
-            font-size: 17px;
-
-            cursor: pointer;
-
-            display: flex;
-
-            flex-direction: column;
-
-            align-items: center;
-
-            justify-content: center;
-
-            gap: 4px;
-          }
-
-          .bottomItem span {
-            display: block;
-
-            line-height: 1;
-
-            font-size: 20px;
-          }
-
-          .bottomItem small {
-            font-size: 8px;
-          }
-
-          .bottomItem.active {
-            color: #168eff;
-          }
-
-        }
-
-        /* ======================================================
-           VERY SMALL PHONES
-        ====================================================== */
-
-        @media (max-width: 380px) {
-
-          .content {
-            padding-left: 12px;
-
-            padding-right: 12px;
-          }
-
-          .mobileLogoButton {
-            font-size: 15px;
-          }
-
-          .mobileLogoDiamond {
-            font-size: 21px;
-          }
-
-          .mobileWelcome h1 {
-            font-size: 22px;
-          }
-
-          .statCard {
-            padding: 10px;
-          }
-
-          .statIcon {
-            display: none;
-          }
-
-          .statNumber {
-            font-size: 18px;
-          }
-
-          .premiumCard {
-            gap: 10px;
-          }
-
-          .premiumShield {
-            width: 44px;
-
-            height: 44px;
-          }
-
-        }
-
-      `}</style>
-
     </main>
   );
 }

@@ -1,57 +1,141 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+
 import {
   ArrowLeft,
   ArrowRight,
+  AlertTriangle,
+  Check,
   CheckCircle2,
-  FileText,
-  Info,
-  Landmark,
-  Scale,
-  Shield,
-  UserRound,
-  MessageCircle,
-  Smile,
-  Eye,
-  Banknote,
-  Lock,
-  Users,
   ThumbsDown,
   ThumbsUp,
 } from "lucide-react";
 
 import styles from "./what-you-cant-verify.module.css";
 
+type Article = {
+  title: string;
+  slug: string;
+};
+
+/*
+============================================================
+PROPERTY VERIFICATION ARTICLES
+============================================================
+*/
+
+const propertyVerificationArticles: Article[] = [
+  {
+    title: "What Is Property Verification?",
+    slug: "what-is-property-verification",
+  },
+  {
+    title: "Why Verify a Property?",
+    slug: "why-verify",
+  },
+  {
+    title: "What You Can Verify",
+    slug: "what-you-can-verify",
+  },
+  {
+    title: "What You Can't Verify",
+    slug: "what-you-cant-verify",
+  },
+  {
+    title: "What Happens After You Verify?",
+    slug: "what-happens-after",
+  },
+  {
+    title: "Verification Results",
+    slug: "verification-results",
+  },
+  {
+    title: "How It Works (Overview)",
+    slug: "how-it-works",
+  },
+  {
+    title: "Need More Help?",
+    slug: "need-more-help",
+  },
+];
+
+/*
+============================================================
+PATHS
+============================================================
+*/
+
+const basePath =
+  "/settings/support-help/help-center/property-verification";
+
+const propertyVerificationPath =
+  "/settings/support-help/help-center/property-verification";
+
+/*
+============================================================
+PAGE
+============================================================
+*/
+
 export default function WhatYouCantVerifyArticle() {
   const router = useRouter();
 
-  const [feedback, setFeedback] = useState<"yes" | "no" | null>(null);
+  const [feedback, setFeedback] = useState<
+    "yes" | "no" | null
+  >(null);
 
-  /* =========================================================
-     ARTICLE ROUTES
-  ========================================================= */
+  const [search, setSearch] = useState("");
 
-  const goToHelpCenter = () => {
-    router.push("/settings/support-help/help-center");
+  /*
+  ============================================================
+  CURRENT ARTICLE
+  ============================================================
+  */
+
+  const currentIndex = 3;
+
+  const currentArticle =
+    propertyVerificationArticles[currentIndex];
+
+  const previousArticle =
+    propertyVerificationArticles[currentIndex - 1];
+
+  const nextArticle =
+    propertyVerificationArticles[currentIndex + 1];
+
+  /*
+  ============================================================
+  NAVIGATION
+  ============================================================
+  */
+
+  const goToPropertyVerification = () => {
+    router.push(propertyVerificationPath);
+  };
+
+  const goToArticle = (article: Article) => {
+    router.push(`${basePath}/${article.slug}`);
   };
 
   const goToPreviousArticle = () => {
-    router.push(
-      "/settings/support-help/help-center/property-verification/what-happens-after"
-    );
+    if (previousArticle) {
+      goToArticle(previousArticle);
+    }
   };
 
   const goToNextArticle = () => {
-    router.push(
-      "/settings/support-help/help-center/property-verification/verification-results"
-    );
+    if (nextArticle) {
+      goToArticle(nextArticle);
+    }
   };
 
-  /* =========================================================
-     SECTION NAVIGATION
-  ========================================================= */
+  /*
+  ============================================================
+  SECTION NAVIGATION
+  ============================================================
+  */
 
   const scrollToSection = (sectionId: string) => {
     const section = document.getElementById(sectionId);
@@ -64,17 +148,39 @@ export default function WhatYouCantVerifyArticle() {
     });
   };
 
-  /* =========================================================
-     FEEDBACK
-  ========================================================= */
+  /*
+  ============================================================
+  SEARCH
+  ============================================================
+  */
+
+  const filteredArticles = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!query) {
+      return propertyVerificationArticles;
+    }
+
+    return propertyVerificationArticles.filter((article) =>
+      article.title.toLowerCase().includes(query)
+    );
+  }, [search]);
+
+  /*
+  ============================================================
+  FEEDBACK
+  ============================================================
+  */
 
   const handleFeedback = (value: "yes" | "no") => {
     setFeedback(value);
   };
 
-  /* =========================================================
-     PAGE
-  ========================================================= */
+  /*
+  ============================================================
+  RENDER
+  ============================================================
+  */
 
   return (
     <main className={styles.page}>
@@ -85,11 +191,11 @@ export default function WhatYouCantVerifyArticle() {
       <header className={styles.topHeader}>
         <div className={styles.searchBox}>
           <svg
+            className={styles.searchIcon}
             width="21"
             height="21"
             viewBox="0 0 24 24"
             fill="none"
-            className={styles.searchIcon}
             aria-hidden="true"
           >
             <circle
@@ -99,6 +205,7 @@ export default function WhatYouCantVerifyArticle() {
               stroke="currentColor"
               strokeWidth="2"
             />
+
             <path
               d="M16.5 16.5L21 21"
               stroke="currentColor"
@@ -109,10 +216,34 @@ export default function WhatYouCantVerifyArticle() {
 
           <input
             type="text"
+            value={search}
+            onChange={(event) =>
+              setSearch(event.target.value)
+            }
             placeholder="Search for articles, guides, and topics"
-            aria-label="Search help articles"
+            aria-label="Search Property Verification help articles"
           />
         </div>
+
+        {search.trim() && (
+          <div className={styles.searchResults}>
+            {filteredArticles.length > 0 ? (
+              filteredArticles.map((article) => (
+                <button
+                  key={article.slug}
+                  type="button"
+                  onClick={() => goToArticle(article)}
+                >
+                  {article.title}
+                </button>
+              ))
+            ) : (
+              <span>
+                No matching articles found.
+              </span>
+            )}
+          </div>
+        )}
       </header>
 
       {/* =====================================================
@@ -121,318 +252,379 @@ export default function WhatYouCantVerifyArticle() {
 
       <div className={styles.layout}>
         {/* ===================================================
-            ARTICLE
+            MAIN ARTICLE
         =================================================== */}
 
         <article className={styles.article}>
           {/* =================================================
-              HEADER
+              ARTICLE HEADER
           ================================================= */}
 
           <header className={styles.articleHeader}>
-            <h1>What You Can’t Verify</h1>
+            <h1>{currentArticle.title}</h1>
 
             <p>
-              To keep our verification accurate, fair, and
-              compliant, there are certain things we currently
-              can’t verify. This helps us focus on information
-              that can be supported by reliable sources.
+              Property verification can identify important
+              issues, but some matters require official
+              records, professional review, or physical
+              inspection.
             </p>
 
             <button
               type="button"
               className={styles.backButton}
-              onClick={goToHelpCenter}
+              onClick={goToPropertyVerification}
             >
-              <ArrowLeft size={16} />
-              Back to Help Center
+              <ArrowLeft size={17} />
+
+              Back to Property Verification
             </button>
           </header>
 
           <div className={styles.divider} />
 
           {/* =================================================
-              INTRODUCTION
+              MAIN CONTENT
           ================================================= */}
 
           <section
-            id="verification-scope"
-            className={styles.introSection}
+            id="what-you-cant-verify"
+            className={styles.contentCard}
           >
-            <div className={styles.introIcon}>
-              <Info size={34} strokeWidth={1.9} />
-            </div>
-
-            <div className={styles.introContent}>
-              <h2>We Focus on Facts, Not Opinions</h2>
+            <div className={styles.contentText}>
+              <p className={styles.mainParagraph}>
+                PropertySure AI is designed to provide an
+                additional layer of due diligence when
+                reviewing property documentation. However,
+                document verification alone cannot confirm
+                every legal, physical, financial, or
+                government-related aspect of a property.
+              </p>
 
               <p>
-                We verify factual information through official
-                sources, reliable records, and available data.
-                Subjective, personal, or predictive matters are
-                outside the current scope of our verification.
+                Some information requires access to official
+                records, direct confirmation from relevant
+                authorities, professional assessment, or
+                inspection of the property itself.
               </p>
-            </div>
-          </section>
 
-          {/* =================================================
-              WHAT WE CANNOT VERIFY
-          ================================================= */}
+              {/* =================================================
+                  LEGAL OWNERSHIP
+              ================================================= */}
 
-          <section
-            id="what-we-cant-verify"
-            className={styles.contentSection}
-          >
-            <h2>What We Can’t Verify</h2>
+              <h2 id="legal-ownership">
+                Final Legal Ownership
+              </h2>
 
-            <p className={styles.sectionDescription}>
-              Some property-related information depends on
-              personal opinions, future events, physical
-              inspection, or services outside our current
-              verification scope.
-            </p>
+              <p>
+                PropertySure AI cannot independently make a
+                final legal determination that a person is
+                the lawful owner of a property simply because
+                ownership information appears consistent in
+                submitted documents.
+              </p>
 
-            <div className={styles.cantVerifyGrid}>
+              <p>
+                Legal ownership may require an official
+                search, examination of government records,
+                review of the property's chain of title, and
+                professional legal assessment.
+              </p>
+
+              {/* =================================================
+                  GOVERNMENT RECORDS
+              ================================================= */}
+
+              <h2 id="government-records">
+                Official Government Records
+              </h2>
+
+              <p>
+                A document submitted for verification does
+                not automatically establish that the
+                document matches the latest records held by
+                a government authority.
+              </p>
+
+              <ul className={styles.checkList}>
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Official title records may require a
+                  government or institutional search.
+                </li>
+
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Registration status may require
+                  confirmation from the relevant authority.
+                </li>
+
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Outstanding interests or restrictions may
+                  require an official search.
+                </li>
+              </ul>
+
+              {/* =================================================
+                  PHYSICAL PROPERTY
+              ================================================= */}
+
+              <h2 id="physical-property">
+                Physical Condition of the Property
+              </h2>
+
+              <p>
+                Document verification cannot determine the
+                complete physical condition of land,
+                buildings, structures, boundaries, or other
+                physical features of a property.
+              </p>
+
+              <p>
+                Where necessary, a physical inspection by
+                an appropriate professional may be required
+                to assess the actual condition of the
+                property.
+              </p>
+
+              {/* =================================================
+                  BOUNDARIES
+              ================================================= */}
+
+              <h2 id="boundaries">
+                Physical Boundaries and Location
+              </h2>
+
+              <p>
+                Property documents may contain survey or
+                location information, but document review
+                alone should not be treated as a complete
+                physical confirmation of the property's
+                boundaries or exact condition on the ground.
+              </p>
+
+              <p>
+                Boundary confirmation may require a licensed
+                surveyor or other appropriate professional.
+              </p>
+
               {/* =================================================
                   MARKET VALUE
               ================================================= */}
 
-              <div className={styles.cantVerifyCard}>
-                <div
-                  className={`${styles.cantVerifyIcon} ${styles.blueIcon}`}
-                >
-                  <Banknote size={28} />
+              <h2 id="market-value">
+                Property Value or Investment Returns
+              </h2>
+
+              <p>
+                PropertySure AI verification does not
+                guarantee that a property is fairly priced,
+                profitable, or likely to increase in value.
+              </p>
+
+              <p>
+                Property valuation and investment decisions
+                involve additional factors such as location,
+                market conditions, development, demand,
+                comparable properties, and other economic
+                considerations.
+              </p>
+
+              {/* =================================================
+                  IMPORTANT WARNING
+              ================================================= */}
+
+              <div
+                id="warning"
+                className={styles.successBox}
+              >
+                <div className={styles.successIcon}>
+                  <AlertTriangle
+                    size={23}
+                    strokeWidth={1.8}
+                  />
                 </div>
 
-                <h3>Market Value</h3>
-
                 <p>
-                  We currently don’t provide an independent
-                  market valuation or guarantee a property’s
-                  selling price. Property value can depend on
-                  location, demand, comparable properties, and
-                  changing market conditions.
+                  <strong>
+                    Important:
+                  </strong>{" "}
+                  A document that appears consistent or
+                  passes available verification checks should
+                  not automatically be interpreted as proof
+                  that the property is completely free from
+                  fraud, disputes, restrictions, or other
+                  risks.
                 </p>
               </div>
 
               {/* =================================================
-                  SELLER INTENTIONS
+                  PROFESSIONAL REVIEW
               ================================================= */}
 
-              <div className={styles.cantVerifyCard}>
-                <div
-                  className={`${styles.cantVerifyIcon} ${styles.greenIcon}`}
-                >
-                  <MessageCircle size={28} />
-                </div>
+              <h2 id="professional-review">
+                Matters That May Require Professional Review
+              </h2>
 
-                <h3>Seller Intentions</h3>
+              <ul className={styles.checkList}>
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
 
-                <p>
-                  We can’t verify a seller’s personal
-                  motivations, reasons for selling, or future
-                  intentions.
-                </p>
-              </div>
+                  Legal title and ownership confirmation.
+                </li>
+
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Government registry and official searches.
+                </li>
+
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Physical property and structural
+                  inspection.
+                </li>
+
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Survey and boundary confirmation.
+                </li>
+
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+
+                  Property valuation and investment advice.
+                </li>
+              </ul>
 
               {/* =================================================
-                  FUTURE PERFORMANCE
+                  IMPORTANT NOTE
               ================================================= */}
 
-              <div className={styles.cantVerifyCard}>
-                <div
-                  className={`${styles.cantVerifyIcon} ${styles.yellowIcon}`}
-                >
-                  <Smile size={28} />
+              <div
+                id="important-note"
+                className={styles.noteBox}
+              >
+                <div className={styles.noteIcon}>
+                  <CheckCircle2
+                    size={22}
+                    strokeWidth={1.8}
+                  />
                 </div>
 
-                <h3>Future Performance</h3>
-
                 <p>
-                  We can’t predict future returns, rental
-                  income, appreciation, or investment
-                  performance.
-                </p>
-              </div>
-
-              {/* =================================================
-                  PHYSICAL CONDITION
-              ================================================= */}
-
-              <div className={styles.cantVerifyCard}>
-                <div
-                  className={`${styles.cantVerifyIcon} ${styles.purpleIcon}`}
-                >
-                  <Eye size={28} />
-                </div>
-
-                <h3>Property Condition (Physical)</h3>
-
-                <p>
-                  We don’t verify physical conditions such as
-                  structural issues, hidden defects, repairs,
-                  or construction quality unless a separate
-                  professional inspection is performed.
-                </p>
-              </div>
-
-              {/* =================================================
-                  LEGAL ADVICE
-              ================================================= */}
-
-              <div className={styles.cantVerifyCard}>
-                <div
-                  className={`${styles.cantVerifyIcon} ${styles.orangeIcon}`}
-                >
-                  <Scale size={28} />
-                </div>
-
-                <h3>Legal Advice</h3>
-
-                <p>
-                  We don’t provide legal advice or interpret
-                  laws for your specific situation. Please
-                  consult a qualified legal professional when
-                  legal advice is required.
-                </p>
-              </div>
-
-              {/* =================================================
-                  PERSONAL AGREEMENTS
-              ================================================= */}
-
-              <div className={styles.cantVerifyCard}>
-                <div
-                  className={`${styles.cantVerifyIcon} ${styles.blueIcon}`}
-                >
-                  <FileText size={28} />
-                </div>
-
-                <h3>Personal Agreements</h3>
-
-                <p>
-                  We don’t verify private agreements between
-                  parties when those agreements are not part of
-                  official property records.
-                </p>
-              </div>
-
-              {/* =================================================
-                  FINANCING
-              ================================================= */}
-
-              <div className={styles.cantVerifyCard}>
-                <div
-                  className={`${styles.cantVerifyIcon} ${styles.greenIcon}`}
-                >
-                  <Banknote size={28} />
-                </div>
-
-                <h3>Financing &amp; Loan Approval</h3>
-
-                <p>
-                  We can’t verify loan eligibility, financing
-                  terms, lender decisions, or bank approval
-                  status.
-                </p>
-              </div>
-
-              {/* =================================================
-                  INSURANCE
-              ================================================= */}
-
-              <div className={styles.cantVerifyCard}>
-                <div
-                  className={`${styles.cantVerifyIcon} ${styles.blueIcon}`}
-                >
-                  <Shield size={28} />
-                </div>
-
-                <h3>Insurance Coverage</h3>
-
-                <p>
-                  We don’t verify insurance availability,
-                  coverage details, premiums, or claim history.
-                </p>
-              </div>
-
-              {/* =================================================
-                  TENANTS
-              ================================================= */}
-
-              <div className={styles.cantVerifyCard}>
-                <div
-                  className={`${styles.cantVerifyIcon} ${styles.redIcon}`}
-                >
-                  <Users size={28} />
-                </div>
-
-                <h3>Tenants or Occupants</h3>
-
-                <p>
-                  We can’t verify current or future tenants,
-                  occupants, rental arrangements, or private
-                  tenancy agreements unless supported by
-                  verifiable official records.
+                  <strong>
+                    Important:
+                  </strong>{" "}
+                  PropertySure AI verification is an
+                  additional due-diligence tool. It does not
+                  replace legal advice, official government
+                  searches, surveying, valuation, engineering
+                  inspection, or other professional services
+                  that may be necessary for a property
+                  transaction.
                 </p>
               </div>
             </div>
           </section>
 
           {/* =================================================
-              IMPORTANT NOTE
-          ================================================= */}
-
-          <section
-            id="important-note"
-            className={styles.importantSection}
-          >
-            <div className={styles.importantIcon}>
-              <Info size={23} />
-            </div>
-
-            <p>
-              <strong>Important:</strong>{" "}
-              Our verification is based on available official
-              records and reliable sources. If something is not
-              verifiable from the information and sources
-              available to us, we will clearly state this in
-              your report.
-            </p>
-          </section>
-
-          {/* =================================================
-              BOTTOM NAVIGATION
+              BOTTOM ARTICLE NAVIGATION
           ================================================= */}
 
           <div className={styles.bottomNavigation}>
-            <button
-              type="button"
-              className={styles.previousBottom}
-              onClick={goToPreviousArticle}
-            >
-              <ArrowLeft size={18} />
+            {/* PREVIOUS ARTICLE */}
 
-              <span>
-                <small>Previous Article</small>
+            {previousArticle && (
+              <button
+                type="button"
+                className={styles.previousBottom}
+                onClick={goToPreviousArticle}
+              >
+                <ArrowLeft
+                  className={styles.bottomPreviousArrow}
+                  size={19}
+                />
 
-                <strong>What Happens After You Verify</strong>
-              </span>
-            </button>
+                <span>
+                  <small>
+                    Previous Article
+                  </small>
 
-            <button
-              type="button"
-              className={styles.nextBottom}
-              onClick={goToNextArticle}
-            >
-              <span>
-                <small>Next Article</small>
+                  <strong>
+                    {previousArticle.title}
+                  </strong>
+                </span>
+              </button>
+            )}
 
-                <strong>Verification Results</strong>
-              </span>
+            {/* NEXT ARTICLE */}
 
-              <ArrowRight size={20} />
-            </button>
+            {nextArticle && (
+              <button
+                type="button"
+                className={styles.nextBottom}
+                onClick={goToNextArticle}
+              >
+                <span>
+                  <small>
+                    Next Article
+                  </small>
+
+                  <strong>
+                    {nextArticle.title}
+                  </strong>
+                </span>
+
+                <ArrowRight size={20} />
+              </button>
+            )}
           </div>
         </article>
 
@@ -446,28 +638,100 @@ export default function WhatYouCantVerifyArticle() {
           ================================================= */}
 
           <section className={styles.sideCard}>
-            <h3>In this article</h3>
+            <h3>
+              In this article
+            </h3>
 
             <nav className={styles.articleNav}>
               <button
                 type="button"
+                className={styles.activeArticle}
                 onClick={() =>
-                  scrollToSection("verification-scope")
+                  scrollToSection(
+                    "what-you-cant-verify"
+                  )
                 }
               >
-                <span />
-                We Focus on Facts, Not Opinions
+                <span className={styles.activeDot} />
+
+                What You Can't Verify
               </button>
 
               <button
                 type="button"
-                className={styles.activeArticle}
                 onClick={() =>
-                  scrollToSection("what-we-cant-verify")
+                  scrollToSection("legal-ownership")
                 }
               >
-                <span className={styles.activeDot} />
-                What We Can’t Verify
+                <span className={styles.articleDot} />
+
+                Final Legal Ownership
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  scrollToSection("government-records")
+                }
+              >
+                <span className={styles.articleDot} />
+
+                Official Government Records
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  scrollToSection("physical-property")
+                }
+              >
+                <span className={styles.articleDot} />
+
+                Physical Condition
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  scrollToSection("boundaries")
+                }
+              >
+                <span className={styles.articleDot} />
+
+                Physical Boundaries and Location
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  scrollToSection("market-value")
+                }
+              >
+                <span className={styles.articleDot} />
+
+                Property Value
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  scrollToSection("warning")
+                }
+              >
+                <span className={styles.articleDot} />
+
+                Important Warning
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  scrollToSection("professional-review")
+                }
+              >
+                <span className={styles.articleDot} />
+
+                Professional Review
               </button>
 
               <button
@@ -476,34 +740,49 @@ export default function WhatYouCantVerifyArticle() {
                   scrollToSection("important-note")
                 }
               >
-                <span />
+                <span className={styles.articleDot} />
+
                 Important Note
               </button>
             </nav>
           </section>
 
           {/* =================================================
-              FEEDBACK
+              WAS THIS HELPFUL?
           ================================================= */}
 
           <section className={styles.sideCard}>
-            <h3>Was this helpful?</h3>
+            <h3>
+              Was this helpful?
+            </h3>
 
             {feedback === null ? (
               <div className={styles.feedback}>
                 <button
                   type="button"
-                  onClick={() => handleFeedback("yes")}
+                  onClick={() =>
+                    handleFeedback("yes")
+                  }
                 >
-                  <ThumbsUp size={18} />
+                  <ThumbsUp
+                    size={18}
+                    strokeWidth={1.8}
+                  />
+
                   Yes
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => handleFeedback("no")}
+                  onClick={() =>
+                    handleFeedback("no")
+                  }
                 >
-                  <ThumbsDown size={18} />
+                  <ThumbsDown
+                    size={18}
+                    strokeWidth={1.8}
+                  />
+
                   No
                 </button>
               </div>
@@ -511,7 +790,9 @@ export default function WhatYouCantVerifyArticle() {
               <div className={styles.feedbackMessage}>
                 <CheckCircle2 size={18} />
 
-                <span>Thanks for your feedback.</span>
+                <span>
+                  Thanks for your feedback.
+                </span>
               </div>
             )}
           </section>
@@ -521,37 +802,64 @@ export default function WhatYouCantVerifyArticle() {
           ================================================= */}
 
           <section className={styles.sideCard}>
-            <button
-              type="button"
-              className={styles.sidePrevious}
-              onClick={goToPreviousArticle}
-            >
-              <ArrowLeft size={16} />
+            {/* PREVIOUS */}
 
-              <span>
-                <small>Previous Article</small>
+            {previousArticle && (
+              <button
+                type="button"
+                className={styles.previousArticle}
+                onClick={goToPreviousArticle}
+              >
+                <ArrowLeft
+                  className={
+                    styles.sidebarPreviousArrow
+                  }
+                  size={16}
+                />
 
-                <strong>
-                  What Happens After You Verify
-                </strong>
-              </span>
-            </button>
+                <span>
+                  <small>
+                    Previous Article
+                  </small>
 
-            <div className={styles.sideDivider} />
+                  <strong>
+                    {previousArticle.title}
+                  </strong>
+                </span>
+              </button>
+            )}
 
-            <button
-              type="button"
-              className={styles.sideNext}
-              onClick={goToNextArticle}
-            >
-              <span>
-                <small>Next Article</small>
+            {/* DIVIDER */}
 
-                <strong>Verification Results</strong>
-              </span>
+            {previousArticle &&
+              nextArticle && (
+                <div className={styles.sideDivider} />
+              )}
 
-              <ArrowRight size={17} />
-            </button>
+            {/* NEXT */}
+
+            {nextArticle && (
+              <button
+                type="button"
+                className={styles.nextArticle}
+                onClick={goToNextArticle}
+              >
+                <span>
+                  <small>
+                    Next Article
+                  </small>
+
+                  <strong>
+                    {nextArticle.title}
+                  </strong>
+                </span>
+
+                <ArrowRight
+                  className={styles.sidebarNextArrow}
+                  size={17}
+                />
+              </button>
+            )}
           </section>
         </aside>
       </div>

@@ -1,0 +1,1241 @@
+/* =========================================================
+   ADD PROPERTY
+   PropertySure AI
+   ========================================================= */
+
+.page {
+  min-height: 100%;
+  background: #ffffff;
+  color: #101827;
+}
+
+.content {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 30px 0 70px;
+}
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.pageHeader {
+  margin-bottom: 26px;
+}
+
+.backButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #168eff;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.backButton:hover {
+  color: #0879f9;
+}
+
+.backButton span {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.headingBlock {
+  margin-top: 0;
+}
+
+.headingBlock h1 {
+  margin: 0;
+  color: #101827;
+  font-size: 27px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.headingBlock p {
+  margin: 7px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* =========================================================
+   STEPPER
+   ========================================================= */
+
+.stepper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow:
+    0 3px 12px rgba(15, 23, 42, 0.035);
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.stepNumber {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #edf2f7;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.activeStep .stepNumber {
+  background: #168eff;
+  color: #ffffff;
+  box-shadow:
+    0 3px 10px rgba(22, 142, 255, 0.2);
+}
+
+.step div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.step strong {
+  color: #334155;
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.activeStep strong {
+  color: #168eff;
+}
+
+.step div span {
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.stepLine {
+  height: 1px;
+  flex: 1;
+  min-width: 30px;
+  margin: 0 18px;
+  background: #dce4ed;
+}
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.card {
+  padding: 25px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 13px;
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.035);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.cardHeader h2 {
+  margin: 0;
+  color: #101827;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.cardHeader p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   FORM GRID
+   ========================================================= */
+
+.formGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 18px 20px;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.formGrid label {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 7px;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.formGrid label > span {
+  color: #168eff;
+}
+
+.formGrid label small {
+  margin-left: 3px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.formGrid input,
+.formGrid select,
+.formGrid textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d9e2ec;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #101827;
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.formGrid input,
+.formGrid select {
+  height: 43px;
+  padding: 0 13px;
+}
+
+.formGrid textarea {
+  min-height: 112px;
+  padding: 12px 13px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.formGrid input::placeholder,
+.formGrid textarea::placeholder {
+  color: #a0aec0;
+}
+
+.formGrid input:focus,
+.formGrid select:focus,
+.formGrid textarea:focus {
+  border-color: #168eff;
+  box-shadow:
+    0 0 0 3px rgba(22, 142, 255, 0.09);
+}
+
+.formGrid select {
+  cursor: pointer;
+}
+
+.formGrid select:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   PROPERTY IMAGE
+   ========================================================= */
+
+.imageField {
+  padding-bottom: 2px;
+}
+
+/*
+ * Property Image uses the exact same label structure
+ * as Owner / Seller Name:
+ *
+ * Property Image  Optional
+ *
+ * "Optional" is intentionally small, muted,
+ * and not bold.
+ */
+
+.imageField > label {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 7px;
+}
+
+.imageField > label small {
+  margin-left: 3px;
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 500;
+}
+
+.fieldDescription {
+  margin: -1px 0 11px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.imageUpload {
+  position: relative;
+  width: 100%;
+}
+
+.hiddenFileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.imageUploadBox {
+  width: 100%;
+  min-height: 175px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1.5px dashed #cbd8e5;
+  border-radius: 11px;
+  background: #fbfdff;
+  color: #334155;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.imageUploadBox:hover {
+  border-color: #8bbde9;
+  background: #f7fbff;
+  box-shadow:
+    0 3px 12px rgba(22, 142, 255, 0.05);
+}
+
+.imageUploadIcon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #eef6ff;
+  color: #168eff;
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.imageUploadBox strong {
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+
+.imageUploadBox small {
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.imagePreviewWrapper {
+  position: relative;
+  width: 100%;
+  height: 230px;
+  overflow: hidden;
+  border: 1px solid #d9e2ec;
+  border-radius: 11px;
+  background: #f8fafc;
+}
+
+.imagePreview {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.imagePreviewOverlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background:
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(3, 18, 41, 0.78) 100%
+    );
+}
+
+.changeImageButton,
+.removeImageButton {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.changeImageButton {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.96);
+  color: #1e293b;
+}
+
+.changeImageButton:hover {
+  background: #ffffff;
+}
+
+.removeImageButton {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(220, 38, 38, 0.94);
+  color: #ffffff;
+}
+
+.removeImageButton:hover {
+  background: #dc2626;
+}
+
+/* =========================================================
+   FIELD HINT
+   ========================================================= */
+
+.fieldHint {
+  display: block;
+  margin-top: 5px;
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* =========================================================
+   RELATIONSHIP
+   ========================================================= */
+
+.relationshipSection {
+  margin-top: 27px;
+  padding-top: 24px;
+  border-top: 1px solid #edf1f5;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.sectionTitle h3 {
+  margin: 0;
+  color: #101827;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 800;
+}
+
+.sectionTitle > span:not(.optionalLabel) {
+  color: #168eff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.optionalLabel {
+  color: #94a3b8 !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+}
+
+.sectionDescription {
+  margin: 5px 0 15px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.relationshipGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.relationshipCard {
+  position: relative;
+  min-height: 126px;
+  padding: 15px 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  border: 1px solid #dce4ed;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #101827;
+  font-family: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.relationshipCard:hover {
+  border-color: #a9cfee;
+  background: #fbfdff;
+  transform: translateY(-1px);
+}
+
+.relationshipCardSelected {
+  border-color: #168eff;
+  background: #f4f9ff;
+  box-shadow:
+    0 0 0 2px rgba(22, 142, 255, 0.08);
+}
+
+.relationshipIcon {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: #eef6ff;
+  color: #168eff;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.relationshipText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.relationshipText strong {
+  color: #1e293b;
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+
+.relationshipText small {
+  color: #718096;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.selectedCheck {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 17px;
+  height: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #168eff;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   OWNER / SELLER
+   ========================================================= */
+
+.ownerSection {
+  margin-top: 27px;
+  padding-top: 24px;
+  border-top: 1px solid #edf1f5;
+}
+
+/* =========================================================
+   VERIFICATION NOTICE
+   ========================================================= */
+
+.verificationNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 15px 17px;
+  border: 1px solid #bce7d0;
+  border-radius: 10px;
+  background: #f1fbf5;
+}
+
+.noticeIcon {
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #159447;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.verificationNotice strong {
+  display: block;
+  margin: 1px 0 4px;
+  color: #166534;
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+
+.verificationNotice p {
+  margin: 0;
+  color: #3f6b50;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   CHARACTER COUNT
+   ========================================================= */
+
+.characterCount {
+  margin-top: 5px;
+  color: #94a3b8;
+  text-align: right;
+  font-size: 9px;
+}
+
+/* =========================================================
+   ERROR / SUCCESS
+   ========================================================= */
+
+.errorMessage,
+.successMessage {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 9px;
+}
+
+.errorMessage {
+  border: 1px solid #fecaca;
+  background: #fff5f5;
+}
+
+.errorMessage > span {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.errorMessage p,
+.successMessage p {
+  margin: 1px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.errorMessage p {
+  color: #991b1b;
+}
+
+.successMessage {
+  border: 1px solid #bce7d0;
+  background: #f1fbf5;
+}
+
+.successMessage > span {
+  color: #15803d;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.successMessage p {
+  color: #166534;
+}
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.formActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.cancelButton,
+.saveButton {
+  min-height: 42px;
+  padding: 0 20px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.cancelButton {
+  border: 1px solid #d9e2ec;
+  background: #ffffff;
+  color: #475569;
+}
+
+.cancelButton:hover:not(:disabled) {
+  border-color: #b9c7d6;
+  background: #f8fafc;
+}
+
+.saveButton {
+  min-width: 145px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #0879f9;
+  background:
+    linear-gradient(
+      135deg,
+      #0879f9 0%,
+      #1269e7 100%
+    );
+  color: #ffffff;
+  box-shadow:
+    0 4px 12px rgba(22, 142, 255, 0.18);
+}
+
+.saveButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 15px rgba(22, 142, 255, 0.22);
+}
+
+.cancelButton:disabled,
+.saveButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   BUTTON SPINNER
+   ========================================================= */
+
+.buttonSpinner {
+  width: 13px;
+  height: 13px;
+  display: inline-block;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation:
+    buttonSpin 0.7s linear infinite;
+}
+
+@keyframes buttonSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   LOADING
+   Exact Dashboard / Verify treatment
+   ========================================================= */
+
+.loadingPage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(22, 142, 255, 0.1),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      #061b38 0%,
+      #031229 100%
+    );
+  color: #ffffff;
+  text-align: center;
+}
+
+.loadingBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.loadingBrand strong {
+  color: #168eff;
+}
+
+.loadingDiamond {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  flex: 0 0 15px;
+  background: #168eff;
+  transform: rotate(45deg);
+  border-radius: 2px;
+  box-shadow:
+    0 0 18px rgba(22, 142, 255, 0.35);
+  animation:
+    loadingDiamondPulse
+    1.6s
+    ease-in-out
+    infinite;
+}
+
+.loadingIndicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 22px;
+  height: 14px;
+}
+
+.loadingIndicator span {
+  width: 6px;
+  height: 6px;
+  display: block;
+  border-radius: 50%;
+  background: #168eff;
+  box-shadow:
+    0 0 8px rgba(22, 142, 255, 0.45);
+  animation:
+    loadingDot
+    1.2s
+    ease-in-out
+    infinite;
+}
+
+.loadingIndicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.loadingIndicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.loadingText {
+  margin: 10px 0 0;
+  color: #91a7c3;
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+@keyframes loadingDot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes loadingDiamondPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: rotate(45deg) scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1.08);
+  }
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .relationshipGrid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .stepLine {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 760px) {
+  .content {
+    width: calc(100% - 28px);
+    padding: 22px 0 42px;
+  }
+
+  .headingBlock {
+    margin-top: 0;
+  }
+
+  .headingBlock h1 {
+    font-size: 23px;
+  }
+
+  .headingBlock p {
+    font-size: 12px;
+  }
+
+  .stepper {
+    overflow-x: auto;
+    padding: 13px 14px;
+    border-radius: 10px;
+  }
+
+  .step {
+    flex: 0 0 auto;
+  }
+
+  .step strong {
+    font-size: 10px;
+  }
+
+  .step div span {
+    display: none;
+  }
+
+  .stepLine {
+    flex: 0 0 28px;
+    margin: 0 8px;
+  }
+
+  .card {
+    padding: 18px;
+    border-radius: 11px;
+  }
+
+  .cardHeader {
+    margin-bottom: 19px;
+  }
+
+  .cardHeader h2 {
+    font-size: 16px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .fullWidth {
+    grid-column: auto;
+  }
+
+  /*
+   * IMPORTANT:
+   * These explanatory hints remain available on desktop,
+   * but disappear on mobile to keep the form clean.
+   *
+   * This removes:
+   *
+   * "Select a state first to see..."
+   *
+   * and:
+   *
+   * "You can enter the district, street..."
+   */
+  .fieldHint {
+    display: none;
+  }
+
+  /*
+   * PROPERTY IMAGE
+   *
+   * Keep "Property Image Optional" compact,
+   * exactly like the Owner / Seller labels.
+   */
+
+  .imageField > label {
+    margin-bottom: 6px;
+  }
+
+  .imageField > label small {
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  /*
+   * The descriptive paragraph is useful on desktop,
+   * but takes unnecessary vertical space on mobile.
+   */
+  .fieldDescription {
+    display: none;
+  }
+
+  .imageUploadBox {
+    min-height: 145px;
+  }
+
+  .imagePreviewWrapper {
+    height: 200px;
+  }
+
+  /*
+   * Relationship cards become compact rows.
+   */
+
+  .relationshipGrid {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .relationshipCard {
+    min-height: 0;
+    padding: 12px;
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+  }
+
+  .relationshipText {
+    align-items: flex-start;
+  }
+
+  .relationshipIcon {
+    flex: 0 0 34px;
+  }
+
+  .selectedCheck {
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+  }
+
+  /*
+   * Verification notice
+   */
+
+  .verificationNotice {
+    padding: 13px;
+  }
+
+  /*
+   * Buttons
+   */
+
+  .formActions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .cancelButton,
+  .saveButton {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+  .content {
+    width: calc(100% - 22px);
+    padding-top: 17px;
+  }
+
+  .backButton {
+    font-size: 12px;
+  }
+
+  .headingBlock h1 {
+    font-size: 21px;
+  }
+
+  .stepper {
+    padding: 11px;
+  }
+
+  .stepNumber {
+    width: 25px;
+    height: 25px;
+    flex-basis: 25px;
+    font-size: 11px;
+  }
+
+  .step strong {
+    font-size: 9px;
+  }
+
+  .stepLine {
+    flex-basis: 20px;
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+
+  .card {
+    padding: 15px;
+  }
+
+  .formGrid input,
+  .formGrid select {
+    height: 41px;
+  }
+
+  /*
+   * Keep the Property Image upload compact.
+   */
+  .imageUploadBox {
+    min-height: 135px;
+  }
+
+  .imageUploadIcon {
+    width: 36px;
+    height: 36px;
+    font-size: 23px;
+  }
+
+  .imagePreviewWrapper {
+    height: 180px;
+  }
+
+  .imagePreviewOverlay {
+    padding: 9px;
+  }
+
+  .changeImageButton,
+  .removeImageButton {
+    min-height: 30px;
+    padding: 0 10px;
+    font-size: 9px;
+  }
+
+  .verificationNotice {
+    gap: 9px;
+  }
+
+  .verificationNotice p {
+    font-size: 10px;
+  }
+}
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+.backButton:focus-visible,
+.relationshipCard:focus-visible,
+.cancelButton:focus-visible,
+.saveButton:focus-visible,
+.changeImageButton:focus-visible,
+.removeImageButton:focus-visible,
+.imageUploadBox:focus-visible,
+.formGrid input:focus-visible,
+.formGrid select:focus-visible,
+.formGrid textarea:focus-visible {
+  outline:
+    3px solid rgba(22, 142, 255, 0.2);
+  outline-offset: 2px;
+}

@@ -51,19 +51,8 @@ function Icon({
   MASTER VERIFY ICON
   ==========================================================
 
-  This is copied from the General Settings page.
-
-  Source:
-      General Settings Page
-
-  SVG:
-      viewBox 0 0 42 42
-
-  This is intentionally NOT the old:
-      ⇧
-
-  The Verify icon now uses the same document +
-  verification badge design from General Settings.
+  Same document + verification badge design
+  used throughout the Settings experience.
   ==========================================================
   */
 
@@ -690,7 +679,6 @@ export default function NotificationsPage() {
 
   return (
     <main className={styles.page}>
-
       {/* ====================================================
           DESKTOP / TABLET TOP BAR
       ==================================================== */}
@@ -975,11 +963,16 @@ export default function NotificationsPage() {
             styles.pageHeader
           }
         >
-          <h1>Notifications</h1>
+          <h1>
+            Notification Preferences
+          </h1>
 
           <p>
-            Manage how and when you
-            receive notifications.
+            Choose which alerts you
+            receive for verification,
+            fraud monitoring, account
+            security, and property
+            activity.
           </p>
 
           <button
@@ -999,12 +992,12 @@ export default function NotificationsPage() {
           }
         >
           {/* ==================================================
-              NOTIFICATION PREFERENCES
+              DELIVERY CHANNELS
           ================================================== */}
 
           <NotificationSection
-            title="Notification Preferences"
-            description="Control your notification channels."
+            title="Delivery Channels"
+            description="Control how PropertySure AI delivers your notifications."
           >
             <ChannelRow
               icon="bell"

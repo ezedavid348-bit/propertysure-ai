@@ -1,0 +1,1687 @@
+/* =========================================================
+   PROPERTY SURE AI — ACCOUNT
+   app/account/account.module.css
+========================================================= */
+
+:global(*) {
+  box-sizing: border-box;
+}
+
+:global(html),
+:global(body) {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+:global(body) {
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.page {
+  min-height: 100%;
+  background: #f5f8fc;
+  color: #0b1f3a;
+}
+
+.container {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 34px 36px 60px;
+}
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 26px;
+}
+
+.eyebrow {
+  margin-bottom: 7px;
+  color: #6c82a0;
+  font-size: 11px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+}
+
+.pageHeader h1 {
+  margin: 0;
+  color: #071b36;
+  font-size: 34px;
+  line-height: 1.12;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+
+.pageHeader p {
+  margin: 8px 0 0;
+  color: #667b98;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.memberMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 9px;
+  padding-top: 8px;
+}
+
+.memberMeta > span {
+  color: #71849e;
+  font-size: 12px;
+}
+
+.memberBadgeVerified,
+.memberBadgePending {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.memberBadgeVerified {
+  background: #e4f8ed;
+  color: #15804c;
+}
+
+.memberBadgePending {
+  background: #fff2cf;
+  color: #8a5a00;
+}
+
+.memberBadgeVerified span,
+.memberBadgePending span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.pageError {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 20px;
+  padding: 13px 15px;
+  border: 1px solid #f2c4c8;
+  border-radius: 12px;
+  background: #fff5f5;
+  color: #9d343b;
+  font-size: 13px;
+}
+
+.errorIcon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #c03945;
+  font-weight: 800;
+}
+
+.errorMessage {
+  flex: 1;
+}
+
+.errorClose {
+  border: 0;
+  background: transparent;
+  color: #9d343b;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* =========================================================
+   PROFILE HERO
+========================================================= */
+
+.profileCard {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  min-height: 174px;
+
+  margin-bottom: 18px;
+  padding: 28px 30px;
+
+  overflow: hidden;
+
+  border: 1px solid #cfe0f4;
+  border-radius: 16px;
+
+  background:
+    radial-gradient(
+      circle at 92% 15%,
+      rgba(22, 142, 255, 0.13),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      #eef6ff 0%,
+      #ffffff 58%,
+      #edf6ff 100%
+    );
+
+  box-shadow:
+    0 10px 30px rgba(20, 60, 110, 0.05);
+}
+
+.profileCard::after {
+  content: "";
+
+  position: absolute;
+
+  width: 260px;
+  height: 260px;
+
+  right: 40px;
+  top: -120px;
+
+  border-radius: 50%;
+
+  background: rgba(22, 142, 255, 0.035);
+
+  pointer-events: none;
+}
+
+.profileIdentity {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+
+  gap: 22px;
+
+  min-width: 0;
+}
+
+.profileAvatarWrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.profileAvatar {
+  width: 104px;
+  height: 104px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 4px solid #ffffff;
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      145deg,
+      #183f9c,
+      #0b2772
+    );
+
+  box-shadow:
+    0 10px 26px rgba(16, 56, 135, 0.22);
+
+  color: #ffffff;
+
+  font-size: 30px;
+  font-weight: 750;
+
+  object-fit: cover;
+}
+
+.avatarCamera {
+  position: absolute;
+
+  right: -2px;
+  bottom: 2px;
+
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+
+  background: #168eff;
+
+  color: #ffffff;
+
+  font-size: 15px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 5px 14px rgba(22, 142, 255, 0.3);
+}
+
+.avatarCamera:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.profileInfo {
+  min-width: 0;
+}
+
+.profileInfo h2 {
+  margin: 0;
+
+  color: #071b36;
+
+  font-size: 24px;
+  line-height: 1.2;
+
+  font-weight: 750;
+
+  letter-spacing: -0.025em;
+}
+
+.profileInfo p {
+  margin: 6px 0 12px;
+
+  color: #617795;
+
+  font-size: 13px;
+}
+
+.identityRow {
+  display: flex;
+  align-items: center;
+
+  flex-wrap: wrap;
+
+  gap: 9px;
+}
+
+.identityVerified,
+.identityPending {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  min-height: 27px;
+
+  padding: 0 10px;
+
+  border-radius: 7px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.identityVerified {
+  background: #e7f8ef;
+  color: #16824e;
+}
+
+.identityPending {
+  background: #fff1ca;
+  color: #8a5a00;
+}
+
+.identityDescription {
+  color: #70839d;
+  font-size: 11px;
+}
+
+.profileActions {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  gap: 9px;
+
+  flex: 0 0 auto;
+}
+
+.photoHint {
+  color: #7588a2;
+  font-size: 11px;
+}
+
+.primaryOutlineButton,
+.secondaryTextButton {
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primaryOutlineButton {
+  min-height: 42px;
+
+  padding: 0 17px;
+
+  border: 1px solid #9fc8f6;
+
+  background: #ffffff;
+
+  color: #0d67c9;
+
+  box-shadow:
+    0 3px 12px rgba(30, 91, 155, 0.05);
+}
+
+.primaryOutlineButton:hover {
+  border-color: #168eff;
+  background: #f7fbff;
+}
+
+.primaryOutlineButton span {
+  margin-right: 6px;
+}
+
+.primaryOutlineButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.secondaryTextButton {
+  border: 0;
+
+  background: transparent;
+
+  color: #168eff;
+}
+
+/* =========================================================
+   GENERIC CARDS
+========================================================= */
+
+.card {
+  margin-bottom: 18px;
+
+  padding: 24px 26px;
+
+  border: 1px solid #dbe5f0;
+  border-radius: 15px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 5px 20px rgba(23, 55, 91, 0.035);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 22px;
+
+  margin-bottom: 22px;
+}
+
+.cardTitleGroup {
+  display: flex;
+  align-items: center;
+
+  gap: 13px;
+
+  min-width: 0;
+}
+
+.cardIcon {
+  width: 50px;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 50px;
+
+  border-radius: 13px;
+
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.blueIcon {
+  background: #e9f3ff;
+  color: #168eff;
+}
+
+.cardTitleGroup h2 {
+  margin: 0;
+
+  color: #091d39;
+
+  font-size: 17px;
+  line-height: 1.25;
+
+  font-weight: 750;
+
+  letter-spacing: -0.015em;
+}
+
+.cardTitleGroup p {
+  margin: 4px 0 0;
+
+  color: #74869f;
+
+  font-size: 12px;
+}
+
+.outlineButton {
+  min-height: 39px;
+
+  padding: 0 15px;
+
+  border: 1px solid #bdd8f7;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #086bd0;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+}
+
+.outlineButton:hover {
+  border-color: #168eff;
+  background: #f7fbff;
+}
+
+.outlineButton span {
+  margin-right: 5px;
+}
+
+/* =========================================================
+   ACCOUNT PLAN
+   EXACT DASHBOARD GOLD SYSTEM
+========================================================= */
+
+.planCard {
+  position: relative;
+
+  margin-bottom: 18px;
+
+  padding: 24px 26px;
+
+  overflow: hidden;
+
+  border: 1px solid #ead59a;
+  border-radius: 15px;
+
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(255, 255, 255, 0.78),
+      transparent 38%
+    ),
+    linear-gradient(
+      135deg,
+      #fffdf4 0%,
+      #fff8dc 48%,
+      #fff0bd 100%
+    );
+
+  box-shadow:
+    0 9px 28px rgba(184, 143, 42, 0.10);
+
+  color: #3b2d0b;
+}
+
+.planIcon {
+  width: 50px;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 50px;
+
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fff3bf,
+      #ffe49a
+    );
+
+  color: #a87508;
+
+  font-size: 20px;
+  font-weight: 700;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(168, 117, 8, 0.08);
+}
+
+.planCard .cardHeader {
+  position: relative;
+  z-index: 2;
+}
+
+.planCard .cardTitleGroup h2 {
+  color: #3b2d0b;
+}
+
+.planCard .cardTitleGroup p {
+  color: #786a4b;
+}
+
+.planOutlineButton {
+  min-height: 39px;
+
+  padding: 0 15px;
+
+  border: 1px solid #d2a943;
+  border-radius: 8px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff,
+      #fffaf0
+    );
+
+  color: #8b6407;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+
+  box-shadow:
+    0 4px 12px rgba(154, 110, 12, 0.08);
+}
+
+.planOutlineButton:hover {
+  background: #ffffff;
+  border-color: #b98a20;
+}
+
+.planContent {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 40px;
+
+  padding: 2px 0 1px 63px;
+}
+
+.planLabel {
+  margin-bottom: 5px;
+
+  color: #9b6e08;
+
+  font-size: 9px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.2px;
+}
+
+.planContent h3 {
+  margin: 0 0 15px;
+
+  color: #3b2d0b;
+
+  font-size: 25px;
+
+  font-weight: 750;
+
+  letter-spacing: -0.025em;
+}
+
+.featureList {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(230px, 1fr));
+
+  gap: 9px 35px;
+}
+
+.featureList div {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  color: #786a4b;
+
+  font-size: 12px;
+}
+
+.featureList span {
+  color: #17a05b;
+
+  font-size: 14px;
+
+  font-weight: 800;
+}
+
+.planAction {
+  min-width: 245px;
+
+  text-align: right;
+}
+
+.planAction > div {
+  margin-bottom: 9px;
+
+  color: #786a4b;
+
+  font-size: 11px;
+}
+
+.planPrimaryButton {
+  width: 100%;
+
+  min-height: 43px;
+
+  padding: 0 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+
+  border: 1px solid #d2a943;
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff,
+      #fffaf0
+    );
+
+  color: #8b6407;
+
+  font-size: 12px;
+
+  font-weight: 750;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 7px 18px rgba(154, 110, 12, 0.10);
+}
+
+.planPrimaryButton:hover {
+  border-color: #b98a20;
+
+  background: #ffffff;
+
+  transform: translateY(-1px);
+}
+
+.planPrimaryButton span {
+  font-size: 16px;
+}
+
+.planDecoration {
+  position: absolute;
+
+  right: -15px;
+  bottom: -22px;
+
+  width: 125px;
+  height: 90px;
+
+  opacity: 0.5;
+
+  pointer-events: none;
+}
+
+.planDecoration span {
+  position: absolute;
+
+  width: 48px;
+  height: 48px;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(214, 168, 46, 0.26),
+      rgba(214, 168, 46, 0.05)
+    );
+
+  transform: rotate(45deg);
+}
+
+.planDecoration span:nth-child(1) {
+  right: 55px;
+  bottom: 7px;
+}
+
+.planDecoration span:nth-child(2) {
+  right: 19px;
+  bottom: -7px;
+}
+
+.planDecoration span:nth-child(3) {
+  right: 1px;
+  bottom: 29px;
+}
+
+/* =========================================================
+   PERSONAL INFORMATION
+========================================================= */
+
+.personalGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  border-top: 1px solid #e7edf4;
+}
+
+.personalItem {
+  min-height: 65px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 25px;
+
+  padding: 0 10px 0 2px;
+
+  border-bottom: 1px solid #e7edf4;
+}
+
+.personalItem:nth-child(odd) {
+  border-right: 1px solid #e7edf4;
+  padding-right: 28px;
+}
+
+.personalItem:nth-child(even) {
+  padding-left: 28px;
+}
+
+.personalItem span {
+  color: #71849d;
+  font-size: 12px;
+}
+
+.personalItem strong {
+  color: #1a2f4b;
+  font-size: 12px;
+  font-weight: 650;
+
+  text-align: right;
+
+  word-break: break-word;
+}
+
+/* =========================================================
+   CONNECTED ACCOUNTS
+========================================================= */
+
+.connectedList {
+  border-top: 1px solid #e7edf4;
+}
+
+.connectedRow {
+  min-height: 76px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  border-bottom: 1px solid #e7edf4;
+}
+
+.providerLeft {
+  display: flex;
+  align-items: center;
+
+  gap: 13px;
+}
+
+.providerIcon {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #e1e8f0;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.googleIcon {
+  color: #4285f4;
+}
+
+.microsoftIcon {
+  color: #1976d2;
+}
+
+.providerLeft strong {
+  display: block;
+
+  color: #142945;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+.providerLeft span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #8293a8;
+
+  font-size: 11px;
+}
+
+.connectButton {
+  min-width: 84px;
+
+  min-height: 36px;
+
+  padding: 0 14px;
+
+  border: 1px solid #bdd8f7;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #086bd0;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.connectButton:hover {
+  border-color: #168eff;
+  background: #f7fbff;
+}
+
+.connectedStatus {
+  display: inline-flex !important;
+
+  align-items: center;
+
+  gap: 6px;
+
+  color: #16824e !important;
+
+  font-size: 11px !important;
+
+  font-weight: 700;
+}
+
+.connectedStatus span {
+  color: #18a260;
+
+  font-size: 13px;
+}
+
+/* =========================================================
+   ACTIVITY
+========================================================= */
+
+.activityList {
+  border-top: 1px solid #e7edf4;
+}
+
+.activityRow {
+  min-height: 76px;
+
+  display: grid;
+
+  grid-template-columns:
+    40px minmax(0, 1fr) auto;
+
+  align-items: center;
+
+  gap: 13px;
+
+  border-bottom: 1px solid #e7edf4;
+}
+
+.activityIconSuccess,
+.activityIconInfo {
+  width: 35px;
+  height: 35px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  font-size: 13px;
+
+  font-weight: 800;
+}
+
+.activityIconSuccess {
+  background: #e3f7ec;
+  color: #18a25f;
+}
+
+.activityIconInfo {
+  background: #e8f2ff;
+  color: #168eff;
+}
+
+.activityInfo strong {
+  display: block;
+
+  color: #172c47;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.activityInfo span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #8191a6;
+
+  font-size: 11px;
+}
+
+.activityTime {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  gap: 3px;
+}
+
+.activityTime strong {
+  color: #506680;
+
+  font-size: 11px;
+
+  font-weight: 650;
+}
+
+.activityTime span {
+  color: #8a9aaf;
+
+  font-size: 10px;
+}
+
+.emptyActivity {
+  padding: 25px 0 8px;
+
+  color: #8495a9;
+
+  font-size: 12px;
+
+  text-align: center;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.accountFooter {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  margin-top: 35px;
+
+  padding: 28px 2px 5px;
+
+  border-top: 1px solid #dfe7ef;
+}
+
+.accountFooter > div:first-child {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.accountFooter strong {
+  color: #25405e;
+  font-size: 12px;
+}
+
+.accountFooter span {
+  color: #8a9aae;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+}
+
+.footerLinks {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  flex-wrap: wrap;
+
+  gap: 17px;
+}
+
+.footerLinks button {
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #687d97;
+
+  font-size: 10px;
+
+  cursor: pointer;
+}
+
+.footerLinks button:hover {
+  color: #168eff;
+}
+
+.footerLinks span {
+  width: 100%;
+
+  text-align: right;
+}
+
+/* =========================================================
+   GLOBAL LOADING
+   EXACT PROPERTYSURE AI STANDARD
+========================================================= */
+
+.loadingPage {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(22, 142, 255, 0.10),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      #061b38 0%,
+      #031229 100%
+    );
+
+  color: #ffffff;
+
+  text-align: center;
+}
+
+.loadingBrand {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  color: #ffffff;
+
+  font-size: 24px;
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: -0.025em;
+}
+
+.loadingBrand strong {
+  color: #168eff;
+}
+
+.loadingDiamond {
+  width: 15px;
+  height: 15px;
+
+  display: inline-block;
+
+  flex: 0 0 15px;
+
+  background: #168eff;
+
+  transform: rotate(45deg);
+
+  border-radius: 2px;
+
+  box-shadow:
+    0 0 18px rgba(22, 142, 255, 0.35);
+
+  animation:
+    loadingDiamondPulse
+    1.6s
+    ease-in-out
+    infinite;
+}
+
+.loadingIndicator {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  margin-top: 22px;
+
+  height: 14px;
+}
+
+.loadingIndicator span {
+  width: 6px;
+  height: 6px;
+
+  display: block;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  box-shadow:
+    0 0 8px rgba(22, 142, 255, 0.45);
+
+  animation:
+    loadingDot
+    1.2s
+    ease-in-out
+    infinite;
+}
+
+.loadingIndicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.loadingIndicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.loadingText {
+  margin: 10px 0 0;
+
+  color: #91a7c3;
+
+  font-size: 12px;
+  line-height: 1.3;
+
+  font-weight: 500;
+
+  letter-spacing: 0.01em;
+}
+
+@keyframes loadingDot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes loadingDiamondPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: rotate(45deg) scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1.08);
+  }
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+  .container {
+    padding: 28px 22px 55px;
+  }
+
+  .profileCard {
+    align-items: flex-start;
+  }
+
+  .planContent {
+    padding-left: 0;
+  }
+
+  .featureList {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .container {
+    padding: 22px 16px 105px;
+  }
+
+  .pageHeader {
+    display: block;
+
+    margin-bottom: 20px;
+  }
+
+  .pageHeader h1 {
+    font-size: 28px;
+  }
+
+  .pageHeader p {
+    font-size: 13px;
+  }
+
+  .memberMeta {
+    align-items: flex-start;
+
+    margin-top: 13px;
+
+    padding-top: 0;
+  }
+
+  .profileCard {
+    display: block;
+
+    padding: 22px 18px;
+  }
+
+  .profileIdentity {
+    align-items: flex-start;
+
+    gap: 15px;
+  }
+
+  .profileAvatar {
+    width: 78px;
+    height: 78px;
+
+    font-size: 23px;
+  }
+
+  .avatarCamera {
+    width: 29px;
+    height: 29px;
+
+    font-size: 12px;
+  }
+
+  .profileInfo h2 {
+    font-size: 19px;
+  }
+
+  .profileInfo p {
+    max-width: 100%;
+
+    overflow-wrap: anywhere;
+
+    font-size: 11px;
+  }
+
+  .identityRow {
+    display: block;
+  }
+
+  .identityDescription {
+    display: block;
+
+    margin-top: 6px;
+
+    line-height: 1.4;
+  }
+
+  .profileActions {
+    align-items: stretch;
+
+    margin-top: 20px;
+  }
+
+  .photoHint {
+    display: none;
+  }
+
+  .primaryOutlineButton {
+    width: 100%;
+  }
+
+  .secondaryTextButton {
+    padding: 5px;
+  }
+
+  /* =======================================================
+     MOBILE GENERIC CARD
+  ======================================================= */
+
+  .card,
+  .planCard {
+    padding: 19px 17px;
+
+    border-radius: 13px;
+  }
+
+  .cardHeader {
+    align-items: flex-start;
+
+    margin-bottom: 18px;
+  }
+
+  .cardTitleGroup {
+    gap: 10px;
+  }
+
+  .cardIcon,
+  .planIcon {
+    width: 43px;
+    height: 43px;
+
+    flex-basis: 43px;
+
+    border-radius: 11px;
+
+    font-size: 17px;
+  }
+
+  .cardTitleGroup h2 {
+    font-size: 15px;
+  }
+
+  .cardTitleGroup p {
+    font-size: 10px;
+  }
+
+  .cardHeader > .outlineButton,
+  .cardHeader > .planOutlineButton {
+    min-height: 35px;
+
+    padding: 0 10px;
+
+    font-size: 10px;
+  }
+
+  /* =======================================================
+     MOBILE PLAN
+  ======================================================= */
+
+  .planContent {
+    display: block;
+
+    padding-left: 0;
+  }
+
+  .planContent h3 {
+    font-size: 22px;
+  }
+
+  .planLabel {
+    font-size: 8px;
+  }
+
+  .featureList {
+    gap: 8px;
+  }
+
+  .featureList div {
+    font-size: 11px;
+  }
+
+  .planAction {
+    min-width: 0;
+
+    margin-top: 20px;
+
+    text-align: left;
+  }
+
+  .planAction > div {
+    text-align: left;
+  }
+
+  .planPrimaryButton {
+    min-height: 42px;
+
+    font-size: 11px;
+  }
+
+  /* =======================================================
+     PERSONAL
+  ======================================================= */
+
+  .personalGrid {
+    display: block;
+  }
+
+  .personalItem,
+  .personalItem:nth-child(odd),
+  .personalItem:nth-child(even) {
+    min-height: 58px;
+
+    padding: 0 2px;
+
+    border-right: 0;
+  }
+
+  .personalItem strong {
+    max-width: 58%;
+  }
+
+  /* =======================================================
+     CONNECTED ACCOUNTS
+  ======================================================= */
+
+  .connectedRow {
+    min-height: 70px;
+  }
+
+  .providerLeft {
+    gap: 10px;
+  }
+
+  .providerIcon {
+    width: 34px;
+    height: 34px;
+
+    font-size: 14px;
+  }
+
+  .providerLeft strong {
+    font-size: 12px;
+  }
+
+  .providerLeft span {
+    font-size: 10px;
+  }
+
+  .connectButton {
+    min-width: 70px;
+
+    min-height: 33px;
+
+    padding: 0 10px;
+
+    font-size: 10px;
+  }
+
+  /* =======================================================
+     ACTIVITY
+  ======================================================= */
+
+  .activityRow {
+    grid-template-columns:
+      34px minmax(0, 1fr);
+
+    gap: 10px;
+
+    padding: 10px 0;
+  }
+
+  .activityIconSuccess,
+  .activityIconInfo {
+    width: 31px;
+    height: 31px;
+
+    font-size: 11px;
+  }
+
+  .activityTime {
+    grid-column: 2;
+
+    align-items: flex-start;
+
+    margin-top: -5px;
+  }
+
+  /* =======================================================
+     FOOTER
+  ======================================================= */
+
+  .accountFooter {
+    display: block;
+  }
+
+  .footerLinks {
+    justify-content: flex-start;
+
+    margin-top: 20px;
+  }
+
+  .footerLinks span {
+    text-align: left;
+  }
+}
+
+@media (max-width: 430px) {
+  .container {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  .pageHeader h1 {
+    font-size: 26px;
+  }
+
+  .profileIdentity {
+    gap: 12px;
+  }
+
+  .profileAvatar {
+    width: 70px;
+    height: 70px;
+
+    font-size: 21px;
+  }
+
+  .profileInfo h2 {
+    font-size: 17px;
+  }
+
+  .card,
+  .planCard {
+    padding: 17px 14px;
+  }
+
+  .cardHeader > .outlineButton,
+  .cardHeader > .planOutlineButton {
+    max-width: 105px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+  }
+
+  .personalItem {
+    gap: 12px;
+  }
+
+  .personalItem span,
+  .personalItem strong {
+    font-size: 10px;
+  }
+
+  .planContent h3 {
+    font-size: 21px;
+  }
+
+  .featureList div {
+    font-size: 10px;
+  }
+}

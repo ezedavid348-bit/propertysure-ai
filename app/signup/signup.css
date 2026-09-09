@@ -1,0 +1,2453 @@
+
+  * {
+    box-sizing: border-box;
+  }
+
+  .page {
+    min-height: 100vh;
+    width: 100%;
+
+    background:
+      radial-gradient(
+        circle at 75% 8%,
+        rgba(22, 142, 255, 0.08),
+        transparent 30%
+      ),
+      radial-gradient(
+        circle at 8% 80%,
+        rgba(22, 142, 255, 0.045),
+        transparent 28%
+      ),
+      #ffffff;
+
+    color: #101827;
+
+    font-family:
+      Inter,
+      Arial,
+      Helvetica,
+      sans-serif;
+
+    padding:
+      28px
+      6vw
+      42px;
+
+    overflow-x: hidden;
+  }
+
+  .page button,
+  .page input {
+    font-family: inherit;
+  }
+
+  /* =========================================================
+     TOP HEADER
+  ========================================================= */
+
+  .topHeader {
+    width: 100%;
+    max-width: 1450px;
+
+    margin:
+      0 auto;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 30px;
+  }
+
+  .topBrand {
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+
+    border: none;
+    padding: 0;
+
+    background: transparent;
+
+    color: #0d1b38;
+
+    cursor: pointer;
+
+    text-align: left;
+  }
+
+  /* =========================================================
+     APPSHELL BRAND MARK
+
+     This matches the shared AppShell PropertySure AI brand:
+     blue diamond + PropertySure AI wordmark.
+  ========================================================= */
+
+  .appShellDiamond {
+    width: 15px;
+    height: 15px;
+
+    flex: 0 0 15px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #168eff;
+
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .topBrandText {
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+  }
+
+  .topBrandText > span {
+    color: #0b1a39;
+
+    font-size: 28px;
+    line-height: 1;
+
+    font-weight: 800;
+
+    letter-spacing: -0.9px;
+  }
+
+  .topBrandText strong {
+    color: #168eff;
+  }
+
+  .topBrandText small {
+    color: #64748b;
+
+    font-size: 7px;
+    line-height: 1;
+
+    font-weight: 800;
+
+    letter-spacing: 1.75px;
+  }
+
+  .topSignup {
+    display: flex;
+    align-items: center;
+
+    gap: 18px;
+
+    padding-top: 3px;
+
+    color: #52627a;
+
+    font-size: 13px;
+  }
+
+  .topSignup button {
+    min-height: 47px;
+
+    padding:
+      0 28px;
+
+    border:
+      1px solid
+      #168eff;
+
+    border-radius: 11px;
+
+    background: #ffffff;
+
+    color: #0877e8;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+      background 0.18s ease,
+      color 0.18s ease,
+      box-shadow 0.18s ease,
+      transform 0.18s ease;
+  }
+
+  .topSignup button:hover {
+    background: #168eff;
+    color: #ffffff;
+
+    box-shadow:
+      0 8px 22px
+      rgba(22, 142, 255, 0.18);
+
+    transform:
+      translateY(-1px);
+  }
+
+  /* =========================================================
+     MAIN LAYOUT
+  ========================================================= */
+
+  .mainLayout {
+    width: 100%;
+    max-width: 1450px;
+
+    margin:
+      47px auto 0;
+
+    display: grid;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(480px, 0.88fr);
+
+    align-items: start;
+
+    gap:
+      clamp(
+        55px,
+        7vw,
+        110px
+      );
+  }
+
+  /* =========================================================
+     HERO
+  ========================================================= */
+
+  .heroPanel {
+    min-width: 0;
+
+    padding:
+      5px 0 0;
+  }
+
+  .heroEyebrow {
+    color: #168eff;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing:
+      3.2px;
+
+    margin-bottom: 19px;
+  }
+
+  .heroPanel h1 {
+    margin: 0;
+
+    color: #0b1a39;
+
+    font-size:
+      clamp(
+        44px,
+        4.2vw,
+        67px
+      );
+
+    line-height:
+      1.02;
+
+    font-weight: 800;
+
+    letter-spacing:
+      -2.7px;
+  }
+
+  .heroPanel h1 span {
+    color: #168eff;
+  }
+
+  .heroDescription {
+    max-width: 570px;
+
+    margin:
+      24px 0 0;
+
+    color: #61718a;
+
+    font-size: 18px;
+
+    line-height: 1.58;
+  }
+
+  /* =========================================================
+     HERO FEATURES
+  ========================================================= */
+
+  .heroFeatures {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 19px;
+
+    margin-top: 35px;
+  }
+
+  .heroFeature {
+    display: flex;
+
+    align-items: center;
+
+    gap: 16px;
+  }
+
+  .heroFeatureIcon {
+    width: 52px;
+    height: 52px;
+
+    flex: 0 0 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 14px;
+
+    background:
+      linear-gradient(
+        145deg,
+        #eef7ff,
+        #e2f1ff
+      );
+
+    border:
+      1px solid
+      #d9ebff;
+
+    color: #168eff;
+
+    box-shadow:
+      0 8px 24px
+      rgba(22, 142, 255, 0.07);
+  }
+
+  .heroFeatureIcon svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .heroFeature > div:last-child {
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+  }
+
+  .heroFeature strong {
+    color: #0d1b38;
+
+    font-size: 15px;
+
+    font-weight: 750;
+  }
+
+  .heroFeature span {
+    color: #687890;
+
+    font-size: 12px;
+
+    line-height: 1.45;
+  }
+
+  /* =========================================================
+     PROPERTY VISUAL
+  ========================================================= */
+
+  .propertyVisual {
+    height: 255px;
+
+    position: relative;
+
+    margin-top: 30px;
+
+    overflow: hidden;
+
+    border-radius:
+      25px
+      25px
+      70px
+      25px;
+
+    background:
+      linear-gradient(
+        145deg,
+        #f5faff 0%,
+        #e6f3ff 60%,
+        #d8edff 100%
+      );
+
+    border:
+      1px solid
+      #dceeff;
+  }
+
+  .visualGlowOne {
+    position: absolute;
+
+    width: 240px;
+    height: 240px;
+
+    right: 2%;
+    top: -75px;
+
+    border-radius: 50%;
+
+    background:
+      rgba(22, 142, 255, 0.12);
+
+    filter:
+      blur(2px);
+  }
+
+  .visualGlowTwo {
+    position: absolute;
+
+    width: 300px;
+    height: 180px;
+
+    left: 14%;
+    bottom: -110px;
+
+    border-radius: 50%;
+
+    background:
+      rgba(255, 255, 255, 0.85);
+
+    filter:
+      blur(5px);
+  }
+
+  .propertyBuilding {
+    position: absolute;
+
+    left: 7%;
+    bottom: 0;
+
+    width: 68%;
+    height: 70%;
+
+    padding: 14px;
+
+    border-radius:
+      8px
+      8px
+      0
+      0;
+
+    background:
+      linear-gradient(
+        145deg,
+        #ffffff,
+        #edf6ff
+      );
+
+    border:
+      1px solid
+      #cfe5fa;
+
+    box-shadow:
+      0 20px 45px
+      rgba(30, 88, 145, 0.12);
+
+    transform:
+      perspective(700px)
+      rotateY(-5deg);
+  }
+
+  .buildingRoof {
+    position: absolute;
+
+    left: -7%;
+    top: -15px;
+
+    width: 114%;
+    height: 18px;
+
+    border-radius: 4px;
+
+    background:
+      linear-gradient(
+        90deg,
+        #c5def5,
+        #ffffff,
+        #c5def5
+      );
+  }
+
+  .buildingTop,
+  .buildingFloor {
+    display: grid;
+
+    gap: 10px;
+
+    height: 43%;
+
+    margin-bottom: 10px;
+  }
+
+  .buildingTop {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+  .buildingFloor {
+    grid-template-columns:
+      1fr 1fr 1fr;
+  }
+
+  .buildingWindow {
+    border-radius: 4px;
+
+    border:
+      1px solid
+      #b6d8f6;
+
+    background:
+      linear-gradient(
+        145deg,
+        #c9e9ff,
+        #8fcaff
+      );
+
+    box-shadow:
+      inset 0 0 0 3px
+      rgba(255, 255, 255, 0.35);
+  }
+
+  /* =========================================================
+     PROPERTY BADGE
+  ========================================================= */
+
+  .propertyBadge {
+    position: absolute;
+
+    right: 7%;
+    bottom: 30px;
+
+    min-width: 225px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding:
+      13px 16px;
+
+    border:
+      1px solid
+      rgba(209, 226, 244, 0.95);
+
+    border-radius: 13px;
+
+    background:
+      rgba(255, 255, 255, 0.96);
+
+    box-shadow:
+      0 18px 38px
+      rgba(25, 71, 116, 0.16);
+  }
+
+  .propertyBadgeIcon {
+    width: 39px;
+    height: 39px;
+
+    flex: 0 0 39px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background:
+      #e9f5ff;
+
+    color: #168eff;
+  }
+
+  .propertyBadge > div:nth-child(2) {
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+  }
+
+  .propertyBadge strong {
+    color: #13233f;
+
+    font-size: 12px;
+
+    font-weight: 750;
+  }
+
+  .propertyBadge span {
+    color: #66758c;
+
+    font-size: 10px;
+  }
+
+  .badgeLine {
+    position: absolute;
+
+    left: 16px;
+    bottom: 7px;
+
+    width: 34px;
+    height: 2px;
+
+    border-radius: 2px;
+
+    background: #168eff;
+  }
+
+  /* =========================================================
+     SIGNUP CARD
+  ========================================================= */
+
+  .signupCard {
+    width: 100%;
+
+    max-width: 610px;
+
+    justify-self: end;
+
+    padding:
+      29px
+      56px
+      38px;
+
+    border:
+      1px solid
+      #dce8f4;
+
+    border-radius: 20px;
+
+    background:
+      rgba(255, 255, 255, 0.98);
+
+    box-shadow:
+      0 25px 70px
+      rgba(35, 76, 119, 0.10),
+
+      0 4px 16px
+      rgba(35, 76, 119, 0.04);
+  }
+
+  /* =========================================================
+     CARD HEADER
+  ========================================================= */
+
+  .cardHeader {
+    margin:
+      0 0 25px;
+  }
+
+  .cardEyebrow {
+    color: #168eff;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing:
+      2.5px;
+
+    margin-bottom: 10px;
+  }
+
+  .cardHeader h1 {
+    margin: 0;
+
+    color: #0c1b39;
+
+    font-size: 29px;
+
+    line-height: 1.15;
+
+    font-weight: 800;
+
+    letter-spacing:
+      -0.9px;
+  }
+
+  .cardHeader p {
+    margin:
+      10px 0 0;
+
+    color: #66758c;
+
+    font-size: 13px;
+
+    line-height: 1.55;
+  }
+
+  /* =========================================================
+     FIELDS
+  ========================================================= */
+
+  .fieldGroup {
+    margin-bottom: 16px;
+  }
+
+  .fieldGroup label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #17243b;
+
+    font-size: 12px;
+
+    font-weight: 700;
+  }
+
+  .inputBox,
+  .passwordBox,
+  .phoneBox {
+    width: 100%;
+
+    height: 52px;
+
+    display: flex;
+
+    align-items: center;
+
+    border:
+      1px solid
+      #d2deeb;
+
+    border-radius: 10px;
+
+    background:
+      #ffffff;
+
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      background 0.18s ease;
+  }
+
+  .inputBox:hover,
+  .passwordBox:hover,
+  .phoneBox:hover {
+    border-color:
+      #aac7e5;
+  }
+
+  .inputBox:focus-within,
+  .passwordBox:focus-within,
+  .phoneBox:focus-within {
+    border-color:
+      #168eff;
+
+    background:
+      #ffffff;
+
+    box-shadow:
+      0 0 0 3px
+      rgba(22, 142, 255, 0.09);
+  }
+
+  .fieldIcon {
+    width: 47px;
+    height: 100%;
+
+    flex: 0 0 47px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    color: #71839a;
+  }
+
+  .fieldInput,
+  .phoneInput,
+  .passwordInput {
+    width: 100%;
+    min-width: 0;
+
+    height: 100%;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    color: #17243b;
+
+    font-size: 13px;
+  }
+
+  .fieldInput::placeholder,
+  .phoneInput::placeholder,
+  .passwordInput::placeholder {
+    color: #91a0b3;
+  }
+
+  /* =========================================================
+     PHONE
+  ========================================================= */
+
+  .phoneBox {
+    overflow: hidden;
+  }
+
+  .phoneCountry {
+    height: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding:
+      0 12px;
+
+    border-right:
+      1px solid
+      #e0e7ef;
+
+    color: #25344a;
+
+    flex-shrink: 0;
+
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .phoneCountry svg {
+    color: #71839a;
+  }
+
+  .flag {
+    font-size: 17px;
+    line-height: 1;
+  }
+
+  .chevron {
+    color: #8997a8;
+
+    font-size: 11px;
+  }
+
+  .phoneInput {
+    padding:
+      0 13px;
+  }
+
+  /* =========================================================
+     PASSWORD
+  ========================================================= */
+
+  .passwordBox {
+    overflow: hidden;
+  }
+
+  .passwordInput {
+    padding:
+      0 4px;
+  }
+
+  .eyeButton {
+    width: 46px;
+    height: 100%;
+
+    flex: 0 0 46px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+
+    background: transparent;
+
+    color: #71839a;
+
+    cursor: pointer;
+  }
+
+  .eyeButton:hover {
+    color: #168eff;
+  }
+
+  /* =========================================================
+     TERMS
+  ========================================================= */
+
+  .terms {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 9px;
+
+    margin:
+      19px
+      0
+      18px;
+
+    color: #66758c;
+
+    font-size: 11px;
+
+    line-height: 1.45;
+
+    cursor: pointer;
+  }
+
+  .terms input {
+    width: 16px;
+    height: 16px;
+
+    flex: 0 0 16px;
+
+    margin:
+      0;
+
+    appearance: none;
+
+    border:
+      1px solid
+      #b7c7d9;
+
+    border-radius: 4px;
+
+    background:
+      #ffffff;
+
+    cursor: pointer;
+
+    position: relative;
+  }
+
+  .terms input:checked {
+    background:
+      #168eff;
+
+    border-color:
+      #168eff;
+  }
+
+  .terms input:checked::after {
+    content: "✓";
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+      translate(
+        -50%,
+        -52%
+      );
+
+    color: #ffffff;
+
+    font-size: 11px;
+
+    font-weight: 800;
+  }
+
+  .blueText {
+    color: #168eff;
+    font-weight: 600;
+  }
+
+  /* =========================================================
+     PRIMARY BUTTON
+  ========================================================= */
+
+  .primaryButton {
+    width: 100%;
+
+    min-height: 52px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    border:
+      1px solid
+      rgba(22, 142, 255, 0.18);
+
+    border-radius: 10px;
+
+    background:
+      linear-gradient(
+        135deg,
+        #168eff,
+        #1269e7
+      );
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    font-weight: 750;
+
+    cursor: pointer;
+
+    box-shadow:
+      0 10px 25px
+      rgba(22, 142, 255, 0.20);
+
+    transition:
+      transform 0.17s ease,
+      box-shadow 0.17s ease,
+      opacity 0.17s ease;
+  }
+
+  .primaryButton:hover:not(:disabled) {
+    transform:
+      translateY(-1px);
+
+    box-shadow:
+      0 14px 30px
+      rgba(22, 142, 255, 0.27);
+  }
+
+  .primaryButton:active:not(:disabled) {
+    transform:
+      translateY(0);
+  }
+
+  .primaryButton:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+  }
+
+  /* =========================================================
+     DIVIDER
+  ========================================================= */
+
+  .divider {
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    margin:
+      19px 0;
+  }
+
+  .divider span {
+    flex: 1;
+
+    height: 1px;
+
+    background:
+      #e1e8f0;
+  }
+
+  .divider div {
+    color: #8795a8;
+
+    font-size: 10px;
+  }
+
+  /* =========================================================
+     GOOGLE
+  ========================================================= */
+
+  .googleButton {
+    width: 100%;
+
+    min-height: 49px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    border:
+      1px solid
+      #d2deeb;
+
+    border-radius: 10px;
+
+    background:
+      #ffffff;
+
+    color: #1a2941;
+
+    font-size: 12px;
+
+    font-weight: 650;
+
+    cursor: pointer;
+
+    transition:
+      border-color 0.18s ease,
+      background 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+
+  .googleButton:hover:not(:disabled) {
+    border-color:
+      #b8cce2;
+
+    background:
+      #f9fbfd;
+
+    box-shadow:
+      0 5px 15px
+      rgba(27, 67, 108, 0.06);
+  }
+
+  .googleButton:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+  }
+
+  /* =========================================================
+     SIGN IN
+  ========================================================= */
+
+  .signinText {
+    text-align: center;
+
+    margin-top: 18px;
+
+    color: #718096;
+
+    font-size: 11px;
+  }
+
+  .signinText button,
+  .resendText button {
+    border: none;
+
+    padding: 0;
+
+    background: transparent;
+
+    color: #168eff;
+
+    font-size: inherit;
+
+    font-weight: 700;
+
+    cursor: pointer;
+  }
+
+  .signinText button:hover,
+  .resendText button:hover {
+    color: #006ed7;
+  }
+
+  /* =========================================================
+     ALERTS
+  ========================================================= */
+
+  .errorBox,
+  .successBox {
+    padding:
+      10px
+      12px;
+
+    margin-bottom:
+      15px;
+
+    border-radius:
+      9px;
+
+    font-size:
+      11px;
+
+    line-height:
+      1.5;
+  }
+
+  .errorBox {
+    color:
+      #c93434;
+
+    background:
+      #fff5f5;
+
+    border:
+      1px solid
+      #ffd4d4;
+  }
+
+  .successBox {
+    color:
+      #18864b;
+
+    background:
+      #f1fcf5;
+
+    border:
+      1px solid
+      #c9efd7;
+  }
+
+  /* =========================================================
+     TRUST FEATURES
+  ========================================================= */
+
+  .trustFeatures {
+    width: 100%;
+
+    max-width: 1450px;
+
+    margin:
+      30px auto 0;
+
+    padding:
+      17px 25px;
+
+    display: grid;
+
+    grid-template-columns:
+      1fr auto
+      1fr auto
+      1fr;
+
+    align-items: center;
+
+    border-top:
+      1px solid
+      #e4ebf3;
+  }
+
+  .trustFeature {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    padding:
+      0 18px;
+  }
+
+  .trustIcon {
+    width: 37px;
+    height: 37px;
+
+    flex: 0 0 37px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+      #eef7ff;
+
+    color: #168eff;
+  }
+
+  .trustFeature > div:last-child {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+  }
+
+  .trustFeature strong {
+    color: #1a2941;
+
+    font-size: 11px;
+
+    font-weight: 750;
+  }
+
+  .trustFeature span {
+    color: #758399;
+
+    font-size: 9px;
+  }
+
+  .trustDivider {
+    width: 1px;
+
+    height: 38px;
+
+    background:
+      #dfe7ef;
+  }
+
+  /* =========================================================
+     VERIFICATION SCREEN
+  ========================================================= */
+
+  .verificationPage {
+    display: flex;
+
+    flex-direction: column;
+  }
+
+  .verificationCard {
+    width: 100%;
+
+    max-width: 700px;
+
+    min-height: 640px;
+
+    margin:
+      48px auto 0;
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding:
+      55px 70px;
+
+    border:
+      1px solid
+      #dce8f4;
+
+    border-radius: 20px;
+
+    background:
+      rgba(255, 255, 255, 0.98);
+
+    box-shadow:
+      0 25px 75px
+      rgba(35, 76, 119, 0.10);
+  }
+
+  .backButton {
+    position: absolute;
+
+    top: 22px;
+    left: 22px;
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border:
+      1px solid
+      #dce6ef;
+
+    border-radius: 10px;
+
+    background:
+      #ffffff;
+
+    color: #61738a;
+
+    cursor: pointer;
+
+    transition:
+      color 0.18s ease,
+      border-color 0.18s ease,
+      background 0.18s ease;
+  }
+
+  .backButton:hover {
+    color: #168eff;
+
+    border-color:
+      #bcd8f1;
+
+    background:
+      #f5faff;
+  }
+
+  .verificationContent {
+    width: 100%;
+
+    max-width: 540px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    text-align: center;
+  }
+
+  .verificationLogo {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+  }
+
+  .verificationEyebrow {
+    margin-top: 20px;
+
+    color: #168eff;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing:
+      2.5px;
+  }
+
+  .verificationContent h1 {
+    margin:
+      11px 0
+      9px;
+
+    color: #0c1b39;
+
+    font-size: 31px;
+
+    line-height: 1.2;
+
+    font-weight: 800;
+
+    letter-spacing:
+      -0.9px;
+  }
+
+  .verificationText {
+    margin: 0;
+
+    color: #66758c;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+  }
+
+  .verificationEmail {
+    margin-top: 8px;
+
+    color: #168eff;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    word-break: break-word;
+  }
+
+  /* =========================================================
+     OTP
+  ========================================================= */
+
+  .otpContainer {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(8, 1fr);
+
+    gap: 7px;
+
+    margin:
+      31px 0
+      23px;
+  }
+
+  .otpInput {
+    width: 100%;
+
+    height: 55px;
+
+    border:
+      1px solid
+      #d1ddea;
+
+    border-radius: 9px;
+
+    background:
+      #fbfdff;
+
+    color: #12213c;
+
+    text-align: center;
+
+    font-size: 21px;
+
+    font-weight: 750;
+
+    outline: none;
+
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      background 0.18s ease;
+  }
+
+  .otpInput:focus {
+    border-color:
+      #168eff;
+
+    background:
+      #ffffff;
+
+    box-shadow:
+      0 0 0 3px
+      rgba(22, 142, 255, 0.09);
+  }
+
+  .otpInput:disabled {
+    opacity: 0.6;
+  }
+
+  /* =========================================================
+     VERIFICATION HINT
+  ========================================================= */
+
+  .verificationHint {
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    margin-bottom: 19px;
+
+    padding:
+      11px 13px;
+
+    border:
+      1px solid
+      #dcecf9;
+
+    border-radius: 10px;
+
+    background:
+      #f5faff;
+
+    color: #61738a;
+
+    font-size: 10px;
+
+    line-height: 1.45;
+
+    text-align: left;
+  }
+
+  .verificationHintIcon {
+    width: 29px;
+    height: 29px;
+
+    flex: 0 0 29px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+  }
+
+  .resendText {
+    margin-top: 17px;
+
+    color: #718096;
+
+    font-size: 11px;
+  }
+
+  .secureText {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    margin-top: 24px;
+
+    color: #8491a2;
+
+    font-size: 9px;
+  }
+
+  /* =========================================================
+     TABLET
+  ========================================================= */
+
+  @media (max-width: 1050px) {
+
+    .page {
+      padding:
+        25px 28px 35px;
+    }
+
+    .mainLayout {
+      grid-template-columns:
+        minmax(0, 1fr)
+        minmax(390px, 0.9fr);
+
+      gap:
+        40px;
+    }
+
+    .heroPanel h1 {
+      font-size:
+        49px;
+    }
+
+    .heroDescription {
+      font-size:
+        16px;
+    }
+
+    .signupCard {
+      padding:
+        27px 38px 35px;
+    }
+
+    .propertyVisual {
+      height:
+        235px;
+    }
+
+    .topBrandText > span {
+      font-size:
+        24px;
+    }
+  }
+
+  /* =========================================================
+     MOBILE
+  ========================================================= */
+
+  @media (max-width: 760px) {
+
+    .page {
+      min-height:
+        100svh;
+
+      padding:
+        18px 14px 28px;
+
+      background:
+        radial-gradient(
+          circle at 90% 0%,
+          rgba(22, 142, 255, 0.08),
+          transparent 32%
+        ),
+        #ffffff;
+    }
+
+    /* -------------------------------------------------------
+       HEADER
+    ------------------------------------------------------- */
+
+    .topHeader {
+      align-items:
+        center;
+    }
+
+    .topBrand {
+      gap:
+        9px;
+    }
+
+    .appShellDiamond {
+      width: 23px;
+      height: 23px;
+
+      flex-basis: 23px;
+
+      font-size: 23px;
+    }
+
+    .topBrandText {
+      gap:
+        5px;
+    }
+
+    .topBrandText > span {
+      font-size:
+        20px;
+
+      letter-spacing:
+        -0.6px;
+    }
+
+    .topBrandText small {
+      font-size:
+        5px;
+
+      letter-spacing:
+        1px;
+    }
+
+    .topSignup {
+      display:
+        none;
+    }
+
+    /* -------------------------------------------------------
+       MAIN
+    ------------------------------------------------------- */
+
+    .mainLayout {
+      display:
+        flex;
+
+      flex-direction:
+        column;
+
+      align-items:
+        stretch;
+
+      gap:
+        25px;
+
+      margin-top:
+        29px;
+    }
+
+    /* -------------------------------------------------------
+       HERO
+    ------------------------------------------------------- */
+
+    .heroPanel {
+      padding:
+        0;
+    }
+
+    .heroEyebrow {
+      text-align:
+        center;
+
+      font-size:
+        8px;
+
+      letter-spacing:
+        2.2px;
+
+      margin-bottom:
+        11px;
+    }
+
+    .heroPanel h1 {
+      text-align:
+        center;
+
+      font-size:
+        35px;
+
+      line-height:
+        1.04;
+
+      letter-spacing:
+        -1.5px;
+    }
+
+    .heroDescription {
+      max-width:
+        420px;
+
+      margin:
+        13px auto 0;
+
+      text-align:
+        center;
+
+      font-size:
+        12px;
+
+      line-height:
+        1.55;
+    }
+
+    .heroFeatures {
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap:
+        7px;
+
+      margin-top:
+        21px;
+    }
+
+    .heroFeature {
+      flex-direction:
+        column;
+
+      align-items:
+        center;
+
+      gap:
+        7px;
+
+      text-align:
+        center;
+    }
+
+    .heroFeatureIcon {
+      width:
+        39px;
+
+      height:
+        39px;
+
+      flex-basis:
+        39px;
+
+      border-radius:
+        10px;
+    }
+
+    .heroFeatureIcon svg {
+      width:
+        19px;
+
+      height:
+        19px;
+    }
+
+    .heroFeature strong {
+      display:
+        block;
+
+      font-size:
+        8px;
+
+      line-height:
+        1.25;
+    }
+
+    .heroFeature span {
+      display:
+        block;
+
+      margin-top:
+        3px;
+
+      font-size:
+        6.5px;
+
+      line-height:
+        1.35;
+    }
+
+    .propertyVisual {
+      display:
+        none;
+    }
+
+    /* -------------------------------------------------------
+       SIGNUP CARD
+    ------------------------------------------------------- */
+
+    .signupCard {
+      max-width:
+        none;
+
+      padding:
+        22px 19px 29px;
+
+      border-radius:
+        17px;
+
+      box-shadow:
+        0 16px 45px
+        rgba(35, 76, 119, 0.09);
+    }
+
+    .cardHeader {
+      margin-bottom:
+        21px;
+    }
+
+    .cardEyebrow {
+      font-size:
+        8px;
+
+      letter-spacing:
+        2.2px;
+
+      margin-bottom:
+        9px;
+    }
+
+    .cardHeader h1 {
+      font-size:
+        25px;
+
+      letter-spacing:
+        -0.7px;
+    }
+
+    .cardHeader p {
+      font-size:
+        11px;
+
+      line-height:
+        1.55;
+    }
+
+    .fieldGroup {
+      margin-bottom:
+        15px;
+    }
+
+    .fieldGroup label {
+      font-size:
+        10px;
+
+      margin-bottom:
+        6px;
+    }
+
+    .inputBox,
+    .phoneBox,
+    .passwordBox {
+      height:
+        52px;
+
+      border-radius:
+        9px;
+    }
+
+    .fieldIcon {
+      width:
+        44px;
+
+      flex-basis:
+        44px;
+    }
+
+    .fieldInput,
+    .phoneInput,
+    .passwordInput {
+      font-size:
+        11px;
+    }
+
+    .phoneCountry {
+      padding:
+        0 9px;
+
+      gap:
+        6px;
+
+      font-size:
+        10px;
+    }
+
+    .phoneCountry .flag {
+      font-size:
+        15px;
+    }
+
+    .phoneInput {
+      padding:
+        0 10px;
+    }
+
+    .eyeButton {
+      width:
+        43px;
+
+      flex-basis:
+        43px;
+    }
+
+    .terms {
+      margin:
+        17px
+        0
+        17px;
+
+      font-size:
+        9px;
+
+      gap:
+        8px;
+    }
+
+    .terms input {
+      width:
+        15px;
+
+      height:
+        15px;
+
+      flex-basis:
+        15px;
+    }
+
+    .terms input:checked::after {
+      font-size:
+        10px;
+    }
+
+    .primaryButton {
+      min-height:
+        53px;
+
+      border-radius:
+        9px;
+
+      font-size:
+        12px;
+    }
+
+    .divider {
+      margin:
+        18px 0;
+    }
+
+    .divider div {
+      font-size:
+        9px;
+    }
+
+    .googleButton {
+      min-height:
+        49px;
+
+      border-radius:
+        9px;
+
+      font-size:
+        10px;
+    }
+
+    .signinText {
+      font-size:
+        10px;
+
+      margin-top:
+        17px;
+    }
+
+    .errorBox,
+    .successBox {
+      font-size:
+        9px;
+
+      padding:
+        9px 10px;
+    }
+
+    /* -------------------------------------------------------
+       TRUST FEATURES
+    ------------------------------------------------------- */
+
+    .trustFeatures {
+      margin-top:
+        0;
+
+      padding:
+        13px 2px;
+
+      border:
+        1px solid
+        #e6edf4;
+
+      border-radius:
+        12px;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap:
+        0;
+
+      background:
+        #fbfdff;
+    }
+
+    .trustFeature {
+      flex-direction:
+        column;
+
+      gap:
+        5px;
+
+      padding:
+        2px 4px;
+
+      text-align:
+        center;
+    }
+
+    .trustIcon {
+      width:
+        31px;
+
+      height:
+        31px;
+
+      flex-basis:
+        31px;
+    }
+
+    .trustFeature strong {
+      font-size:
+        7px;
+
+      line-height:
+        1.2;
+    }
+
+    .trustFeature span {
+      font-size:
+        6px;
+
+      line-height:
+        1.3;
+    }
+
+    .trustDivider {
+      height:
+        36px;
+    }
+
+    /* -------------------------------------------------------
+       VERIFICATION
+    ------------------------------------------------------- */
+
+    .verificationPage {
+      display:
+        flex;
+    }
+
+    .verificationCard {
+      min-height:
+        calc(100svh - 100px);
+
+      margin-top:
+        25px;
+
+      padding:
+        48px 16px 30px;
+
+      border-radius:
+        17px;
+    }
+
+    .backButton {
+      top:
+        14px;
+
+      left:
+        14px;
+
+      width:
+        38px;
+
+      height:
+        38px;
+    }
+
+    .verificationLogo svg {
+      width:
+        60px;
+
+      height:
+        60px;
+    }
+
+    .verificationEyebrow {
+      margin-top:
+        17px;
+
+      font-size:
+        8px;
+    }
+
+    .verificationContent h1 {
+      font-size:
+        27px;
+    }
+
+    .verificationText {
+      font-size:
+        11px;
+    }
+
+    .verificationEmail {
+      font-size:
+        14px;
+    }
+
+    .otpContainer {
+      gap:
+        5px;
+
+      margin:
+        28px 0
+        22px;
+    }
+
+    .otpInput {
+      height:
+        50px;
+
+      border-radius:
+        8px;
+
+      font-size:
+        18px;
+    }
+
+    .verificationHint {
+      font-size:
+        9px;
+
+      padding:
+        10px;
+    }
+
+    .resendText {
+      font-size:
+        10px;
+    }
+
+    .secureText {
+      font-size:
+        8px;
+    }
+  }
+
+  /* =========================================================
+     SMALL PHONES
+  ========================================================= */
+
+  @media (max-width: 390px) {
+
+    .page {
+      padding:
+        15px 11px 23px;
+    }
+
+    .topBrandText > span {
+      font-size:
+        18px;
+    }
+
+    .topBrandText small {
+      font-size:
+        4.7px;
+    }
+
+    .heroPanel h1 {
+      font-size:
+        32px;
+    }
+
+    .heroFeature strong {
+      font-size:
+        7.5px;
+    }
+
+    .heroFeature span {
+      font-size:
+        6px;
+    }
+
+    .signupCard {
+      padding:
+        19px
+        15px
+        26px;
+    }
+
+    .cardHeader h1 {
+      font-size:
+        23px;
+    }
+
+    .phoneCountry {
+      padding:
+        0 7px;
+    }
+
+    .phoneCountry .flag {
+      font-size:
+        14px;
+    }
+
+    .primaryButton {
+      font-size:
+        11px;
+    }
+
+    .verificationCard {
+      padding:
+        45px 13px 27px;
+    }
+
+    .otpContainer {
+      gap:
+        3px;
+    }
+
+    .otpInput {
+      height:
+        47px;
+
+      border-radius:
+        7px;
+
+      font-size:
+        17px;
+    }
+  }
+
+/* =========================================================
+   PROPERTY VISUAL + TRUST FEATURES — FINAL LAYOUT
+   ========================================================= */
+
+/*
+   DESKTOP
+   Build With Greater Confidence
+   -> property image
+   -> trust features
+
+   The signup card remains on the right.
+*/
+@media (min-width: 761px) {
+  .heroPanel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .heroEyebrow {
+    order: 1;
+  }
+
+  .heroPanel h1 {
+    order: 2;
+  }
+
+  .heroDescription {
+    order: 3;
+  }
+
+  .propertyVisual {
+    order: 4;
+    display: block;
+    width: 100%;
+    height: 255px;
+    margin-top: 30px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+  }
+
+  .propertyImage {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .propertyBadge {
+    z-index: 2;
+  }
+
+  .heroFeatures {
+    order: 5;
+    margin-top: 28px;
+  }
+}
+
+/*
+   MOBILE
+   The property image is NOT shown on mobile.
+
+   Order:
+   hero heading
+   description
+   signup card
+   trust features
+*/
+@media (max-width: 760px) {
+  .mainLayout {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .heroPanel {
+    display: contents;
+  }
+
+  .heroEyebrow {
+    order: 1;
+  }
+
+  .heroPanel h1 {
+    order: 2;
+  }
+
+  .heroDescription {
+    order: 3;
+  }
+
+  .propertyVisual {
+    display: none !important;
+  }
+
+  .signupCard {
+    order: 4;
+    width: 100%;
+  }
+
+  .heroFeatures {
+    order: 5;
+    width: 100%;
+    margin-top: 25px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE AUTH CLEANUP
+
+   The lower trust strip is intentionally removed on mobile
+   to keep the authentication page focused and uncluttered.
+
+   The three primary hero features remain visible.
+========================================================= */
+
+@media (max-width: 760px) {
+  .trustFeatures {
+    display: none !important;
+  }
+}

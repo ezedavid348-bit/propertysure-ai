@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 
 import { supabase } from "../lib/supabase";
 
+import styles from "./signin.module.css";
+
 /* ============================================================
    TYPES
 ============================================================ */
@@ -18,14 +20,7 @@ type IconProps = {
 };
 
 /* ============================================================
-   PROPERTYSURE AI BRAND
-   ============================================================
-   This matches the branding currently used on the Dashboard:
-
-   ◆ PropertySure AI
-
-   AI uses the Dashboard blue:
-   #168eff
+   PROPERTYSURE AI LOGO
 ============================================================ */
 
 function PropertySureLogo({
@@ -33,7 +28,7 @@ function PropertySureLogo({
 }: IconProps) {
   return (
     <span
-      className="propertyLogo"
+      className={styles.propertyLogo}
       style={{
         fontSize: `${size}px`,
       }}
@@ -158,7 +153,7 @@ function GoogleIcon() {
       />
 
       <path
-        d="M6.58 13.87C6.39 13.32 6.28 12.73 6.58 10.37V7.85H3.36C2.7 9.16 2.33 10.64 2.33 12.12C2.33 13.6 2.7 15.08 3.36 16.39L6.58 13.87Z"
+        d="M6.58 13.87C6.39 13.32 6.28 12.73 6.58 10.37V7.85H3.36C2.7 9.16 2.33 10.64 3.36 16.39L6.58 13.87Z"
         fill="#FBBC05"
       />
 
@@ -197,25 +192,99 @@ function ArrowLeftIcon() {
   );
 }
 
-function ShieldCheckIcon() {
+function ShieldCheckIcon({
+  size = 27,
+}: IconProps) {
   return (
     <svg
-      width="27"
-      height="27"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
         d="M12 3L19 6V11.5C19 16.2 16.2 19.5 12 21C7.8 19.5 5 16.2 5 11.5V6L12 3Z"
-        stroke="#168eff"
+        stroke="currentColor"
         strokeWidth="1.7"
       />
 
       <path
         d="M8.5 12L10.8 14.3L15.5 9.6"
-        stroke="#168eff"
+        stroke="currentColor"
         strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function UsersIcon({
+  size = 25,
+}: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M16 20V18.5C16 16.57 14.43 15 12.5 15H6.5C4.57 15 3 16.57 3 18.5V20"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+
+      <circle
+        cx="9.5"
+        cy="8"
+        r="3.2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+
+      <path
+        d="M17 11C18.66 11 20 9.66 20 8C20 6.34 18.66 5 17 5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M17 15.5C19.21 15.5 21 17.29 21 19.5V20"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function ArrowRightIcon({
+  size = 19,
+}: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M5 12H19"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M13 6L19 12L13 18"
+        stroke="currentColor"
+        strokeWidth="1.9"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -280,9 +349,6 @@ export default function SignInPage() {
 
   /* ==========================================================
      AUTH STATE LISTENER
-  ==========================================================
-     Keep this page synchronized with the Supabase browser
-     authentication session.
   ========================================================== */
 
   useEffect(() => {
@@ -335,21 +401,6 @@ export default function SignInPage() {
     try {
       setLoading(true);
 
-      /*
-       * ======================================================
-       * STEP 1
-       * ======================================================
-       * Verify email + password.
-       *
-       * IMPORTANT:
-       *
-       * We DO NOT call signOut() afterwards.
-       *
-       * The previous implementation created a valid session
-       * and immediately destroyed it before starting the OTP
-       * flow.
-       */
-
       const {
         data,
         error: signInError,
@@ -371,15 +422,6 @@ export default function SignInPage() {
         );
       }
 
-      /*
-       * ======================================================
-       * STEP 2
-       * ======================================================
-       * Send the 8-digit email OTP.
-       *
-       * The OTP is now the second security step.
-       */
-
       const {
         error: otpError,
       } =
@@ -394,13 +436,6 @@ export default function SignInPage() {
       if (otpError) {
         throw otpError;
       }
-
-      /*
-       * ======================================================
-       * STEP 3
-       * ======================================================
-       * Show OTP verification screen.
-       */
 
       setVerificationCode("");
 
@@ -451,15 +486,6 @@ export default function SignInPage() {
       const cleanEmail =
         email.trim().toLowerCase();
 
-      /*
-       * ======================================================
-       * STEP 1
-       * ======================================================
-       * Verify the email OTP.
-       *
-       * Supabase should create the authenticated session here.
-       */
-
       const {
         data,
         error: verifyError,
@@ -479,30 +505,11 @@ export default function SignInPage() {
         data.user?.email
       );
 
-      /*
-       * ======================================================
-       * STEP 2
-       * ======================================================
-       * First confirmation:
-       *
-       * Did verifyOtp return a session?
-       */
-
       if (!data.session) {
         throw new Error(
           "Your code was accepted, but Supabase did not create an authenticated session."
         );
       }
-
-      /*
-       * ======================================================
-       * STEP 3
-       * ======================================================
-       * Second confirmation:
-       *
-       * Is the session actually available from the browser
-       * Supabase client?
-       */
 
       const {
         data: sessionData,
@@ -520,15 +527,6 @@ export default function SignInPage() {
         );
       }
 
-      /*
-       * ======================================================
-       * STEP 4
-       * ======================================================
-       * Third confirmation:
-       *
-       * Can Supabase identify the authenticated user?
-       */
-
       const {
         data: userData,
         error: userError,
@@ -545,12 +543,6 @@ export default function SignInPage() {
         );
       }
 
-      /*
-       * ======================================================
-       * SESSION IS DEFINITELY READY
-       * ======================================================
-       */
-
       console.log(
         "AUTHENTICATED SESSION CONFIRMED:",
         userData.user.email
@@ -560,22 +552,10 @@ export default function SignInPage() {
         "Verification successful. Signing you in..."
       );
 
-      /*
-       * Give Supabase's auth state listener a moment to
-       * finish propagating the session before navigation.
-       */
-
       await new Promise(
         (resolve) =>
           setTimeout(resolve, 250)
       );
-
-      /*
-       * IMPORTANT:
-       *
-       * replace() prevents the user from going back to the
-       * OTP/sign-in page with browser history.
-       */
 
       router.replace(
         "/dashboard"
@@ -768,17 +748,14 @@ export default function SignInPage() {
         const {
           error: resendError,
         } =
-          await supabase.auth.signInWithOtp(
-            {
-              email:
-                cleanEmail,
+          await supabase.auth.signInWithOtp({
+            email: cleanEmail,
 
-              options: {
-                shouldCreateUser:
-                  false,
-              },
-            }
-          );
+            options: {
+              shouldCreateUser:
+                false,
+            },
+          });
 
         if (resendError) {
           throw resendError;
@@ -927,54 +904,80 @@ export default function SignInPage() {
 
   if (showVerification) {
     return (
-      <main className="page">
+      <main
+        className={
+          styles.page
+        }
+      >
 
-        <div className="verificationCard">
+        <div
+          className={
+            styles.verificationCard
+          }
+        >
 
           <button
             type="button"
-            className="backButton"
+            className={
+              styles.backButton
+            }
             onClick={() => {
               setShowVerification(
                 false
               );
 
-              setVerificationCode(
-                ""
-              );
+              setVerificationCode("");
 
               setError("");
               setSuccess("");
             }}
+            aria-label="Back to sign in"
           >
             <ArrowLeftIcon />
           </button>
 
-          <div className="verificationContent">
+          <div
+            className={
+              styles.verificationContent
+            }
+          >
 
-            {/* DASHBOARD BRAND */}
-
-            <div className="verificationBrand">
+            <div
+              className={
+                styles.verificationBrand
+              }
+            >
 
               <PropertySureLogo
-                size={42}
+                size={38}
               />
 
-              <div className="verificationBrandName">
+              <div
+                className={
+                  styles.verificationBrandName
+                }
+              >
                 PropertySure
                 <strong>
-                  {" "}
-                  AI
+                  {" "}AI
                 </strong>
               </div>
 
             </div>
 
-            <div className="verificationBrandSubtitle">
-              AI-Powered Property Due Diligence
+            <div
+              className={
+                styles.verificationBrandSubtitle
+              }
+            >
+              AI-POWERED PROPERTY DUE DILIGENCE
             </div>
 
-            <div className="verificationEyebrow">
+            <div
+              className={
+                styles.verificationEyebrow
+              }
+            >
               SECURE SIGN IN
             </div>
 
@@ -982,16 +985,28 @@ export default function SignInPage() {
               Verify your email
             </h1>
 
-            <p className="verificationText">
+            <p
+              className={
+                styles.verificationText
+              }
+            >
               We've sent an 8-digit
               security code to
             </p>
 
-            <div className="verificationEmail">
+            <div
+              className={
+                styles.verificationEmail
+              }
+            >
               {maskedEmail}
             </div>
 
-            <div className="otpContainer">
+            <div
+              className={
+                styles.otpContainer
+              }
+            >
 
               {[
                 0,
@@ -1037,44 +1052,68 @@ export default function SignInPage() {
                         index
                       )
                     }
-                    className="otpInput"
+                    className={
+                      styles.otpInput
+                    }
                     disabled={
                       verifying
                     }
+                    aria-label={`Verification digit ${index + 1}`}
                   />
                 )
               )}
 
             </div>
 
-            <div className="verificationHint">
+            <div
+              className={
+                styles.verificationHint
+              }
+            >
 
-              <ShieldCheckIcon />
+              <div
+                className={
+                  styles.verificationHintIcon
+                }
+              >
+                <ShieldCheckIcon
+                  size={24}
+                />
+              </div>
 
               <span>
                 Enter the 8-digit code
-                to complete
-                <br />
-                your secure sign-in.
+                to complete your
+                secure sign-in.
               </span>
 
             </div>
 
             {error && (
-              <div className="errorBox">
+              <div
+                className={
+                  styles.errorBox
+                }
+              >
                 {error}
               </div>
             )}
 
             {success && (
-              <div className="successBox">
+              <div
+                className={
+                  styles.successBox
+                }
+              >
                 {success}
               </div>
             )}
 
             <button
               type="button"
-              className="primaryButton"
+              className={
+                styles.primaryButton
+              }
               onClick={() =>
                 handleVerifyEmail()
               }
@@ -1084,13 +1123,22 @@ export default function SignInPage() {
                   8
               }
             >
-              {verifying
-                ? "Verifying..."
-                : "Verify & Sign In"}
+              <span>
+                {verifying
+                  ? "Verifying..."
+                  : "Verify & Sign In"}
+              </span>
+
+              {!verifying && (
+                <ArrowRightIcon />
+              )}
             </button>
 
-            <div className="resendText">
-
+            <div
+              className={
+                styles.resendText
+              }
+            >
               Didn't receive the code?{" "}
 
               <button
@@ -1109,24 +1157,24 @@ export default function SignInPage() {
 
             </div>
 
-            <div className="secureText">
+            <div
+              className={
+                styles.secureText
+              }
+            >
 
-              <LockIcon size={17} />
+              <LockIcon size={16} />
 
               <span>
-                Your account is protected by
-                <br />
-                PropertySure AI
+                Your account is protected
+                by PropertySure AI
               </span>
 
             </div>
 
           </div>
-        </div>
 
-        <style jsx>
-          {styles}
-        </style>
+        </div>
 
       </main>
     );
@@ -1137,286 +1185,65 @@ export default function SignInPage() {
   ========================================================== */
 
   return (
-    <main className="page">
+    <main
+      className={
+        styles.page
+      }
+    >
 
-      <div className="signinCard">
+      {/* ======================================================
+          TOP BRAND / CREATE ACCOUNT
+      ====================================================== */}
 
-        {/* ====================================================
-            DASHBOARD BRAND
-        ==================================================== */}
+      <header
+        className={
+          styles.topHeader
+        }
+      >
 
-        <div className="brand">
+        <button
+          type="button"
+          className={
+            styles.topBrand
+          }
+          onClick={() =>
+            router.push("/")
+          }
+          aria-label="Go to PropertySure AI home"
+        >
 
-          <div className="brandLogoRow">
+          <PropertySureLogo
+            size={39}
+          />
 
-            <PropertySureLogo
-              size={25}
-            />
-
-            <div className="brandName">
+          <div
+            className={
+              styles.topBrandText
+            }
+          >
+            <span>
               PropertySure
               <strong>
-                {" "}
-                AI
+                {" "}AI
               </strong>
-            </div>
-
-          </div>
-
-          <div className="brandTagline">
-            AI-POWERED PROPERTY DUE DILIGENCE
-          </div>
-
-        </div>
-
-        {/* ====================================================
-            HEADER
-        ==================================================== */}
-
-        <div className="header">
-
-          <div className="eyebrow">
-            PROPERTY VERIFICATION
-          </div>
-
-          <p>
-            Sign in to continue managing
-            your property verification
-            journey.
-          </p>
-
-        </div>
-
-        {error && (
-          <div className="errorBox">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="successBox">
-            {success}
-          </div>
-        )}
-
-        {/* ====================================================
-            EMAIL
-        ==================================================== */}
-
-        <div className="fieldGroup">
-
-          <label>
-            Email Address
-          </label>
-
-          <div className="inputBox">
-
-            <div className="fieldIcon">
-              <MailIcon />
-            </div>
-
-            <input
-              type="email"
-              value={email}
-              onChange={(e) =>
-                setEmail(
-                  e.target.value
-                )
-              }
-              placeholder="Enter your email address"
-              className="fieldInput"
-              autoComplete="email"
-              disabled={
-                loading
-              }
-            />
-
-          </div>
-
-        </div>
-
-        {/* ====================================================
-            PASSWORD
-        ==================================================== */}
-
-        <div className="fieldGroup">
-
-          <label>
-            Password
-          </label>
-
-          <div className="passwordBox">
-
-            <div className="fieldIcon">
-              <LockIcon />
-            </div>
-
-            <input
-              type={
-                showPassword
-                  ? "text"
-                  : "password"
-              }
-              value={password}
-              onChange={(e) =>
-                setPassword(
-                  e.target.value
-                )
-              }
-              placeholder="Enter your password"
-              className="passwordInput"
-              autoComplete="current-password"
-              disabled={
-                loading
-              }
-            />
-
-            <button
-              type="button"
-              className="eyeButton"
-              onClick={() =>
-                setShowPassword(
-                  !showPassword
-                )
-              }
-              aria-label={
-                showPassword
-                  ? "Hide password"
-                  : "Show password"
-              }
-            >
-              <EyeIcon />
-            </button>
-
-          </div>
-
-        </div>
-
-        {/* ====================================================
-            ACCOUNT OPTIONS
-        ==================================================== */}
-
-        <div className="accountOptions">
-
-          <label className="remember">
-
-            <input
-              type="checkbox"
-              checked={
-                rememberMe
-              }
-              onChange={(e) =>
-                setRememberMe(
-                  e.target.checked
-                )
-              }
-            />
-
-            <span>
-              Remember me
             </span>
 
-          </label>
-
-          <button
-            type="button"
-            className="forgotButton"
-            onClick={
-              handleForgotPassword
-            }
-            disabled={loading}
-          >
-            Forgot password?
-          </button>
-
-        </div>
-
-        {/* ====================================================
-            SIGN IN BUTTON
-        ==================================================== */}
-
-        <button
-          type="button"
-          className="primaryButton"
-          onClick={
-            handleSignIn
-          }
-          disabled={
-            loading ||
-            googleLoading
-          }
-        >
-          {loading
-            ? "Checking Account..."
-            : "Continue to Sign In"}
-        </button>
-
-        {/* ====================================================
-            SECURITY MESSAGE
-        ==================================================== */}
-
-        <div className="securityMessage">
-
-          <ShieldCheckIcon />
-
-          <span>
-            After your password is verified,
-            <br />
-            we'll send a security code to
-            your email.
-          </span>
-
-        </div>
-
-        {/* ====================================================
-            DIVIDER
-        ==================================================== */}
-
-        <div className="divider">
-
-          <span />
-
-          <div>
-            or
+            <small>
+              AI-POWERED PROPERTY DUE DILIGENCE
+            </small>
           </div>
 
-          <span />
+        </button>
 
-        </div>
-
-        {/* ====================================================
-            GOOGLE
-        ==================================================== */}
-
-        <button
-          type="button"
-          className="googleButton"
-          onClick={
-            handleGoogleSignIn
-          }
-          disabled={
-            loading ||
-            googleLoading
+        <div
+          className={
+            styles.topSignup
           }
         >
 
-          <GoogleIcon />
-
           <span>
-            {googleLoading
-              ? "Connecting..."
-              : "Continue with Google"}
+            Don't have an account?
           </span>
-
-        </button>
-
-        {/* ====================================================
-            SIGN UP
-        ==================================================== */}
-
-        <div className="signupText">
-
-          Don't have an account?{" "}
 
           <button
             type="button"
@@ -1431,1278 +1258,591 @@ export default function SignInPage() {
 
         </div>
 
-      </div>
+      </header>
 
       {/* ======================================================
-          TRUST FEATURES
+          MAIN CONTENT
       ====================================================== */}
 
-      <div className="trustFeatures">
+      <section
+        className={
+          styles.mainLayout
+        }
+      >
 
-        <div className="trustFeature">
+        {/* ====================================================
+            LEFT SIDE
+        ==================================================== */}
 
-          <div className="trustIcon">
-            <ShieldCheckIcon />
+        <div
+          className={
+            styles.heroPanel
+          }
+        >
+
+          <div
+            className={
+              styles.heroEyebrow
+            }
+          >
+            PROPERTY VERIFICATION
           </div>
 
-          <strong>
-            AI-Powered
-          </strong>
-
-          <span>
-            Advanced property
+          <h1>
+            Make Smarter
             <br />
-            verification
-          </span>
+
+            <span>
+              Property Decisions
+            </span>
+          </h1>
+
+          <p
+            className={
+              styles.heroDescription
+            }
+          >
+            AI-powered insights, verified data,
+            and complete confidence — all in one
+            place.
+          </p>
+
+          {/* ==================================================
+              PROPERTY VISUAL
+
+              REAL PROPERTY IMAGE
+
+              DESKTOP:
+              Appears directly below the hero description.
+
+              MOBILE:
+              Hidden through the existing mobile CSS.
+          ================================================== */}
+
+          <div
+            className={
+              styles.propertyVisual
+            }
+          >
+
+            <img
+              src="/property-visual.png"
+              alt="Property verification and safer property decisions"
+              className={
+                styles.propertyImage
+              }
+            />
+
+          </div>
 
         </div>
 
-        <div className="trustDivider" />
+        {/* ====================================================
+            SIGN-IN CARD
+        ==================================================== */}
 
-        <div className="trustFeature">
+        <div
+          className={
+            styles.signinCard
+          }
+        >
 
-          <div className="trustIcon">
-            <LockIcon />
+          <div
+            className={
+              styles.cardBrand
+            }
+          >
+
+            <PropertySureLogo
+              size={38}
+            />
+
+            <div>
+              <div
+                className={
+                  styles.cardBrandName
+                }
+              >
+                PropertySure
+                <strong>
+                  {" "}AI
+                </strong>
+              </div>
+
+              <div
+                className={
+                  styles.cardBrandTagline
+                }
+              >
+                AI-POWERED PROPERTY DUE DILIGENCE
+              </div>
+            </div>
+
           </div>
 
-          <strong>
-            Secure & Private
-          </strong>
+          <div
+            className={
+              styles.header
+            }
+          >
 
-          <span>
-            Your information is
-            <br />
-            protected
-          </span>
+            <div
+              className={
+                styles.eyebrow
+              }
+            >
+              WELCOME BACK
+            </div>
+
+            <h2>
+              Sign in to your account
+            </h2>
+
+            <p>
+              Continue your property verification
+              journey with secure access to your
+              dashboard.
+            </p>
+
+          </div>
+
+          {error && (
+            <div
+              className={
+                styles.errorBox
+              }
+            >
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div
+              className={
+                styles.successBox
+              }
+            >
+              {success}
+            </div>
+          )}
+
+          {/* ==================================================
+              EMAIL
+          ================================================== */}
+
+          <div
+            className={
+              styles.fieldGroup
+            }
+          >
+
+            <label>
+              Email Address
+            </label>
+
+            <div
+              className={
+                styles.inputBox
+              }
+            >
+
+              <div
+                className={
+                  styles.fieldIcon
+                }
+              >
+                <MailIcon />
+              </div>
+
+              <input
+                type="email"
+                value={email}
+                onChange={(e) =>
+                  setEmail(
+                    e.target.value
+                  )
+                }
+                placeholder="Enter your email address"
+                className={
+                  styles.fieldInput
+                }
+                autoComplete="email"
+                disabled={
+                  loading
+                }
+              />
+
+            </div>
+
+          </div>
+
+          {/* ==================================================
+              PASSWORD
+          ================================================== */}
+
+          <div
+            className={
+              styles.fieldGroup
+            }
+          >
+
+            <label>
+              Password
+            </label>
+
+            <div
+              className={
+                styles.passwordBox
+              }
+            >
+
+              <div
+                className={
+                  styles.fieldIcon
+                }
+              >
+                <LockIcon />
+              </div>
+
+              <input
+                type={
+                  showPassword
+                    ? "text"
+                    : "password"
+                }
+                value={password}
+                onChange={(e) =>
+                  setPassword(
+                    e.target.value
+                  )
+                }
+                placeholder="Enter your password"
+                className={
+                  styles.passwordInput
+                }
+                autoComplete="current-password"
+                disabled={
+                  loading
+                }
+              />
+
+              <button
+                type="button"
+                className={
+                  styles.eyeButton
+                }
+                onClick={() =>
+                  setShowPassword(
+                    !showPassword
+                  )
+                }
+                aria-label={
+                  showPassword
+                    ? "Hide password"
+                    : "Show password"
+                }
+              >
+                <EyeIcon />
+              </button>
+
+            </div>
+
+          </div>
+
+          {/* ==================================================
+              ACCOUNT OPTIONS
+          ================================================== */}
+
+          <div
+            className={
+              styles.accountOptions
+            }
+          >
+
+            <label
+              className={
+                styles.remember
+              }
+            >
+
+              <input
+                type="checkbox"
+                checked={
+                  rememberMe
+                }
+                onChange={(e) =>
+                  setRememberMe(
+                    e.target.checked
+                  )
+                }
+              />
+
+              <span>
+                Remember me
+              </span>
+
+            </label>
+
+            <button
+              type="button"
+              className={
+                styles.forgotButton
+              }
+              onClick={
+                handleForgotPassword
+              }
+              disabled={
+                loading
+              }
+            >
+              Forgot password?
+            </button>
+
+          </div>
+
+          {/* ==================================================
+              SIGN IN BUTTON
+          ================================================== */}
+
+          <button
+            type="button"
+            className={
+              styles.primaryButton
+            }
+            onClick={
+              handleSignIn
+            }
+            disabled={
+              loading ||
+              googleLoading
+            }
+          >
+
+            <span>
+              {loading
+                ? "Checking Account..."
+                : "Continue to Sign In"}
+            </span>
+
+            {!loading && (
+              <ArrowRightIcon />
+            )}
+
+          </button>
+
+          {/* ==================================================
+              SECURITY MESSAGE
+          ================================================== */}
+
+          <div
+            className={
+              styles.securityMessage
+            }
+          >
+
+            <div
+              className={
+                styles.securityIcon
+              }
+            >
+              <ShieldCheckIcon
+                size={23}
+              />
+            </div>
+
+            <span>
+              After your password is verified,
+              we'll send a security code to
+              your email.
+            </span>
+
+          </div>
+
+          {/* ==================================================
+              DIVIDER
+          ================================================== */}
+
+          <div
+            className={
+              styles.divider
+            }
+          >
+
+            <span />
+
+            <div>
+              or
+            </div>
+
+            <span />
+
+          </div>
+
+          {/* ==================================================
+              GOOGLE
+          ================================================== */}
+
+          <button
+            type="button"
+            className={
+              styles.googleButton
+            }
+            onClick={
+              handleGoogleSignIn
+            }
+            disabled={
+              loading ||
+              googleLoading
+            }
+          >
+
+            <GoogleIcon />
+
+            <span>
+              {googleLoading
+                ? "Connecting..."
+                : "Continue with Google"}
+            </span>
+
+          </button>
+
+          {/* ==================================================
+              MOBILE SIGN UP
+          ================================================== */}
+
+          <div
+            className={
+              styles.signupText
+            }
+          >
+
+            Don't have an account?{" "}
+
+            <button
+              type="button"
+              onClick={() =>
+                router.push(
+                  "/signup"
+                )
+              }
+            >
+              Create an account
+            </button>
+
+          </div>
 
         </div>
 
-        <div className="trustDivider" />
+      </section>
 
-        <div className="trustFeature">
+      {/* ======================================================
+          TRUST STRIP
+      ====================================================== */}
 
-          <div className="trustIcon">
-            ✓
+      <section
+        className={
+          styles.trustFeatures
+        }
+      >
+
+        <div
+          className={
+            styles.trustFeature
+          }
+        >
+
+          <div
+            className={
+              styles.trustIcon
+            }
+          >
+            <ShieldCheckIcon
+              size={24}
+            />
           </div>
 
-          <strong>
-            Trusted Results
-          </strong>
+          <div>
+            <strong>
+              Trusted by Professionals
+            </strong>
 
-          <span>
-            Verification designed
-            <br />
-            for confidence
-          </span>
+            <span>
+              Across the property industry
+            </span>
+          </div>
 
         </div>
 
-      </div>
+        <div
+          className={
+            styles.trustDivider
+          }
+        />
 
-      <style jsx>
-        {styles}
-      </style>
+        <div
+          className={
+            styles.trustFeature
+          }
+        >
+
+          <div
+            className={
+              styles.trustIcon
+            }
+          >
+            <UsersIcon
+              size={24}
+            />
+          </div>
+
+          <div>
+            <strong>
+              Built for Your Confidence
+            </strong>
+
+            <span>
+              Smarter tools. Safer decisions.
+            </span>
+          </div>
+
+        </div>
+
+        <div
+          className={
+            styles.trustDivider
+          }
+        />
+
+        <div
+          className={
+            styles.trustFeature
+          }
+        >
+
+          <div
+            className={
+              styles.trustIcon
+            }
+          >
+            <span>
+              ⚡
+            </span>
+          </div>
+
+          <div>
+            <strong>
+              A Brighter Property Future
+            </strong>
+
+            <span>
+              Powered by AI
+            </span>
+          </div>
+
+        </div>
+
+      </section>
 
     </main>
   );
 }
-
-/* ============================================================
-   STYLES
-============================================================ */
-
-const styles = `
-
-  * {
-    box-sizing: border-box;
-  }
-
-  .page {
-    min-height: 100vh;
-
-    width: 100%;
-
-    background:
-      radial-gradient(
-        circle at 75% 5%,
-        rgba(0, 103, 255, 0.25),
-        transparent 28%
-      ),
-      radial-gradient(
-        circle at 15% 85%,
-        rgba(0, 70, 180, 0.13),
-        transparent 30%
-      ),
-      linear-gradient(
-        145deg,
-        #020A18 0%,
-        #06152f 48%,
-        #020A18 100%
-      );
-
-    color: #FFFFFF;
-
-    font-family:
-      Inter,
-      Arial,
-      Helvetica,
-      sans-serif;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    justify-content: center;
-
-    padding:
-      35px 18px 45px;
-
-    position: relative;
-
-    overflow-x: hidden;
-  }
-
-  /* ==========================================================
-     BRAND
-  ========================================================== */
-
-  .brand {
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    justify-content: center;
-
-    margin-bottom: 27px;
-  }
-
-  .brandLogoRow {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 8px;
-  }
-
-  .propertyLogo {
-    color: #168eff;
-
-    line-height: 1;
-
-    display: inline-block;
-  }
-
-  .brandName {
-    font-size: 27px;
-
-    line-height: 1;
-
-    font-weight: 700;
-
-    letter-spacing:
-      -0.5px;
-  }
-
-  .brandName strong {
-    color: #168eff;
-  }
-
-  .brandTagline {
-    margin-top: 10px;
-
-    color: #7186A2;
-
-    font-size: 9px;
-
-    font-weight: 700;
-
-    letter-spacing: 1.7px;
-
-    text-align: center;
-  }
-
-  /* ==========================================================
-     SIGN IN CARD
-  ========================================================== */
-
-  .signinCard {
-    width: 100%;
-
-    max-width: 825px;
-
-    padding:
-      40px
-      90px
-      42px;
-
-    border-radius: 25px;
-
-    background:
-      radial-gradient(
-        circle at 85% 0%,
-        rgba(0, 99, 255, 0.17),
-        transparent 33%
-      ),
-      linear-gradient(
-        145deg,
-        rgba(5, 18, 39, 0.98),
-        rgba(3, 13, 28, 0.99)
-      );
-
-    border:
-      1px solid
-      rgba(82, 135, 205, 0.55);
-
-    box-shadow:
-      0 35px 100px
-      rgba(0, 0, 0, 0.48),
-
-      inset 0 1px 0
-      rgba(255, 255, 255, 0.04);
-  }
-
-  /* ==========================================================
-     HEADER
-  ========================================================== */
-
-  .header {
-    text-align: center;
-
-    margin-bottom: 32px;
-  }
-
-  .eyebrow {
-    color: #168eff;
-
-    font-size: 13px;
-
-    font-weight: 800;
-
-    letter-spacing: 2.3px;
-
-    margin-bottom: 15px;
-  }
-
-  .header p {
-    max-width: 600px;
-
-    margin:
-      15px auto 0;
-
-    color: #C3CEDD;
-
-    font-size: 16px;
-
-    line-height: 1.65;
-  }
-
-  /* ==========================================================
-     FIELDS
-  ========================================================== */
-
-  .fieldGroup {
-    margin-bottom: 20px;
-  }
-
-  .fieldGroup label {
-    display: block;
-
-    margin-bottom: 9px;
-
-    color: #F7F9FC;
-
-    font-size: 15px;
-
-    font-weight: 600;
-  }
-
-  .inputBox,
-  .passwordBox {
-    width: 100%;
-
-    height: 68px;
-
-    display: flex;
-
-    align-items: center;
-
-    border:
-      1px solid
-      rgba(92, 130, 177, 0.48);
-
-    border-radius: 13px;
-
-    background:
-      rgba(7, 19, 38, 0.72);
-
-    transition:
-      border-color 0.2s,
-      box-shadow 0.2s;
-  }
-
-  .inputBox:focus-within,
-  .passwordBox:focus-within {
-    border-color: #168eff;
-
-    box-shadow:
-      0 0 0 3px
-      rgba(22, 142, 255, 0.08);
-  }
-
-  .fieldIcon {
-    width: 63px;
-
-    height: 100%;
-
-    flex-shrink: 0;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    color: #A9B7CA;
-  }
-
-  .fieldInput,
-  .passwordInput {
-    width: 100%;
-
-    min-width: 0;
-
-    height: 100%;
-
-    border: none;
-
-    outline: none;
-
-    background: transparent;
-
-    color: #FFFFFF;
-
-    font-size: 16px;
-  }
-
-  .fieldInput::placeholder,
-  .passwordInput::placeholder {
-    color: #8493A8;
-  }
-
-  .passwordInput {
-    padding: 0 5px;
-  }
-
-  .eyeButton {
-    width: 58px;
-
-    height: 100%;
-
-    flex-shrink: 0;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    border: none;
-
-    background: transparent;
-
-    color: #A7B4C8;
-
-    cursor: pointer;
-  }
-
-  .eyeButton:hover {
-    color: #FFFFFF;
-  }
-
-  /* ==========================================================
-     ACCOUNT OPTIONS
-  ========================================================== */
-
-  .accountOptions {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    gap: 15px;
-
-    margin:
-      5px 0 25px;
-  }
-
-  .remember {
-    display: flex;
-
-    align-items: center;
-
-    gap: 9px;
-
-    color: #C7D1DF;
-
-    font-size: 14px;
-
-    cursor: pointer;
-  }
-
-  .remember input {
-    width: 19px;
-
-    height: 19px;
-
-    accent-color: #168eff;
-
-    cursor: pointer;
-  }
-
-  .forgotButton {
-    border: none;
-
-    background: transparent;
-
-    color: #168eff;
-
-    font-size: 14px;
-
-    font-weight: 600;
-
-    cursor: pointer;
-
-    padding: 0;
-  }
-
-  .forgotButton:disabled {
-    opacity: 0.55;
-
-    cursor: not-allowed;
-  }
-
-  /* ==========================================================
-     PRIMARY BUTTON
-  ========================================================== */
-
-  .primaryButton {
-    width: 100%;
-
-    height: 66px;
-
-    border: none;
-
-    border-radius: 13px;
-
-    background:
-      linear-gradient(
-        135deg,
-        #168bff,
-        #0866d1
-      );
-
-    color: #FFFFFF;
-
-    font-size: 19px;
-
-    font-weight: 800;
-
-    cursor: pointer;
-
-    box-shadow:
-      0 15px 35px
-      rgba(0, 91, 235, 0.25);
-
-    transition:
-      transform 0.15s,
-      box-shadow 0.15s,
-      opacity 0.15s;
-  }
-
-  .primaryButton:hover:not(:disabled) {
-    transform:
-      translateY(-1px);
-
-    box-shadow:
-      0 18px 40px
-      rgba(0, 105, 255, 0.32);
-  }
-
-  .primaryButton:disabled {
-    opacity: 0.55;
-
-    cursor: not-allowed;
-  }
-
-  /* ==========================================================
-     SECURITY
-  ========================================================== */
-
-  .securityMessage {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 10px;
-
-    margin-top: 19px;
-
-    color: #8FA2BA;
-
-    font-size: 12px;
-
-    line-height: 1.5;
-
-    text-align: center;
-  }
-
-  /* ==========================================================
-     DIVIDER
-  ========================================================== */
-
-  .divider {
-    display: flex;
-
-    align-items: center;
-
-    gap: 18px;
-
-    margin:
-      27px 0;
-  }
-
-  .divider span {
-    flex: 1;
-
-    height: 1px;
-
-    background:
-      rgba(117, 145, 180, 0.35);
-  }
-
-  .divider div {
-    color: #D1D9E5;
-
-    font-size: 15px;
-  }
-
-  /* ==========================================================
-     GOOGLE
-  ========================================================== */
-
-  .googleButton {
-    width: 100%;
-
-    height: 62px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 13px;
-
-    border:
-      1px solid
-      rgba(21, 126, 255, 0.62);
-
-    border-radius: 13px;
-
-    background:
-      rgba(5, 18, 38, 0.7);
-
-    color: #FFFFFF;
-
-    font-size: 17px;
-
-    font-weight: 600;
-
-    cursor: pointer;
-  }
-
-  .googleButton:hover:not(:disabled) {
-    background:
-      rgba(13, 44, 82, 0.72);
-  }
-
-  .googleButton:disabled {
-    opacity: 0.55;
-
-    cursor: not-allowed;
-  }
-
-  /* ==========================================================
-     SIGN UP
-  ========================================================== */
-
-  .signupText {
-    text-align: center;
-
-    margin-top: 29px;
-
-    color: #C3CDDB;
-
-    font-size: 15px;
-  }
-
-  .signupText button {
-    border: none;
-
-    background: transparent;
-
-    color: #168eff;
-
-    font-size: inherit;
-
-    font-weight: 700;
-
-    cursor: pointer;
-
-    padding: 0;
-  }
-
-  /* ==========================================================
-     ALERTS
-  ========================================================== */
-
-  .errorBox,
-  .successBox {
-    padding:
-      13px 15px;
-
-    margin-bottom: 20px;
-
-    border-radius: 10px;
-
-    font-size: 14px;
-
-    line-height: 1.5;
-  }
-
-  .errorBox {
-    color: #FF9C9C;
-
-    background:
-      rgba(239, 68, 68, 0.09);
-
-    border:
-      1px solid
-      rgba(239, 68, 68, 0.3);
-  }
-
-  .successBox {
-    color: #72E6A0;
-
-    background:
-      rgba(34, 197, 94, 0.09);
-
-    border:
-      1px solid
-      rgba(34, 197, 94, 0.3);
-  }
-
-  /* ==========================================================
-     TRUST FEATURES
-  ========================================================== */
-
-  .trustFeatures {
-    width: 100%;
-
-    max-width: 825px;
-
-    display: grid;
-
-    grid-template-columns:
-      1fr auto
-      1fr auto
-      1fr;
-
-    align-items: center;
-
-    margin-top: 32px;
-
-    padding:
-      22px 15px;
-
-    border:
-      1px solid
-      rgba(82, 135, 205, 0.25);
-
-    border-radius: 17px;
-
-    background:
-      rgba(4, 19, 38, 0.65);
-  }
-
-  .trustFeature {
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    text-align: center;
-
-    padding:
-      4px 15px;
-  }
-
-  .trustIcon {
-    width: 47px;
-
-    height: 47px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    border-radius: 50%;
-
-    margin-bottom: 9px;
-
-    background:
-      rgba(22, 142, 255, 0.08);
-
-    border:
-      1px solid
-      rgba(22, 142, 255, 0.25);
-
-    color: #168eff;
-  }
-
-  .trustFeature strong {
-    color: #F5F8FC;
-
-    font-size: 13px;
-
-    margin-bottom: 5px;
-  }
-
-  .trustFeature span {
-    color: #7F93AD;
-
-    font-size: 10px;
-
-    line-height: 1.5;
-  }
-
-  .trustDivider {
-    width: 1px;
-
-    height: 58px;
-
-    background:
-      rgba(132, 157, 187, 0.16);
-  }
-
-  /* ==========================================================
-     VERIFICATION CARD
-  ========================================================== */
-
-  .verificationCard {
-    width: 100%;
-
-    max-width: 825px;
-
-    min-height: 700px;
-
-    position: relative;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    padding:
-      55px 90px;
-
-    border-radius: 24px;
-
-    background:
-      radial-gradient(
-        circle at 80% 0%,
-        rgba(0, 99, 255, 0.2),
-        transparent 32%
-      ),
-      linear-gradient(
-        145deg,
-        rgba(5, 18, 39, 0.97),
-        rgba(3, 13, 28, 0.98)
-      );
-
-    border:
-      1px solid
-      rgba(82, 135, 205, 0.55);
-
-    box-shadow:
-      0 35px 100px
-      rgba(0, 0, 0, 0.45);
-  }
-
-  .backButton {
-    position: absolute;
-
-    top: 35px;
-
-    left: 35px;
-
-    width: 48px;
-
-    height: 48px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    border: none;
-
-    background: transparent;
-
-    color: #FFFFFF;
-
-    cursor: pointer;
-  }
-
-  .verificationContent {
-    width: 100%;
-
-    max-width: 650px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    text-align: center;
-  }
-
-  .verificationBrand {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 8px;
-  }
-
-  .verificationBrandName {
-    font-size: 25px;
-
-    font-weight: 700;
-
-    letter-spacing:
-      -0.4px;
-  }
-
-  .verificationBrandName strong {
-    color: #168eff;
-  }
-
-  .verificationBrandSubtitle {
-    margin-top: 8px;
-
-    color: #7186A2;
-
-    font-size: 9px;
-
-    letter-spacing: 1.3px;
-  }
-
-  .verificationEyebrow {
-    margin-top: 22px;
-
-    color: #168eff;
-
-    font-size: 12px;
-
-    font-weight: 800;
-
-    letter-spacing: 2px;
-  }
-
-  .verificationContent h1 {
-    margin:
-      14px 0 12px;
-
-    font-size: 39px;
-
-    letter-spacing:
-      -1.4px;
-  }
-
-  .verificationText {
-    margin: 0;
-
-    color: #CBD4E0;
-
-    font-size: 17px;
-  }
-
-  .verificationEmail {
-    margin-top: 13px;
-
-    color: #168eff;
-
-    font-size: 22px;
-
-    font-weight: 600;
-
-    word-break: break-word;
-  }
-
-  /* ==========================================================
-     OTP
-  ========================================================== */
-
-  .otpContainer {
-    width: 100%;
-
-    display: grid;
-
-    grid-template-columns:
-      repeat(8, 1fr);
-
-    gap: 13px;
-
-    margin:
-      50px 0 45px;
-  }
-
-  .otpInput {
-    width: 100%;
-
-    height: 78px;
-
-    border:
-      1px solid
-      rgba(92, 130, 177, 0.48);
-
-    border-radius: 13px;
-
-    background:
-      rgba(7, 19, 38, 0.72);
-
-    color: #FFFFFF;
-
-    text-align: center;
-
-    font-size: 28px;
-
-    font-weight: 700;
-
-    outline: none;
-  }
-
-  .otpInput:focus {
-    border-color: #168eff;
-
-    box-shadow:
-      0 0 0 3px
-      rgba(22, 142, 255, 0.1);
-  }
-
-  .verificationHint {
-    width: 100%;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 15px;
-
-    margin-bottom: 30px;
-
-    color: #CBD5E2;
-
-    font-size: 16px;
-
-    line-height: 1.55;
-
-    text-align: left;
-  }
-
-  .verificationHint svg {
-    flex-shrink: 0;
-  }
-
-  .resendText {
-    margin-top: 24px;
-
-    color: #CBD5E2;
-
-    font-size: 16px;
-  }
-
-  .resendText button {
-    border: none;
-
-    background: transparent;
-
-    color: #168eff;
-
-    font-size: inherit;
-
-    font-weight: 600;
-
-    cursor: pointer;
-
-    padding: 0;
-  }
-
-  .resendText button:disabled {
-    opacity: 0.55;
-
-    cursor: not-allowed;
-  }
-
-  .secureText {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 9px;
-
-    margin-top: 38px;
-
-    color: #9EABBD;
-
-    font-size: 14px;
-
-    line-height: 1.55;
-
-    text-align: center;
-  }
-
-  /* ==========================================================
-     MOBILE
-  ========================================================== */
-
-  @media (max-width: 700px) {
-
-    .page {
-      padding:
-        15px 14px 30px;
-
-      justify-content:
-        flex-start;
-    }
-
-    .signinCard {
-      margin-top: 5px;
-
-      padding:
-        30px 22px 32px;
-
-      border-radius: 20px;
-    }
-
-    .brandName {
-      font-size: 23px;
-    }
-
-    .brandTagline {
-      font-size: 7px;
-
-      letter-spacing: 1.3px;
-    }
-
-    .header p {
-      font-size: 14px;
-    }
-
-    .eyebrow {
-      font-size: 11px;
-    }
-
-    .inputBox,
-    .passwordBox {
-      height: 62px;
-    }
-
-    .fieldIcon {
-      width: 53px;
-    }
-
-    .primaryButton {
-      height: 60px;
-
-      font-size: 17px;
-    }
-
-    .googleButton {
-      height: 58px;
-    }
-
-    .accountOptions {
-      font-size: 12px;
-    }
-
-    .forgotButton {
-      font-size: 12px;
-    }
-
-    .trustFeatures {
-      grid-template-columns:
-        1fr auto
-        1fr auto
-        1fr;
-
-      margin-top: 20px;
-
-      padding:
-        15px 4px;
-    }
-
-    .trustFeature {
-      padding:
-        4px 3px;
-    }
-
-    .trustFeature strong {
-      font-size: 10px;
-    }
-
-    .trustFeature span {
-      font-size: 8px;
-    }
-
-    .trustDivider {
-      height: 48px;
-    }
-
-    .trustIcon {
-      width: 39px;
-
-      height: 39px;
-    }
-
-    .verificationCard {
-      min-height: 680px;
-
-      padding:
-        45px 18px;
-    }
-
-    .verificationBrandName {
-      font-size: 21px;
-    }
-
-    .verificationBrandSubtitle {
-      font-size: 7px;
-    }
-
-    .verificationContent h1 {
-      font-size: 31px;
-    }
-
-    .verificationText {
-      font-size: 14px;
-    }
-
-    .verificationEmail {
-      font-size: 17px;
-    }
-
-    .otpContainer {
-      gap: 6px;
-
-      margin:
-        40px 0 35px;
-    }
-
-    .otpInput {
-      height: 57px;
-
-      border-radius: 9px;
-
-      font-size: 21px;
-    }
-
-    .verificationHint {
-      font-size: 13px;
-
-      gap: 9px;
-    }
-
-    .backButton {
-      top: 20px;
-
-      left: 15px;
-    }
-  }
-
-  /* ==========================================================
-     VERY SMALL PHONES
-  ========================================================== */
-
-  @media (max-width: 420px) {
-
-    .signinCard {
-      padding:
-        25px 16px 28px;
-    }
-
-    .header p {
-      font-size: 13px;
-    }
-
-    .brandName {
-      font-size: 21px;
-    }
-
-    .accountOptions {
-      flex-direction: column;
-
-      align-items:
-        flex-start;
-
-      gap: 12px;
-    }
-
-    .trustFeature strong {
-      font-size: 9px;
-    }
-
-    .trustFeature span {
-      font-size: 7px;
-    }
-
-    .otpContainer {
-      gap: 4px;
-    }
-
-    .otpInput {
-      height: 51px;
-
-      border-radius: 8px;
-
-      font-size: 19px;
-    }
-
-    .verificationCard {
-      padding:
-        45px 14px;
-    }
-  }
-`;

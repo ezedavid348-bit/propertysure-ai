@@ -12,6 +12,11 @@ import { supabase } from "../../../lib/supabase";
 ============================================================
 ICON SYSTEM
 ============================================================
+IMPORTANT:
+The existing navigation icon system is preserved.
+DO NOT CHANGE navigation icons, notification bell,
+header icons, mobile navigation, or sidebar navigation.
+============================================================
 */
 
 type IconName =
@@ -28,7 +33,6 @@ type IconName =
   | "home"
   | "shield"
   | "lock"
-  | "document"
   | "creditCard"
   | "privacy"
   | "chevron"
@@ -52,6 +56,13 @@ function Icon({
   className?: string;
 }) {
   const icons: Record<IconName, string> = {
+    /*
+    --------------------------------------------------------
+    EXISTING NAVIGATION ICONS
+    DO NOT CHANGE
+    --------------------------------------------------------
+    */
+
     dashboard: "▦",
     verify: "⇧",
     properties: "⌂",
@@ -60,26 +71,29 @@ function Icon({
     reports: "▤",
     account: "◯",
     settings: "⚙",
+    bell: "🔔",
 
     /*
-    ========================================================
-    STANDARD PROPERTYSURE AI NOTIFICATION BELL
-    ========================================================
-
-    This is the same bell used on the Notifications page.
-    ========================================================
+    --------------------------------------------------------
+    EXISTING GENERAL ICONS
+    --------------------------------------------------------
     */
-    bell: "🔔",
 
     search: "⌕",
     home: "⌂",
     shield: "♢",
     lock: "▣",
-    document: "▤",
     creditCard: "▭",
     privacy: "♙",
     chevron: "›",
-    headset: "♧",
+
+    /*
+    HEADSET IS RENDERED AS A REAL SVG BELOW.
+    --------------------------------------------------------
+    */
+
+    headset: "",
+
     warning: "!",
     lightbulb: "♧",
     check: "✓",
@@ -89,6 +103,53 @@ function Icon({
     user: "◯",
     logout: "↪",
   };
+
+  /*
+  ==========================================================
+  REAL HEADSET / SUPPORT ICON
+  ==========================================================
+  Used for:
+  - Contact Support
+  - Help Center Tips
+  ==========================================================
+  */
+
+  if (name === "headset") {
+    return (
+      <span
+        className={`${styles.icon} ${className}`}
+        style={{
+          width: `${size}px`,
+          height: `${size}px`,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+        aria-hidden="true"
+      >
+        <svg
+          width={size}
+          height={size}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 14a8 8 0 0 1 16 0" />
+
+          <path d="M4 14v3a2 2 0 0 0 2 2h1v-6H6a2 2 0 0 0-2 2Z" />
+
+          <path d="M20 14v3a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2Z" />
+
+          <path d="M17 19c0 1.1-.9 2-2 2h-2" />
+        </svg>
+      </span>
+    );
+  }
 
   return (
     <span
@@ -103,10 +164,265 @@ function Icon({
   );
 }
 
+/*
+============================================================
+HELP CENTER CATEGORY ICON SYSTEM
+============================================================
+These icons are ONLY for the Browse by Category cards.
+
+They are completely separate from the existing navigation
+icon system.
+============================================================
+*/
+
+type CategoryIconName =
+  | "property"
+  | "fraud"
+  | "security"
+  | "reports"
+  | "gettingStarted"
+  | "payment"
+  | "privacy";
+
+function CategoryIcon({
+  name,
+}: {
+  name: CategoryIconName;
+}) {
+  /*
+  ----------------------------------------------------------
+  PROPERTY VERIFICATION
+  ----------------------------------------------------------
+  */
+
+  if (name === "property") {
+    return (
+      <svg
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M3 10.5 12 3l9 7.5" />
+
+        <path d="M5.5 9.5V21h13V9.5" />
+
+        <path d="M9 21v-5.5h6V21" />
+
+        <path d="M8.5 11.5h.01" />
+
+        <path d="M15.5 11.5h.01" />
+
+        <path d="m15.5 6.5 2 2" />
+      </svg>
+    );
+  }
+
+  /*
+  ----------------------------------------------------------
+  FRAUD WATCH
+  ----------------------------------------------------------
+  */
+
+  if (name === "fraud") {
+    return (
+      <svg
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 3 20 6v5.2c0 4.7-3.1 7.8-8 9.8-4.9-2-8-5.1-8-9.8V6l8-3Z" />
+
+        <path d="M12 8v4" />
+
+        <path d="M12 16h.01" />
+      </svg>
+    );
+  }
+
+  /*
+  ----------------------------------------------------------
+  ACCOUNT & SECURITY
+  ----------------------------------------------------------
+  */
+
+  if (name === "security") {
+    return (
+      <svg
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <rect
+          x="5"
+          y="10"
+          width="14"
+          height="10"
+          rx="2"
+        />
+
+        <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+
+        <path d="M12 14v2" />
+
+        <path d="M12 14h.01" />
+      </svg>
+    );
+  }
+
+  /*
+  ----------------------------------------------------------
+  REPORTS & HISTORY
+  ----------------------------------------------------------
+  */
+
+  if (name === "reports") {
+    return (
+      <svg
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M6 3h9l3 3v15H6z" />
+
+        <path d="M15 3v4h3" />
+
+        <path d="M9 12h6" />
+
+        <path d="M9 16h6" />
+
+        <path d="M9 8h2" />
+      </svg>
+    );
+  }
+
+  /*
+  ----------------------------------------------------------
+  GETTING STARTED
+  ----------------------------------------------------------
+  */
+
+  if (name === "gettingStarted") {
+    return (
+      <svg
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M14.5 4.5c2.5-.8 4.4-.8 5-.3.5.6.5 2.5-.3 5-1.2 3.8-4.7 7.1-8.5 8.4l-2.8-2.8c1.3-3.8 4.6-7.3 8.4-8.5Z" />
+
+        <circle
+          cx="15.5"
+          cy="8.5"
+          r="1.5"
+        />
+
+        <path d="m7.9 15.9-3.2 3.2" />
+
+        <path d="m5.8 13.8-2.3 1" />
+
+        <path d="m8.2 18.2-1 2.3" />
+      </svg>
+    );
+  }
+
+  /*
+  ----------------------------------------------------------
+  PAYMENTS & SUBSCRIPTIONS
+  ----------------------------------------------------------
+  */
+
+  if (name === "payment") {
+    return (
+      <svg
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <rect
+          x="3"
+          y="5"
+          width="18"
+          height="14"
+          rx="2.5"
+        />
+
+        <path d="M3 9h18" />
+
+        <path d="M7 14h3" />
+
+        <path d="M15 14h2" />
+
+        <path d="M7 16.5h5" />
+      </svg>
+    );
+  }
+
+  /*
+  ----------------------------------------------------------
+  PRIVACY & DATA
+  ----------------------------------------------------------
+  */
+
+  return (
+    <svg
+      width="26"
+      height="26"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3 20 7v5c0 4.4-2.8 7.3-8 9-5.2-1.7-8-4.6-8-9V7l8-4Z" />
+
+      <path d="m8.7 12.2 2.2 2.2 4.5-4.6" />
+    </svg>
+  );
+}
 
 /*
 ============================================================
 NAVIGATION
+============================================================
+UNCHANGED
 ============================================================
 */
 
@@ -116,26 +432,31 @@ const navItems = [
     href: "/dashboard",
     icon: "dashboard" as IconName,
   },
+
   {
     label: "Verify Property",
     href: "/verify",
     icon: "verify" as IconName,
   },
+
   {
     label: "My Properties",
     href: "/my-properties",
     icon: "properties" as IconName,
   },
+
   {
     label: "Verification History",
     href: "/verification-history",
     icon: "history" as IconName,
   },
+
   {
     label: "Fraud Watch",
     href: "/fraud-watch",
     icon: "fraud" as IconName,
   },
+
   {
     label: "Reports",
     href: "/reports",
@@ -143,10 +464,10 @@ const navItems = [
   },
 ];
 
-
 /*
 ============================================================
 HELP CATEGORIES
+============================================================
 ============================================================
 */
 
@@ -157,9 +478,9 @@ const categories = [
     description:
       "Learn how to verify properties and understand verification reports.",
 
-    articles: "12 articles",
+    articles: "8 articles",
 
-    icon: "home" as IconName,
+    icon: "property" as CategoryIconName,
 
     color: "blue",
 
@@ -175,7 +496,7 @@ const categories = [
 
     articles: "8 articles",
 
-    icon: "shield" as IconName,
+    icon: "fraud" as CategoryIconName,
 
     color: "green",
 
@@ -189,9 +510,9 @@ const categories = [
     description:
       "Manage your account, password, and security settings.",
 
-    articles: "14 articles",
+    articles: "8 articles",
 
-    icon: "lock" as IconName,
+    icon: "security" as CategoryIconName,
 
     color: "purple",
 
@@ -207,7 +528,7 @@ const categories = [
 
     articles: "10 articles",
 
-    icon: "document" as IconName,
+    icon: "reports" as CategoryIconName,
 
     color: "yellow",
 
@@ -215,30 +536,15 @@ const categories = [
       "/settings/support-help/help-center/reports-history",
   },
 
-  /*
-  ==========================================================
-  REPLACEMENT FOR ACCOUNT SETTINGS
-  ==========================================================
-
-  Account Settings was removed because the main Settings
-  area already handles account preferences and settings.
-
-  This category is now focused on helping a new user
-  understand how to start using PropertySure AI.
-
-  We are intentionally setting it to 7 articles.
-  ==========================================================
-  */
-
   {
     title: "Getting Started",
 
     description:
       "Learn the basics of PropertySure AI and how to get started.",
 
-    articles: "7 articles",
+    articles: "11 articles",
 
-    icon: "home" as IconName,
+    icon: "gettingStarted" as CategoryIconName,
 
     color: "blue",
 
@@ -252,14 +558,14 @@ const categories = [
     description:
       "Manage your plan, billing, payments, and invoices.",
 
-    articles: "9 articles",
+    articles: "8 articles",
 
-    icon: "creditCard" as IconName,
+    icon: "payment" as CategoryIconName,
 
     color: "pink",
 
     href:
-      "/settings/support-help/help-center/payments",
+      "/settings/support-help/help-center/payments-subscriptions",
   },
 
   {
@@ -268,9 +574,9 @@ const categories = [
     description:
       "Learn how we protect your data and your privacy rights.",
 
-    articles: "6 articles",
+    articles: "7 articles",
 
-    icon: "privacy" as IconName,
+    icon: "privacy" as CategoryIconName,
 
     color: "cyan",
 
@@ -278,53 +584,6 @@ const categories = [
       "/settings/support-help/help-center/privacy-data",
   },
 ];
-
-
-/*
-============================================================
-POPULAR ARTICLES
-============================================================
-*/
-
-const popularArticles = [
-  {
-    title: "How do I verify a property?",
-
-    href:
-      "/settings/support-help/articles/how-to-verify-property",
-  },
-
-  {
-    title: "How does Fraud Watch work?",
-
-    href:
-      "/settings/support-help/articles/how-fraud-watch-works",
-  },
-
-  {
-    title:
-      "How do I enable two-factor authentication?",
-
-    href:
-      "/settings/support-help/articles/enable-two-factor-authentication",
-  },
-
-  {
-    title:
-      "How do I update my account information?",
-
-    href:
-      "/settings/support-help/articles/update-account-information",
-  },
-
-  {
-    title: "How do I export my data?",
-
-    href:
-      "/settings/support-help/articles/export-my-data",
-  },
-];
-
 
 /*
 ============================================================
@@ -339,64 +598,6 @@ const popularSearches = [
   "reports",
   "getting started",
 ];
-
-
-/*
-============================================================
-ARTICLE ROW
-============================================================
-*/
-
-function ArticleRow({
-  title,
-  href,
-  onClick,
-}: {
-  title: string;
-  href: string;
-  onClick: (href: string) => void;
-}) {
-  return (
-    <button
-      type="button"
-      className={styles.articleRow}
-      onClick={() =>
-        onClick(href)
-      }
-    >
-      <span
-        className={
-          styles.articleIcon
-        }
-      >
-        <Icon
-          name="document"
-          size={15}
-        />
-      </span>
-
-      <span
-        className={
-          styles.articleTitle
-        }
-      >
-        {title}
-      </span>
-
-      <span
-        className={
-          styles.articleChevron
-        }
-      >
-        <Icon
-          name="chevron"
-          size={22}
-        />
-      </span>
-    </button>
-  );
-}
-
 
 /*
 ============================================================
@@ -416,7 +617,7 @@ function CategoryCard({
   title: string;
   description: string;
   articles: string;
-  icon: IconName;
+  icon: CategoryIconName;
   color: string;
   href: string;
   onClick: (href: string) => void;
@@ -424,43 +625,26 @@ function CategoryCard({
   return (
     <button
       type="button"
-      className={
-        styles.categoryCard
-      }
-      onClick={() =>
-        onClick(href)
-      }
+      className={styles.categoryCard}
+      onClick={() => onClick(href)}
     >
       <div
         className={`${styles.categoryIcon} ${styles[color]}`}
       >
-        <Icon
+        <CategoryIcon
           name={icon}
-          size={24}
         />
       </div>
 
-      <div
-        className={
-          styles.categoryTitle
-        }
-      >
+      <div className={styles.categoryTitle}>
         {title}
       </div>
 
-      <div
-        className={
-          styles.categoryDescription
-        }
-      >
+      <div className={styles.categoryDescription}>
         {description}
       </div>
 
-      <div
-        className={
-          styles.categoryFooter
-        }
-      >
+      <div className={styles.categoryFooter}>
         <span>
           {articles}
         </span>
@@ -473,7 +657,6 @@ function CategoryCard({
     </button>
   );
 }
-
 
 /*
 ============================================================
@@ -502,7 +685,6 @@ export default function HelpCenterPage() {
     initial: "U",
     plan: "Free Plan",
   });
-
 
   /*
   ============================================================
@@ -592,10 +774,11 @@ export default function HelpCenterPage() {
     };
   }, [router]);
 
-
   /*
   ============================================================
   NAVIGATION
+  ============================================================
+  EXISTING NAVIGATION LOGIC — UNCHANGED
   ============================================================
   */
 
@@ -606,10 +789,11 @@ export default function HelpCenterPage() {
     router.push(href);
   };
 
-
   /*
   ============================================================
   NOTIFICATIONS
+  ============================================================
+  UNCHANGED
   ============================================================
   */
 
@@ -619,17 +803,15 @@ export default function HelpCenterPage() {
     );
   };
 
-
   /*
   ============================================================
-  STANDARD BACK BUTTON
+  BACK TO SETTINGS
   ============================================================
   */
 
   const backToSettings = () => {
     navigateTo("/settings");
   };
-
 
   /*
   ============================================================
@@ -652,24 +834,6 @@ export default function HelpCenterPage() {
     }
   };
 
-
-  /*
-  ============================================================
-  SEARCH
-  ============================================================
-  */
-
-  const filteredArticles =
-    popularArticles.filter(
-      (article) =>
-        article.title
-          .toLowerCase()
-          .includes(
-            search.toLowerCase()
-          )
-    );
-
-
   /*
   ============================================================
   RENDER
@@ -678,25 +842,19 @@ export default function HelpCenterPage() {
 
   return (
     <main
-      className={
-        styles.page
-      }
+      className={styles.page}
     >
-
       {/* =====================================================
           DESKTOP SIDEBAR
+          DO NOT CHANGE
       ===================================================== */}
 
       <aside
-        className={
-          styles.sidebar
-        }
+        className={styles.sidebar}
       >
         <button
           type="button"
-          className={
-            styles.brandButton
-          }
+          className={styles.brandButton}
           onClick={() =>
             navigateTo(
               "/dashboard"
@@ -704,9 +862,7 @@ export default function HelpCenterPage() {
           }
         >
           <div
-            className={
-              styles.brandName
-            }
+            className={styles.brandName}
           >
             <span
               className={
@@ -736,11 +892,8 @@ export default function HelpCenterPage() {
           </div>
         </button>
 
-
         <nav
-          className={
-            styles.sidebarNav
-          }
+          className={styles.sidebarNav}
         >
           {navItems.map(
             (item) => (
@@ -779,7 +932,6 @@ export default function HelpCenterPage() {
           )}
         </nav>
 
-
         <div
           className={
             styles.accountLabel
@@ -787,7 +939,6 @@ export default function HelpCenterPage() {
         >
           ACCOUNT
         </div>
-
 
         <button
           type="button"
@@ -816,7 +967,6 @@ export default function HelpCenterPage() {
           </span>
         </button>
 
-
         <button
           type="button"
           className={`${styles.navItem} ${styles.navActive}`}
@@ -841,7 +991,6 @@ export default function HelpCenterPage() {
             Settings
           </span>
         </button>
-
 
         <div
           className={
@@ -884,7 +1033,6 @@ export default function HelpCenterPage() {
             Contact Support
           </button>
         </div>
-
 
         <button
           type="button"
@@ -934,9 +1082,9 @@ export default function HelpCenterPage() {
         </button>
       </aside>
 
-
       {/* =====================================================
           MOBILE HEADER
+          DO NOT CHANGE
       ===================================================== */}
 
       <header
@@ -959,7 +1107,6 @@ export default function HelpCenterPage() {
             size={23}
           />
         </button>
-
 
         <button
           type="button"
@@ -985,11 +1132,6 @@ export default function HelpCenterPage() {
           </span>
         </button>
 
-
-        {/* ==================================================
-            STANDARD MOBILE NOTIFICATION BELL
-        ================================================== */}
-
         <button
           type="button"
           className={
@@ -1013,9 +1155,9 @@ export default function HelpCenterPage() {
         </button>
       </header>
 
-
       {/* =====================================================
           MOBILE MENU
+          DO NOT CHANGE
       ===================================================== */}
 
       {menuOpen && (
@@ -1058,7 +1200,6 @@ export default function HelpCenterPage() {
               </div>
             </div>
 
-
             <button
               type="button"
               className={
@@ -1077,7 +1218,6 @@ export default function HelpCenterPage() {
               />
             </button>
           </div>
-
 
           <nav
             className={
@@ -1115,7 +1255,6 @@ export default function HelpCenterPage() {
             )}
           </nav>
 
-
           <div
             className={
               styles.mobileAccountLabel
@@ -1123,7 +1262,6 @@ export default function HelpCenterPage() {
           >
             ACCOUNT
           </div>
-
 
           <button
             type="button"
@@ -1146,7 +1284,6 @@ export default function HelpCenterPage() {
             </span>
           </button>
 
-
           <button
             type="button"
             className={`${styles.mobileNavItem} ${styles.mobileActive}`}
@@ -1165,7 +1302,6 @@ export default function HelpCenterPage() {
               Settings
             </span>
           </button>
-
 
           <button
             type="button"
@@ -1186,19 +1322,16 @@ export default function HelpCenterPage() {
         </div>
       )}
 
-
       {/* =====================================================
           MAIN
       ===================================================== */}
 
       <section
-        className={
-          styles.main
-        }
+        className={styles.main}
       >
-
         {/* ===================================================
             TOP BAR
+            DO NOT CHANGE
         =================================================== */}
 
         <header
@@ -1248,17 +1381,11 @@ export default function HelpCenterPage() {
             </span>
           </div>
 
-
           <div
             className={
               styles.topActions
             }
           >
-
-            {/* =================================================
-                STANDARD DESKTOP NOTIFICATION BELL
-            ================================================= */}
-
             <button
               type="button"
               className={
@@ -1281,7 +1408,6 @@ export default function HelpCenterPage() {
               />
             </button>
 
-
             <button
               type="button"
               className={
@@ -1298,7 +1424,6 @@ export default function HelpCenterPage() {
           </div>
         </header>
 
-
         {/* ===================================================
             CONTENT
         =================================================== */}
@@ -1308,7 +1433,6 @@ export default function HelpCenterPage() {
             styles.content
           }
         >
-
           <div
             className={
               styles.contentHeader
@@ -1324,11 +1448,6 @@ export default function HelpCenterPage() {
               out of PropertySure AI.
             </p>
 
-
-            {/* =================================================
-                STANDARD BACK BUTTON
-            ================================================= */}
-
             <button
               type="button"
               className={
@@ -1342,13 +1461,11 @@ export default function HelpCenterPage() {
             </button>
           </div>
 
-
           <div
             className={
               styles.layout
             }
           >
-
             {/* ===============================================
                 LEFT / MAIN COLUMN
             =============================================== */}
@@ -1358,7 +1475,6 @@ export default function HelpCenterPage() {
                 styles.primaryColumn
               }
             >
-
               {/* SEARCH */}
 
               <section
@@ -1394,7 +1510,6 @@ export default function HelpCenterPage() {
                   />
                 </div>
 
-
                 <div
                   className={
                     styles.popularSearches
@@ -1424,8 +1539,12 @@ export default function HelpCenterPage() {
                 </div>
               </section>
 
-
-              {/* CATEGORIES */}
+              {/* =================================================
+                  BROWSE BY CATEGORY
+                  
+                  No Matching Category section.
+                  No Popular Articles section.
+              ================================================= */}
 
               <section
                 className={
@@ -1460,7 +1579,6 @@ export default function HelpCenterPage() {
               </section>
             </div>
 
-
             {/* ===============================================
                 RIGHT COLUMN
             =============================================== */}
@@ -1470,82 +1588,14 @@ export default function HelpCenterPage() {
                 styles.rightColumn
               }
             >
-
-              {/* POPULAR ARTICLES */}
-
-              <section
-                className={
-                  styles.sideCard
-                }
-              >
-                <div
-                  className={
-                    styles.sideCardHeader
-                  }
-                >
-                  <h2>
-                    Popular Articles
-                  </h2>
-                </div>
-
-
-                <div
-                  className={
-                    styles.articleList
-                  }
-                >
-                  {filteredArticles.length >
-                  0 ? (
-                    filteredArticles.map(
-                      (
-                        article
-                      ) => (
-                        <ArticleRow
-                          key={
-                            article.title
-                          }
-                          {...article}
-                          onClick={
-                            navigateTo
-                          }
-                        />
-                      )
-                    )
-                  ) : (
-                    <div
-                      className={
-                        styles.noResults
-                      }
-                    >
-                      No matching articles
-                      found.
-                    </div>
-                  )}
-                </div>
-
-
-                <button
-                  type="button"
-                  className={
-                    styles.viewAll
-                  }
-                  onClick={() =>
-                    navigateTo(
-                      "/settings/support-help/articles"
-                    )
-                  }
-                >
-                  <span>
-                    View all articles
-                  </span>
-
-                  <Icon
-                    name="arrow"
-                    size={17}
-                  />
-                </button>
-              </section>
-
+              {/* =================================================
+                  POPULAR ARTICLES
+                  
+                  INTENTIONALLY REMOVED.
+                  
+                  Popular Articles will only be added when the
+                  titles correspond to actual article pages.
+              ================================================= */}
 
               {/* NEED MORE HELP */}
 
@@ -1607,7 +1657,6 @@ export default function HelpCenterPage() {
                 </button>
               </section>
 
-
               {/* TIPS */}
 
               <section
@@ -1624,7 +1673,7 @@ export default function HelpCenterPage() {
                     }
                   >
                     <Icon
-                      name="lightbulb"
+                      name="headset"
                       size={18}
                     />
                   </span>
@@ -1633,7 +1682,6 @@ export default function HelpCenterPage() {
                     Help Center Tips
                   </h2>
                 </div>
-
 
                 <div
                   className={
@@ -1659,8 +1707,7 @@ export default function HelpCenterPage() {
                     />
 
                     <span>
-                      Check popular
-                      articles first
+                      Browse by category
                     </span>
                   </div>
 
@@ -1671,7 +1718,8 @@ export default function HelpCenterPage() {
                     />
 
                     <span>
-                      Browse by category
+                      Read the relevant
+                      guide carefully
                     </span>
                   </div>
 
@@ -1688,15 +1736,14 @@ export default function HelpCenterPage() {
                   </div>
                 </div>
               </section>
-
             </aside>
           </div>
         </div>
       </section>
 
-
       {/* =====================================================
           MOBILE BOTTOM NAV
+          DO NOT CHANGE
       ===================================================== */}
 
       <nav
@@ -1722,7 +1769,6 @@ export default function HelpCenterPage() {
           </span>
         </button>
 
-
         <button
           type="button"
           onClick={() =>
@@ -1740,7 +1786,6 @@ export default function HelpCenterPage() {
             Verify
           </span>
         </button>
-
 
         <button
           type="button"
@@ -1760,7 +1805,6 @@ export default function HelpCenterPage() {
           </span>
         </button>
 
-
         <button
           type="button"
           onClick={() =>
@@ -1778,7 +1822,6 @@ export default function HelpCenterPage() {
             Reports
           </span>
         </button>
-
 
         <button
           type="button"
@@ -1801,7 +1844,6 @@ export default function HelpCenterPage() {
           </span>
         </button>
       </nav>
-
     </main>
   );
 }

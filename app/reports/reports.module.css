@@ -1,0 +1,1918 @@
+/* =========================================================
+   REPORTS PAGE
+========================================================= */
+
+.page {
+  min-height: 100vh;
+
+  background:
+    radial-gradient(
+      circle at 82% 0%,
+      rgba(22, 142, 255, 0.055),
+      transparent 28%
+    ),
+    #f7faff;
+
+  color: #102542;
+}
+
+.pageInner {
+  width: min(1180px, 100%);
+
+  margin: 0 auto;
+
+  padding: 34px 34px 60px;
+}
+
+/* =========================================================
+   LOADING SCREEN
+========================================================= */
+
+.loadingPage {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(22, 142, 255, 0.10),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      #061b38 0%,
+      #031229 100%
+    );
+
+  color: #ffffff;
+
+  text-align: center;
+}
+
+.loadingBrand {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  color: #ffffff;
+
+  font-size: 24px;
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: -0.025em;
+}
+
+.loadingBrand strong {
+  color: #168eff;
+}
+
+.loadingDiamond {
+  width: 15px;
+  height: 15px;
+
+  display: inline-block;
+
+  flex: 0 0 15px;
+
+  background: #168eff;
+
+  transform: rotate(45deg);
+
+  border-radius: 2px;
+
+  box-shadow:
+    0 0 18px rgba(22, 142, 255, 0.35);
+
+  animation:
+    loadingDiamondPulse
+    1.6s
+    ease-in-out
+    infinite;
+}
+
+.loadingIndicator {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  margin-top: 22px;
+
+  height: 14px;
+}
+
+.loadingIndicator span {
+  width: 6px;
+  height: 6px;
+
+  display: block;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  box-shadow:
+    0 0 8px rgba(22, 142, 255, 0.45);
+
+  animation:
+    loadingDot
+    1.2s
+    ease-in-out
+    infinite;
+}
+
+.loadingIndicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.loadingIndicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.loadingText {
+  margin: 10px 0 0;
+
+  color: #91a7c3;
+
+  font-size: 12px;
+  line-height: 1.3;
+
+  font-weight: 500;
+
+  letter-spacing: 0.01em;
+}
+
+@keyframes loadingDot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes loadingDiamondPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: rotate(45deg) scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1.08);
+  }
+}
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+
+  padding-bottom: 20px;
+
+  border-bottom: 1px solid #e5edf6;
+}
+
+.eyebrow {
+  margin-bottom: 8px;
+
+  color: #168eff;
+
+  font-size: 10px;
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: 1.6px;
+}
+
+.pageHeader h1 {
+  margin: 0;
+
+  color: #102542;
+
+  font-size: clamp(27px, 3vw, 36px);
+  line-height: 1.15;
+
+  font-weight: 700;
+
+  letter-spacing: -0.7px;
+}
+
+.pageHeader p {
+  margin: 9px 0 0;
+
+  color: #6f839d;
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   DATABASE NOTICE
+   Positioned BELOW SEARCH + FILTER
+========================================================= */
+
+.databaseNotice {
+  margin-top: 14px;
+
+  min-height: 66px;
+
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  border: 1px solid #f0c9cd;
+  border-radius: 11px;
+
+  background: #fff7f8;
+}
+
+.databaseNoticeIcon {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 32px;
+
+  border-radius: 50%;
+
+  background: #ffe5e7;
+
+  color: #d92d3a;
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.databaseNoticeContent {
+  min-width: 0;
+  flex: 1;
+}
+
+.databaseNoticeContent strong {
+  display: block;
+
+  color: #6f2027;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.databaseNoticeContent p {
+  margin: 3px 0 0;
+
+  color: #9c6268;
+
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.databaseNotice button {
+  height: 34px;
+
+  padding: 0 13px;
+
+  flex-shrink: 0;
+
+  border: 1px solid #e09aa0;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #c52c38;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   SEARCH + FILTER
+========================================================= */
+
+.filterPanel {
+  margin-top: 18px;
+
+  padding: 10px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    250px;
+
+  gap: 10px;
+
+  border: 1px solid #e2eaf3;
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 5px 18px rgba(20, 53, 88, 0.035);
+}
+
+.searchBox {
+  min-width: 0;
+
+  height: 54px;
+
+  padding: 0 15px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  border: 1px solid #e5edf5;
+  border-radius: 9px;
+
+  background: #f8fbfe;
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.searchBox:focus-within {
+  border-color: #94caff;
+
+  background: #ffffff;
+}
+
+.searchIcon {
+  color: #7890aa;
+
+  font-size: 23px;
+  line-height: 1;
+
+  transform: rotate(-20deg);
+}
+
+.searchBox input {
+  width: 100%;
+  min-width: 0;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #172d49;
+
+  font-size: 12px;
+}
+
+.searchBox input::placeholder {
+  color: #9aabbc;
+}
+
+.clearSearch {
+  width: 25px;
+  height: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 25px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: #eaf1f8;
+
+  color: #607790;
+
+  font-size: 16px;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   FILTER
+========================================================= */
+
+.filterDropdown {
+  position: relative;
+
+  z-index: 50;
+}
+
+.filterTrigger {
+  width: 100%;
+  height: 54px;
+
+  padding: 7px 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  border: 1px solid #e5edf5;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #172d49;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.filterTrigger:hover,
+.filterTriggerOpen {
+  border-color: #8dc6fb;
+
+  box-shadow:
+    0 0 0 3px rgba(22, 142, 255, 0.055);
+}
+
+.filterTriggerLeft {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.filterTriggerText {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.filterTriggerText span {
+  color: #91a2b5;
+
+  font-size: 7px;
+
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+
+  margin-bottom: 4px;
+}
+
+.filterTriggerText strong {
+  color: #223852;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+.filterChevron {
+  color: #7890aa;
+
+  font-size: 18px;
+
+  transition:
+    transform 0.18s ease;
+}
+
+.filterTriggerOpen .filterChevron {
+  color: #168eff;
+
+  transform: rotate(180deg);
+}
+
+/* =========================================================
+   FILTER STATUS ICONS
+========================================================= */
+
+.filterStatusIcon {
+  width: 34px;
+  height: 34px;
+
+  flex: 0 0 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.all {
+  color: #168eff;
+  background: #eaf5ff;
+}
+
+.verified {
+  color: #13a466;
+  background: #e7f8f0;
+}
+
+.pending {
+  color: #d98a00;
+  background: #fff4d9;
+}
+
+.flagged {
+  color: #dd3d49;
+  background: #ffecef;
+}
+
+/* =========================================================
+   FILTER MENU
+========================================================= */
+
+.filterBackdrop {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 49;
+
+  width: 100%;
+  height: 100%;
+
+  border: 0;
+
+  background: transparent;
+
+  cursor: default;
+}
+
+.filterMenu {
+  position: absolute;
+
+  z-index: 60;
+
+  top: calc(100% + 8px);
+
+  left: 0;
+  right: 0;
+
+  padding: 6px;
+
+  border: 1px solid #dce7f2;
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 18px 45px rgba(25, 57, 92, 0.14);
+
+  overflow: hidden;
+}
+
+.filterOption {
+  width: 100%;
+  min-height: 60px;
+
+  padding: 8px 9px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #223852;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.filterOption:hover {
+  background: #f5f9fd;
+}
+
+.filterOption.selected {
+  background: #eef7ff;
+}
+
+.filterOptionText {
+  min-width: 0;
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.filterOptionText strong {
+  color: #1b334f;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.filterOptionText span {
+  margin-top: 3px;
+
+  color: #8a9bad;
+
+  font-size: 9px;
+  line-height: 1.3;
+}
+
+.selectedCheck {
+  width: 24px;
+  height: 24px;
+
+  flex: 0 0 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+.statsGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 13px;
+
+  margin-top: 14px;
+}
+
+.statCard {
+  min-width: 0;
+
+  min-height: 118px;
+
+  padding: 19px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  border: 1px solid #e1eaf4;
+  border-radius: 13px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 5px 18px rgba(20, 53, 88, 0.045);
+}
+
+.statIcon {
+  width: 43px;
+  height: 43px;
+
+  flex: 0 0 43px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.statBlue {
+  color: #168eff;
+  background: #eaf5ff;
+}
+
+.statGreen {
+  color: #16a66a;
+  background: #e7f8f0;
+}
+
+.statOrange {
+  color: #d98a00;
+  background: #fff4d9;
+}
+
+.statRed {
+  color: #dd3d49;
+  background: #ffecef;
+}
+
+.statLabel {
+  display: block;
+
+  color: #71859d;
+
+  font-size: 9px;
+  line-height: 1.2;
+
+  font-weight: 800;
+
+  letter-spacing: 0.7px;
+}
+
+.statNumber {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #122946;
+
+  font-size: 25px;
+  line-height: 1;
+
+  font-weight: 700;
+}
+
+.statSubtext {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #91a1b5;
+
+  font-size: 10px;
+}
+
+/* =========================================================
+   REPORT SECTION HEADER
+========================================================= */
+
+.reportsSectionHeader {
+  margin: 31px 2px 13px;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
+.reportsSectionHeader h2 {
+  margin: 0;
+
+  color: #122946;
+
+  font-size: 18px;
+  line-height: 1.25;
+
+  font-weight: 700;
+}
+
+.reportsSectionHeader p {
+  margin: 4px 0 0;
+
+  color: #8a9caf;
+
+  font-size: 10px;
+}
+
+.reportsSectionHeader > span {
+  color: #71859d;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   REPORT CONTAINER
+========================================================= */
+
+.reportsContainer {
+  min-width: 0;
+
+  border: 1px solid #e1e9f2;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 6px 22px rgba(20, 53, 88, 0.045);
+
+  overflow: hidden;
+}
+
+/* =========================================================
+   DESKTOP TABLE
+========================================================= */
+
+.desktopTable {
+  width: 100%;
+}
+
+.tableHeader {
+  min-height: 48px;
+
+  padding: 0 20px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(240px, 2.2fr)
+    minmax(130px, 1fr)
+    minmax(150px, 1.2fr)
+    minmax(120px, 0.9fr)
+    minmax(150px, 0.9fr);
+
+  align-items: center;
+
+  gap: 14px;
+
+  background: #f7faff;
+
+  border-bottom: 1px solid #e5edf5;
+}
+
+.tableHeader span {
+  color: #8193a8;
+
+  font-size: 8px;
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: 0.9px;
+}
+
+.tableRow {
+  min-height: 88px;
+
+  padding: 0 20px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(240px, 2.2fr)
+    minmax(130px, 1fr)
+    minmax(150px, 1.2fr)
+    minmax(120px, 0.9fr)
+    minmax(150px, 0.9fr);
+
+  align-items: center;
+
+  gap: 14px;
+
+  border-bottom: 1px solid #edf2f7;
+
+  transition:
+    background 0.18s ease;
+}
+
+.tableRow:last-child {
+  border-bottom: 0;
+}
+
+.tableRow:hover {
+  background: #fbfdff;
+}
+
+/* =========================================================
+   PROPERTY
+========================================================= */
+
+.propertyCell {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.propertyIcon {
+  width: 43px;
+  height: 43px;
+
+  flex: 0 0 43px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.propertyGreen {
+  color: #12a469;
+  background: #e7f8f0;
+}
+
+.propertyOrange {
+  color: #d88b00;
+  background: #fff4d9;
+}
+
+.propertyRed {
+  color: #dc3d49;
+  background: #ffecef;
+}
+
+.propertyCellText {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.propertyCellText strong {
+  color: #1b334f;
+
+  font-size: 12px;
+  line-height: 1.3;
+
+  font-weight: 700;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.propertyCellText span {
+  margin-top: 5px;
+
+  color: #91a1b2;
+
+  font-size: 9px;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   LOCATION
+========================================================= */
+
+.locationCell {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  color: #627790;
+
+  font-size: 10px;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.locationDot {
+  width: 6px;
+  height: 6px;
+
+  display: inline-block;
+
+  flex: 0 0 6px;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  box-shadow:
+    0 0 0 3px rgba(22, 142, 255, 0.08);
+}
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.statusBadge {
+  max-width: 100%;
+
+  padding: 6px 9px;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 5px;
+
+  border-radius: 7px;
+
+  font-size: 9px;
+
+  line-height: 1.2;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.verifiedBadge {
+  color: #138957;
+  background: #e9f9f1;
+
+  border: 1px solid #c9efdc;
+}
+
+.pendingBadge {
+  color: #b77700;
+  background: #fff6df;
+
+  border: 1px solid #f5dfaa;
+}
+
+.flaggedBadge {
+  color: #c7333f;
+  background: #ffedef;
+
+  border: 1px solid #f6cbd0;
+}
+
+.dateCell {
+  color: #71859d;
+
+  font-size: 10px;
+}
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.actionCell {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+}
+
+.viewButton {
+  height: 36px;
+
+  padding: 0 11px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  border: 1px solid #b9d9f8;
+  border-radius: 7px;
+
+  background: #f8fbff;
+
+  color: #1681e8;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.viewButton:hover {
+  background: #eef7ff;
+
+  border-color: #8dc5f7;
+}
+
+.viewButton span {
+  font-size: 13px;
+}
+
+.pdfButton {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #cfe0ef;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #5d7792;
+
+  font-size: 15px;
+
+  cursor: pointer;
+}
+
+.pdfButton:not(:disabled):hover {
+  border-color: #8dc5f7;
+
+  color: #168eff;
+
+  background: #f5faff;
+}
+
+.disabledPdf {
+  opacity: 0.45;
+
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   MOBILE REPORTS
+========================================================= */
+
+.mobileReports {
+  display: none;
+}
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.emptyReportCard {
+  min-height: 360px;
+
+  padding: 40px 25px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.emptyReportIcon {
+  width: 68px;
+  height: 68px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 18px;
+
+  background: #edf7ff;
+
+  color: #168eff;
+
+  font-size: 26px;
+}
+
+.emptyReportCard h3 {
+  margin: 18px 0 0;
+
+  color: #17304d;
+
+  font-size: 17px;
+}
+
+.emptyReportCard p {
+  max-width: 350px;
+
+  margin: 9px 0 0;
+
+  color: #8a9caf;
+
+  font-size: 11px;
+
+  line-height: 1.65;
+}
+
+/* =========================================================
+   LOADING REPORTS
+========================================================= */
+
+.loadingReportsCard {
+  min-height: 360px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+
+  border:
+    3px solid #e8f0f7;
+
+  border-top-color: #168eff;
+
+  border-radius: 50%;
+
+  animation:
+    reportSpin
+    0.8s
+    linear
+    infinite;
+}
+
+.loadingReportsCard h3 {
+  margin: 16px 0 0;
+
+  color: #18314d;
+
+  font-size: 15px;
+}
+
+.loadingReportsCard p {
+  margin: 6px 0 0;
+
+  color: #8b9caf;
+
+  font-size: 10px;
+}
+
+@keyframes reportSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   INFORMATION BAR
+========================================================= */
+
+.infoBar {
+  margin-top: 17px;
+
+  min-height: 65px;
+
+  padding: 13px 17px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  border: 1px solid #dceaf6;
+  border-radius: 11px;
+
+  background: #f5faff;
+}
+
+.infoIcon {
+  width: 31px;
+  height: 31px;
+
+  flex: 0 0 31px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #e6f4ff;
+
+  color: #168eff;
+
+  font-size: 15px;
+}
+
+.infoBar strong {
+  display: block;
+
+  color: #36516d;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+.infoBar p {
+  margin: 3px 0 0;
+
+  color: #8194a8;
+
+  font-size: 9px;
+
+  line-height: 1.5;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1050px) {
+  .pageInner {
+    padding:
+      27px 24px 50px;
+  }
+
+  .statsGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .filterPanel {
+    grid-template-columns:
+      minmax(0, 1fr)
+      230px;
+  }
+
+  .tableHeader,
+  .tableRow {
+    grid-template-columns:
+      minmax(190px, 1.8fr)
+      minmax(100px, 0.9fr)
+      minmax(130px, 1.2fr)
+      minmax(105px, 0.8fr)
+      minmax(130px, 0.9fr);
+
+    padding-left: 15px;
+    padding-right: 15px;
+
+    gap: 9px;
+  }
+
+  .propertyCell {
+    gap: 9px;
+  }
+
+  .propertyIcon {
+    width: 38px;
+    height: 38px;
+
+    flex-basis: 38px;
+
+    font-size: 17px;
+  }
+
+  .statusBadge {
+    font-size: 8px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+  .page {
+    min-height: 100vh;
+  }
+
+  .pageInner {
+    padding:
+      22px 15px 35px;
+  }
+
+  .pageHeader {
+    align-items: flex-start;
+
+    padding-bottom: 18px;
+  }
+
+  .pageHeader h1 {
+    font-size: 25px;
+
+    letter-spacing: -0.45px;
+  }
+
+  .pageHeader p {
+    max-width: 330px;
+
+    margin-top: 7px;
+
+    font-size: 11px;
+  }
+
+  /* =====================================================
+     SEARCH / FILTER
+  ===================================================== */
+
+  .filterPanel {
+    margin-top: 15px;
+
+    padding: 7px;
+
+    grid-template-columns: 1fr;
+
+    gap: 7px;
+
+    border-radius: 11px;
+  }
+
+  .searchBox {
+    height: 45px;
+
+    padding:
+      0 11px;
+  }
+
+  .searchIcon {
+    font-size: 20px;
+  }
+
+  .searchBox input {
+    font-size: 10px;
+  }
+
+  .filterTrigger {
+    height: 47px;
+  }
+
+  .filterStatusIcon {
+    width: 30px;
+    height: 30px;
+
+    flex-basis: 30px;
+
+    font-size: 12px;
+  }
+
+  .filterTriggerText span {
+    font-size: 6px;
+  }
+
+  .filterTriggerText strong {
+    font-size: 10px;
+  }
+
+  .filterMenu {
+    top: calc(100% + 6px);
+  }
+
+  /* =====================================================
+     DATABASE NOTICE
+  ===================================================== */
+
+  .databaseNotice {
+    align-items: flex-start;
+
+    margin-top: 10px;
+
+    padding: 12px;
+
+    gap: 9px;
+  }
+
+  .databaseNoticeContent strong {
+    font-size: 10px;
+  }
+
+  .databaseNoticeContent p {
+    font-size: 9px;
+  }
+
+  .databaseNotice button {
+    height: 31px;
+
+    padding: 0 9px;
+
+    font-size: 9px;
+  }
+
+  /* =====================================================
+     STATS
+  ===================================================== */
+
+  .statsGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+
+    margin-top: 12px;
+  }
+
+  .statCard {
+    min-height: 92px;
+
+    padding: 12px;
+
+    gap: 9px;
+
+    border-radius: 11px;
+  }
+
+  .statIcon {
+    width: 32px;
+    height: 32px;
+
+    flex-basis: 32px;
+
+    border-radius: 9px;
+
+    font-size: 14px;
+  }
+
+  .statLabel {
+    font-size: 7px;
+
+    letter-spacing: 0.5px;
+  }
+
+  .statNumber {
+    font-size: 20px;
+  }
+
+  .statSubtext {
+    font-size: 8px;
+  }
+
+  /* =====================================================
+     SECTION HEADER
+  ===================================================== */
+
+  .reportsSectionHeader {
+    margin:
+      21px 1px 11px;
+  }
+
+  .reportsSectionHeader h2 {
+    font-size: 15px;
+  }
+
+  .reportsSectionHeader p {
+    display: none;
+  }
+
+  .reportsSectionHeader > span {
+    font-size: 9px;
+  }
+
+  /* =====================================================
+     DESKTOP TABLE OFF
+  ===================================================== */
+
+  .desktopTable {
+    display: none;
+  }
+
+  /* =====================================================
+     MOBILE REPORT CARDS
+  ===================================================== */
+
+  .mobileReports {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+
+    padding: 9px;
+  }
+
+  .mobileReportCard {
+    padding: 14px;
+
+    border: 1px solid #e1eaf3;
+    border-radius: 11px;
+
+    background: #ffffff;
+
+    box-shadow:
+      0 4px 15px rgba(20, 53, 88, 0.035);
+  }
+
+  .mobileReportTop {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 10px;
+  }
+
+  .mobilePropertyInfo {
+    min-width: 0;
+
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobilePropertyInfo strong {
+    color: #18314d;
+
+    font-size: 12px;
+    line-height: 1.35;
+
+    font-weight: 700;
+  }
+
+  .mobilePropertyInfo span {
+    margin-top: 4px;
+
+    color: #91a1b2;
+
+    font-size: 8px;
+  }
+
+  .mobileStatusRow {
+    margin-top: 13px;
+
+    padding-top: 11px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 8px;
+
+    border-top: 1px solid #edf2f7;
+  }
+
+  .mobileStatusRow > span:first-child {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 6px;
+
+    color: #687e97;
+
+    font-size: 9px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+  }
+
+  .mobileStatusRow .statusBadge {
+    flex-shrink: 0;
+
+    padding:
+      5px 7px;
+
+    font-size: 8px;
+  }
+
+  .mobileMeta {
+    margin-top: 13px;
+
+    display: grid;
+
+    grid-template-columns:
+      1fr 1fr;
+
+    gap: 10px;
+  }
+
+  .mobileMeta > div {
+    padding: 10px;
+
+    border-radius: 8px;
+
+    background: #f7faff;
+  }
+
+  .mobileMeta span {
+    display: block;
+
+    color: #91a1b2;
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.45px;
+  }
+
+  .mobileMeta strong {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #304965;
+
+    font-size: 9px;
+
+    line-height: 1.35;
+
+    font-weight: 700;
+  }
+
+  .mobileActions {
+    margin-top: 12px;
+
+    display: grid;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      42px;
+
+    gap: 7px;
+  }
+
+  .mobileViewButton {
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    border: 1px solid #b8d9f7;
+    border-radius: 8px;
+
+    background: #f7fbff;
+
+    color: #1681e8;
+
+    font-size: 9px;
+    font-weight: 700;
+
+    cursor: pointer;
+  }
+
+  .mobileViewButton span {
+    font-size: 13px;
+  }
+
+  .mobilePdfButton {
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #d1e0ec;
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    color: #617b95;
+
+    font-size: 15px;
+
+    cursor: pointer;
+  }
+
+  /* =====================================================
+     EMPTY / LOADING
+  ===================================================== */
+
+  .emptyReportCard {
+    min-height: 300px;
+
+    padding:
+      30px 20px;
+  }
+
+  .emptyReportIcon {
+    width: 60px;
+    height: 60px;
+
+    border-radius: 15px;
+
+    font-size: 23px;
+  }
+
+  .emptyReportCard h3 {
+    margin-top: 15px;
+
+    font-size: 15px;
+  }
+
+  .emptyReportCard p {
+    max-width: 290px;
+
+    font-size: 9px;
+  }
+
+  .loadingReportsCard {
+    min-height: 290px;
+  }
+
+  /* =====================================================
+     INFO
+  ===================================================== */
+
+  .infoBar {
+    margin-top: 12px;
+
+    padding: 12px;
+
+    align-items: flex-start;
+
+    gap: 9px;
+  }
+
+  .infoIcon {
+    width: 27px;
+    height: 27px;
+
+    flex-basis: 27px;
+
+    font-size: 13px;
+  }
+
+  .infoBar strong {
+    font-size: 9px;
+  }
+
+  .infoBar p {
+    font-size: 8px;
+  }
+}
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media (max-width: 380px) {
+  .pageInner {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .pageHeader h1 {
+    font-size: 23px;
+  }
+
+  .statCard {
+    padding: 10px;
+  }
+
+  .statIcon {
+    display: none;
+  }
+
+  .statNumber {
+    font-size: 18px;
+  }
+
+  .statLabel {
+    font-size: 6.5px;
+  }
+
+  .mobileReportCard {
+    padding: 12px;
+  }
+
+  .propertyIcon {
+    width: 38px;
+    height: 38px;
+
+    flex-basis: 38px;
+
+    font-size: 17px;
+  }
+
+  .mobilePropertyInfo strong {
+    font-size: 11px;
+  }
+
+  .mobileStatusRow .statusBadge {
+    font-size: 7px;
+  }
+}

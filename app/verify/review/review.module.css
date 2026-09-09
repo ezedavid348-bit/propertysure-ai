@@ -1,0 +1,2621 @@
+/* ============================================================
+   PROPERTY SURE AI
+   VERIFICATION REVIEW — STEP 2
+   ============================================================ */
+
+.page {
+  min-height: 100%;
+  background: #f7faff;
+  color: #0b1d33;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.content {
+  width: 100%;
+  max-width: 1120px;
+
+  margin: 0 auto;
+
+  padding:
+    34px 28px 54px;
+}
+
+/* ============================================================
+   TOP BACK BUTTON
+   ============================================================ */
+
+.backButton {
+  appearance: none;
+  -webkit-appearance: none;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  margin:
+    0 0 34px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #168eff !important;
+
+  -webkit-text-fill-color: #168eff;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  line-height: 1.3;
+
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.backButton span {
+  color: inherit !important;
+
+  -webkit-text-fill-color: inherit;
+
+  font-size: 19px;
+
+  line-height: 1;
+}
+
+.backButton:hover {
+  color: #0879f9 !important;
+
+  -webkit-text-fill-color: #0879f9;
+
+  transform:
+    translateX(-2px);
+}
+
+.backButton:disabled {
+  opacity: 0.45;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+/* ============================================================
+   WORKFLOW
+   ============================================================ */
+
+.workflow {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    55px
+    minmax(0, 1fr)
+    55px
+    minmax(0, 1fr)
+    55px
+    minmax(0, 1fr)
+    55px
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  padding:
+    18px 20px;
+
+  border:
+    1px solid
+    #e2eaf3;
+
+  border-radius: 15px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 8px 28px
+    rgba(20, 55, 90, 0.05);
+}
+
+.workflowItem {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  min-width: 0;
+}
+
+.workflowItem > div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  min-width: 0;
+}
+
+.workflowItem strong {
+  color: #172b43;
+
+  font-size: 12px;
+
+  font-weight: 800;
+}
+
+.workflowItem span:last-child {
+  color: #8191a5;
+
+  font-size: 10px;
+
+  line-height: 1.4;
+}
+
+.workflowCurrent strong {
+  color: #168eff;
+}
+
+.workflowNumber,
+.workflowNumberDone,
+.workflowNumberActive {
+  width: 32px;
+  height: 32px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  font-size: 11px;
+
+  font-weight: 800;
+}
+
+.workflowNumber {
+  border:
+    1px solid
+    #d8e2ed;
+
+  background: #f5f8fb;
+
+  color: #8b9bad;
+}
+
+.workflowNumberDone {
+  border:
+    1px solid
+    rgba(32, 190, 119, 0.2);
+
+  background:
+    rgba(32, 190, 119, 0.1);
+
+  color: #16a86b;
+}
+
+.workflowNumberActive {
+  background: #168eff;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 5px 14px
+    rgba(22, 142, 255, 0.22);
+}
+
+.workflowLine,
+.workflowLineActive {
+  height: 1px;
+
+  width: 100%;
+}
+
+.workflowLine {
+  background: #e1e8f0;
+}
+
+.workflowLineActive {
+  background:
+    linear-gradient(
+      90deg,
+      #1cb879,
+      #168eff
+    );
+}
+
+/* ============================================================
+   INTRO
+   ============================================================ */
+
+.intro {
+  max-width: 760px;
+
+  margin: 0 auto;
+
+  padding:
+    42px 0 30px;
+
+  text-align: center;
+}
+
+.reviewBadge {
+  width: max-content;
+
+  margin:
+    0 auto 18px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  padding:
+    7px 11px;
+
+  border:
+    1px solid
+    rgba(22, 168, 107, 0.2);
+
+  border-radius: 999px;
+
+  background:
+    rgba(22, 168, 107, 0.055);
+
+  color: #139864;
+
+  font-size: 9px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.45px;
+}
+
+.reviewBadge span {
+  width: 17px;
+  height: 17px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    rgba(22, 168, 107, 0.12);
+}
+
+.intro h1 {
+  margin: 0;
+
+  color: #0b1d33;
+
+  font-size:
+    clamp(32px, 5vw, 46px);
+
+  line-height: 1.08;
+
+  letter-spacing: -1.7px;
+}
+
+.intro h1 span {
+  color: #168eff;
+}
+
+.intro p {
+  max-width: 650px;
+
+  margin:
+    15px auto 0;
+
+  color: #6f8196;
+
+  font-size: 13px;
+
+  line-height: 1.7;
+}
+
+/* ============================================================
+   SUMMARY
+   ============================================================ */
+
+.summaryCard {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  padding:
+    17px 18px;
+
+  border:
+    1px solid
+    #dfe8f2;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 8px 24px
+    rgba(20, 55, 90, 0.045);
+}
+
+.summaryIcon {
+  width: 46px;
+  height: 46px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid
+    rgba(22, 142, 255, 0.18);
+
+  border-radius: 11px;
+
+  background:
+    rgba(22, 142, 255, 0.07);
+
+  color: #168eff;
+
+  font-size: 20px;
+}
+
+.summaryText {
+  flex: 1;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.summaryText strong {
+  color: #142b44;
+
+  font-size: 13px;
+
+  font-weight: 800;
+}
+
+.summaryText span {
+  color: #8292a5;
+
+  font-size: 10px;
+}
+
+.summaryStatus {
+  padding:
+    6px 10px;
+
+  border:
+    1px solid
+    rgba(22, 168, 107, 0.2);
+
+  border-radius: 999px;
+
+  background:
+    rgba(22, 168, 107, 0.06);
+
+  color: #129761;
+
+  font-size: 9px;
+
+  font-weight: 800;
+}
+
+/* ============================================================
+   DOCUMENTS
+   ============================================================ */
+
+.documentsSection {
+  margin-top: 25px;
+}
+
+.sectionHeader {
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 11px;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+
+  color: #112841;
+
+  font-size: 18px;
+
+  font-weight: 800;
+}
+
+.sectionHeader p {
+  max-width: 670px;
+
+  margin:
+    5px 0 0;
+
+  color: #8494a8;
+
+  font-size: 10px;
+
+  line-height: 1.55;
+}
+
+.documentCount {
+  width: 31px;
+  height: 31px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid
+    rgba(22, 142, 255, 0.15);
+
+  border-radius: 9px;
+
+  background:
+    rgba(22, 142, 255, 0.07);
+
+  color: #168eff;
+
+  font-size: 11px;
+
+  font-weight: 800;
+}
+
+.documentList {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.documentCard {
+  position: relative;
+
+  overflow: visible;
+
+  border:
+    1px solid
+    #dfe8f2;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 5px 20px
+    rgba(25, 57, 89, 0.035);
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.documentCard:hover {
+  border-color: #cbdceb;
+
+  box-shadow:
+    0 10px 30px
+    rgba(25, 57, 89, 0.065);
+
+  transform:
+    translateY(-1px);
+}
+
+/* ============================================================
+   DOCUMENT MAIN BUTTON
+   ============================================================ */
+
+.documentMainButton {
+  width: 100%;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 13px;
+
+  padding: 15px;
+
+  border: 0;
+
+  border-radius:
+    14px 14px 0 0;
+
+  background: transparent;
+
+  color: #0b1d33;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.documentMainButton:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   DOCUMENT THUMBNAIL
+   ============================================================ */
+
+.documentIcon {
+  width: 68px;
+  height: 78px;
+
+  position: relative;
+
+  flex-shrink: 0;
+
+  overflow: hidden;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid
+    rgba(22, 142, 255, 0.17);
+
+  border-radius: 9px;
+
+  background: #f1f6fb;
+
+  color: #168eff;
+
+  font-size: 9px;
+
+  font-weight: 900;
+
+  box-shadow:
+    0 3px 10px
+    rgba(20, 60, 100, 0.06);
+}
+
+.documentIconFallback {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  background:
+    rgba(22, 142, 255, 0.07);
+
+  color: #168eff;
+
+  font-size: 9px;
+
+  font-weight: 900;
+}
+
+.documentThumbnail {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 2;
+
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+  background: #ffffff;
+}
+
+/* ============================================================
+   PDF THUMBNAIL
+   ============================================================ */
+
+.pdfThumbnail {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 2;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 7px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #f1f6fb 100%
+    );
+}
+
+.pdfThumbnailTop {
+  width: 30px;
+  height: 22px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 5px;
+
+  background:
+    rgba(22, 142, 255, 0.1);
+
+  color: #168eff;
+
+  font-size: 7px;
+
+  font-weight: 900;
+}
+
+.pdfThumbnailLines {
+  width: 36px;
+
+  margin-top: 7px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.pdfThumbnailLines span {
+  width: 100%;
+
+  height: 2px;
+
+  border-radius: 999px;
+
+  background: #d5e2ee;
+}
+
+/* ============================================================
+   DOCUMENT INFORMATION
+   ============================================================ */
+
+.documentInfo {
+  flex: 1;
+
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  padding-top: 1px;
+}
+
+.documentInfo > strong {
+  color: #172d46;
+
+  font-size: 13px;
+
+  line-height: 1.35;
+}
+
+.documentInfo > span {
+  color: #8494a8;
+
+  font-size: 9px;
+}
+
+.documentInfo small {
+  overflow: hidden;
+
+  color: #9aa8b8;
+
+  font-size: 8px;
+
+  line-height: 1.45;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+.detectedDocumentTitle {
+  color: #64788e !important;
+
+  white-space: normal !important;
+
+  overflow: visible !important;
+}
+
+.detectedDocumentTitle strong {
+  color: #273e58;
+}
+
+.detectedPersonName {
+  color: #149463 !important;
+
+  white-space: normal !important;
+
+  overflow: visible !important;
+}
+
+.detectedPersonName strong {
+  color: #0f7f54;
+}
+
+/* ============================================================
+   CLASSIFICATION
+   ============================================================ */
+
+.classificationStatus {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  color: #168eff !important;
+}
+
+.miniSpinner {
+  width: 10px;
+  height: 10px;
+
+  flex-shrink: 0;
+
+  border:
+    1.5px solid
+    rgba(22, 142, 255, 0.18);
+
+  border-top-color:
+    #168eff;
+
+  border-radius: 50%;
+
+  animation:
+    miniSpin
+    0.7s
+    linear
+    infinite;
+}
+
+.classificationSuccess {
+  color: #159b67 !important;
+
+  white-space: normal !important;
+}
+
+.classificationWarning {
+  color: #c28a08 !important;
+
+  white-space: normal !important;
+}
+
+/* ============================================================
+   ARROW
+   ============================================================ */
+
+.documentArrow {
+  flex-shrink: 0;
+
+  align-self: center;
+
+  color: #9aaabc;
+
+  font-size: 25px;
+
+  font-weight: 300;
+
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.documentMainButton:hover
+.documentArrow {
+  color: #168eff;
+
+  transform:
+    translateX(2px);
+}
+
+/* ============================================================
+   DOCUMENT ACTIONS
+   ============================================================ */
+
+.documentActions {
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding:
+    9px 12px 12px;
+
+  border-top:
+    1px solid
+    #edf2f7;
+}
+
+.typeControlWrap {
+  position: relative;
+
+  flex: 1;
+
+  min-width: 0;
+}
+
+.typeButton {
+  width: 100%;
+
+  min-height: 38px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  padding:
+    7px 10px;
+
+  border:
+    1px solid
+    #dfe7ef;
+
+  border-radius: 9px;
+
+  background: #f9fbfd;
+
+  color: #7c8da1;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.typeButton.identified {
+  border-color:
+    rgba(22, 168, 107, 0.22);
+
+  background:
+    rgba(22, 168, 107, 0.025);
+}
+
+.typeButton.needsType {
+  border-color:
+    rgba(225, 162, 24, 0.3);
+
+  background:
+    rgba(225, 162, 24, 0.025);
+}
+
+.typeButton:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+.typeButton > span:first-child {
+  color: #91a0b1;
+
+  font-size: 8px;
+}
+
+.typeButton strong {
+  flex: 1;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #30465d;
+
+  font-size: 9px;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+.typeButton.needsType strong {
+  color: #bd8504;
+}
+
+.typeChevron {
+  color: #168eff;
+
+  font-size: 13px;
+}
+
+/* ============================================================
+   TYPE MENU
+   ============================================================ */
+
+.typeMenu {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+
+  top:
+    calc(100% + 6px);
+
+  z-index: 50;
+
+  max-height: 280px;
+
+  overflow-y: auto;
+
+  padding: 6px;
+
+  border:
+    1px solid
+    #d3e1ee;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 18px 45px
+    rgba(17, 48, 80, 0.15);
+}
+
+.typeMenuTitle {
+  padding:
+    8px 9px;
+
+  color: #94a2b2;
+
+  font-size: 8px;
+
+  font-weight: 800;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.5px;
+}
+
+.typeOption {
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 9px;
+
+  border: 0;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #53667a;
+
+  text-align: left;
+
+  font-size: 9px;
+
+  cursor: pointer;
+}
+
+.typeOption:hover,
+.typeOptionActive {
+  background:
+    rgba(22, 142, 255, 0.07);
+
+  color: #168eff;
+}
+
+.typeOption > span {
+  width: 12px;
+
+  color: #16a86b;
+
+  font-weight: 800;
+}
+
+/* ============================================================
+   REMOVE
+   ============================================================ */
+
+.removeButton {
+  flex-shrink: 0;
+
+  min-height: 38px;
+
+  padding:
+    7px 11px;
+
+  border:
+    1px solid
+    rgba(220, 71, 71, 0.28);
+
+  border-radius: 9px;
+
+  background:
+    rgba(220, 71, 71, 0.07);
+
+  color: #d33f3f;
+
+  font-size: 9px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  opacity: 1;
+
+  visibility: visible;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.removeButton:hover:not(:disabled) {
+  border-color:
+    rgba(220, 71, 71, 0.4);
+
+  background:
+    rgba(220, 71, 71, 0.12);
+
+  color: #c92f2f;
+}
+
+.removeButton:disabled {
+  opacity: 0.4;
+
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   ADD DOCUMENT
+   ============================================================ */
+
+.addDocumentButton {
+  width: 100%;
+
+  min-height: 50px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  margin-top: 11px;
+
+  border:
+    1px dashed
+    #b9d8f5;
+
+  border-radius: 11px;
+
+  background:
+    rgba(22, 142, 255, 0.025);
+
+  color: #168eff;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.addDocumentButton:hover {
+  border-color: #8ec5f4;
+
+  background:
+    rgba(22, 142, 255, 0.055);
+}
+
+.addDocumentButton:disabled {
+  opacity: 0.45;
+
+  cursor: not-allowed;
+}
+
+.addDocumentPlus {
+  width: 22px;
+  height: 22px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    rgba(22, 142, 255, 0.08);
+
+  font-size: 17px;
+}
+
+/* ============================================================
+   MESSAGES
+   ============================================================ */
+
+.successMessage,
+.inlineError {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 9px;
+
+  margin-top: 12px;
+
+  padding:
+    11px 13px;
+
+  border-radius: 10px;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+}
+
+.successMessage {
+  align-items: center;
+
+  border:
+    1px solid
+    rgba(22, 168, 107, 0.18);
+
+  background:
+    rgba(22, 168, 107, 0.045);
+
+  color: #16865b;
+}
+
+.successMessage span {
+  width: 21px;
+  height: 21px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background:
+    rgba(22, 168, 107, 0.1);
+}
+
+.inlineError {
+  border:
+    1px solid
+    rgba(214, 76, 76, 0.2);
+
+  background:
+    rgba(214, 76, 76, 0.045);
+
+  color: #bd4d4d;
+}
+
+.inlineError > span {
+  width: 22px;
+  height: 22px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    rgba(214, 76, 76, 0.09);
+
+  color: #cf5050;
+
+  font-weight: 800;
+}
+
+/* ============================================================
+   WHAT HAPPENS NEXT
+   ============================================================ */
+
+.nextCard {
+  display: flex;
+
+  gap: 13px;
+
+  margin-top: 17px;
+
+  padding: 16px;
+
+  border:
+    1px solid
+    rgba(123, 89, 190, 0.16);
+
+  border-radius: 13px;
+
+  background:
+    rgba(123, 89, 190, 0.035);
+}
+
+.nextIcon {
+  width: 39px;
+  height: 39px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background:
+    rgba(123, 89, 190, 0.08);
+
+  color: #8664c4;
+
+  font-size: 18px;
+}
+
+.nextCard strong {
+  color: #293c53;
+
+  font-size: 11px;
+}
+
+.nextCard p {
+  margin:
+    5px 0 0;
+
+  color: #77889c;
+
+  font-size: 9px;
+
+  line-height: 1.65;
+}
+
+/* ============================================================
+   CONTINUE
+   ============================================================ */
+
+.continueButton {
+  width: 100%;
+
+  height: 56px;
+
+  position: relative;
+
+  margin-top: 14px;
+
+  border: 0;
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #168eff,
+      #0875df
+    );
+
+  color: #ffffff;
+
+  font-size: 13px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 9px 24px
+    rgba(22, 142, 255, 0.17);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.continueButton:hover:not(:disabled) {
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 12px 28px
+    rgba(22, 142, 255, 0.23);
+}
+
+.continueButton:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  box-shadow: none;
+}
+
+.buttonArrow {
+  position: absolute;
+
+  right: 20px;
+
+  font-size: 22px;
+}
+
+/* ============================================================
+   SECURITY
+   ============================================================ */
+
+.securityNotice {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  margin-top: 18px;
+
+  color: #8b9bad;
+
+  text-align: center;
+
+  font-size: 9px;
+
+  line-height: 1.5;
+}
+
+/* ============================================================
+   PREVIEW MODAL
+   ============================================================ */
+
+.modalOverlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 100;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 18px;
+
+  background:
+    rgba(4, 18, 34, 0.78);
+
+  backdrop-filter:
+    blur(7px);
+
+  -webkit-backdrop-filter:
+    blur(7px);
+
+  overflow: hidden;
+}
+
+.previewModal {
+  width: 100%;
+
+  max-width: 900px;
+
+  height: 90vh;
+
+  max-height: 90vh;
+
+  display: flex;
+
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    #c7d9e9;
+
+  border-radius: 15px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 30px 90px
+    rgba(0, 22, 48, 0.28);
+}
+
+.previewHeader {
+  min-height: 64px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding:
+    10px 15px;
+
+  border-bottom:
+    1px solid
+    #e5ebf2;
+
+  background: #ffffff;
+}
+
+.previewHeader > div {
+  min-width: 0;
+
+  flex: 1;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.previewHeader strong,
+.previewHeader span {
+  overflow: hidden;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+.previewHeader strong {
+  color: #172d46;
+
+  font-size: 13px;
+}
+
+.previewHeader span {
+  color: #7f91a5;
+
+  font-size: 9px;
+}
+
+.modalDetectedTitle {
+  color: #5e7288 !important;
+
+  white-space: normal !important;
+}
+
+.modalDetectedName {
+  color: #138a5d !important;
+
+  white-space: normal !important;
+}
+
+.previewHeader button {
+  width: 36px;
+  height: 36px;
+
+  flex: 0 0 36px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin: 0;
+
+  padding: 0;
+
+  border:
+    1px solid
+    #e0e7ef;
+
+  border-radius: 50%;
+
+  background: #f6f9fc;
+
+  color: #52667c;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 23px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  -webkit-appearance: none;
+
+  appearance: none;
+
+  -webkit-tap-highlight-color: transparent;
+
+  position: relative;
+
+  z-index: 5;
+}
+
+.previewHeader button:hover {
+  color: #168eff;
+
+  border-color: #c4ddf3;
+
+  background:
+    rgba(22, 142, 255, 0.05);
+}
+
+.previewBody {
+  flex: 1;
+
+  min-height: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 10px;
+
+  overflow: auto;
+
+  -webkit-overflow-scrolling: touch;
+
+  background: #edf3f8;
+}
+
+.previewBody img {
+  max-width: 100%;
+
+  max-height: 100%;
+
+  object-fit: contain;
+
+  border-radius: 5px;
+
+  box-shadow:
+    0 8px 25px
+    rgba(0, 30, 60, 0.12);
+}
+
+.previewBody iframe {
+  width: 100%;
+
+  height: 100%;
+
+  min-height: 0;
+
+  border: 0;
+
+  background: #ffffff;
+}
+
+.previewUnavailable {
+  max-width: 320px;
+
+  padding: 25px;
+
+  text-align: center;
+}
+
+.previewUnavailable div {
+  font-size: 42px;
+}
+
+.previewUnavailable p {
+  margin:
+    10px 0 5px;
+
+  color: #20364f;
+
+  font-size: 15px;
+
+  font-weight: 800;
+}
+
+.previewUnavailable span {
+  color: #7d8fa3;
+
+  font-size: 10px;
+
+  line-height: 1.55;
+}
+
+.previewUnavailable button {
+  margin-top: 18px;
+
+  border: 0;
+
+  padding:
+    9px 18px;
+
+  border-radius: 8px;
+
+  background: #168eff;
+
+  color: #ffffff;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+/* ============================================================
+   LOADING SCREEN
+   ============================================================ */
+
+.loadingPage {
+  min-height: 100vh;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(22, 142, 255, 0.10),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      #061b38 0%,
+      #031229 100%
+    );
+
+  color: #ffffff;
+
+  text-align: center;
+}
+
+.loadingBrand {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  color: #ffffff;
+
+  font-size: 24px;
+
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: -0.025em;
+}
+
+.loadingBrand strong {
+  color: #168eff;
+}
+
+.loadingDiamond {
+  width: 15px;
+  height: 15px;
+
+  display: inline-block;
+
+  flex: 0 0 15px;
+
+  background: #168eff;
+
+  transform: rotate(45deg);
+
+  border-radius: 2px;
+
+  box-shadow:
+    0 0 18px
+    rgba(22, 142, 255, 0.35);
+
+  animation:
+    loadingDiamondPulse
+    1.6s
+    ease-in-out
+    infinite;
+}
+
+.loadingIndicator {
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  margin-top: 22px;
+
+  height: 14px;
+}
+
+.loadingIndicator span {
+  width: 6px;
+  height: 6px;
+
+  display: block;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  box-shadow:
+    0 0 8px
+    rgba(22, 142, 255, 0.45);
+
+  animation:
+    loadingDot
+    1.2s
+    ease-in-out
+    infinite;
+}
+
+.loadingIndicator span:nth-child(2) {
+  animation-delay:
+    0.15s;
+}
+
+.loadingIndicator span:nth-child(3) {
+  animation-delay:
+    0.3s;
+}
+
+.loadingText {
+  margin:
+    10px 0 0;
+
+  color: #91a7c3;
+
+  font-size: 12px;
+
+  line-height: 1.3;
+
+  font-weight: 500;
+
+  letter-spacing: 0.01em;
+}
+
+/* ============================================================
+   ERROR SCREEN
+   ============================================================ */
+
+.screen {
+  min-height: 100vh;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(22, 142, 255, 0.10),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      #061b38 0%,
+      #031229 100%
+    );
+
+  color: #ffffff;
+
+  text-align: center;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.errorIcon {
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  margin-bottom: 18px;
+
+  border:
+    1px solid
+    rgba(239, 68, 68, 0.35);
+
+  border-radius: 50%;
+
+  background:
+    rgba(239, 68, 68, 0.12);
+
+  color: #ff6b73;
+
+  font-size: 28px;
+
+  font-weight: 700;
+}
+
+.screen h2 {
+  margin: 18px 0 0;
+
+  color: #ffffff;
+
+  font-size: 22px;
+}
+
+.screen p {
+  max-width: 500px;
+
+  color: #91a8c2;
+
+  line-height: 1.6;
+
+  font-size: 13px;
+}
+
+.screen button {
+  border: 0;
+
+  padding:
+    12px 22px;
+
+  border-radius: 9px;
+
+  background: #168eff;
+
+  color: #ffffff;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes miniSpin {
+  to {
+    transform:
+      rotate(360deg);
+  }
+}
+
+@keyframes loadingDot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+
+    transform:
+      translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+
+    transform:
+      translateY(-4px);
+  }
+}
+
+@keyframes loadingDiamondPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+
+    transform:
+      rotate(45deg)
+      scale(1);
+  }
+
+  50% {
+    opacity: 1;
+
+    transform:
+      rotate(45deg)
+      scale(1.08);
+  }
+}
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 850px) {
+  .content {
+    padding:
+      27px 20px 45px;
+  }
+
+  .workflow {
+    grid-template-columns:
+      minmax(0, 1fr)
+      35px
+      minmax(0, 1fr)
+      35px
+      minmax(0, 1fr)
+      35px
+      minmax(0, 1fr)
+      35px
+      minmax(0, 1fr);
+
+    padding:
+      15px;
+  }
+
+  .workflowItem {
+    gap: 8px;
+  }
+
+  .workflowItem strong {
+    font-size: 10px;
+  }
+
+  .workflowItem span:last-child {
+    font-size: 8px;
+  }
+
+  .workflowNumber,
+  .workflowNumberDone,
+  .workflowNumberActive {
+    width: 29px;
+    height: 29px;
+  }
+}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 600px) {
+  .content {
+    padding:
+      20px 14px 36px;
+  }
+
+  /* ----------------------------------------------------------
+     TOP BACK BUTTON
+     ---------------------------------------------------------- */
+
+  .backButton {
+    margin:
+      0 0 28px;
+
+    font-size: 13px;
+
+    color: #168eff !important;
+
+    -webkit-text-fill-color: #168eff;
+  }
+
+  .backButton span {
+    font-size: 18px;
+  }
+
+  /* ----------------------------------------------------------
+     WORKFLOW
+     ---------------------------------------------------------- */
+
+  .workflow {
+    display: grid;
+
+    grid-template-columns:
+      repeat(5, minmax(0, 1fr));
+
+    align-items: stretch;
+
+    padding:
+      13px 10px;
+
+    gap: 18px 8px;
+  }
+
+  .workflowItem {
+    flex: 1;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: flex-start;
+
+    text-align: center;
+
+    gap: 6px;
+  }
+
+  .workflowItem > div {
+    align-items: center;
+
+    justify-content: flex-start;
+
+    gap: 3px;
+  }
+
+  .workflowItem strong {
+    font-size: 8px;
+
+    line-height: 1.25;
+  }
+
+  .workflowItem span:last-child {
+    display: block;
+
+    max-width: 82px;
+
+    color: #8191a5;
+
+    font-size: 7px;
+
+    line-height: 1.3;
+  }
+
+  .workflowCurrent strong {
+    color: #168eff;
+  }
+
+  .workflowNumber,
+  .workflowNumberDone,
+  .workflowNumberActive {
+    width: 28px;
+    height: 28px;
+
+    font-size: 9px;
+  }
+
+  .workflowLine,
+  .workflowLineActive {
+    display: none;
+  }
+
+
+  /* ----------------------------------------------------------
+     INTRO
+     ---------------------------------------------------------- */
+
+  .intro {
+    padding:
+      29px 0 23px;
+  }
+
+  .reviewBadge {
+    margin-bottom: 15px;
+
+    font-size: 8px;
+  }
+
+  .intro h1 {
+    font-size:
+      clamp(29px, 9vw, 37px);
+
+    letter-spacing:
+      -1.2px;
+  }
+
+  .intro p {
+    margin-top: 12px;
+
+    font-size: 10px;
+
+    line-height: 1.65;
+  }
+
+  /* ----------------------------------------------------------
+     SUMMARY
+     ---------------------------------------------------------- */
+
+  .summaryCard {
+    padding: 13px;
+  }
+
+  .summaryIcon {
+    width: 41px;
+    height: 41px;
+
+    font-size: 18px;
+  }
+
+  .summaryText strong {
+    font-size: 11px;
+  }
+
+  .summaryText span {
+    font-size: 8px;
+  }
+
+  .summaryStatus {
+    padding:
+      5px 8px;
+
+    font-size: 8px;
+  }
+
+  /* ----------------------------------------------------------
+     DOCUMENT SECTION
+     ---------------------------------------------------------- */
+
+  .documentsSection {
+    margin-top: 21px;
+  }
+
+  .sectionHeader {
+    align-items: center;
+
+    gap: 10px;
+  }
+
+  .sectionHeader h2 {
+    font-size: 15px;
+  }
+
+  .sectionHeader p {
+    font-size: 8px;
+  }
+
+  .documentCount {
+    width: 29px;
+    height: 29px;
+  }
+
+  /* ----------------------------------------------------------
+     DOCUMENT CARD
+     ---------------------------------------------------------- */
+
+  .documentMainButton {
+    padding: 12px;
+
+    gap: 11px;
+
+    align-items:
+      flex-start;
+  }
+
+  .documentIcon {
+    width: 58px;
+    height: 68px;
+
+    border-radius: 9px;
+
+    font-size: 8px;
+  }
+
+  .documentInfo {
+    padding-top: 1px;
+  }
+
+  .documentInfo > strong {
+    font-size: 10px;
+
+    line-height: 1.3;
+  }
+
+  .documentInfo > span {
+    font-size: 8px;
+  }
+
+  .documentInfo small {
+    font-size: 7px;
+
+    line-height: 1.45;
+  }
+
+  .detectedDocumentTitle,
+  .detectedPersonName,
+  .classificationSuccess,
+  .classificationWarning {
+    white-space:
+      normal !important;
+  }
+
+  .documentArrow {
+    align-self:
+      center;
+
+    font-size: 22px;
+  }
+
+  /* ----------------------------------------------------------
+     DOCUMENT ACTIONS
+     ---------------------------------------------------------- */
+
+  .documentActions {
+    padding:
+      7px 8px 8px;
+
+    gap: 7px;
+  }
+
+  .typeButton {
+    min-height: 35px;
+
+    padding:
+      6px 8px;
+  }
+
+  .typeButton > span:first-child {
+    font-size: 7px;
+  }
+
+  .typeButton strong {
+    font-size: 8px;
+  }
+
+  .removeButton {
+    min-height: 35px;
+
+    padding:
+      6px 8px;
+
+    font-size: 8px;
+
+    opacity: 1;
+
+    visibility: visible;
+  }
+
+  /* ----------------------------------------------------------
+     ADD DOCUMENT
+     ---------------------------------------------------------- */
+
+  .addDocumentButton {
+    min-height: 46px;
+
+    font-size: 9px;
+  }
+
+  /* ----------------------------------------------------------
+     MESSAGES
+     ---------------------------------------------------------- */
+
+  .successMessage,
+  .inlineError {
+    font-size: 8px;
+  }
+
+  /* ----------------------------------------------------------
+     NEXT CARD
+     ---------------------------------------------------------- */
+
+  .nextCard {
+    padding: 13px;
+
+    gap: 10px;
+  }
+
+  .nextIcon {
+    width: 35px;
+    height: 35px;
+
+    font-size: 16px;
+  }
+
+  .nextCard strong {
+    font-size: 10px;
+  }
+
+  .nextCard p {
+    font-size: 8px;
+  }
+
+  /* ----------------------------------------------------------
+     CONTINUE
+     ---------------------------------------------------------- */
+
+  .continueButton {
+    height: 54px;
+
+    font-size: 12px;
+  }
+
+  .buttonArrow {
+    right: 16px;
+
+    font-size: 20px;
+  }
+
+  .securityNotice {
+    font-size: 8px;
+  }
+
+  /* ----------------------------------------------------------
+     PREVIEW
+     ---------------------------------------------------------- */
+
+  .modalOverlay {
+    padding:
+      10px;
+
+    align-items:
+      center;
+
+    overflow:
+      hidden;
+
+    height:
+      100dvh;
+
+    min-height:
+      100vh;
+  }
+
+  .previewModal {
+    width:
+      100%;
+
+    height:
+      calc(100dvh - 20px);
+
+    max-height:
+      calc(100dvh - 20px);
+
+    min-height:
+      0;
+
+    border-radius:
+      12px;
+  }
+
+  .previewHeader {
+    min-height:
+      58px;
+
+    height:
+      auto;
+
+    flex-shrink:
+      0;
+
+    padding:
+      9px 11px;
+  }
+
+  .previewHeader > div {
+    min-width:
+      0;
+
+    flex:
+      1 1 auto;
+  }
+
+  .previewHeader strong {
+    font-size: 11px;
+  }
+
+  .previewHeader span {
+    font-size: 8px;
+  }
+
+  .previewHeader button {
+    width:
+      34px;
+
+    height:
+      34px;
+
+    flex:
+      0 0 34px;
+
+    flex-shrink:
+      0;
+
+    position:
+      relative;
+
+    z-index:
+      10;
+
+    font-size:
+      22px;
+  }
+
+  .previewBody {
+    min-height:
+      0;
+
+    flex:
+      1 1 auto;
+
+    overflow:
+      auto;
+
+    -webkit-overflow-scrolling:
+      touch;
+  }
+
+  /* ----------------------------------------------------------
+     LOADING
+     ---------------------------------------------------------- */
+
+  .loadingBrand {
+    font-size: 20px;
+  }
+
+  .loadingDiamond {
+    width: 15px;
+    height: 15px;
+
+    flex-basis: 15px;
+  }
+
+  .loadingIndicator {
+    margin-top: 20px;
+  }
+
+  .loadingText {
+    font-size: 11px;
+  }
+
+  .screen h2 {
+    font-size: 18px;
+  }
+
+  .screen p {
+    font-size: 11px;
+  }
+}
+
+/* ============================================================
+   VERY SMALL PHONES
+   ============================================================ */
+
+@media (max-width: 380px) {
+  .content {
+    padding-left:
+      11px;
+
+    padding-right:
+      11px;
+  }
+
+  .workflow {
+    padding:
+      11px 7px;
+  }
+
+  .workflowLine,
+  .workflowLineActive {
+    display: none;
+  }
+
+  .workflowItem strong {
+    font-size: 7px;
+  }
+
+  .workflowItem span:last-child {
+    max-width: 67px;
+
+    font-size: 6.5px;
+  }
+
+  .intro h1 {
+    font-size: 29px;
+  }
+
+  .documentIcon {
+    width: 53px;
+    height: 63px;
+  }
+
+  .documentInfo > strong {
+    font-size: 9px;
+  }
+
+  .documentInfo > span {
+    font-size: 7px;
+  }
+
+  .typeButton strong {
+    max-width: 105px;
+  }
+
+  .removeButton {
+    opacity: 1;
+
+    visibility: visible;
+  }
+
+  .loadingBrand {
+    font-size: 19px;
+  }
+
+  .loadingDiamond {
+    width: 15px;
+    height: 15px;
+
+    flex-basis: 15px;
+  }
+}

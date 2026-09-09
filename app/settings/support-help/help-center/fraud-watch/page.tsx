@@ -1,530 +1,421 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
   ArrowLeft,
   ArrowRight,
-  Check,
-  CheckCircle2,
-  Headphones,
-  Lightbulb,
-  MessageCircle,
-  ThumbsDown,
-  ThumbsUp,
+  ShieldCheck,
+  ClipboardCheck,
+  SearchCheck,
+  FileCheck2,
+  FileQuestion,
+  BadgeCheck,
+  CircleHelp,
 } from "lucide-react";
 
-import styles from "./fraud-watch.module.css";
-
-type Article = {
-  title: string;
-  slug: string;
-};
-
-const fraudWatchArticles: Article[] = [
+const articles = [
   {
     title: "What is Fraud Watch?",
     slug: "what-is-fraud-watch",
+    description:
+      "Learn what Fraud Watch is, how it helps identify potential property fraud risks, and how it can provide an additional layer of protection.",
+    icon: ShieldCheck,
   },
+
   {
     title: "Why Fraud Watch Matters",
     slug: "why-fraud-watch-matters",
+    description:
+      "Understand why monitoring property-related fraud risks matters and how Fraud Watch can help you make more informed property decisions.",
+    icon: SearchCheck,
   },
+
   {
     title: "How Fraud Watch Works",
     slug: "how-fraud-watch-works",
+    description:
+      "Learn how Fraud Watch reviews relevant property information and identifies signals that may indicate potential fraud or suspicious activity.",
+    icon: ClipboardCheck,
   },
+
   {
     title: "What Fraud Watch Can Detect",
     slug: "what-fraud-watch-can-detect",
+    description:
+      "Learn about the types of suspicious property information, warning signs, and potential fraud signals that Fraud Watch may identify.",
+    icon: FileCheck2,
   },
-  {
-    title: "What Happens When Fraud is Detected",
-    slug: "what-happens-when-fraud-is-detected",
-  },
+
   {
     title: "What Fraud Watch Can't Detect",
     slug: "what-fraud-watch-cant-detect",
+    description:
+      "Understand the limitations of Fraud Watch and the types of fraud, information, or circumstances that may require additional investigation.",
+    icon: FileQuestion,
   },
+
+  {
+    title: "What Happens When Fraud Is Detected",
+    slug: "what-happens-when-fraud-is-detected",
+    description:
+      "Learn what happens when Fraud Watch identifies a potential fraud signal and what steps you may need to take next.",
+    icon: BadgeCheck,
+  },
+
   {
     title: "Understanding Fraud Watch Results",
     slug: "understanding-fraud-watch-results",
+    description:
+      "Learn how to understand Fraud Watch findings, warnings, risk indicators, and other information provided in your results.",
+    icon: FileCheck2,
   },
+
   {
     title: "Need More Help?",
     slug: "need-more-help",
+    description:
+      "Contact the PropertySure AI support team if you need additional help with Fraud Watch, fraud alerts, or understanding your results.",
+    icon: CircleHelp,
   },
 ];
 
-const basePath =
-  "/settings/support-help/help-center/fraud-watch";
-
-export default function FraudWatchArticle() {
+export default function FraudWatchPage() {
   const router = useRouter();
 
-  const [feedback, setFeedback] = useState<
-    "yes" | "no" | null
-  >(null);
+  const basePath =
+    "/settings/support-help/help-center/fraud-watch";
 
-  const [search, setSearch] = useState("");
+  /*
+  ============================================================
+  ARTICLE NAVIGATION
+  ============================================================
+  */
 
-  /* =========================================================
-     CURRENT ARTICLE
-  ========================================================= */
+  const goToArticle = (slug: string) => {
+    router.push(`${basePath}/${slug}`);
+  };
 
-  const currentIndex = 0;
-
-  const currentArticle = fraudWatchArticles[currentIndex];
-  const nextArticle = fraudWatchArticles[currentIndex + 1];
-
-  /* =========================================================
-     NAVIGATION
-  ========================================================= */
+  /*
+  ============================================================
+  BACK TO HELP CENTER
+  ============================================================
+  */
 
   const goToHelpCenter = () => {
-    router.push("/settings/support-help/help-center");
-  };
-
-  const goToArticle = (article: Article) => {
-    router.push(`${basePath}/${article.slug}`);
-  };
-
-  const goToPreviousArticle = () => {
     router.push(
-      "/settings/support-help/help-center/property-verification/verification-results"
+      "/settings/support-help/help-center"
     );
   };
 
-  const goToNextArticle = () => {
-    if (nextArticle) {
-      goToArticle(nextArticle);
-    }
-  };
+  /*
+  ============================================================
+  NEED MORE HELP
+  ============================================================
+  */
 
-  /* =========================================================
-     SEARCH
-  ========================================================= */
-
-  const filteredArticles = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    if (!query) {
-      return fraudWatchArticles;
-    }
-
-    return fraudWatchArticles.filter((article) =>
-      article.title.toLowerCase().includes(query)
+  const goToNeedMoreHelp = () => {
+    router.push(
+      `${basePath}/need-more-help`
     );
-  }, [search]);
-
-  /* =========================================================
-     FEEDBACK
-  ========================================================= */
-
-  const handleFeedback = (value: "yes" | "no") => {
-    setFeedback(value);
   };
-
-  /* =========================================================
-     PAGE
-  ========================================================= */
 
   return (
-    <main className={styles.page}>
-      {/* =====================================================
-          TOP SEARCH
-      ===================================================== */}
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#ffffff",
+        color: "#13213a",
+        fontFamily:
+          "Inter, Arial, Helvetica, sans-serif",
+        padding: "35px 20px 60px",
+      }}
+    >
+      <div
+        style={{
+          width: "min(1050px, 100%)",
+          margin: "0 auto",
+        }}
+      >
+        {/* =====================================================
+            HEADER
+        ===================================================== */}
 
-      <header className={styles.topHeader}>
-        <div className={styles.searchBox}>
-          <svg
-            className={styles.searchIcon}
-            width="21"
-            height="21"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
+        <div
+          style={{
+            marginBottom: "25px",
+          }}
+        >
+          <h1
+            style={{
+              margin: 0,
+              color: "#0f1d38",
+              fontSize: "34px",
+              lineHeight: 1.2,
+              fontWeight: 700,
+              letterSpacing: "-0.7px",
+            }}
           >
-            <circle
-              cx="11"
-              cy="11"
-              r="7"
-              stroke="currentColor"
-              strokeWidth="2"
-            />
+            Fraud Watch
+          </h1>
 
-            <path
-              d="M16.5 16.5L21 21"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
+          <p
+            style={{
+              margin: "11px 0 0",
+              maxWidth: "700px",
+              color: "#52637b",
+              fontSize: "14px",
+              lineHeight: 1.6,
+            }}
+          >
+            Learn how Fraud Watch helps identify
+            potential property fraud risks, understand
+            fraud-related alerts, and stay informed
+            before making important property decisions
+            with PropertySure AI.
+          </p>
 
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search for articles, guides, and topics"
-            aria-label="Search help articles"
-          />
+          {/* =================================================
+              BACK TO HELP CENTER
+          ================================================= */}
+
+          <button
+            type="button"
+            onClick={goToHelpCenter}
+            style={{
+              border: 0,
+              background: "transparent",
+              color: "#0879df",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "7px",
+              fontSize: "13px",
+              fontWeight: 600,
+              cursor: "pointer",
+              padding: 0,
+              marginTop: "18px",
+            }}
+          >
+            <ArrowLeft size={17} />
+
+            Back to Help Center
+          </button>
         </div>
 
-        {search.trim() && (
-          <div className={styles.searchResults}>
-            {filteredArticles.length > 0 ? (
-              filteredArticles.map((article) => (
-                <button
-                  key={article.slug}
-                  type="button"
-                  onClick={() => goToArticle(article)}
+        {/* =====================================================
+            DIVIDER
+        ===================================================== */}
+
+        <div
+          style={{
+            width: "100%",
+            height: "1px",
+            background: "#e3e9f0",
+            marginBottom: "25px",
+          }}
+        />
+
+        {/* =====================================================
+            ARTICLES
+        ===================================================== */}
+
+        <section
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "16px",
+          }}
+        >
+          {articles.map((article) => {
+            const Icon = article.icon;
+
+            return (
+              <button
+                key={article.slug}
+                type="button"
+                onClick={() =>
+                  goToArticle(article.slug)
+                }
+                style={{
+                  width: "100%",
+                  minHeight: "145px",
+                  padding: "20px",
+                  border:
+                    "1px solid #dfe6ee",
+                  borderRadius: "9px",
+                  background: "#ffffff",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  transition:
+                    "border-color 0.15s ease, box-shadow 0.15s ease",
+                }}
+                onMouseEnter={(event) => {
+                  event.currentTarget.style.borderColor =
+                    "#b9d5f4";
+
+                  event.currentTarget.style.boxShadow =
+                    "0 5px 18px rgba(20, 40, 70, 0.06)";
+                }}
+                onMouseLeave={(event) => {
+                  event.currentTarget.style.borderColor =
+                    "#dfe6ee";
+
+                  event.currentTarget.style.boxShadow =
+                    "none";
+                }}
+              >
+                {/* =================================================
+                    ARTICLE ICON
+                ================================================= */}
+
+                <div
+                  style={{
+                    width: "38px",
+                    height: "38px",
+                    borderRadius: "8px",
+                    background: "#eaf3ff",
+                    color: "#0879df",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: "13px",
+                  }}
                 >
-                  {article.title}
-                </button>
-              ))
-            ) : (
-              <span>No matching articles found.</span>
-            )}
-          </div>
-        )}
-      </header>
-
-      {/* =====================================================
-          MAIN LAYOUT
-      ===================================================== */}
-
-      <div className={styles.layout}>
-        {/* ===================================================
-            MAIN ARTICLE
-        =================================================== */}
-
-        <article className={styles.article}>
-          {/* =================================================
-              ARTICLE HEADER
-          ================================================= */}
-
-          <header className={styles.articleHeader}>
-            <h1>{currentArticle.title}</h1>
-
-            <p>
-              Learn how Fraud Watch helps you identify
-              potential property fraud risks and stay
-              informed.
-            </p>
-
-            <button
-              type="button"
-              className={styles.backButton}
-              onClick={goToHelpCenter}
-            >
-              <ArrowLeft size={17} />
-              Back to Help Center
-            </button>
-          </header>
-
-          <div className={styles.divider} />
-
-          {/* =================================================
-              MAIN CONTENT CARD
-          ================================================= */}
-
-          <section className={styles.contentCard}>
-            <div className={styles.contentText}>
-              <p className={styles.mainParagraph}>
-                <a
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
-                  className={styles.inlineLink}
-                >
-                  Fraud Watch
-                </a>{" "}
-                is a security feature that helps monitor
-                property-related information for potential
-                fraud risks, suspicious activity, and warning
-                signs.
-              </p>
-
-              <p>
-                It is designed to give property buyers,
-                investors, and real estate professionals an
-                additional layer of protection before they
-                make important property decisions.
-              </p>
-
-              <h2>Fraud Watch helps you:</h2>
-
-              <ul className={styles.checkList}>
-                <li>
-                  <span>
-                    <Check size={11} strokeWidth={2.5} />
-                  </span>
-                  Identify potential fraud risks
-                </li>
-
-                <li>
-                  <span>
-                    <Check size={11} strokeWidth={2.5} />
-                  </span>
-                  Detect suspicious property information
-                </li>
-
-                <li>
-                  <span>
-                    <Check size={11} strokeWidth={2.5} />
-                  </span>
-                  Stay informed about reported or flagged
-                  activity
-                </li>
-
-                <li>
-                  <span>
-                    <Check size={11} strokeWidth={2.5} />
-                  </span>
-                  Protect yourself from common property scams
-                </li>
-
-                <li>
-                  <span>
-                    <Check size={11} strokeWidth={2.5} />
-                  </span>
-                  Make more informed property decisions
-                </li>
-              </ul>
-
-              {/* =================================================
-                  TIP
-              ================================================= */}
-
-              <div className={styles.tipBox}>
-                <div className={styles.tipIcon}>
-                  <Lightbulb
-                    size={23}
-                    strokeWidth={1.8}
-                  />
+                  <Icon size={19} />
                 </div>
 
-                <p>
-                  <strong>Tip:</strong> Always investigate
-                  warning signs before making a payment,
-                  signing an agreement, or proceeding with a
-                  property transaction.
-                </p>
-              </div>
-            </div>
-          </section>
+                {/* =================================================
+                    ARTICLE INFORMATION
+                ================================================= */}
 
-          {/* =================================================
-              BOTTOM ARTICLE NAVIGATION
-              MASTER HELP CENTER ARTICLE TEMPLATE
-          ================================================= */}
-
-          <div className={styles.bottomNavigation}>
-            {/* PREVIOUS ARTICLE */}
-
-            <button
-              type="button"
-              className={styles.previousBottom}
-              onClick={goToPreviousArticle}
-            >
-              <ArrowLeft
-                className={styles.bottomPreviousArrow}
-                size={19}
-              />
-
-              <span>
-                <small>Previous Article</small>
-
-                <strong>Verification Results</strong>
-              </span>
-            </button>
-
-            {/* NEXT ARTICLE */}
-
-            {nextArticle && (
-              <button
-                type="button"
-                className={styles.nextBottom}
-                onClick={goToNextArticle}
-              >
-                <span>
-                  <small>Next Article</small>
-
-                  <strong>{nextArticle.title}</strong>
-                </span>
-
-                <ArrowRight size={20} />
-              </button>
-            )}
-          </div>
-        </article>
-
-        {/* ===================================================
-            RIGHT SIDEBAR
-        =================================================== */}
-
-        <aside className={styles.rightSidebar}>
-          {/* =================================================
-              IN THIS ARTICLE
-          ================================================= */}
-
-          <section className={styles.sideCard}>
-            <h3>In this article</h3>
-
-            <nav className={styles.articleNav}>
-              {fraudWatchArticles.map((article, index) => {
-                const isActive = index === currentIndex;
-
-                return (
-                  <button
-                    key={article.slug}
-                    type="button"
-                    className={
-                      isActive
-                        ? styles.activeArticle
-                        : undefined
-                    }
-                    onClick={() => {
-                      if (!isActive) {
-                        goToArticle(article);
-                      }
+                <div
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent:
+                      "space-between",
+                    alignItems:
+                      "flex-start",
+                    gap: "12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      minWidth: 0,
                     }}
                   >
-                    <span
-                      className={
-                        isActive
-                          ? styles.activeDot
-                          : styles.articleDot
-                      }
-                    />
+                    <h2
+                      style={{
+                        margin: 0,
+                        color: "#172743",
+                        fontSize: "13px",
+                        lineHeight: 1.45,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {article.title}
+                    </h2>
 
-                    {article.title}
-                  </button>
-                );
-              })}
-            </nav>
-          </section>
+                    <p
+                      style={{
+                        margin:
+                          "7px 0 0",
+                        color: "#65758c",
+                        fontSize: "11px",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {article.description}
+                    </p>
+                  </div>
 
-          {/* =================================================
-              WAS THIS HELPFUL?
-          ================================================= */}
-
-          <section className={styles.sideCard}>
-            <h3>Was this helpful?</h3>
-
-            {feedback === null ? (
-              <div className={styles.feedback}>
-                <button
-                  type="button"
-                  onClick={() => handleFeedback("yes")}
-                >
-                  <ThumbsUp
-                    size={18}
-                    strokeWidth={1.8}
+                  <ArrowRight
+                    size={17}
+                    style={{
+                      flexShrink: 0,
+                      marginTop: "2px",
+                      color: "#0879df",
+                    }}
                   />
-                  Yes
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleFeedback("no")}
-                >
-                  <ThumbsDown
-                    size={18}
-                    strokeWidth={1.8}
-                  />
-                  No
-                </button>
-              </div>
-            ) : (
-              <div className={styles.feedbackMessage}>
-                <CheckCircle2 size={18} />
-
-                <span>
-                  Thanks for your feedback.
-                </span>
-              </div>
-            )}
-          </section>
-
-          {/* =================================================
-              SIDEBAR ARTICLE NAVIGATION
-          ================================================= */}
-
-          <section className={styles.sideCard}>
-            {/* PREVIOUS ARTICLE */}
-
-            <button
-              type="button"
-              className={styles.previousArticle}
-              onClick={goToPreviousArticle}
-            >
-              <ArrowLeft
-                className={styles.sidebarPreviousArrow}
-                size={16}
-              />
-
-              <span>
-                <small>Previous Article</small>
-
-                <strong>Verification Results</strong>
-              </span>
-            </button>
-
-            <div className={styles.sideDivider} />
-
-            {/* NEXT ARTICLE */}
-
-            {nextArticle && (
-              <button
-                type="button"
-                className={styles.nextArticle}
-                onClick={goToNextArticle}
-              >
-                <span>
-                  <small>Next Article</small>
-
-                  <strong>{nextArticle.title}</strong>
-                </span>
-
-                <ArrowRight
-                  className={styles.sidebarNextArrow}
-                  size={17}
-                />
+                </div>
               </button>
-            )}
-          </section>
+            );
+          })}
+        </section>
 
-          {/* =================================================
-              SUPPORT
-          ================================================= */}
+        {/* =====================================================
+            NEED MORE HELP — SUPPORT SECTION
+        ===================================================== */}
 
-          <section className={styles.supportCard}>
-            <div className={styles.supportIcon}>
-              <Headphones
-                size={23}
-                strokeWidth={1.8}
-              />
-            </div>
+        <section
+          style={{
+            marginTop: "25px",
+            padding: "22px",
+            border:
+              "1px solid #d9e4f0",
+            borderRadius: "9px",
+            background:
+              "linear-gradient(135deg, #f5faff, #ffffff)",
+          }}
+        >
+          <h2
+            style={{
+              margin: 0,
+              color: "#18253a",
+              fontSize: "15px",
+              fontWeight: 700,
+            }}
+          >
+            Need more help?
+          </h2>
 
-            <h3>Still need help?</h3>
+          <p
+            style={{
+              margin:
+                "8px 0 15px",
+              color: "#52637b",
+              fontSize: "11px",
+              lineHeight: 1.65,
+            }}
+          >
+            If you need additional assistance
+            with Fraud Watch, fraud alerts,
+            property fraud risks, or
+            understanding your Fraud Watch
+            results, our support team is here
+            to help.
+          </p>
 
-            <p>
-              Our support team is available
-              <br />
-              Monday – Friday, 8AM – 6PM.
-            </p>
+          <button
+            type="button"
+            onClick={
+              goToNeedMoreHelp
+            }
+            style={{
+              height: "42px",
+              padding: "0 15px",
+              border:
+                "1px solid #0879df",
+              borderRadius: "7px",
+              background: "#ffffff",
+              color: "#0879df",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "10px",
+              fontSize: "11px",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Contact Support
 
-            <button type="button">
-              <MessageCircle
-                size={17}
-                strokeWidth={1.8}
-              />
-
-              Contact Support
-            </button>
-          </section>
-        </aside>
+            <ArrowRight size={16} />
+          </button>
+        </section>
       </div>
     </main>
   );

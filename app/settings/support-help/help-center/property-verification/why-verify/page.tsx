@@ -1,302 +1,50 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  ShieldCheck,
+  FileWarning,
+  UserX,
+  Users,
+  AlertTriangle,
+  Home,
+  Scale,
+  Landmark,
+  BadgeCheck,
+  ThumbsDown,
+  ThumbsUp,
+} from "lucide-react";
+
 import styles from "./why-verify.module.css";
 
-/* =========================================================
-   ICONS
-========================================================= */
+/*
+============================================================
+PAGE
+============================================================
+*/
 
-function SearchIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <circle cx="11" cy="11" r="6.5" />
-      <path d="M16 16l5 5" />
-    </svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <path d="M12 3l7 3v5c0 4.5-2.8 8.1-7 10-4.2-1.9-7-5.5-7-10V6l7-3z" />
-      <path d="M9 12l2 2 4-4" />
-    </svg>
-  );
-}
-
-function DocumentIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <path d="M6 3h9l4 4v14H6z" />
-      <path d="M15 3v5h4M9 13h6M9 17h6" />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <circle cx="12" cy="8" r="3.5" />
-      <path d="M5 21c.6-4 3-6 7-6s6.4 2 7 6" />
-    </svg>
-  );
-}
-
-function ClockIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <circle cx="12" cy="12" r="8" />
-      <path d="M12 7v5l3 2" />
-    </svg>
-  );
-}
-
-function CheckCircleIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <circle cx="12" cy="12" r="8" />
-      <path d="M8.5 12l2.3 2.3 4.7-5" />
-    </svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <rect x="5" y="10" width="14" height="10" rx="2" />
-      <path d="M8 10V7a4 4 0 018 0v3" />
-    </svg>
-  );
-}
-
-function AlertIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <path d="M12 4l9 16H3L12 4z" />
-      <path d="M12 9v5M12 17h.01" />
-    </svg>
-  );
-}
-
-function HouseIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <path d="M4 11l8-7 8 7v9H4z" />
-      <path d="M9 20v-5h6v5" />
-    </svg>
-  );
-}
-
-function MoneyIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <path d="M6 5h12v14H6z" />
-      <path d="M9 12h6M12 9v6" />
-    </svg>
-  );
-}
-
-function UsersIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <circle cx="9" cy="9" r="3" />
-      <circle cx="16" cy="10" r="2.5" />
-      <path d="M3.5 20c.5-3.5 2.4-5.5 5.5-5.5s5 2 5.5 5.5" />
-      <path d="M14 15c3.2-.2 5.3 1.5 6 5" />
-    </svg>
-  );
-}
-
-function BuildingIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <path d="M5 21V5h10v16M15 9h4v12M8 8h4M8 12h4M8 16h4" />
-    </svg>
-  );
-}
-
-function ClipboardIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <rect x="6" y="5" width="12" height="16" rx="2" />
-      <path d="M9 5V3h6v2M9 10h6M9 14h6M9 18h4" />
-    </svg>
-  );
-}
-
-function UploadIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <path d="M12 16V5M8 9l4-4 4 4" />
-      <path d="M5 15v4h14v-4" />
-    </svg>
-  );
-}
-
-function AnalysisIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <circle cx="10.5" cy="10.5" r="6" />
-      <path d="M15 15l5 5M8 10.5h5M10.5 8v5" />
-    </svg>
-  );
-}
-
-function OfficialIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <path d="M4 20h16M6 20V9h12v11M4 9l8-5 8 5M9 12v5M12 12v5M15 12v5" />
-    </svg>
-  );
-}
-
-function ReportIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.svgIcon}
-    >
-      <rect x="6" y="4" width="12" height="17" rx="2" />
-      <path d="M9 4V2h6v2M9 9h6M9 13h6M9 17h4" />
-    </svg>
-  );
-}
-
-function ArrowRight() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.arrowIcon}
-    >
-      <path d="M5 12h13M13 6l6 6-6 6" />
-    </svg>
-  );
-}
-
-function ArrowLeft() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.arrowIcon}
-    >
-      <path d="M19 12H6M11 6l-6 6 6 6" />
-    </svg>
-  );
-}
-
-function ThumbsUpIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.feedbackIcon}
-    >
-      <path d="M8 10v10H5a2 2 0 01-2-2v-6a2 2 0 012-2h3z" />
-      <path d="M8 20h7a3 3 0 003-2.3l1.1-5A2 2 0 0017.2 10H14l.7-3.2A2.3 2.3 0 0012.5 4L8 10" />
-    </svg>
-  );
-}
-
-function ThumbsDownIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.feedbackIcon}
-    >
-      <path d="M8 14V4H5a2 2 0 00-2 2v6a2 2 0 002 2h3z" />
-      <path d="M8 4h7a3 3 0 013 2.3l1.1 5A2 2 0 0117.2 14H14l.7 3.2a2.3 2.3 0 01-2.2 2.8L8 14" />
-    </svg>
-  );
-}
-
-/* =========================================================
-   COMPONENT
-========================================================= */
-
-export default function WhyVerifyArticle() {
+export default function WhyVerifyPropertyArticle() {
   const router = useRouter();
 
   const [feedback, setFeedback] = useState<
     "yes" | "no" | null
   >(null);
 
-  /* =======================================================
-     ROUTES
-  ======================================================= */
+  /*
+  ============================================================
+  NAVIGATION
+  ============================================================
+  */
 
-  const goToHelpCenter = () => {
+  const goToPropertyVerification = () => {
     router.push(
-      "/settings/support-help/help-center"
+      "/settings/support-help/help-center/property-verification"
     );
   };
 
@@ -312,15 +60,14 @@ export default function WhyVerifyArticle() {
     );
   };
 
-  /* =======================================================
-     SECTION NAVIGATION
-  ======================================================= */
+  /*
+  ============================================================
+  SECTION NAVIGATION
+  ============================================================
+  */
 
-  const scrollToSection = (
-    sectionId: string
-  ) => {
-    const section =
-      document.getElementById(sectionId);
+  const scrollToSection = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
 
     if (!section) return;
 
@@ -330,38 +77,74 @@ export default function WhyVerifyArticle() {
     });
   };
 
-  /* =======================================================
-     RENDER
-  ======================================================= */
+  /*
+  ============================================================
+  FEEDBACK
+  ============================================================
+  */
+
+  const handleFeedback = (value: "yes" | "no") => {
+    setFeedback(value);
+  };
+
+  /*
+  ============================================================
+  RENDER
+  ============================================================
+  */
 
   return (
     <main className={styles.page}>
 
-      {/* ===================================================
+      {/* =====================================================
           TOP SEARCH
-      =================================================== */}
+      ===================================================== */}
 
       <header className={styles.topHeader}>
         <div className={styles.searchBox}>
-          <SearchIcon />
+
+          <svg
+            className={styles.searchIcon}
+            width="21"
+            height="21"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <circle
+              cx="11"
+              cy="11"
+              r="7"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+
+            <path
+              d="M16.5 16.5L21 21"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
 
           <input
             type="text"
             placeholder="Search for articles, guides, and topics"
             aria-label="Search help articles"
           />
+
         </div>
       </header>
 
-      {/* ===================================================
+      {/* =====================================================
           MAIN LAYOUT
-      =================================================== */}
+      ===================================================== */}
 
       <div className={styles.layout}>
 
-        {/* =================================================
+        {/* ===================================================
             ARTICLE
-        ================================================= */}
+        =================================================== */}
 
         <article className={styles.article}>
 
@@ -370,556 +153,575 @@ export default function WhyVerifyArticle() {
           ================================================= */}
 
           <header className={styles.articleHeader}>
-            <h1>Why Verify a Property?</h1>
+
+            <h1>
+              Why Verify a Property?
+            </h1>
 
             <p>
-              Real estate fraud is on the rise.
-              Verifying a property helps you
-              protect your money, your investment,
-              and your peace of mind.
+              Property verification helps you
+              identify potential problems before
+              you commit your money, time, or
+              legal interests to a property.
             </p>
 
             <button
               type="button"
               className={styles.backButton}
-              onClick={goToHelpCenter}
+              onClick={goToPropertyVerification}
             >
-              <ArrowLeft />
-              <span>Back to Help Center</span>
+              <ArrowLeft size={17} />
+
+              Back to Property Verification
             </button>
+
           </header>
 
           <div className={styles.divider} />
 
           {/* =================================================
-              WHY PROPERTY VERIFICATION MATTERS
+              MAIN CONTENT
           ================================================= */}
 
           <section
-            id="why-property-verification-matters"
-            className={styles.introSection}
+            id="why-verify"
+            className={styles.contentCard}
           >
-            <div className={`${styles.largeIcon} ${styles.greenIcon}`}>
-              <ShieldIcon />
-            </div>
 
-            <div>
-              <h2>
-                Why Property Verification Matters
+            <div className={styles.contentText}>
+
+              {/* =================================================
+                  INTRODUCTION
+              ================================================= */}
+
+              <p className={styles.mainParagraph}>
+                A property can appear legitimate
+                while important problems remain
+                hidden in its documents, ownership
+                history, or legal status.
+              </p>
+
+              <p>
+                Verification gives you an
+                additional layer of due diligence
+                before you make a major property
+                decision. It helps you understand
+                what has been submitted, identify
+                inconsistencies, and determine
+                whether further professional
+                investigation may be necessary.
+              </p>
+
+              {/* =================================================
+                  WHAT COULD GO WRONG
+              ================================================= */}
+
+              <h2 id="what-could-go-wrong">
+                What Could Go Wrong Without Verification?
               </h2>
 
               <p>
-                A property may look legitimate on
-                the surface, but problems with
-                documents, ownership, or property
-                claims can turn your dream investment
-                into a costly problem.
+                Property transactions can involve
+                significant financial and legal
+                commitments. Failing to perform
+                appropriate checks can expose you
+                to avoidable risks.
               </p>
+
+              <div
+                id="verification-risks"
+                className={styles.processList}
+              >
+
+                {/* RISK 1 */}
+
+                <div className={styles.processItem}>
+
+                  <div className={styles.processNumber}>
+                    <FileWarning
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+                  <div className={styles.processContent}>
+
+                    <h3>
+                      Fake or Altered Documents
+                    </h3>
+
+                    <p>
+                      A document may be forged,
+                      altered, fabricated, or contain
+                      information that does not match
+                      available records.
+                    </p>
+
+                  </div>
+
+                </div>
+
+                {/* RISK 2 */}
+
+                <div className={styles.processItem}>
+
+                  <div className={styles.processNumber}>
+                    <UserX
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+                  <div className={styles.processContent}>
+
+                    <h3>
+                      Unverified Ownership
+                    </h3>
+
+                    <p>
+                      The person offering a property
+                      for sale may not have the legal
+                      authority or ownership rights
+                      they claim to have.
+                    </p>
+
+                  </div>
+
+                </div>
+
+                {/* RISK 3 */}
+
+                <div className={styles.processItem}>
+
+                  <div className={styles.processNumber}>
+                    <Users
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+                  <div className={styles.processContent}>
+
+                    <h3>
+                      Ownership Disputes
+                    </h3>
+
+                    <p>
+                      Another individual, family,
+                      organization, or party may have
+                      competing claims over the same
+                      property.
+                    </p>
+
+                  </div>
+
+                </div>
+
+                {/* RISK 4 */}
+
+                <div className={styles.processItem}>
+
+                  <div className={styles.processNumber}>
+                    <AlertTriangle
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+                  <div className={styles.processContent}>
+
+                    <h3>
+                      Inconsistent Information
+                    </h3>
+
+                    <p>
+                      Names, locations, measurements,
+                      reference numbers, dates, or
+                      other property details may not
+                      agree across documents or
+                      available records.
+                    </p>
+
+                  </div>
+
+                </div>
+
+                {/* RISK 5 */}
+
+                <div className={styles.processItem}>
+
+                  <div className={styles.processNumber}>
+                    <Scale
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+                  <div className={styles.processContent}>
+
+                    <h3>
+                      Legal or Property Restrictions
+                    </h3>
+
+                    <p>
+                      A property may be affected by
+                      restrictions, disputes, liens,
+                      court matters, or other
+                      circumstances that could affect
+                      a transaction.
+                    </p>
+
+                  </div>
+
+                </div>
+
+                {/* RISK 6 */}
+
+                <div className={styles.processItem}>
+
+                  <div className={styles.processNumber}>
+                    <Users
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+                  <div className={styles.processContent}>
+
+                    <h3>
+                      Fraudulent Sellers or Agents
+                    </h3>
+
+                    <p>
+                      Fraudsters may use genuine-looking
+                      documents, false identities, or
+                      misleading property information
+                      to convince buyers to make
+                      payments.
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* =================================================
+                  WHAT VERIFICATION GIVES YOU
+              ================================================= */}
+
+              <h2 id="what-verification-gives-you">
+                What Verification Gives You
+              </h2>
 
               <p>
-                Property verification gives you an
-                independent layer of due diligence
-                so you can make informed, confident,
-                and secure property decisions.
+                Property verification does not
+                guarantee that every possible issue
+                has been eliminated. Instead, it
+                provides a structured due-diligence
+                process that can help you make a more
+                informed decision.
               </p>
-            </div>
-          </section>
 
-          {/* =================================================
-              RISKS
-          ================================================= */}
+              <ul className={styles.checkList}>
 
-          <section
-            id="risks"
-            className={styles.contentSection}
-          >
-            <h2>
-              The Risks of Not Verifying a Property
-            </h2>
-
-            <p className={styles.sectionIntro}>
-              Buying or investing in property without
-              proper verification can expose you to
-              serious financial and legal risks.
-            </p>
-
-            <div className={styles.riskGrid}>
-
-              <div className={styles.riskCard}>
-                <div className={`${styles.cardIcon} ${styles.redIcon}`}>
-                  <DocumentIcon />
-                </div>
-
-                <h3>
-                  Fake or Altered Documents
-                </h3>
-
-                <p>
-                  Documents may be falsified,
-                  tampered with, or completely fake.
-                </p>
-              </div>
-
-              <div className={styles.riskCard}>
-                <div className={`${styles.cardIcon} ${styles.orangeIcon}`}>
-                  <UserIcon />
-                </div>
-
-                <h3>
-                  No Valid Ownership Rights
-                </h3>
-
-                <p>
-                  The seller may not be the legal
-                  owner of the property.
-                </p>
-              </div>
-
-              <div className={styles.riskCard}>
-                <div className={`${styles.cardIcon} ${styles.yellowIcon}`}>
-                  <UsersIcon />
-                </div>
-
-                <h3>
-                  Multiple Claims or Disputes
-                </h3>
-
-                <p>
-                  More than one party may be claiming
-                  rights to the same property.
-                </p>
-              </div>
-
-              <div className={styles.riskCard}>
-                <div className={`${styles.cardIcon} ${styles.blueIcon}`}>
-                  <AlertIcon />
-                </div>
-
-                <h3>
-                  Incorrect or Incomplete Info
-                </h3>
-
-                <p>
-                  Wrong or incomplete details can lead
-                  to serious problems later.
-                </p>
-              </div>
-
-              <div className={styles.riskCard}>
-                <div className={`${styles.cardIcon} ${styles.purpleIcon}`}>
-                  <UsersIcon />
-                </div>
-
-                <h3>
-                  Fraudulent Agents or Sellers
-                </h3>
-
-                <p>
-                  Unscrupulous agents or sellers may
-                  try to deceive you.
-                </p>
-              </div>
-
-              <div className={styles.riskCard}>
-                <div className={`${styles.cardIcon} ${styles.tealIcon}`}>
-                  <AlertIcon />
-                </div>
-
-                <h3>
-                  Hidden Restrictions
-                </h3>
-
-                <p>
-                  The property may have court orders,
-                  liens, or other encumbrances.
-                </p>
-              </div>
-
-            </div>
-          </section>
-
-          <div className={styles.divider} />
-
-          {/* =================================================
-              HOW PROPERTYSURE AI HELPS
-          ================================================= */}
-
-          <section
-            id="how-propertysure-helps"
-            className={styles.contentSection}
-          >
-            <h2>
-              How PropertySure AI Helps Protect You
-            </h2>
-
-            <p className={styles.sectionIntro}>
-              PropertySure AI helps organize and
-              strengthen your property due-diligence
-              process before you make a major decision.
-            </p>
-
-            <div className={styles.benefitGrid}>
-
-              <div className={styles.benefitCard}>
-                <div className={`${styles.cardIcon} ${styles.blueIcon}`}>
-                  <ShieldIcon />
-                </div>
-
-                <div>
-                  <h3>Avoid Fraud</h3>
-
-                  <p>
-                    We analyze documents and data to
-                    identify inconsistencies, forged
-                    information, and potential fraud
-                    before you commit.
-                  </p>
-                </div>
-              </div>
-
-              <div className={styles.benefitCard}>
-                <div className={`${styles.cardIcon} ${styles.greenIcon}`}>
-                  <UserIcon />
-                </div>
-
-                <div>
-                  <h3>
-                    Confirm Ownership &amp; Details
-                  </h3>
-
-                  <p>
-                    We verify ownership, property
-                    details, and key information using
-                    available official sources and
-                    checks.
-                  </p>
-                </div>
-              </div>
-
-              <div className={styles.benefitCard}>
-                <div className={`${styles.cardIcon} ${styles.orangeIcon}`}>
-                  <ClockIcon />
-                </div>
-
-                <div>
-                  <h3>Save Time &amp; Effort</h3>
-
-                  <p>
-                    We do the heavy work for you, so
-                    you do not have to visit multiple
-                    offices or chase different sources.
-                  </p>
-                </div>
-              </div>
-
-              <div className={styles.benefitCard}>
-                <div className={`${styles.cardIcon} ${styles.purpleIcon}`}>
-                  <CheckCircleIcon />
-                </div>
-
-                <div>
-                  <h3>Make Confident Decisions</h3>
-
-                  <p>
-                    You receive a clear verification
-                    report that helps you decide with
-                    greater clarity and confidence.
-                  </p>
-                </div>
-              </div>
-
-              <div className={styles.benefitCard}>
-                <div className={`${styles.cardIcon} ${styles.redIcon}`}>
-                  <ShieldIcon />
-                </div>
-
-                <div>
-                  <h3>Reduce Financial Risk</h3>
-
-                  <p>
-                    Identify issues early and avoid
-                    costly mistakes, hidden liabilities,
-                    and future legal problems.
-                  </p>
-                </div>
-              </div>
-
-              <div className={styles.benefitCard}>
-                <div className={`${styles.cardIcon} ${styles.tealIcon}`}>
-                  <DocumentIcon />
-                </div>
-
-                <div>
-                  <h3>Create a Verifiable Record</h3>
-
-                  <p>
-                    Keep a verified record of the
-                    property and the verification report
-                    for your protection.
-                  </p>
-                </div>
-              </div>
-
-            </div>
-          </section>
-
-          {/* =================================================
-              WHAT HAPPENS WHEN YOU VERIFY
-          ================================================= */}
-
-          <section
-            id="what-happens"
-            className={styles.contentSection}
-          >
-            <h2>
-              What Happens When You Verify
-            </h2>
-
-            <p className={styles.sectionIntro}>
-              PropertySure AI follows a structured
-              verification process designed to help
-              you understand the information submitted
-              about a property.
-            </p>
-
-            <div className={styles.processGrid}>
-
-              <div className={styles.processCard}>
-                <div className={styles.processTop}>
-                  <div className={`${styles.processIcon} ${styles.blueIcon}`}>
-                    <UploadIcon />
-                  </div>
-
-                  <span className={styles.stepBadge}>
-                    1
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
                   </span>
-                </div>
 
-                <h3>
-                  Submit Information
-                </h3>
+                  A clearer understanding of the
+                  information and documents submitted
+                  for the property.
+                </li>
 
-                <p>
-                  You provide the property information
-                  and the required document package.
-                </p>
-              </div>
-
-              <div className={styles.processArrow}>
-                <ArrowRight />
-              </div>
-
-              <div className={styles.processCard}>
-                <div className={styles.processTop}>
-                  <div className={`${styles.processIcon} ${styles.blueIcon}`}>
-                    <AnalysisIcon />
-                  </div>
-
-                  <span className={styles.stepBadge}>
-                    2
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
                   </span>
-                </div>
 
-                <h3>
-                  AI Analysis
-                </h3>
+                  Identification of inconsistencies
+                  or potential warning signs that may
+                  require further investigation.
+                </li>
 
-                <p>
-                  Our AI reviews and analyzes the
-                  submitted documents for accuracy,
-                  consistency, and potential issues.
-                </p>
-              </div>
-
-              <div className={styles.processArrow}>
-                <ArrowRight />
-              </div>
-
-              <div className={styles.processCard}>
-                <div className={styles.processTop}>
-                  <div className={`${styles.processIcon} ${styles.blueIcon}`}>
-                    <OfficialIcon />
-                  </div>
-
-                  <span className={styles.stepBadge}>
-                    3
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
                   </span>
-                </div>
 
-                <h3>
-                  Official Checks
-                </h3>
+                  Greater visibility into ownership,
+                  property details, and available
+                  verification information.
+                </li>
 
-                <p>
-                  Available official records and
-                  sources are checked where applicable.
-                </p>
-              </div>
-
-              <div className={styles.processArrow}>
-                <ArrowRight />
-              </div>
-
-              <div className={styles.processCard}>
-                <div className={styles.processTop}>
-                  <div className={`${styles.processIcon} ${styles.blueIcon}`}>
-                    <ReportIcon />
-                  </div>
-
-                  <span className={styles.stepBadge}>
-                    4
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
                   </span>
-                </div>
 
-                <h3>
-                  Verification Report
-                </h3>
+                  A verification report that helps
+                  you understand the findings before
+                  making a major commitment.
+                </li>
 
-                <p>
-                  You receive a verification report
-                  containing findings and relevant
-                  information.
-                </p>
-              </div>
+                <li>
+                  <span>
+                    <Check
+                      size={11}
+                      strokeWidth={2.5}
+                    />
+                  </span>
 
-            </div>
-          </section>
+                  A documented verification record
+                  that can be retained for your
+                  records.
+                </li>
 
-          <div className={styles.divider} />
+              </ul>
 
-          {/* =================================================
-              WHEN SHOULD YOU VERIFY
-          ================================================= */}
+              {/* =================================================
+                  WHEN SHOULD YOU VERIFY
+              ================================================= */}
 
-          <section
-            id="when-to-verify"
-            className={styles.contentSection}
-          >
-            <h2>
-              When Should You Verify a Property?
-            </h2>
-
-            <p className={styles.sectionIntro}>
-              Verification is most valuable before
-              you make a financial or legal commitment
-              involving a property.
-            </p>
-
-            <div className={styles.whenGrid}>
-
-              <div className={styles.whenCard}>
-                <div className={`${styles.whenIcon} ${styles.greenIcon}`}>
-                  <HouseIcon />
-                </div>
-
-                <strong>
-                  Before paying for a property
-                </strong>
-              </div>
-
-              <div className={styles.whenCard}>
-                <div className={`${styles.whenIcon} ${styles.blueIcon}`}>
-                  <DocumentIcon />
-                </div>
-
-                <strong>
-                  Before signing a purchase agreement
-                </strong>
-              </div>
-
-              <div className={styles.whenCard}>
-                <div className={`${styles.whenIcon} ${styles.orangeIcon}`}>
-                  <MoneyIcon />
-                </div>
-
-                <strong>
-                  Before transferring a large deposit
-                  or payment
-                </strong>
-              </div>
-
-              <div className={styles.whenCard}>
-                <div className={`${styles.whenIcon} ${styles.purpleIcon}`}>
-                  <BuildingIcon />
-                </div>
-
-                <strong>
-                  Before investing in a property
-                  project
-                </strong>
-              </div>
-
-              <div className={styles.whenCard}>
-                <div className={`${styles.whenIcon} ${styles.tealIcon}`}>
-                  <ShieldIcon />
-                </div>
-
-                <strong>
-                  Before accepting property as
-                  collateral
-                </strong>
-              </div>
-
-              <div className={styles.whenCard}>
-                <div className={`${styles.whenIcon} ${styles.redIcon}`}>
-                  <UsersIcon />
-                </div>
-
-                <strong>
-                  When buying from an unfamiliar
-                  seller or agent
-                </strong>
-              </div>
-
-            </div>
-          </section>
-
-          {/* =================================================
-              IMPORTANT NOTE
-          ================================================= */}
-
-          <section
-            id="important-note"
-            className={styles.importantNote}
-          >
-            <div className={styles.noteIcon}>
-              <AlertIcon />
-            </div>
-
-            <div>
-              <strong>Important:</strong>
+              <h2 id="when-should-you-verify">
+                When Should You Verify?
+              </h2>
 
               <p>
-                Property verification is a
-                due-diligence step and does not
-                replace professional legal, survey,
-                or other expert advice. Always seek
-                qualified professional guidance before
-                completing any property transaction.
+                The best time to verify a property
+                is before you make a significant
+                financial or legal commitment.
               </p>
+
+              <div
+                id="verification-timing"
+                className={styles.processList}
+              >
+
+                {/* TIMING 1 */}
+
+                <div className={styles.processItem}>
+
+                  <div className={styles.processNumber}>
+                    <Home
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+                  <div className={styles.processContent}>
+
+                    <h3>
+                      Before Paying for a Property
+                    </h3>
+
+                    <p>
+                      Verify the available property
+                      information before transferring
+                      money or committing to a purchase.
+                    </p>
+
+                  </div>
+
+                </div>
+
+                {/* TIMING 2 */}
+
+                <div className={styles.processItem}>
+
+                  <div className={styles.processNumber}>
+                    <Landmark
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+                  <div className={styles.processContent}>
+
+                    <h3>
+                      Before Making a Major Investment
+                    </h3>
+
+                    <p>
+                      Verify the available information
+                      before committing substantial
+                      funds to a property or development
+                      project.
+                    </p>
+
+                  </div>
+
+                </div>
+
+                {/* TIMING 3 */}
+
+                <div className={styles.processItem}>
+
+                  <div className={styles.processNumber}>
+                    <BadgeCheck
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+                  <div className={styles.processContent}>
+
+                    <h3>
+                      Before Signing an Agreement
+                    </h3>
+
+                    <p>
+                      Review the property information
+                      before signing a purchase,
+                      assignment, or other property
+                      agreement.
+                    </p>
+
+                  </div>
+
+                </div>
+
+                {/* TIMING 4 */}
+
+                <div className={styles.processItem}>
+
+                  <div className={styles.processNumber}>
+                    <ShieldCheck
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+                  <div className={styles.processContent}>
+
+                    <h3>
+                      When Buying From an Unfamiliar Seller
+                    </h3>
+
+                    <p>
+                      Additional due diligence is
+                      particularly important when you
+                      have limited knowledge of the
+                      seller, agent, or property history.
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* =================================================
+                  PROPERTYSURE AI
+              ================================================= */}
+
+              <div
+                id="propertysure-protection"
+                className={styles.successBox}
+              >
+
+                <div className={styles.successIcon}>
+                  <ShieldCheck
+                    size={23}
+                    strokeWidth={1.8}
+                  />
+                </div>
+
+                <p>
+                  <strong>
+                    PropertySure AI:
+                  </strong>{" "}
+                  PropertySure AI helps organize
+                  property due diligence by analyzing
+                  submitted information and documents,
+                  identifying potential inconsistencies,
+                  and presenting verification findings
+                  in a structured report.
+                </p>
+
+              </div>
+
+              {/* =================================================
+                  IMPORTANT NOTE
+              ================================================= */}
+
+              <div
+                id="important-note"
+                className={styles.noteBox}
+              >
+
+                <div className={styles.noteIcon}>
+                  <CheckCircle2
+                    size={22}
+                    strokeWidth={1.8}
+                  />
+                </div>
+
+                <p>
+                  <strong>
+                    Important:
+                  </strong>{" "}
+                  Property verification is a
+                  due-diligence step and does not
+                  replace professional legal, survey,
+                  valuation, engineering, or other
+                  expert advice. Where necessary,
+                  seek qualified professionals and
+                  conduct appropriate official checks
+                  before completing a property
+                  transaction.
+                </p>
+
+              </div>
+
             </div>
+
           </section>
 
           {/* =================================================
-              BOTTOM NAVIGATION
+              BOTTOM ARTICLE NAVIGATION
           ================================================= */}
 
-          <div className={styles.bottomNavigation}>
+          <div
+            className={styles.bottomNavigation}
+          >
 
             <button
               type="button"
               className={styles.previousBottom}
               onClick={goToPreviousArticle}
             >
-              <ArrowLeft />
+
+              <ArrowLeft
+                className={styles.bottomPreviousArrow}
+                size={19}
+              />
 
               <span>
-                <small>Previous Article</small>
+
+                <small>
+                  Previous Article
+                </small>
 
                 <strong>
                   What is Property Verification?
                 </strong>
+
               </span>
+
             </button>
 
             <button
@@ -927,24 +729,30 @@ export default function WhyVerifyArticle() {
               className={styles.nextBottom}
               onClick={goToNextArticle}
             >
+
               <span>
-                <small>Next Article</small>
+
+                <small>
+                  Next Article
+                </small>
 
                 <strong>
                   How It Works (Overview)
                 </strong>
+
               </span>
 
-              <ArrowRight />
+              <ArrowRight size={20} />
+
             </button>
 
           </div>
 
         </article>
 
-        {/* =================================================
+        {/* ===================================================
             RIGHT SIDEBAR
-        ================================================= */}
+        =================================================== */}
 
         <aside className={styles.rightSidebar}>
 
@@ -953,7 +761,10 @@ export default function WhyVerifyArticle() {
           ================================================= */}
 
           <section className={styles.sideCard}>
-            <h3>In this article</h3>
+
+            <h3>
+              In this article
+            </h3>
 
             <nav className={styles.articleNav}>
 
@@ -962,57 +773,58 @@ export default function WhyVerifyArticle() {
                 className={styles.activeArticle}
                 onClick={() =>
                   scrollToSection(
-                    "why-property-verification-matters"
+                    "why-verify"
                   )
                 }
               >
-                <span className={styles.activeDot} />
+                <span
+                  className={styles.activeDot}
+                />
 
-                Why Verify a Property?
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  scrollToSection("risks")
-                }
-              >
-                <span />
-
-                The Risks of Not Verifying
+                Why Verify
               </button>
 
               <button
                 type="button"
                 onClick={() =>
                   scrollToSection(
-                    "how-propertysure-helps"
+                    "what-could-go-wrong"
                   )
                 }
               >
-                <span />
+                <span
+                  className={styles.articleDot}
+                />
 
-                How PropertySure AI Helps
+                What Could Go Wrong?
               </button>
 
               <button
                 type="button"
                 onClick={() =>
-                  scrollToSection("what-happens")
+                  scrollToSection(
+                    "what-verification-gives-you"
+                  )
                 }
               >
-                <span />
+                <span
+                  className={styles.articleDot}
+                />
 
-                What Happens When You Verify
+                What Verification Gives You
               </button>
 
               <button
                 type="button"
                 onClick={() =>
-                  scrollToSection("when-to-verify")
+                  scrollToSection(
+                    "when-should-you-verify"
+                  )
                 }
               >
-                <span />
+                <span
+                  className={styles.articleDot}
+                />
 
                 When Should You Verify?
               </button>
@@ -1020,69 +832,90 @@ export default function WhyVerifyArticle() {
               <button
                 type="button"
                 onClick={() =>
-                  scrollToSection("important-note")
+                  scrollToSection(
+                    "important-note"
+                  )
                 }
               >
-                <span />
+                <span
+                  className={styles.articleDot}
+                />
 
                 Important Note
               </button>
 
             </nav>
+
           </section>
 
           {/* =================================================
-              FEEDBACK
+              WAS THIS HELPFUL?
           ================================================= */}
 
           <section className={styles.sideCard}>
-            <h3>Was this helpful?</h3>
+
+            <h3>
+              Was this helpful?
+            </h3>
 
             {feedback === null ? (
+
               <div className={styles.feedback}>
 
                 <button
                   type="button"
                   onClick={() =>
-                    setFeedback("yes")
+                    handleFeedback("yes")
                   }
                 >
-                  <ThumbsUpIcon />
+
+                  <ThumbsUp
+                    size={18}
+                    strokeWidth={1.8}
+                  />
+
                   Yes
+
                 </button>
 
                 <button
                   type="button"
                   onClick={() =>
-                    setFeedback("no")
+                    handleFeedback("no")
                   }
                 >
-                  <ThumbsDownIcon />
+
+                  <ThumbsDown
+                    size={18}
+                    strokeWidth={1.8}
+                  />
+
                   No
+
                 </button>
 
               </div>
+
             ) : (
-              <div className={styles.feedbackMessage}>
-                {feedback === "yes" ? (
-                  <>
-                    <span className={styles.successCheck}>
-                      ✓
-                    </span>
 
-                    Thanks for your feedback.
-                  </>
-                ) : (
-                  <>
-                    <span className={styles.warningMark}>
-                      !
-                    </span>
+              <div
+                className={
+                  styles.feedbackMessage
+                }
+              >
 
-                    Sorry this wasn't helpful.
-                  </>
-                )}
+                <CheckCircle2
+                  size={18}
+                />
+
+                <span>
+                  Thanks for your feedback.
+                </span>
+
               </div>
+
             )}
+
           </section>
 
           {/* =================================================
@@ -1093,40 +926,62 @@ export default function WhyVerifyArticle() {
 
             <button
               type="button"
-              className={styles.sidePrevious}
+              className={styles.previousArticle}
               onClick={goToPreviousArticle}
             >
-              <ArrowLeft />
+
+              <ArrowLeft
+                className={
+                  styles.sidebarPreviousArrow
+                }
+                size={16}
+              />
 
               <span>
-                <strong>
-                  Previous Article
-                </strong>
 
                 <small>
-                  What is Property Verification?
+                  Previous Article
                 </small>
+
+                <strong>
+                  What is Property Verification?
+                </strong>
+
               </span>
+
             </button>
 
-            <div className={styles.sideDivider} />
+            <div
+              className={
+                styles.sideDivider
+              }
+            />
 
             <button
               type="button"
-              className={styles.sideNext}
+              className={styles.nextArticle}
               onClick={goToNextArticle}
             >
+
               <span>
-                <strong>
-                  Next Article
-                </strong>
 
                 <small>
-                  How It Works (Overview)
+                  Next Article
                 </small>
+
+                <strong>
+                  How It Works (Overview)
+                </strong>
+
               </span>
 
-              <ArrowRight />
+              <ArrowRight
+                className={
+                  styles.sidebarNextArrow
+                }
+                size={17}
+              />
+
             </button>
 
           </section>
@@ -1134,6 +989,7 @@ export default function WhyVerifyArticle() {
         </aside>
 
       </div>
+
     </main>
   );
 }

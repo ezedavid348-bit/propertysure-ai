@@ -3,55 +3,25 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
+import "./signup.css";
 
 type IconProps = {
   size?: number;
 };
 
-function LogoMark({ size = 72 }: IconProps) {
+function LogoMark({ size = 23 }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+    <span
+      className="brandDiamondMark"
+      style={{ fontSize: `${size}px` }}
+      aria-hidden="true"
     >
-      <path
-        d="M50 5L84 18V48C84 70 70 87 50 96C30 87 16 70 16 48V18L50 5Z"
-        fill="#07172F"
-        stroke="#159BFF"
-        strokeWidth="4"
-      />
-
-      <path
-        d="M50 12L77 22V47C77 64 66 78 50 86C34 78 23 64 23 47V22L50 12Z"
-        stroke="#FFFFFF"
-        strokeWidth="3"
-      />
-
-      <path
-        d="M30 47L50 30L70 47"
-        stroke="#FFFFFF"
-        strokeWidth="7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M36 45V68H64V45"
-        fill="#FFFFFF"
-      />
-
-      <path
-        d="M46 68V54H54V68"
-        fill="#159BFF"
-      />
-    </svg>
+      ◆
+    </span>
   );
 }
 
-function UserIcon({ size = 22 }: IconProps) {
+function UserIcon({ size = 21 }: IconProps) {
   return (
     <svg
       width={size}
@@ -67,6 +37,7 @@ function UserIcon({ size = 22 }: IconProps) {
         stroke="currentColor"
         strokeWidth="1.8"
       />
+
       <path
         d="M5 20C5.8 15.9 8.1 14 12 14C15.9 14 18.2 15.9 19 20"
         stroke="currentColor"
@@ -77,7 +48,7 @@ function UserIcon({ size = 22 }: IconProps) {
   );
 }
 
-function PhoneIcon({ size = 22 }: IconProps) {
+function PhoneIcon({ size = 21 }: IconProps) {
   return (
     <svg
       width={size}
@@ -97,7 +68,7 @@ function PhoneIcon({ size = 22 }: IconProps) {
   );
 }
 
-function MailIcon({ size = 22 }: IconProps) {
+function MailIcon({ size = 21 }: IconProps) {
   return (
     <svg
       width={size}
@@ -127,7 +98,7 @@ function MailIcon({ size = 22 }: IconProps) {
   );
 }
 
-function LockIcon({ size = 22 }: IconProps) {
+function LockIcon({ size = 21 }: IconProps) {
   return (
     <svg
       width={size}
@@ -156,7 +127,7 @@ function LockIcon({ size = 22 }: IconProps) {
   );
 }
 
-function EyeIcon({ size = 21 }: IconProps) {
+function EyeIcon({ size = 20 }: IconProps) {
   return (
     <svg
       width={size}
@@ -185,10 +156,11 @@ function EyeIcon({ size = 21 }: IconProps) {
 function GoogleIcon() {
   return (
     <svg
-      width="21"
-      height="21"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
     >
       <path
         d="M21.35 12.23C21.35 11.57 21.29 10.93 21.17 10.32H12V14.05H17.1C16.88 15.25 16.2 16.27 15.23 16.94V19.38H18.35C20.18 17.69 21.35 15.2 21.35 12.23Z"
@@ -213,14 +185,43 @@ function GoogleIcon() {
   );
 }
 
-function ArrowLeftIcon() {
+function ArrowRightIcon() {
   return (
     <svg
-      width="25"
-      height="25"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path
+        d="M5 12H19"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M13 6L19 12L13 18"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ArrowLeftIcon() {
+  return (
+    <svg
+      width="21"
+      height="21"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
     >
       <path
         d="M19 12H5"
@@ -240,24 +241,55 @@ function ArrowLeftIcon() {
   );
 }
 
-function ShieldCheckIcon() {
+function ShieldCheckIcon({ size = 25 }: IconProps) {
   return (
     <svg
-      width="27"
-      height="27"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
     >
       <path
         d="M12 3L19 6V11.5C19 16.2 16.2 19.5 12 21C7.8 19.5 5 16.2 5 11.5V6L12 3Z"
-        stroke="#159BFF"
+        stroke="#168EFF"
         strokeWidth="1.7"
       />
 
       <path
         d="M8.5 12L10.8 14.3L15.5 9.6"
-        stroke="#159BFF"
+        stroke="#168EFF"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CheckCircleIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        fill="#EAF5FF"
+        stroke="#168EFF"
+        strokeWidth="1.5"
+      />
+
+      <path
+        d="M8 12.2L10.6 14.8L16.2 9.3"
+        stroke="#168EFF"
         strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -280,7 +312,10 @@ function InputBox({
       <label>{label}</label>
 
       <div className="inputBox">
-        <div className="fieldIcon">{icon}</div>
+        <div className="fieldIcon">
+          {icon}
+        </div>
+
         {children}
       </div>
     </div>
@@ -312,10 +347,6 @@ export default function SignUpPage() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  // ============================================================
-  // EMAIL VERIFICATION STATE
-  // ============================================================
 
   const [showVerification, setShowVerification] =
     useState(false);
@@ -398,11 +429,6 @@ export default function SignUpPage() {
         throw signUpError;
       }
 
-      /*
-       * Supabase sends an 8-digit verification code
-       * when email confirmation is required.
-       */
-
       if (data.user && !data.session) {
         setVerificationCode("");
         setShowVerification(true);
@@ -413,11 +439,6 @@ export default function SignUpPage() {
 
         return;
       }
-
-      /*
-       * If email confirmation is disabled,
-       * Supabase gives us a session immediately.
-       */
 
       if (data.session) {
         router.push("/dashboard");
@@ -438,7 +459,7 @@ export default function SignUpPage() {
   };
 
   // ============================================================
-  // VERIFY EMAIL — 8 DIGITS
+  // VERIFY EMAIL
   // ============================================================
 
   const handleVerifyEmail = async (
@@ -474,11 +495,6 @@ export default function SignUpPage() {
         throw verifyError;
       }
 
-      /*
-       * Successful OTP verification should
-       * create the authenticated session.
-       */
-
       if (data.session) {
         router.push("/dashboard");
         return;
@@ -498,7 +514,7 @@ export default function SignUpPage() {
   };
 
   // ============================================================
-  // 8-DIGIT OTP INPUT
+  // OTP INPUT
   // ============================================================
 
   const handleOtpChange = (
@@ -521,11 +537,6 @@ export default function SignUpPage() {
       return;
     }
 
-    /*
-     * If more than one digit enters a box,
-     * use only the first digit.
-     */
-
     const digit = digits[0];
 
     const code =
@@ -538,20 +549,11 @@ export default function SignUpPage() {
 
     setVerificationCode(newCode);
 
-    /*
-     * Move automatically to the next box.
-     */
-
     if (index < 7) {
       document
         .getElementById(`otp-${index + 1}`)
         ?.focus();
     }
-
-    /*
-     * Automatically verify when all
-     * eight digits have been entered.
-     */
 
     if (
       newCode.length === 8 &&
@@ -562,7 +564,7 @@ export default function SignUpPage() {
   };
 
   // ============================================================
-  // PASTE 8-DIGIT OTP
+  // OTP PASTE
   // ============================================================
 
   const handleOtpPaste = (
@@ -582,21 +584,12 @@ export default function SignUpPage() {
 
     setVerificationCode(pastedCode);
 
-    /*
-     * Focus the next available box.
-     */
-
     const nextIndex =
       Math.min(pastedCode.length, 7);
 
     document
       .getElementById(`otp-${nextIndex}`)
       ?.focus();
-
-    /*
-     * If all eight digits were pasted,
-     * verify immediately.
-     */
 
     if (
       pastedCode.length === 8 &&
@@ -607,7 +600,7 @@ export default function SignUpPage() {
   };
 
   // ============================================================
-  // OTP KEYBOARD NAVIGATION
+  // OTP KEYBOARD
   // ============================================================
 
   const handleOtpKeyDown = (
@@ -644,7 +637,7 @@ export default function SignUpPage() {
   };
 
   // ============================================================
-  // RESEND CODE
+  // RESEND
   // ============================================================
 
   const handleResendCode = async () => {
@@ -751,7 +744,46 @@ export default function SignUpPage() {
 
   if (showVerification) {
     return (
-      <main className="page">
+      <main className="page verificationPage">
+
+        <header className="topHeader">
+
+          <button
+            type="button"
+            className="topBrand"
+            onClick={() => router.push("/")}
+            aria-label="PropertySure AI home"
+          >
+            <LogoMark size={39} />
+
+            <span className="topBrandText">
+              <span>
+                PropertySure
+                <strong> AI</strong>
+              </span>
+
+              <small>
+                AI-POWERED PROPERTY DUE DILIGENCE
+              </small>
+            </span>
+          </button>
+
+          <div className="topSignup">
+            <span>
+              Already have an account?
+            </span>
+
+            <button
+              type="button"
+              onClick={() =>
+                router.push("/signin")
+              }
+            >
+              Sign In
+            </button>
+          </div>
+
+        </header>
 
         <div className="verificationCard">
 
@@ -763,13 +795,20 @@ export default function SignUpPage() {
               setError("");
               setSuccess("");
             }}
+            aria-label="Back to account creation"
           >
             <ArrowLeftIcon />
           </button>
 
           <div className="verificationContent">
 
-            <LogoMark size={78} />
+            <div className="verificationLogo">
+              <LogoMark size={72} />
+            </div>
+
+            <div className="verificationEyebrow">
+              EMAIL VERIFICATION
+            </div>
 
             <h1>
               Verify your email
@@ -829,12 +868,14 @@ export default function SignUpPage() {
 
             <div className="verificationHint">
 
-              <ShieldCheckIcon />
+              <div className="verificationHintIcon">
+                <ShieldCheckIcon />
+              </div>
 
               <span>
                 Enter the 8-digit code to verify
                 <br />
-                your email address.
+                your email address securely.
               </span>
 
             </div>
@@ -865,6 +906,10 @@ export default function SignUpPage() {
               {verifying
                 ? "Verifying..."
                 : "Verify Email"}
+
+              {!verifying && (
+                <ArrowRightIcon />
+              )}
             </button>
 
             <div className="resendText">
@@ -885,20 +930,19 @@ export default function SignUpPage() {
 
             <div className="secureText">
 
-              <LockIcon size={17} />
+              <LockIcon size={16} />
 
               <span>
                 Your information is secure with
-                <br />
                 PropertySure AI
               </span>
 
             </div>
 
           </div>
+
         </div>
 
-        <style jsx>{styles}</style>
       </main>
     );
   }
@@ -910,326 +954,41 @@ export default function SignUpPage() {
   return (
     <main className="page">
 
-      <div className="signupCard">
+      {/* ======================================================
+          TOP HEADER
+      ====================================================== */}
 
-        {/* LOGO + BRAND */}
+      <header className="topHeader">
 
-        <div className="brand">
+        <button
+          type="button"
+          className="topBrand"
+          onClick={() => router.push("/")}
+          aria-label="PropertySure AI home"
+        >
 
-          <LogoMark size={76} />
+          <LogoMark size={39} />
 
-          <div className="brandName">
+          <span className="topBrandText">
+
             <span>
               PropertySure
-            </span>{" "}
-            <span className="brandAI">
-              AI
+              <strong> AI</strong>
             </span>
-          </div>
 
-        </div>
+            <small>
+              AI-POWERED PROPERTY DUE DILIGENCE
+            </small>
 
-        {/* HEADER */}
-
-        <div className="header">
-
-          <div className="eyebrow">
-            PROPERTY VERIFICATION
-          </div>
-
-          <h1>
-            Create your account
-          </h1>
-
-          <p>
-            Join PropertySure AI to verify property
-            documents with greater confidence.
-          </p>
-
-        </div>
-
-        {/* ERROR */}
-
-        {error && (
-          <div className="errorBox">
-            {error}
-          </div>
-        )}
-
-        {/* SUCCESS */}
-
-        {success && (
-          <div className="successBox">
-            {success}
-          </div>
-        )}
-
-        {/* FULL NAME */}
-
-        <InputBox
-          label="Full Name"
-          icon={<UserIcon />}
-        >
-          <input
-            type="text"
-            value={fullName}
-            onChange={(e) =>
-              setFullName(e.target.value)
-            }
-            placeholder="Enter your full name"
-            className="fieldInput"
-            autoComplete="name"
-          />
-        </InputBox>
-
-        {/* PHONE */}
-
-        <div className="fieldGroup">
-
-          <label>
-            Phone Number
-          </label>
-
-          <div className="phoneBox">
-
-            <div className="phoneCountry">
-
-              <PhoneIcon size={21} />
-
-              <span className="flag">
-                🇳🇬
-              </span>
-
-              <span>
-                +234
-              </span>
-
-              <span className="chevron">
-                ▾
-              </span>
-
-            </div>
-
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) =>
-                setPhone(e.target.value)
-              }
-              placeholder="Enter your phone number"
-              className="phoneInput"
-              autoComplete="tel"
-            />
-
-          </div>
-
-        </div>
-
-        {/* EMAIL */}
-
-        <InputBox
-          label="Email Address"
-          icon={<MailIcon />}
-        >
-          <input
-            type="email"
-            value={email}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
-            placeholder="Enter your email address"
-            className="fieldInput"
-            autoComplete="email"
-          />
-        </InputBox>
-
-        {/* PASSWORD */}
-
-        <div className="fieldGroup">
-
-          <label>
-            Password
-          </label>
-
-          <div className="passwordBox">
-
-            <div className="fieldIcon">
-              <LockIcon />
-            </div>
-
-            <input
-              type={
-                showPassword
-                  ? "text"
-                  : "password"
-              }
-              value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
-              placeholder="Create a password"
-              className="passwordInput"
-              autoComplete="new-password"
-            />
-
-            <button
-              type="button"
-              className="eyeButton"
-              onClick={() =>
-                setShowPassword(
-                  !showPassword
-                )
-              }
-              aria-label={
-                showPassword
-                  ? "Hide password"
-                  : "Show password"
-              }
-            >
-              <EyeIcon />
-            </button>
-
-          </div>
-
-        </div>
-
-        {/* CONFIRM PASSWORD */}
-
-        <div className="fieldGroup">
-
-          <label>
-            Confirm Password
-          </label>
-
-          <div className="passwordBox">
-
-            <div className="fieldIcon">
-              <LockIcon />
-            </div>
-
-            <input
-              type={
-                showConfirmPassword
-                  ? "text"
-                  : "password"
-              }
-              value={confirmPassword}
-              onChange={(e) =>
-                setConfirmPassword(
-                  e.target.value
-                )
-              }
-              placeholder="Confirm your password"
-              className="passwordInput"
-              autoComplete="new-password"
-            />
-
-            <button
-              type="button"
-              className="eyeButton"
-              onClick={() =>
-                setShowConfirmPassword(
-                  !showConfirmPassword
-                )
-              }
-              aria-label={
-                showConfirmPassword
-                  ? "Hide password"
-                  : "Show password"
-              }
-            >
-              <EyeIcon />
-            </button>
-
-          </div>
-
-        </div>
-
-        {/* TERMS */}
-
-        <label className="terms">
-
-          <input
-            type="checkbox"
-            checked={agreedToTerms}
-            onChange={(e) =>
-              setAgreedToTerms(
-                e.target.checked
-              )
-            }
-          />
-
-          <span>
-            I agree to the{" "}
-            <span className="blueText">
-              Terms of Service
-            </span>{" "}
-            and{" "}
-            <span className="blueText">
-              Privacy Policy
-            </span>
-            .
-          </span>
-
-        </label>
-
-        {/* CREATE ACCOUNT */}
-
-        <button
-          type="button"
-          className="primaryButton"
-          onClick={handleSignUp}
-          disabled={
-            loading ||
-            googleLoading
-          }
-        >
-          {loading
-            ? "Creating Account..."
-            : "Create Account"}
-        </button>
-
-        {/* DIVIDER */}
-
-        <div className="divider">
-
-          <span />
-
-          <div>
-            or
-          </div>
-
-          <span />
-
-        </div>
-
-        {/* GOOGLE */}
-
-        <button
-          type="button"
-          className="googleButton"
-          onClick={handleGoogleSignUp}
-          disabled={
-            loading ||
-            googleLoading
-          }
-        >
-
-          <GoogleIcon />
-
-          <span>
-            {googleLoading
-              ? "Connecting..."
-              : "Sign up with Google"}
           </span>
 
         </button>
 
-        {/* SIGN IN */}
+        <div className="topSignup">
 
-        <div className="signinText">
-
-          Already have an account?{" "}
+          <span>
+            Already have an account?
+          </span>
 
           <button
             type="button"
@@ -1242,854 +1001,514 @@ export default function SignUpPage() {
 
         </div>
 
+      </header>
+
+      {/* ======================================================
+          MAIN LAYOUT
+      ====================================================== */}
+
+      <div className="mainLayout">
+
+        {/* ====================================================
+            LEFT HERO
+        ==================================================== */}
+
+        <section className="heroPanel">
+
+          <div className="heroEyebrow">
+            PROPERTY VERIFICATION
+          </div>
+
+          <h1>
+            Build With
+            <br />
+            <span>Greater Confidence</span>
+          </h1>
+
+          <p className="heroDescription">
+            Create your PropertySure AI account and
+            verify property documents with secure,
+            AI-powered due diligence.
+          </p>
+
+          <div className="heroFeatures">
+
+            <div className="heroFeature">
+
+              <div className="heroFeatureIcon">
+                <ShieldCheckIcon size={28} />
+              </div>
+
+              <div>
+                <strong>
+                  Secure Verification
+                </strong>
+
+                <span>
+                  Your property documents stay protected.
+                </span>
+              </div>
+
+            </div>
+
+            <div className="heroFeature">
+
+              <div className="heroFeatureIcon">
+                <CheckCircleIcon />
+              </div>
+
+              <div>
+                <strong>
+                  Smarter Decisions
+                </strong>
+
+                <span>
+                  AI-powered insights for better confidence.
+                </span>
+              </div>
+
+            </div>
+
+            <div className="heroFeature">
+
+              <div className="heroFeatureIcon">
+                <LogoMark size={28} />
+              </div>
+
+              <div>
+                <strong>
+                  Property Due Diligence
+                </strong>
+
+                <span>
+                  Verify important property information.
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+
+          <div className="propertyVisual">
+
+            <img
+              src="/land-verification.png"
+              alt="Property verification"
+              className="propertyImage"
+            />
+
+            <div className="propertyBadge">
+
+              <div className="propertyBadgeIcon">
+                <ShieldCheckIcon size={22} />
+              </div>
+
+              <div>
+                <strong>
+                  Verified Property
+                </strong>
+
+                <span>
+                  Greater confidence before you buy
+                </span>
+              </div>
+
+              <div className="badgeLine" />
+
+            </div>
+
+          </div>
+
+        </section>
+
+        {/* ====================================================
+            SIGNUP CARD
+        ==================================================== */}
+
+        <section className="signupCard">
+
+          <div className="cardHeader">
+
+            <div className="cardEyebrow">
+              GET STARTED
+            </div>
+
+            <h1>
+              Create your account
+            </h1>
+
+            <p>
+              Join PropertySure AI to verify property
+              documents with greater confidence.
+            </p>
+
+          </div>
+
+          {error && (
+            <div className="errorBox">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="successBox">
+              {success}
+            </div>
+          )}
+
+          {/* FULL NAME */}
+
+          <InputBox
+            label="Full Name"
+            icon={<UserIcon />}
+          >
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) =>
+                setFullName(e.target.value)
+              }
+              placeholder="Enter your full name"
+              className="fieldInput"
+              autoComplete="name"
+            />
+          </InputBox>
+
+          {/* PHONE */}
+
+          <div className="fieldGroup">
+
+            <label>
+              Phone Number
+            </label>
+
+            <div className="phoneBox">
+
+              <div className="phoneCountry">
+
+                <PhoneIcon size={20} />
+
+                <span className="flag">
+                  🇳🇬
+                </span>
+
+                <span>
+                  +234
+                </span>
+
+                <span className="chevron">
+                  ▾
+                </span>
+
+              </div>
+
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) =>
+                  setPhone(e.target.value)
+                }
+                placeholder="Enter your phone number"
+                className="phoneInput"
+                autoComplete="tel"
+              />
+
+            </div>
+
+          </div>
+
+          {/* EMAIL */}
+
+          <InputBox
+            label="Email Address"
+            icon={<MailIcon />}
+          >
+            <input
+              type="email"
+              value={email}
+              onChange={(e) =>
+                setEmail(e.target.value)
+              }
+              placeholder="Enter your email address"
+              className="fieldInput"
+              autoComplete="email"
+            />
+          </InputBox>
+
+          {/* PASSWORD */}
+
+          <div className="fieldGroup">
+
+            <label>
+              Password
+            </label>
+
+            <div className="passwordBox">
+
+              <div className="fieldIcon">
+                <LockIcon />
+              </div>
+
+              <input
+                type={
+                  showPassword
+                    ? "text"
+                    : "password"
+                }
+                value={password}
+                onChange={(e) =>
+                  setPassword(e.target.value)
+                }
+                placeholder="Create a password"
+                className="passwordInput"
+                autoComplete="new-password"
+              />
+
+              <button
+                type="button"
+                className="eyeButton"
+                onClick={() =>
+                  setShowPassword(
+                    !showPassword
+                  )
+                }
+                aria-label={
+                  showPassword
+                    ? "Hide password"
+                    : "Show password"
+                }
+              >
+                <EyeIcon />
+              </button>
+
+            </div>
+
+          </div>
+
+          {/* CONFIRM PASSWORD */}
+
+          <div className="fieldGroup">
+
+            <label>
+              Confirm Password
+            </label>
+
+            <div className="passwordBox">
+
+              <div className="fieldIcon">
+                <LockIcon />
+              </div>
+
+              <input
+                type={
+                  showConfirmPassword
+                    ? "text"
+                    : "password"
+                }
+                value={confirmPassword}
+                onChange={(e) =>
+                  setConfirmPassword(
+                    e.target.value
+                  )
+                }
+                placeholder="Confirm your password"
+                className="passwordInput"
+                autoComplete="new-password"
+              />
+
+              <button
+                type="button"
+                className="eyeButton"
+                onClick={() =>
+                  setShowConfirmPassword(
+                    !showConfirmPassword
+                  )
+                }
+                aria-label={
+                  showConfirmPassword
+                    ? "Hide password"
+                    : "Show password"
+                }
+              >
+                <EyeIcon />
+              </button>
+
+            </div>
+
+          </div>
+
+          {/* TERMS */}
+
+          <label className="terms">
+
+            <input
+              type="checkbox"
+              checked={agreedToTerms}
+              onChange={(e) =>
+                setAgreedToTerms(
+                  e.target.checked
+                )
+              }
+            />
+
+            <span>
+              I agree to the{" "}
+              <span className="blueText">
+                Terms of Service
+              </span>{" "}
+              and{" "}
+              <span className="blueText">
+                Privacy Policy
+              </span>
+              .
+            </span>
+
+          </label>
+
+          {/* CREATE ACCOUNT */}
+
+          <button
+            type="button"
+            className="primaryButton"
+            onClick={handleSignUp}
+            disabled={
+              loading ||
+              googleLoading
+            }
+          >
+            {loading
+              ? "Creating Account..."
+              : "Create Account"}
+
+            {!loading && (
+              <ArrowRightIcon />
+            )}
+          </button>
+
+          {/* DIVIDER */}
+
+          <div className="divider">
+
+            <span />
+
+            <div>
+              or
+            </div>
+
+            <span />
+
+          </div>
+
+          {/* GOOGLE */}
+
+          <button
+            type="button"
+            className="googleButton"
+            onClick={handleGoogleSignUp}
+            disabled={
+              loading ||
+              googleLoading
+            }
+          >
+
+            <GoogleIcon />
+
+            <span>
+              {googleLoading
+                ? "Connecting..."
+                : "Sign up with Google"}
+            </span>
+
+          </button>
+
+          {/* SIGN IN */}
+
+          <div className="signinText">
+
+            Already have an account?{" "}
+
+            <button
+              type="button"
+              onClick={() =>
+                router.push("/signin")
+              }
+            >
+              Sign In
+            </button>
+
+          </div>
+
+        </section>
+
       </div>
 
-      <style jsx>{styles}</style>
+      {/* ======================================================
+          TRUST STRIP
+      ====================================================== */}
 
+      <div className="trustFeatures">
+
+        <div className="trustFeature">
+
+          <div className="trustIcon">
+            <ShieldCheckIcon size={21} />
+          </div>
+
+          <div>
+            <strong>
+              Secure &amp; Protected
+            </strong>
+
+            <span>
+              Your information stays protected
+            </span>
+          </div>
+
+        </div>
+
+        <div className="trustDivider" />
+
+        <div className="trustFeature">
+
+          <div className="trustIcon">
+            <CheckCircleIcon />
+          </div>
+
+          <div>
+            <strong>
+              AI-Powered Insights
+            </strong>
+
+            <span>
+              Smarter property decisions
+            </span>
+          </div>
+
+        </div>
+
+        <div className="trustDivider" />
+
+        <div className="trustFeature">
+
+          <div className="trustIcon">
+            <LogoMark size={24} />
+          </div>
+
+          <div>
+            <strong>
+              Property Due Diligence
+            </strong>
+
+            <span>
+              Confidence before you commit
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+
+      
     </main>
   );
 }
-
-const styles = `
-  * {
-    box-sizing: border-box;
-  }
-
-  .page {
-    min-height: 100vh;
-    width: 100%;
-    background:
-      radial-gradient(
-        circle at 75% 8%,
-        rgba(0, 103, 255, 0.28),
-        transparent 28%
-      ),
-      radial-gradient(
-        circle at 15% 80%,
-        rgba(0, 70, 180, 0.12),
-        transparent 30%
-      ),
-      #020A18;
-
-    color: #FFFFFF;
-
-    font-family:
-      Inter,
-      Arial,
-      Helvetica,
-      sans-serif;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 30px 18px;
-  }
-
-  .signupCard {
-    width: 100%;
-    max-width: 825px;
-
-    padding:
-      38px
-      90px
-      40px;
-
-    border-radius: 24px;
-
-    background:
-      radial-gradient(
-        circle at 80% 0%,
-        rgba(0, 99, 255, 0.16),
-        transparent 32%
-      ),
-      linear-gradient(
-        145deg,
-        rgba(5, 18, 39, 0.97),
-        rgba(3, 13, 28, 0.98)
-      );
-
-    border:
-      1px solid rgba(82, 135, 205, 0.55);
-
-    box-shadow:
-      0 35px 100px rgba(0, 0, 0, 0.45),
-      inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  }
-
-  .brand {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    margin-bottom: 28px;
-  }
-
-  .brandName {
-    margin-top: 7px;
-
-    font-size: 25px;
-    line-height: 1;
-
-    font-weight: 800;
-
-    letter-spacing: -0.7px;
-  }
-
-  .brandAI {
-    color: #159BFF;
-  }
-
-  .header {
-    text-align: center;
-    margin-bottom: 32px;
-  }
-
-  .eyebrow {
-    color: #159BFF;
-
-    font-size: 14px;
-    font-weight: 800;
-
-    letter-spacing: 2.3px;
-
-    margin-bottom: 18px;
-  }
-
-  .header h1 {
-    margin: 0;
-
-    font-size: 43px;
-    line-height: 1.1;
-
-    font-weight: 800;
-
-    letter-spacing: -1.8px;
-  }
-
-  .header p {
-    max-width: 600px;
-
-    margin:
-      16px auto
-      0;
-
-    color: #C3CEDD;
-
-    font-size: 17px;
-    line-height: 1.65;
-  }
-
-  .fieldGroup {
-    margin-bottom: 20px;
-  }
-
-  .fieldGroup label {
-    display: block;
-
-    margin-bottom: 9px;
-
-    color: #F7F9FC;
-
-    font-size: 15px;
-    font-weight: 600;
-  }
-
-  .inputBox {
-    width: 100%;
-    height: 68px;
-
-    display: flex;
-    align-items: center;
-
-    border:
-      1px solid rgba(92, 130, 177, 0.48);
-
-    border-radius: 13px;
-
-    background:
-      rgba(7, 19, 38, 0.72);
-
-    transition:
-      border-color 0.2s,
-      box-shadow 0.2s;
-  }
-
-  .inputBox:focus-within,
-  .phoneBox:focus-within,
-  .passwordBox:focus-within {
-    border-color: #159BFF;
-
-    box-shadow:
-      0 0 0 3px rgba(21, 155, 255, 0.08);
-  }
-
-  .fieldIcon {
-    width: 63px;
-
-    flex-shrink: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: #A9B7CA;
-  }
-
-  .fieldInput,
-  .phoneInput,
-  .passwordInput {
-    width: 100%;
-    min-width: 0;
-
-    height: 100%;
-
-    border: none;
-    outline: none;
-
-    background: transparent;
-
-    color: #FFFFFF;
-
-    font-size: 16px;
-  }
-
-  .fieldInput::placeholder,
-  .phoneInput::placeholder,
-  .passwordInput::placeholder {
-    color: #8493A8;
-  }
-
-  .phoneBox {
-    width: 100%;
-    height: 68px;
-
-    display: flex;
-    align-items: center;
-
-    border:
-      1px solid rgba(92, 130, 177, 0.48);
-
-    border-radius: 13px;
-
-    background:
-      rgba(7, 19, 38, 0.72);
-
-    overflow: hidden;
-  }
-
-  .phoneCountry {
-    height: 100%;
-
-    display: flex;
-    align-items: center;
-
-    gap: 10px;
-
-    padding: 0 18px;
-
-    border-right:
-      1px solid rgba(92, 130, 177, 0.35);
-
-    color: #F1F5FA;
-
-    flex-shrink: 0;
-  }
-
-  .phoneCountry svg {
-    color: #A9B7CA;
-  }
-
-  .flag {
-    font-size: 20px;
-    line-height: 1;
-  }
-
-  .chevron {
-    color: #A6B3C5;
-    font-size: 13px;
-  }
-
-  .phoneInput {
-    padding: 0 17px;
-  }
-
-  .passwordBox {
-    width: 100%;
-    height: 68px;
-
-    display: flex;
-    align-items: center;
-
-    border:
-      1px solid rgba(92, 130, 177, 0.48);
-
-    border-radius: 13px;
-
-    background:
-      rgba(7, 19, 38, 0.72);
-
-    overflow: hidden;
-  }
-
-  .passwordInput {
-    padding: 0 5px;
-  }
-
-  .eyeButton {
-    width: 58px;
-    height: 100%;
-
-    flex-shrink: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: none;
-    background: transparent;
-
-    color: #A7B4C8;
-
-    cursor: pointer;
-  }
-
-  .eyeButton:hover {
-    color: #FFFFFF;
-  }
-
-  .terms {
-    display: flex;
-    align-items: center;
-
-    gap: 12px;
-
-    margin:
-      25px
-      0
-      24px;
-
-    color: #CBD5E2;
-
-    font-size: 14px;
-
-    cursor: pointer;
-  }
-
-  .terms input {
-    width: 25px;
-    height: 25px;
-
-    flex-shrink: 0;
-
-    appearance: none;
-
-    border:
-      2px solid #6380A4;
-
-    border-radius: 5px;
-
-    background: transparent;
-
-    cursor: pointer;
-
-    position: relative;
-  }
-
-  .terms input:checked {
-    background: #159BFF;
-    border-color: #159BFF;
-  }
-
-  .terms input:checked::after {
-    content: "✓";
-
-    position: absolute;
-
-    left: 50%;
-    top: 50%;
-
-    transform:
-      translate(-50%, -53%);
-
-    color: #FFFFFF;
-
-    font-size: 17px;
-    font-weight: 800;
-  }
-
-  .blueText {
-    color: #159BFF;
-  }
-
-  .primaryButton {
-    width: 100%;
-    height: 66px;
-
-    border: none;
-    border-radius: 13px;
-
-    background:
-      linear-gradient(
-        135deg,
-        #147CFF,
-        #075CEB
-      );
-
-    color: #FFFFFF;
-
-    font-size: 20px;
-    font-weight: 800;
-
-    cursor: pointer;
-
-    box-shadow:
-      0 15px 35px rgba(0, 91, 235, 0.25);
-
-    transition:
-      transform 0.15s,
-      box-shadow 0.15s,
-      opacity 0.15s;
-  }
-
-  .primaryButton:hover:not(:disabled) {
-    transform: translateY(-1px);
-
-    box-shadow:
-      0 18px 40px rgba(0, 105, 255, 0.32);
-  }
-
-  .primaryButton:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-
-  .divider {
-    display: flex;
-    align-items: center;
-
-    gap: 18px;
-
-    margin:
-      28px
-      0;
-  }
-
-  .divider span {
-    flex: 1;
-
-    height: 1px;
-
-    background:
-      rgba(117, 145, 180, 0.35);
-  }
-
-  .divider div {
-    color: #D1D9E5;
-
-    font-size: 15px;
-  }
-
-  .googleButton {
-    width: 100%;
-    height: 62px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    gap: 13px;
-
-    border:
-      1px solid rgba(21, 126, 255, 0.62);
-
-    border-radius: 13px;
-
-    background:
-      rgba(5, 18, 38, 0.7);
-
-    color: #FFFFFF;
-
-    font-size: 17px;
-    font-weight: 600;
-
-    cursor: pointer;
-  }
-
-  .googleButton:hover:not(:disabled) {
-    background:
-      rgba(13, 44, 82, 0.72);
-  }
-
-  .googleButton:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-
-  .signinText {
-    text-align: center;
-
-    margin-top: 30px;
-
-    color: #C3CDDB;
-
-    font-size: 16px;
-  }
-
-  .signinText button,
-  .resendText button {
-    border: none;
-    background: transparent;
-
-    color: #159BFF;
-
-    font-size: inherit;
-    font-weight: 600;
-
-    cursor: pointer;
-
-    padding: 0;
-  }
-
-  .errorBox,
-  .successBox {
-    padding: 13px 15px;
-
-    margin-bottom: 20px;
-
-    border-radius: 10px;
-
-    font-size: 14px;
-    line-height: 1.5;
-  }
-
-  .errorBox {
-    color: #FF9C9C;
-
-    background:
-      rgba(239, 68, 68, 0.09);
-
-    border:
-      1px solid rgba(239, 68, 68, 0.3);
-  }
-
-  .successBox {
-    color: #72E6A0;
-
-    background:
-      rgba(34, 197, 94, 0.09);
-
-    border:
-      1px solid rgba(34, 197, 94, 0.3);
-  }
-
-  /* =========================================================
-     VERIFICATION SCREEN
-  ========================================================= */
-
-  .verificationCard {
-    width: 100%;
-    max-width: 825px;
-    min-height: 760px;
-
-    position: relative;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 55px 90px;
-
-    border-radius: 24px;
-
-    background:
-      radial-gradient(
-        circle at 80% 0%,
-        rgba(0, 99, 255, 0.2),
-        transparent 32%
-      ),
-      linear-gradient(
-        145deg,
-        rgba(5, 18, 39, 0.97),
-        rgba(3, 13, 28, 0.98)
-      );
-
-    border:
-      1px solid rgba(82, 135, 205, 0.55);
-
-    box-shadow:
-      0 35px 100px rgba(0, 0, 0, 0.45);
-  }
-
-  .backButton {
-    position: absolute;
-
-    top: 35px;
-    left: 35px;
-
-    width: 48px;
-    height: 48px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: none;
-    background: transparent;
-
-    color: #FFFFFF;
-
-    cursor: pointer;
-  }
-
-  .verificationContent {
-    width: 100%;
-    max-width: 650px;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    text-align: center;
-  }
-
-  .verificationContent h1 {
-    margin:
-      30px
-      0
-      12px;
-
-    font-size: 39px;
-
-    letter-spacing: -1.4px;
-  }
-
-  .verificationText {
-    margin: 0;
-
-    color: #CBD4E0;
-
-    font-size: 17px;
-  }
-
-  .verificationEmail {
-    margin-top: 13px;
-
-    color: #159BFF;
-
-    font-size: 22px;
-    font-weight: 600;
-  }
-
-  .otpContainer {
-    width: 100%;
-
-    display: grid;
-
-    grid-template-columns:
-      repeat(8, 1fr);
-
-    gap: 13px;
-
-    margin:
-      55px
-      0
-      48px;
-  }
-
-  .otpInput {
-    width: 100%;
-    height: 78px;
-
-    border:
-      1px solid rgba(92, 130, 177, 0.48);
-
-    border-radius: 13px;
-
-    background:
-      rgba(7, 19, 38, 0.72);
-
-    color: #FFFFFF;
-
-    text-align: center;
-
-    font-size: 28px;
-    font-weight: 700;
-
-    outline: none;
-  }
-
-  .otpInput:focus {
-    border-color: #159BFF;
-
-    box-shadow:
-      0 0 0 3px rgba(21, 155, 255, 0.1);
-  }
-
-  .verificationHint {
-    width: 100%;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    gap: 15px;
-
-    margin-bottom: 35px;
-
-    color: #CBD5E2;
-
-    font-size: 16px;
-    line-height: 1.55;
-
-    text-align: left;
-  }
-
-  .verificationHint svg {
-    flex-shrink: 0;
-  }
-
-  .resendText {
-    margin-top: 25px;
-
-    color: #CBD5E2;
-
-    font-size: 16px;
-  }
-
-  .secureText {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    gap: 9px;
-
-    margin-top: 42px;
-
-    color: #9EABBD;
-
-    font-size: 14px;
-
-    line-height: 1.55;
-
-    text-align: center;
-  }
-
-  @media (max-width: 700px) {
-
-    .page {
-      padding: 15px;
-      align-items: flex-start;
-    }
-
-    .signupCard {
-      margin-top: 5px;
-
-      padding:
-        30px
-        22px
-        32px;
-
-      border-radius: 20px;
-    }
-
-    .verificationCard {
-      min-height: 700px;
-
-      padding:
-        45px
-        22px;
-    }
-
-    .header h1 {
-      font-size: 34px;
-    }
-
-    .header p {
-      font-size: 15px;
-    }
-
-    .eyebrow {
-      font-size: 12px;
-    }
-
-    .brandName {
-      font-size: 23px;
-    }
-
-    .inputBox,
-    .phoneBox,
-    .passwordBox {
-      height: 62px;
-    }
-
-    .phoneCountry {
-      padding: 0 11px;
-      gap: 7px;
-    }
-
-    .fieldIcon {
-      width: 53px;
-    }
-
-    .primaryButton {
-      height: 60px;
-      font-size: 18px;
-    }
-
-    .googleButton {
-      height: 58px;
-    }
-
-    .otpContainer {
-      gap: 7px;
-      margin-top: 40px;
-    }
-
-    .otpInput {
-      height: 58px;
-      font-size: 22px;
-    }
-
-    .verificationContent h1 {
-      font-size: 32px;
-    }
-
-    .verificationEmail {
-      font-size: 18px;
-    }
-
-    .backButton {
-      top: 20px;
-      left: 20px;
-    }
-  }
-
-  @media (max-width: 420px) {
-
-    .signupCard {
-      padding:
-        25px
-        16px
-        28px;
-    }
-
-    .header h1 {
-      font-size: 31px;
-    }
-
-    .phoneCountry {
-      padding: 0 8px;
-    }
-
-    .phoneCountry .flag {
-      font-size: 17px;
-    }
-
-    .otpInput {
-      height: 52px;
-      border-radius: 9px;
-    }
-  }
-`;

@@ -1,0 +1,2275 @@
+/* =========================================================
+   PAGE
+========================================================= */
+
+.page {
+  min-height: 100vh;
+  width: 100%;
+
+  background:
+    radial-gradient(
+      circle at 75% 8%,
+      rgba(22, 142, 255, 0.08),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 8% 80%,
+      rgba(22, 142, 255, 0.045),
+      transparent 28%
+    ),
+    #ffffff;
+
+  color: #101827;
+
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  padding:
+    28px
+    6vw
+    42px;
+
+  overflow-x: hidden;
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+.page button,
+.page input {
+  font-family: inherit;
+}
+
+/* =========================================================
+   PROPERTYsure LOGO
+========================================================= */
+
+.propertyLogo {
+  color: #168eff;
+
+  line-height: 1;
+
+  display: inline-block;
+
+  flex-shrink: 0;
+
+  text-shadow:
+    0 4px 14px
+    rgba(22, 142, 255, 0.18);
+}
+
+/* =========================================================
+   TOP HEADER
+========================================================= */
+
+.topHeader {
+  width: 100%;
+
+  max-width: 1450px;
+
+  margin:
+    0 auto;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 30px;
+}
+
+.topBrand {
+  display: flex;
+
+  align-items: center;
+
+  gap: 13px;
+
+  border: none;
+
+  padding: 0;
+
+  background: transparent;
+
+  color: #0d1b38;
+
+  cursor: pointer;
+
+  text-align: left;
+}
+
+.topBrandText {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.topBrandText > span {
+  color: #0b1a39;
+
+  font-size: 28px;
+
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing:
+    -0.9px;
+}
+
+.topBrandText strong {
+  color: #168eff;
+}
+
+.topBrandText small {
+  color: #64748b;
+
+  font-size: 7px;
+
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing:
+    1.75px;
+}
+
+.topSignup {
+  display: flex;
+
+  align-items: center;
+
+  gap: 18px;
+
+  padding-top: 3px;
+
+  color: #52627a;
+
+  font-size: 13px;
+}
+
+.topSignup button {
+  min-height: 47px;
+
+  padding:
+    0 28px;
+
+  border:
+    1px solid
+    #168eff;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  color: #0877e8;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.topSignup button:hover {
+  background: #168eff;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 8px 22px
+    rgba(22, 142, 255, 0.18);
+
+  transform:
+    translateY(-1px);
+}
+
+/* =========================================================
+   MAIN LAYOUT
+========================================================= */
+
+.mainLayout {
+  width: 100%;
+
+  max-width: 1450px;
+
+  margin:
+    48px auto 0;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(460px, 0.9fr);
+
+  align-items: center;
+
+  gap: clamp(
+    55px,
+    7vw,
+    110px
+  );
+}
+
+/* =========================================================
+   HERO PANEL
+========================================================= */
+
+.heroPanel {
+  min-width: 0;
+
+  padding:
+    5px 0 0;
+}
+
+.heroEyebrow {
+  color: #168eff;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing:
+    3.2px;
+
+  margin-bottom: 19px;
+}
+
+.heroPanel h1 {
+  margin: 0;
+
+  color: #0b1a39;
+
+  font-size:
+    clamp(
+      44px,
+      4.2vw,
+      67px
+    );
+
+  line-height:
+    1.02;
+
+  font-weight: 800;
+
+  letter-spacing:
+    -2.7px;
+}
+
+.heroPanel h1 span {
+  color: #168eff;
+}
+
+.heroDescription {
+  max-width: 570px;
+
+  margin:
+    24px 0 0;
+
+  color: #61718a;
+
+  font-size: 18px;
+
+  line-height: 1.58;
+}
+
+/* =========================================================
+   PROPERTY VISUAL
+========================================================= */
+
+.propertyVisual {
+  height: 315px;
+
+  position: relative;
+
+  margin-top: 32px;
+
+  overflow: hidden;
+
+  border-radius:
+    25px 25px 70px 25px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #f5faff 0%,
+      #e6f3ff 60%,
+      #d8edff 100%
+    );
+
+  border:
+    1px solid
+    #dceeff;
+}
+
+/* =========================================================
+   PROPERTY VISUAL IMAGE
+========================================================= */
+
+.propertyImage {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+  object-position: center;
+
+  border-radius:
+    25px 25px 70px 25px;
+}
+
+/* =========================================================
+   PROPERTY VISUAL GLOWS
+========================================================= */
+
+.visualGlowOne {
+  position: absolute;
+
+  width: 240px;
+
+  height: 240px;
+
+  right: 2%;
+
+  top: -75px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(22, 142, 255, 0.12);
+
+  filter:
+    blur(2px);
+}
+
+.visualGlowTwo {
+  position: absolute;
+
+  width: 300px;
+
+  height: 180px;
+
+  left: 14%;
+
+  bottom: -110px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(255, 255, 255, 0.85);
+
+  filter:
+    blur(5px);
+}
+
+/* =========================================================
+   ABSTRACT PROPERTY BUILDING
+
+   Kept for compatibility with the existing JSX.
+   If the property image is used, these elements remain
+   unused without affecting the uploaded image.
+========================================================= */
+
+.propertyBuilding {
+  position: absolute;
+
+  left: 7%;
+
+  bottom: 0;
+
+  width: 68%;
+
+  height: 70%;
+
+  padding: 18px;
+
+  border-radius:
+    8px 8px 0 0;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #edf6ff
+    );
+
+  border:
+    1px solid
+    #cfe5fa;
+
+  box-shadow:
+    0 20px 45px
+    rgba(30, 88, 145, 0.12);
+
+  transform:
+    perspective(700px)
+    rotateY(-5deg);
+}
+
+.buildingRoof {
+  position: absolute;
+
+  left: -7%;
+
+  top: -15px;
+
+  width: 114%;
+
+  height: 18px;
+
+  border-radius: 4px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #c5def5,
+      #ffffff,
+      #c5def5
+    );
+}
+
+.buildingTop,
+.buildingFloor {
+  display: grid;
+
+  gap: 12px;
+
+  height: 43%;
+
+  margin-bottom: 13px;
+}
+
+.buildingTop {
+  grid-template-columns:
+    1fr 1fr;
+}
+
+.buildingFloor {
+  grid-template-columns:
+    1fr 1fr 1fr;
+}
+
+.buildingWindow {
+  border-radius: 4px;
+
+  border:
+    1px solid
+    #b6d8f6;
+
+  background:
+    linear-gradient(
+      145deg,
+      #c9e9ff,
+      #8fcaff
+    );
+
+  box-shadow:
+    inset 0 0 0 3px
+    rgba(255, 255, 255, 0.35);
+}
+
+/* =========================================================
+   PROPERTY BADGE
+========================================================= */
+
+.propertyBadge {
+  position: absolute;
+
+  right: 7%;
+
+  bottom: 37px;
+
+  min-width: 235px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 13px;
+
+  padding:
+    15px 18px;
+
+  border:
+    1px solid
+    rgba(209, 226, 244, 0.95);
+
+  border-radius: 13px;
+
+  background:
+    rgba(255, 255, 255, 0.96);
+
+  box-shadow:
+    0 18px 38px
+    rgba(25, 71, 116, 0.16);
+}
+
+.propertyBadgeIcon {
+  width: 42px;
+
+  height: 42px;
+
+  flex: 0 0 42px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background:
+    #e9f5ff;
+
+  color: #168eff;
+}
+
+.propertyBadge > div:nth-child(2) {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.propertyBadge strong {
+  color: #13233f;
+
+  font-size: 13px;
+
+  font-weight: 750;
+}
+
+.propertyBadge span {
+  color: #66758c;
+
+  font-size: 12px;
+}
+
+.badgeLine {
+  position: absolute;
+
+  left: 18px;
+
+  bottom: 8px;
+
+  width: 37px;
+
+  height: 2px;
+
+  border-radius: 2px;
+
+  background: #168eff;
+}
+
+/* =========================================================
+   SIGN IN CARD
+========================================================= */
+
+.signinCard {
+  width: 100%;
+
+  max-width: 610px;
+
+  justify-self: end;
+
+  padding:
+    30px 56px 48px;
+
+  border:
+    1px solid
+    #dce8f4;
+
+  border-radius: 20px;
+
+  background:
+    rgba(255, 255, 255, 0.98);
+
+  box-shadow:
+    0 25px 70px
+    rgba(35, 76, 119, 0.10),
+
+    0 4px 16px
+    rgba(35, 76, 119, 0.04);
+
+  transform:
+    translateY(-32px);
+}
+
+/* =========================================================
+   CARD BRAND
+
+   Duplicate PropertySure AI logo removed.
+   The main logo at the top of the page remains.
+========================================================= */
+
+.cardBrand {
+  display: none;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 12px;
+}
+
+.cardBrand > div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.cardBrandName {
+  color: #0b1a39;
+
+  font-size: 27px;
+
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing:
+    -0.8px;
+}
+
+.cardBrandName strong {
+  color: #168eff;
+}
+
+.cardBrandTagline {
+  color: #708096;
+
+  font-size: 6px;
+
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing:
+    1.45px;
+}
+
+/* =========================================================
+   CARD HEADER
+
+   "WELCOME BACK" removed visually.
+========================================================= */
+
+.header {
+  margin:
+    0 0 29px;
+}
+
+.eyebrow {
+  display: none;
+
+  color: #168eff;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing:
+    2.8px;
+
+  margin-bottom: 12px;
+}
+
+.header h2 {
+  margin: 0;
+
+  color: #0c1b39;
+
+  font-size: 30px;
+
+  line-height: 1.15;
+
+  font-weight: 800;
+
+  letter-spacing:
+    -1px;
+}
+
+.header p {
+  margin:
+    12px 0 0;
+
+  color: #66758c;
+
+  font-size: 14px;
+
+  line-height: 1.6;
+}
+
+/* =========================================================
+   FIELDS
+========================================================= */
+
+.fieldGroup {
+  margin-bottom: 20px;
+}
+
+.fieldGroup label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #17243b;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+.inputBox,
+.passwordBox {
+  width: 100%;
+
+  height: 58px;
+
+  display: flex;
+
+  align-items: center;
+
+  border:
+    1px solid
+    #d2deeb;
+
+  border-radius: 11px;
+
+  background:
+    #ffffff;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.inputBox:hover,
+.passwordBox:hover {
+  border-color:
+    #aac7e5;
+}
+
+.inputBox:focus-within,
+.passwordBox:focus-within {
+  border-color:
+    #168eff;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(22, 142, 255, 0.09);
+}
+
+.fieldIcon {
+  width: 52px;
+
+  height: 100%;
+
+  flex: 0 0 52px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #71839a;
+}
+
+.fieldInput,
+.passwordInput {
+  width: 100%;
+
+  min-width: 0;
+
+  height: 100%;
+
+  border: none;
+
+  outline: none;
+
+  background: transparent;
+
+  color: #17243b;
+
+  font-size: 14px;
+}
+
+.fieldInput::placeholder,
+.passwordInput::placeholder {
+  color: #91a0b3;
+}
+
+.passwordInput {
+  padding:
+    0 5px;
+}
+
+.eyeButton {
+  width: 52px;
+
+  height: 100%;
+
+  flex: 0 0 52px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border: none;
+
+  background: transparent;
+
+  color: #71839a;
+
+  cursor: pointer;
+}
+
+.eyeButton:hover {
+  color: #168eff;
+}
+
+/* =========================================================
+   ACCOUNT OPTIONS
+========================================================= */
+
+.accountOptions {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin:
+    4px 0 21px;
+}
+
+.remember {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color: #66758c;
+
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.remember input {
+  width: 16px;
+
+  height: 16px;
+
+  margin: 0;
+
+  accent-color: #168eff;
+
+  cursor: pointer;
+}
+
+.forgotButton {
+  border: none;
+
+  padding: 0;
+
+  background: transparent;
+
+  color: #087ff1;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.forgotButton:hover {
+  color: #006ed7;
+}
+
+.forgotButton:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   PRIMARY BUTTON
+========================================================= */
+
+.primaryButton {
+  width: 100%;
+
+  min-height: 58px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 13px;
+
+  border:
+    1px solid
+    rgba(22, 142, 255, 0.18);
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #168eff,
+      #1269e7
+    );
+
+  color: #ffffff;
+
+  font-size: 15px;
+
+  font-weight: 750;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 10px 25px
+    rgba(22, 142, 255, 0.20);
+
+  transition:
+    transform 0.17s ease,
+    box-shadow 0.17s ease,
+    opacity 0.17s ease;
+}
+
+.primaryButton:hover:not(:disabled) {
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 14px 30px
+    rgba(22, 142, 255, 0.27);
+}
+
+.primaryButton:active:not(:disabled) {
+  transform:
+    translateY(0);
+}
+
+.primaryButton:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   SECURITY MESSAGE
+========================================================= */
+
+.securityMessage {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  margin-top: 15px;
+
+  color: #718096;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+
+  text-align: left;
+}
+
+.securityIcon {
+  width: 33px;
+
+  height: 33px;
+
+  flex: 0 0 33px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    #edf7ff;
+
+  color: #168eff;
+}
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.divider {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  margin:
+    23px 0;
+}
+
+.divider span {
+  flex: 1;
+
+  height: 1px;
+
+  background:
+    #e1e8f0;
+}
+
+.divider div {
+  color: #8795a8;
+
+  font-size: 11px;
+}
+
+/* =========================================================
+   GOOGLE
+========================================================= */
+
+.googleButton {
+  width: 100%;
+
+  min-height: 55px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 11px;
+
+  border:
+    1px solid
+    #d2deeb;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  color: #1a2941;
+
+  font-size: 13px;
+
+  font-weight: 650;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.googleButton:hover:not(:disabled) {
+  border-color:
+    #b8cce2;
+
+  background:
+    #f9fbfd;
+
+  box-shadow:
+    0 5px 15px
+    rgba(27, 67, 108, 0.06);
+}
+
+.googleButton:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   SIGN UP
+========================================================= */
+
+.signupText {
+  display: none;
+
+  margin-top: 22px;
+
+  color: #718096;
+
+  font-size: 11px;
+
+  text-align: center;
+}
+
+.signupText button {
+  border: none;
+
+  padding: 0;
+
+  background: transparent;
+
+  color: #168eff;
+
+  font-size: inherit;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   ALERTS
+========================================================= */
+
+.errorBox,
+.successBox {
+  padding:
+    11px 13px;
+
+  margin-bottom: 17px;
+
+  border-radius: 9px;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+.errorBox {
+  color: #c93434;
+
+  background:
+    #fff5f5;
+
+  border:
+    1px solid
+    #ffd4d4;
+}
+
+.successBox {
+  color: #18864b;
+
+  background:
+    #f1fcf5;
+
+  border:
+    1px solid
+    #c9efd7;
+}
+
+/* =========================================================
+   TRUST FEATURES
+========================================================= */
+
+.trustFeatures {
+  width: 100%;
+
+  max-width: 1450px;
+
+  margin:
+    34px auto 0;
+
+  padding:
+    19px 25px;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr auto
+    1fr auto
+    1fr;
+
+  align-items: center;
+
+  border-top:
+    1px solid
+    #e4ebf3;
+}
+
+.trustFeature {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 12px;
+
+  padding:
+    0 18px;
+}
+
+.trustIcon {
+  width: 42px;
+
+  height: 42px;
+
+  flex: 0 0 42px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    #eef7ff;
+
+  color: #168eff;
+}
+
+.trustIcon span {
+  font-size: 20px;
+}
+
+.trustFeature > div:last-child {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.trustFeature strong {
+  color: #1a2941;
+
+  font-size: 12px;
+
+  font-weight: 750;
+}
+
+.trustFeature span {
+  color: #758399;
+
+  font-size: 10px;
+}
+
+.trustDivider {
+  width: 1px;
+
+  height: 42px;
+
+  background:
+    #dfe7ef;
+}
+
+/* =========================================================
+   OTP VERIFICATION
+========================================================= */
+
+.verificationCard {
+  width: 100%;
+
+  max-width: 620px;
+
+  min-height: 650px;
+
+  margin:
+    5vh auto 0;
+
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding:
+    58px 58px 50px;
+
+  border:
+    1px solid
+    #dce8f4;
+
+  border-radius: 20px;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 25px 75px
+    rgba(35, 76, 119, 0.10);
+}
+
+.backButton {
+  position: absolute;
+
+  top: 22px;
+
+  left: 22px;
+
+  width: 42px;
+
+  height: 42px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border:
+    1px solid
+    #dce6ef;
+
+  border-radius: 10px;
+
+  background:
+    #ffffff;
+
+  color: #61738a;
+
+  cursor: pointer;
+
+  transition:
+    color 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.backButton:hover {
+  color: #168eff;
+
+  border-color:
+    #bcd8f1;
+
+  background:
+    #f5faff;
+}
+
+.verificationContent {
+  width: 100%;
+
+  max-width: 500px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  text-align: center;
+}
+
+.verificationBrand {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+.verificationBrandName {
+  color: #0b1a39;
+
+  font-size: 25px;
+
+  font-weight: 800;
+
+  letter-spacing:
+    -0.7px;
+}
+
+.verificationBrandName strong {
+  color: #168eff;
+}
+
+.verificationBrandSubtitle {
+  margin-top: 7px;
+
+  color: #718096;
+
+  font-size: 6.5px;
+
+  font-weight: 800;
+
+  letter-spacing:
+    1.45px;
+}
+
+.verificationEyebrow {
+  margin-top: 31px;
+
+  color: #168eff;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing:
+    2.5px;
+}
+
+.verificationContent h1 {
+  margin:
+    13px 0 10px;
+
+  color: #0c1b39;
+
+  font-size: 31px;
+
+  line-height: 1.2;
+
+  font-weight: 800;
+
+  letter-spacing:
+    -0.9px;
+}
+
+.verificationText {
+  margin: 0;
+
+  color: #66758c;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+}
+
+.verificationEmail {
+  margin-top: 9px;
+
+  color: #168eff;
+
+  font-size: 17px;
+
+  font-weight: 700;
+
+  word-break: break-word;
+}
+
+/* =========================================================
+   OTP
+========================================================= */
+
+.otpContainer {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(8, 1fr);
+
+  gap: 8px;
+
+  margin:
+    39px 0 28px;
+}
+
+.otpInput {
+  width: 100%;
+
+  height: 62px;
+
+  border:
+    1px solid
+    #d1ddea;
+
+  border-radius: 10px;
+
+  background:
+    #fbfdff;
+
+  color: #12213c;
+
+  text-align: center;
+
+  font-size: 23px;
+
+  font-weight: 750;
+
+  outline: none;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.otpInput:focus {
+  border-color:
+    #168eff;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(22, 142, 255, 0.09);
+}
+
+.otpInput:disabled {
+  opacity: 0.6;
+}
+
+/* =========================================================
+   VERIFICATION HINT
+========================================================= */
+
+.verificationHint {
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 10px;
+
+  margin-bottom: 24px;
+
+  padding:
+    13px 15px;
+
+  border:
+    1px solid
+    #dcecf9;
+
+  border-radius: 10px;
+
+  background:
+    #f5faff;
+
+  color: #61738a;
+
+  font-size: 11px;
+
+  line-height: 1.45;
+
+  text-align: left;
+}
+
+.verificationHintIcon {
+  width: 31px;
+
+  height: 31px;
+
+  flex: 0 0 31px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #168eff;
+}
+
+/* =========================================================
+   RESEND
+========================================================= */
+
+.resendText {
+  margin-top: 20px;
+
+  color: #718096;
+
+  font-size: 12px;
+}
+
+.resendText button {
+  border: none;
+
+  padding: 0;
+
+  background: transparent;
+
+  color: #168eff;
+
+  font-size: inherit;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.resendText button:hover {
+  color: #006ed7;
+}
+
+.resendText button:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   SECURE TEXT
+========================================================= */
+
+.secureText {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  margin-top: 28px;
+
+  color: #8491a2;
+
+  font-size: 10px;
+}
+
+/* =========================================================
+   DESKTOP SIGN-IN CARD POSITION
+
+   The card begins at approximately the same vertical
+   position as the "PROPERTY VERIFICATION" eyebrow.
+
+   This applies only to desktop widths above 1050px.
+========================================================= */
+
+@media (min-width: 1051px) {
+
+  .signinCard {
+    align-self: start;
+
+    margin-top: 5px;
+
+    transform: none;
+  }
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1050px) {
+
+  .page {
+    padding:
+      25px 28px 35px;
+  }
+
+  .mainLayout {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(390px, 0.9fr);
+
+    gap: 40px;
+  }
+
+  .heroPanel h1 {
+    font-size: 49px;
+  }
+
+  .heroDescription {
+    font-size: 16px;
+  }
+
+  .signinCard {
+    padding:
+      28px 38px 40px;
+  }
+
+  .propertyVisual {
+    height: 260px;
+  }
+
+  .topBrandText > span {
+    font-size: 24px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 760px) {
+
+  .page {
+    min-height: 100svh;
+
+    padding:
+      18px 14px 28px;
+
+    background:
+      radial-gradient(
+        circle at 90% 0%,
+        rgba(22, 142, 255, 0.08),
+        transparent 32%
+      ),
+      #ffffff;
+  }
+
+  /* -------------------------------------------------------
+     TOP HEADER
+  ------------------------------------------------------- */
+
+  .topHeader {
+    align-items: center;
+  }
+
+  .topBrand {
+    gap: 9px;
+  }
+
+  .topBrand .propertyLogo {
+    font-size: 28px !important;
+  }
+
+  .topBrandText > span {
+    font-size: 21px;
+
+    letter-spacing:
+      -0.6px;
+  }
+
+  .topBrandText small {
+    font-size: 5.5px;
+
+    letter-spacing:
+      1.1px;
+  }
+
+  .topSignup {
+    display: none;
+  }
+
+  /* -------------------------------------------------------
+     MAIN
+  ------------------------------------------------------- */
+
+  .mainLayout {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: stretch;
+
+    gap: 20px;
+
+    margin-top: 30px;
+  }
+
+  /* -------------------------------------------------------
+     HERO
+  ------------------------------------------------------- */
+
+  .heroPanel {
+    display: contents;
+  }
+
+  /* -------------------------------------------------------
+     HERO EYEBROW
+  ------------------------------------------------------- */
+
+  .heroEyebrow {
+    order: 1;
+
+    width: 100%;
+
+    padding:
+      0 3px;
+
+    text-align: center;
+
+    font-size: 8px;
+
+    letter-spacing:
+      2.2px;
+
+    margin-bottom: 12px;
+  }
+
+  /* -------------------------------------------------------
+     HERO TITLE
+  ------------------------------------------------------- */
+
+  .heroPanel h1 {
+    order: 2;
+
+    width: 100%;
+
+    margin: 0;
+
+    padding:
+      0 3px;
+
+    text-align: center;
+
+    font-size: 36px;
+
+    line-height: 1.04;
+
+    letter-spacing:
+      -1.5px;
+  }
+
+  /* -------------------------------------------------------
+     HERO DESCRIPTION
+  ------------------------------------------------------- */
+
+  .heroDescription {
+    order: 3;
+
+    width: 100%;
+
+    max-width: 420px;
+
+    margin:
+      14px auto 0;
+
+    padding:
+      0 3px;
+
+    text-align: center;
+
+    font-size: 13px;
+
+    line-height: 1.55;
+  }
+
+  /* -------------------------------------------------------
+     SIGN IN CARD
+
+     MOBILE POSITION REMAINS UNCHANGED.
+  ------------------------------------------------------- */
+
+  .signinCard {
+    order: 4;
+
+    max-width: none;
+
+    padding:
+      18px 19px 30px;
+
+    border-radius: 17px;
+
+    box-shadow:
+      0 16px 45px
+      rgba(35, 76, 119, 0.09);
+
+    transform: none;
+
+    margin-top: 0;
+
+    align-self: auto;
+  }
+
+  /* -------------------------------------------------------
+     CARD BRAND
+
+     Duplicate PropertySure AI logo is intentionally hidden.
+  ------------------------------------------------------- */
+
+  .cardBrand {
+    display: none;
+  }
+
+  /* -------------------------------------------------------
+     CARD HEADER
+
+     "WELCOME BACK" is hidden.
+  ------------------------------------------------------- */
+
+  .header {
+    margin:
+      0 0 23px;
+  }
+
+  .eyebrow {
+    display: none;
+
+    font-size: 8px;
+
+    letter-spacing:
+      2.1px;
+  }
+
+  .header h2 {
+    font-size: 25px;
+
+    letter-spacing:
+      -0.7px;
+  }
+
+  .header p {
+    font-size: 12px;
+
+    line-height: 1.55;
+  }
+
+  .fieldGroup {
+    margin-bottom: 17px;
+  }
+
+  .fieldGroup label {
+    font-size: 11px;
+  }
+
+  .inputBox,
+  .passwordBox {
+    height: 56px;
+
+    border-radius: 10px;
+  }
+
+  .fieldIcon {
+    width: 48px;
+
+    flex-basis: 48px;
+  }
+
+  .fieldInput,
+  .passwordInput {
+    font-size: 12px;
+  }
+
+  .eyeButton {
+    width: 48px;
+
+    flex-basis: 48px;
+  }
+
+  .accountOptions {
+    margin:
+      3px 0 19px;
+  }
+
+  .remember,
+  .forgotButton {
+    font-size: 10px;
+  }
+
+  .remember input {
+    width: 15px;
+
+    height: 15px;
+  }
+
+  .primaryButton {
+    min-height: 56px;
+
+    border-radius: 10px;
+
+    font-size: 13px;
+  }
+
+  .securityMessage {
+    font-size: 8px;
+
+    gap: 7px;
+  }
+
+  .securityIcon {
+    width: 29px;
+
+    height: 29px;
+
+    flex-basis: 29px;
+  }
+
+  .divider {
+    margin:
+      21px 0;
+  }
+
+  .googleButton {
+    min-height: 52px;
+
+    border-radius: 10px;
+
+    font-size: 11px;
+  }
+
+  .signupText {
+    display: block;
+  }
+
+  /* -------------------------------------------------------
+     PROPERTY VISUAL
+
+     Hidden on mobile so the sign-in experience remains
+     compact and uncluttered.
+  ------------------------------------------------------- */
+
+  .propertyVisual {
+    display: none;
+  }
+
+  /* -------------------------------------------------------
+     TRUST FEATURES
+  ------------------------------------------------------- */
+
+  .trustFeatures {
+    margin-top: 20px;
+
+    padding:
+      14px 2px;
+
+    border:
+      1px solid
+      #e6edf4;
+
+    border-radius: 12px;
+
+    grid-template-columns:
+      repeat(3, 1fr);
+
+    gap: 0;
+
+    background:
+      #fbfdff;
+  }
+
+  .trustFeature {
+    flex-direction: column;
+
+    gap: 6px;
+
+    padding:
+      2px 4px;
+
+    text-align: center;
+  }
+
+  .trustIcon {
+    width: 32px;
+
+    height: 32px;
+
+    flex-basis: 32px;
+  }
+
+  .trustIcon svg {
+    width: 18px;
+
+    height: 18px;
+  }
+
+  .trustIcon span {
+    font-size: 15px;
+  }
+
+  .trustFeature strong {
+    font-size: 7.5px;
+
+    line-height: 1.2;
+  }
+
+  .trustFeature span {
+    font-size: 6.5px;
+
+    line-height: 1.3;
+  }
+
+  .trustDivider {
+    height: 38px;
+  }
+
+  /* -------------------------------------------------------
+     OTP
+  ------------------------------------------------------- */
+
+  .verificationCard {
+    min-height:
+      calc(100svh - 36px);
+
+    margin-top: 18px;
+
+    padding:
+      50px 15px 32px;
+
+    border-radius: 17px;
+  }
+
+  .backButton {
+    top: 14px;
+
+    left: 14px;
+
+    width: 39px;
+
+    height: 39px;
+  }
+
+  .verificationBrandName {
+    font-size: 21px;
+  }
+
+  .verificationBrandSubtitle {
+    font-size: 5.5px;
+
+    letter-spacing:
+      1.15px;
+  }
+
+  .verificationEyebrow {
+    margin-top: 27px;
+
+    font-size: 8px;
+  }
+
+  .verificationContent h1 {
+    font-size: 27px;
+  }
+
+  .verificationText {
+    font-size: 12px;
+  }
+
+  .verificationEmail {
+    font-size: 15px;
+  }
+
+  .otpContainer {
+    gap: 5px;
+
+    margin:
+      33px 0 25px;
+  }
+
+  .otpInput {
+    height: 52px;
+
+    border-radius: 8px;
+
+    font-size: 18px;
+  }
+
+  .verificationHint {
+    font-size: 9px;
+
+    padding:
+      11px 10px;
+  }
+
+  .resendText {
+    font-size: 10px;
+  }
+
+  .secureText {
+    font-size: 8px;
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 390px) {
+
+  .page {
+    padding:
+      15px 11px 23px;
+  }
+
+  .topBrandText > span {
+    font-size: 19px;
+  }
+
+  .topBrandText small {
+    font-size: 5px;
+  }
+
+  .heroPanel h1 {
+    font-size: 32px;
+  }
+
+  .signinCard {
+    padding:
+      16px 15px 27px;
+
+    transform: none;
+
+    margin-top: 0;
+  }
+
+  .cardBrand {
+    display: none;
+  }
+
+  .cardBrandName {
+    font-size: 20px;
+  }
+
+  .header {
+    margin:
+      0 0 23px;
+  }
+
+  .header h2 {
+    font-size: 23px;
+  }
+
+  .accountOptions {
+    flex-direction: row;
+  }
+
+  .primaryButton {
+    font-size: 12px;
+  }
+
+  .trustFeature strong {
+    font-size: 7px;
+  }
+
+  .trustFeature span {
+    font-size: 6px;
+  }
+
+  .otpContainer {
+    gap: 3px;
+  }
+
+  .otpInput {
+    height: 48px;
+
+    border-radius: 7px;
+
+    font-size: 17px;
+  }
+}

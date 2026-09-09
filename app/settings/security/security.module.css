@@ -1,0 +1,1597 @@
+/* =========================================================
+   SECURITY & PRIVACY SETTINGS
+   PropertySure AI
+
+   MASTER UI MATCHES:
+   /settings/general
+
+   CSS MODULE
+========================================================= */
+
+/* =========================================================
+   GLOBAL BASE
+========================================================= */
+
+:global(*) {
+  box-sizing: border-box;
+}
+
+:global(html),
+:global(body) {
+  margin: 0;
+  padding: 0;
+}
+
+:global(body) {
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  background: #ffffff;
+  color: #18253a;
+}
+
+:global(button) {
+  font-family: inherit;
+}
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.security-page {
+  min-height: 100vh;
+  width: 100%;
+
+  background: #ffffff;
+  color: #18253a;
+
+  padding-bottom: 90px;
+}
+
+/* =========================================================
+   MASTER HEADER
+========================================================= */
+
+.security-header {
+  width: 100%;
+  height: 72px;
+
+  position: sticky;
+  top: 0;
+
+  z-index: 100;
+
+  display: grid;
+
+  grid-template-columns:
+    44px
+    minmax(0, 1fr)
+    44px;
+
+  align-items: center;
+
+  padding: 0 14px;
+
+  background: #061b38;
+
+  border-bottom:
+    1px solid
+    #193650;
+}
+
+/* =========================================================
+   MASTER THREE-DASH BUTTON
+========================================================= */
+
+.security-menu-button {
+  width: 40px;
+  height: 40px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  padding: 0;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.security-master-menu-icon {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #ffffff;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 23px;
+
+  font-weight: 400;
+
+  line-height: 1;
+
+  transform:
+    translateY(-1px);
+}
+
+/* =========================================================
+   MASTER PROPERTY SURE AI LOGO
+========================================================= */
+
+.security-brand {
+  height: 40px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  min-width: 0;
+
+  color: #ffffff;
+
+  text-decoration: none;
+}
+
+.security-brand-diamond {
+  width: 23px;
+  height: 23px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #168eff;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 23px;
+
+  line-height: 1;
+
+  transform: none;
+}
+
+.security-brand-text {
+  color: #ffffff;
+
+  font-size: 17px;
+
+  font-weight: 700;
+
+  letter-spacing: -0.2px;
+
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+.security-brand-ai {
+  color: #168eff;
+}
+
+/* =========================================================
+   MASTER NATIVE NOTIFICATION BUTTON
+========================================================= */
+
+.security-notification-button {
+  width: 40px;
+  height: 40px;
+
+  border: 0;
+
+  background: transparent;
+
+  position: relative;
+
+  display: grid;
+
+  place-items: center;
+
+  cursor: pointer;
+
+  padding: 0;
+
+  color: inherit;
+
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* =========================================================
+   MASTER NATIVE NOTIFICATION BELL
+========================================================= */
+
+.security-master-bell {
+  width: 20px;
+  height: 20px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  font-family:
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Noto Color Emoji",
+    sans-serif !important;
+
+  font-size: 17px;
+
+  font-style: normal;
+
+  font-weight: normal;
+
+  line-height: 1;
+
+  letter-spacing: normal;
+
+  text-align: center;
+
+  white-space: nowrap;
+
+  color: initial !important;
+
+  filter: none !important;
+
+  -webkit-filter: none !important;
+
+  -webkit-text-fill-color: initial;
+
+  opacity: 1;
+
+  transform:
+    translateY(-1px);
+
+  font-variant-emoji: emoji;
+}
+
+/* =========================================================
+   NOTIFICATION DOT
+========================================================= */
+
+.security-notification-dot {
+  position: absolute;
+
+  width: 8px;
+  height: 8px;
+
+  top: 5px;
+  right: 3px;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  box-shadow:
+    0 0 8px
+    rgba(22, 142, 255, 0.7);
+}
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.security-content {
+  width: 100%;
+
+  max-width: 900px;
+
+  margin: 0 auto;
+
+  padding:
+    35px 30px 60px;
+}
+
+.security-content h1 {
+  margin: 0;
+
+  color: #18253a;
+
+  font-size: 34px;
+
+  line-height: 1.1;
+
+  font-weight: 700;
+
+  letter-spacing: -0.7px;
+}
+
+.security-description {
+  margin:
+    8px 0 0;
+
+  color: #71849e;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+}
+
+.security-back-link {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-top: 20px;
+  margin-bottom: 22px;
+
+  color: #168eff;
+
+  text-decoration: none;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.security-back-link:hover {
+  text-decoration: underline;
+}
+
+.security-back-arrow {
+  font-size: 27px;
+
+  line-height: 0.7;
+
+  font-weight: 300;
+}
+
+/* =========================================================
+   SECURITY CARD
+========================================================= */
+
+.security-card {
+  width: 100%;
+
+  margin-bottom: 14px;
+
+  padding:
+    16px 15px;
+
+  border:
+    1px solid
+    #dce4ed;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 2px
+    rgba(10, 30, 70, 0.02);
+
+  overflow: visible;
+}
+
+/* =========================================================
+   SECTION LABEL
+========================================================= */
+
+.security-section-label {
+  margin-bottom: 10px;
+
+  color: #168eff;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+
+  line-height: 1.2;
+}
+
+/* =========================================================
+   SETTING ROW
+========================================================= */
+
+.security-setting-row {
+  min-height: 74px;
+
+  display: grid;
+
+  grid-template-columns:
+    54px
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 11px;
+
+  position: relative;
+}
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.security-row-divider {
+  height: 1px;
+
+  margin:
+    0 0 0 65px;
+
+  background: #e1e7ee;
+}
+
+/* =========================================================
+   ICON BOX
+========================================================= */
+
+.security-icon-box {
+  width: 54px;
+  height: 54px;
+
+  flex: 0 0 54px;
+
+  border-radius: 13px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.security-icon-box svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* =========================================================
+   ICON COLORS
+========================================================= */
+
+.security-icon-blue {
+  color: #168eff;
+
+  background:
+    rgba(35, 135, 255, 0.11);
+}
+
+.security-icon-green {
+  color: #15965a;
+
+  background:
+    rgba(30, 190, 125, 0.12);
+}
+
+.security-icon-purple {
+  color: #7956d8;
+
+  background:
+    rgba(126, 88, 255, 0.11);
+}
+
+.security-icon-yellow {
+  color: #d79a13;
+
+  background:
+    rgba(255, 160, 20, 0.12);
+}
+
+/* =========================================================
+   SETTING CONTENT
+========================================================= */
+
+.security-setting-content {
+  min-width: 0;
+}
+
+.security-setting-content h2 {
+  margin:
+    0 0 4px;
+
+  color: #18253a;
+
+  font-size: 15px;
+
+  line-height: 1.25;
+
+  font-weight: 700;
+}
+
+.security-setting-content p {
+  margin: 0;
+
+  color: #71849e;
+
+  font-size: 10px;
+
+  line-height: 1.45;
+}
+
+/* =========================================================
+   ACTION BUTTON
+========================================================= */
+
+.security-action-button {
+  min-width: 165px;
+
+  height: 44px;
+
+  padding:
+    0 13px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  border:
+    1px solid
+    #c9d6e5;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #168eff;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.security-action-button:hover {
+  border-color: #168eff;
+
+  background: #f7fbff;
+
+  box-shadow:
+    0 5px 14px
+    rgba(22, 142, 255, 0.09);
+
+  transform:
+    translateY(-1px);
+}
+
+.security-chevron {
+  font-size: 22px;
+
+  line-height: 1;
+
+  font-weight: 300;
+
+  color: #168eff;
+}
+
+/* =========================================================
+   2FA STATUS + ACTION
+========================================================= */
+
+.security-status-action {
+  display: flex;
+
+  align-items: center;
+
+  gap: 18px;
+}
+
+.security-status {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.security-status-enabled {
+  color: #15965a;
+}
+
+.security-status-warning {
+  color: #d79a13;
+}
+
+.security-status-circle {
+  width: 20px;
+  height: 20px;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+.security-status-enabled
+.security-status-circle {
+  border:
+    1.8px solid
+    #15965a;
+}
+
+.security-status-warning
+.security-status-circle {
+  border:
+    1.8px solid
+    #d79a13;
+}
+
+.security-loading-status {
+  color: #71849e;
+
+  font-size: 11px;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   SECURITY NOTICE
+========================================================= */
+
+.security-notice {
+  width: 100%;
+
+  min-height: 112px;
+
+  margin-top: 18px;
+
+  padding:
+    19px 25px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 18px;
+
+  position: relative;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    #d5e4f5;
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      100deg,
+      #f5faff 0%,
+      #eef6ff 100%
+    );
+
+  box-shadow:
+    0 2px 8px
+    rgba(22, 142, 255, 0.04);
+}
+
+.security-notice-icon {
+  width: 54px;
+  height: 54px;
+
+  flex: 0 0 54px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 13px;
+
+  color: #168eff;
+
+  background:
+    rgba(22, 142, 255, 0.10);
+}
+
+.security-notice-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.security-notice-content {
+  position: relative;
+
+  z-index: 2;
+
+  min-width: 0;
+}
+
+.security-notice-content h3 {
+  margin: 0;
+
+  color: #18253a;
+
+  font-size: 15px;
+
+  font-weight: 700;
+}
+
+.security-notice-content p {
+  max-width: 570px;
+
+  margin:
+    6px 0 0;
+
+  color: #71849e;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+}
+
+.security-notice-watermark {
+  width: 100px;
+  height: 100px;
+
+  position: absolute;
+
+  right: 25px;
+  top: 6px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #168eff;
+
+  opacity: 0.09;
+}
+
+.security-notice-watermark svg {
+  width: 78px;
+  height: 78px;
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.security-loading {
+  min-height: 100vh;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 10px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #031229 0%,
+      #061b3b 100%
+    );
+
+  color: #ffffff;
+}
+
+.security-loading-brand {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  font-size: 22px;
+
+  font-weight: 700;
+}
+
+.security-loading-brand > span {
+  color: #168eff;
+
+  font-size: 38px;
+}
+
+.security-loading-brand em {
+  color: #168eff;
+
+  font-style: normal;
+}
+
+.security-loading p {
+  margin: 0;
+
+  color: #9eb1c9;
+
+  font-size: 13px;
+}
+
+/* =========================================================
+   MOBILE MENU
+========================================================= */
+
+.security-mobile-menu {
+  display: none;
+}
+
+/* =========================================================
+   BOTTOM NAV
+========================================================= */
+
+.security-bottom-nav {
+  display: none;
+}
+
+/* =========================================================
+   DESKTOP
+========================================================= */
+
+@media (min-width: 701px) {
+
+  .security-page {
+    padding-bottom: 0;
+  }
+
+  .security-header {
+    position: relative;
+
+    height: 88px;
+
+    grid-template-columns:
+      60px
+      minmax(0, 1fr)
+      60px;
+
+    padding:
+      0 24px;
+  }
+
+  .security-menu-button {
+    display: none;
+  }
+
+  .security-brand {
+    justify-content: flex-start;
+  }
+
+  .security-brand-diamond {
+    width: 28px;
+    height: 28px;
+
+    font-size: 28px;
+  }
+
+  .security-brand-text {
+    font-size: 24px;
+  }
+
+  .security-notification-button {
+    justify-self: end;
+  }
+
+  .security-master-bell {
+    width: 25px;
+    height: 25px;
+
+    font-size: 21px;
+
+    font-family:
+      "Apple Color Emoji",
+      "Segoe UI Emoji",
+      "Noto Color Emoji",
+      sans-serif !important;
+
+    color: initial !important;
+
+    filter: none !important;
+
+    -webkit-filter: none !important;
+
+    -webkit-text-fill-color: initial;
+
+    font-variant-emoji: emoji;
+  }
+
+  .security-content {
+    max-width: 900px;
+
+    padding:
+      35px 30px 60px;
+  }
+
+  .security-content h1 {
+    font-size: 34px;
+  }
+
+  .security-description {
+    font-size: 14px;
+  }
+
+  .security-setting-content h2 {
+    font-size: 15px;
+  }
+
+  .security-setting-content p {
+    font-size: 10px;
+  }
+
+  .security-bottom-nav {
+    display: none;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .security-page {
+    min-height: 100vh;
+
+    padding-bottom: 74px;
+  }
+
+  .security-header {
+    height: 72px;
+
+    padding: 0 14px;
+  }
+
+  .security-master-menu-icon {
+    font-size: 23px;
+  }
+
+  .security-brand-diamond {
+    width: 23px;
+    height: 23px;
+
+    font-size: 23px;
+  }
+
+  .security-brand-text {
+    font-size: 17px;
+
+    font-weight: 700;
+  }
+
+  /* =======================================================
+     MASTER MOBILE NATIVE BELL
+  ======================================================= */
+
+  .security-master-bell {
+    width: 20px;
+    height: 20px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-family:
+      "Apple Color Emoji",
+      "Segoe UI Emoji",
+      "Noto Color Emoji",
+      sans-serif !important;
+
+    font-size: 17px;
+
+    font-style: normal;
+
+    font-weight: normal;
+
+    line-height: 1;
+
+    letter-spacing: normal;
+
+    text-align: center;
+
+    white-space: nowrap;
+
+    color: initial !important;
+
+    filter: none !important;
+
+    -webkit-filter: none !important;
+
+    -webkit-text-fill-color: initial;
+
+    opacity: 1;
+
+    transform:
+      translateY(-1px);
+
+    font-variant-emoji: emoji;
+  }
+
+  /* =======================================================
+     NOTIFICATION DOT
+  ======================================================= */
+
+  .security-notification-dot {
+    width: 8px;
+    height: 8px;
+
+    top: 5px;
+    right: 3px;
+
+    background: #168eff;
+
+    box-shadow:
+      0 0 8px
+      rgba(22, 142, 255, 0.7);
+  }
+
+  /* =======================================================
+     MOBILE MENU
+  ======================================================= */
+
+  .security-mobile-menu {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 300;
+
+    display: block;
+
+    padding: 22px;
+
+    background: #031229;
+
+    color: #ffffff;
+
+    overflow-y: auto;
+  }
+
+  .security-mobile-menu-header {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+  }
+
+  .security-mobile-menu-brand {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: #ffffff;
+
+    text-decoration: none;
+
+    font-size: 20px;
+
+    font-weight: 700;
+  }
+
+  .security-mobile-menu-brand > span {
+    color: #168eff;
+
+    font-size: 25px;
+  }
+
+  .security-mobile-menu-brand em {
+    color: #168eff;
+
+    font-style: normal;
+  }
+
+  .security-mobile-close {
+    border: 0;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 30px;
+
+    line-height: 1;
+
+    cursor: pointer;
+  }
+
+  .security-mobile-menu-subtitle {
+    margin-top: 9px;
+
+    color: #91a7c2;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+  }
+
+  .security-mobile-menu-nav {
+    margin-top: 30px;
+  }
+
+  .security-mobile-menu-nav button {
+    width: 100%;
+
+    min-height: 50px;
+
+    margin-bottom: 5px;
+
+    padding:
+      0 14px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    background: transparent;
+
+    color: #b9c8dc;
+
+    font-size: 14px;
+
+    text-align: left;
+
+    cursor: pointer;
+  }
+
+  .security-mobile-menu-nav button:hover {
+    background:
+      rgba(26, 119, 220, 0.14);
+
+    color: #ffffff;
+  }
+
+  .security-mobile-menu-nav
+  button > span:first-child {
+    width: 20px;
+
+    min-width: 20px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #8db9e9;
+  }
+
+  .security-mobile-account-label {
+    color: #607897;
+
+    font-size: 10px;
+
+    letter-spacing: 1.5px;
+
+    margin:
+      25px 14px 10px;
+  }
+
+  /* =======================================================
+     CONTENT
+  ======================================================= */
+
+  .security-content {
+    width: 100%;
+
+    max-width: none;
+
+    padding:
+      28px 15px 30px;
+  }
+
+  .security-content h1 {
+    font-size: 30px;
+  }
+
+  .security-description {
+    max-width: 100%;
+
+    font-size: 12px;
+  }
+
+  .security-back-link {
+    margin-top: 19px;
+
+    margin-bottom: 22px;
+
+    font-size: 13px;
+  }
+
+  /* =======================================================
+     CARDS
+  ======================================================= */
+
+  .security-card {
+    margin-bottom: 14px;
+
+    padding:
+      16px 15px;
+
+    border-radius: 11px;
+
+    overflow: visible;
+  }
+
+  .security-section-label {
+    font-size: 10px;
+
+    margin-bottom: 10px;
+  }
+
+  .security-setting-row {
+    min-height: 74px;
+
+    grid-template-columns:
+      54px
+      minmax(0, 1fr);
+
+    gap: 11px;
+
+    align-items: center;
+  }
+
+  .security-icon-box {
+    width: 54px;
+    height: 54px;
+  }
+
+  .security-setting-content {
+    padding-right: 2px;
+  }
+
+  .security-setting-content h2 {
+    font-size: 13px;
+
+    line-height: 1.3;
+  }
+
+  .security-setting-content p {
+    font-size: 9px;
+
+    line-height: 1.45;
+  }
+
+  .security-row-divider {
+    margin-left: 65px;
+  }
+
+  /* =======================================================
+     MOBILE ACTION BUTTONS
+  ======================================================= */
+
+  .security-action-button {
+    grid-column:
+      1 / -1;
+
+    width: 100%;
+
+    min-width: 0;
+
+    height: 40px;
+
+    margin-top: 2px;
+
+    font-size: 11px;
+  }
+
+  /* =======================================================
+     MOBILE 2FA STATUS
+  ======================================================= */
+
+  .security-status-action {
+    grid-column:
+      1 / -1;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: stretch;
+
+    gap: 9px;
+  }
+
+  .security-status,
+  .security-loading-status {
+    justify-content: flex-end;
+
+    font-size: 10px;
+  }
+
+  /* =======================================================
+     EMAIL / PHONE STATUS
+  ======================================================= */
+
+  .security-setting-row >
+  .security-status {
+    grid-column:
+      1 / -1;
+
+    justify-content: flex-end;
+
+    margin-top: 2px;
+  }
+
+  /* =======================================================
+     SECURITY NOTICE
+  ======================================================= */
+
+  .security-notice {
+    min-height: auto;
+
+    padding:
+      16px;
+
+    align-items: flex-start;
+
+    gap: 12px;
+  }
+
+  .security-notice-icon {
+    width: 45px;
+    height: 45px;
+
+    flex: 0 0 45px;
+  }
+
+  .security-notice-icon svg {
+    width: 23px;
+    height: 23px;
+  }
+
+  .security-notice-content h3 {
+    font-size: 13px;
+  }
+
+  .security-notice-content p {
+    font-size: 9px;
+
+    line-height: 1.5;
+  }
+
+  .security-notice-watermark {
+    display: none;
+  }
+
+  /* =======================================================
+     MOBILE BOTTOM NAV
+  ======================================================= */
+
+  .security-bottom-nav {
+    position: fixed;
+
+    display: flex;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 74px;
+
+    z-index: 150;
+
+    background:
+      rgba(3, 18, 40, 0.98);
+
+    border-top:
+      1px solid
+      rgba(255, 255, 255, 0.1);
+
+    justify-content:
+      space-around;
+
+    align-items: center;
+
+    backdrop-filter:
+      blur(15px);
+  }
+
+  .security-nav-item {
+    flex: 1;
+
+    height: 100%;
+
+    border: none;
+
+    background: transparent;
+
+    color: #7d93ae;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 4px;
+
+    transition:
+      color 0.2s ease;
+  }
+
+  .security-nav-item span:last-child {
+    font-size: 8px;
+
+    line-height: 1.2;
+  }
+
+  .security-nav-item:hover {
+    color: #a9bad0;
+  }
+
+  .security-nav-active {
+    color: #168eff;
+  }
+
+  .security-master-nav-icon {
+    width: 20px;
+    height: 20px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    color: currentColor;
+
+    font-family:
+      Arial,
+      Helvetica,
+      sans-serif;
+
+    font-size: 20px;
+
+    font-weight: 600;
+
+    line-height: 1;
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .security-content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .security-brand-text {
+    font-size: 15px;
+  }
+
+  .security-brand-diamond {
+    width: 21px;
+    height: 21px;
+
+    font-size: 21px;
+  }
+
+  .security-content h1 {
+    font-size: 28px;
+  }
+
+  .security-setting-content h2 {
+    font-size: 12px;
+  }
+
+  .security-setting-content p {
+    font-size: 8.5px;
+  }
+
+  .security-icon-box {
+    width: 50px;
+    height: 50px;
+  }
+
+  .security-setting-row {
+    grid-template-columns:
+      50px
+      minmax(0, 1fr);
+  }
+
+  .security-row-divider {
+    margin-left: 61px;
+  }
+
+  .security-bottom-nav {
+    height: 74px;
+  }
+
+  .security-master-bell {
+    width: 20px;
+    height: 20px;
+
+    font-size: 17px;
+
+    font-family:
+      "Apple Color Emoji",
+      "Segoe UI Emoji",
+      "Noto Color Emoji",
+      sans-serif !important;
+
+    color: initial !important;
+
+    filter: none !important;
+
+    -webkit-filter: none !important;
+
+    -webkit-text-fill-color: initial;
+
+    font-variant-emoji: emoji;
+  }
+}
