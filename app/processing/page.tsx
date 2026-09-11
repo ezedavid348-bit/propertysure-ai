@@ -35,12 +35,6 @@ type DocumentPackageItem = {
   path: string;
   type: string;
 
-  /*
-   * These fields are produced by the Review Package page.
-   *
-   * documentType is the AI/manual identity of the document.
-   * name is only the uploaded filename.
-   */
   documentType?: string;
 
   classificationStatus?:
@@ -85,6 +79,13 @@ type VerificationFindings = {
 
   checks?: VerificationChecks;
 
+  essential?: {
+    plan?: string;
+    completed_at?: string;
+    document_results?: unknown[];
+    summary?: string;
+  };
+
   processing?: {
     stage?: ProcessingStage;
 
@@ -93,6 +94,11 @@ type VerificationFindings = {
     message?: string;
   };
 };
+
+type PlanKey =
+  | "essential"
+  | "professional"
+  | "premium";
 
 type VerificationRecord = {
   id: string;
@@ -140,89 +146,12 @@ const emptyChecks: VerificationChecks = {
 
 /*
  * ============================================================
- * PROCESSING STAGES
- * ============================================================
- */
-
-const processingStages: {
-  stage: ProcessingStage;
-
-  progress: number;
-
-  message: string;
-}[] = [
-  {
-    stage: "received",
-
-    progress: 8,
-
-    message:
-      "Your property document package has been securely received.",
-  },
-
-  {
-    stage: "structure",
-
-    progress: 22,
-
-    message:
-      "Reviewing document structure and integrity.",
-  },
-
-  {
-    stage: "authenticity",
-
-    progress: 38,
-
-    message:
-      "Reviewing available authenticity indicators.",
-  },
-
-  {
-    stage: "consistency",
-
-    progress: 54,
-
-    message:
-      "Analyzing property information and document consistency.",
-  },
-
-  {
-    stage: "fraud",
-
-    progress: 69,
-
-    message:
-      "Checking available fraud and duplicate indicators.",
-  },
-
-  {
-    stage: "completeness",
-
-    progress: 83,
-
-    message:
-      "Checking the completeness of the submitted document package.",
-  },
-
-  {
-    stage: "report",
-
-    progress: 94,
-
-    message:
-      "Preparing your verification report.",
-  },
-];
-
-/*
- * ============================================================
  * DOCUMENT PACKAGE
  * ============================================================
  */
 
 function createDocumentPackage(
-  record: VerificationRecord
+  record: VerificationRecord,
 ): DocumentPackageItem[] {
   const storedPackage =
     record.findings?.document_package;
@@ -239,6 +168,7 @@ function createDocumentPackage(
    *
    * The reviewed package above is always preferred.
    */
+
   if (record.file_url) {
     return [
       {
@@ -254,7 +184,6 @@ function createDocumentPackage(
           "application/pdf",
 
         documentType:
-          record.doc_type ||
           undefined,
       },
     ];
@@ -286,19 +215,10 @@ function createDocumentPackage(
  * ============================================================
  * DOCUMENT DISPLAY TITLE
  * ============================================================
- *
- * IMPORTANT:
- *
- * The Review Package page stores the actual identified
- * document type in documentType.
- *
- * Therefore a random uploaded UUID filename must NOT replace
- * the identified document name.
- * ============================================================
  */
 
 function getDocumentIdentity(
-  document: DocumentPackageItem
+  document: DocumentPackageItem,
 ): string {
   const documentType =
     typeof document.documentType ===
@@ -324,6 +244,7 @@ function getDocumentIdentity(
    * Only use the uploaded filename as a final fallback
    * for old/unclassified records.
    */
+
   if (document.name) {
     return document.name;
   }
@@ -335,120 +256,329 @@ function getDocumentIdentity(
  * ============================================================
  * LOAD VERIFICATION
  * ============================================================
+ *
+ * IMPORTANT:
+ *
+ * This function either:
+ *
+ * 1. returns a VerificationRecord, OR
+ * 2. throws an error.
+ *
+ * Therefore it must NOT be typed as
+ * Promise<VerificationRecord | null>.
+ * ============================================================
  */
 
+type VerificationStatusPayment = {
+  id?: string | number;
+  verification_id?: string | number;
+  user_id?: string;
+  plan?: string | null;
+  amount?: number | null;
+  currency?: string | null;
+  provider?: string | null;
+  provider_reference?: string | null;
+  status?: string | null;
+  payment_method?: string | null;
+  paid_at?: string | null;
+};
+
+type VerificationStatusResponse = {
+  success?: boolean;
+  verification?: VerificationRecord;
+  plan?: string | null;
+  payment?: VerificationStatusPayment | null;
+  error?: string;
+  message?: string;
+};
+
 async function loadVerification(
-  id: string
-): Promise<VerificationRecord | null> {
+  id: string,
+): Promise<{
+  verification: VerificationRecord;
+  plan: PlanKey | null;
+}> {
   const {
-    data,
-    error,
-  } = await supabase
-    .from("verifications")
-    .select(
-      `
-        id,
-        doc_name,
-        file_url,
-        status,
-        created_at,
-        trust_score,
-        confidence,
-        risk,
-        findings,
-        doc_type
-      `
-    )
-    .eq("id", id)
-    .maybeSingle();
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
 
-  if (error) {
+  if (sessionError) {
     console.error(
-      "VERIFICATION LOAD ERROR:",
-      error
+      "PROCESSING SESSION ERROR:",
+      sessionError,
     );
 
     throw new Error(
-      `Verification record could not be loaded: ${error.message}`
+      "Your session could not be verified. Please sign in again.",
     );
   }
 
-  if (!data) {
+  if (!session?.access_token) {
     throw new Error(
-      "Verification record could not be found."
+      "Your session has expired. Please sign in again.",
     );
   }
 
-  return data as VerificationRecord;
+  const response = await fetch(
+    `/api/verify-document/status?id=${encodeURIComponent(id)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Cache-Control": "no-cache",
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    },
+  );
+
+  let payload: VerificationStatusResponse = {};
+
+  try {
+    payload =
+      (await response.json()) as VerificationStatusResponse;
+  } catch (jsonError) {
+    console.error(
+      "PROCESSING STATUS JSON ERROR:",
+      jsonError,
+    );
+  }
+
+  console.log(
+    "PROCESSING STATUS RESPONSE:",
+    {
+      httpStatus: response.status,
+      success: payload.success,
+      verificationId: id,
+      hasVerification: Boolean(
+        payload.verification,
+      ),
+      verificationStatus:
+        payload.verification?.status,
+      plan: payload.plan,
+      paymentPlan:
+        payload.payment?.plan,
+      paymentStatus:
+        payload.payment?.status,
+      paymentProvider:
+        payload.payment?.provider,
+      paymentCurrency:
+        payload.payment?.currency,
+      paymentAmount:
+        payload.payment?.amount,
+      error: payload.error,
+      message: payload.message,
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      payload.error ||
+        payload.message ||
+        `Verification status request failed (${response.status}).`,
+    );
+  }
+
+  /*
+   * The status API is the primary source. However, if an older
+   * response shape or a deployment mismatch returns HTTP 200
+   * without the verification object, recover the record directly
+   * from Supabase using the already authenticated browser session.
+   *
+   * This fallback intentionally selects only fields that are known
+   * to exist on the verification record. In particular, it does not
+   * require created_at.
+   */
+  let verification =
+    payload.verification ||
+    null;
+
+  if (!verification) {
+    console.warn(
+      "PROCESSING STATUS FALLBACK: status API returned no verification record; loading the record directly from Supabase.",
+    );
+
+    const {
+      data: directVerification,
+      error: directVerificationError,
+    } = await supabase
+      .from("verifications")
+      .select(
+        "id, doc_name, file_url, doc_type, status, trust_score, confidence, risk, findings",
+      )
+      .eq("id", id)
+      .maybeSingle();
+
+    if (directVerificationError) {
+      console.error(
+        "PROCESSING DIRECT VERIFICATION LOAD ERROR:",
+        directVerificationError,
+      );
+
+      throw new Error(
+        `Verification record could not be loaded: ${directVerificationError.message}`,
+      );
+    }
+
+    if (!directVerification) {
+      throw new Error(
+        payload.error ||
+          payload.message ||
+          "Verification record could not be found.",
+      );
+    }
+
+    verification =
+      directVerification as VerificationRecord;
+  }
+
+  const rawPlan =
+    payload.plan ||
+    payload.payment?.plan ||
+    verification.findings?.essential?.plan ||
+    null;
+
+  const normalizedPlan =
+    String(rawPlan || "")
+      .trim()
+      .toLowerCase();
+
+  const plan:
+    | PlanKey
+    | null =
+    normalizedPlan === "essential" ||
+    normalizedPlan === "professional" ||
+    normalizedPlan === "premium"
+      ? normalizedPlan
+      : null;
+
+  return {
+    verification,
+    plan,
+  };
 }
 
 /*
  * ============================================================
- * FINALIZE BASIC VERIFICATION
+ * PROCESSING STAGE HELPERS
  * ============================================================
  */
 
-async function finalizeBasicVerification(
-  id: string,
-  documentPackage: DocumentPackageItem[]
-) {
-  const findings: VerificationFindings = {
-    document_package:
-      documentPackage,
+function getProcessingProgress(
+  record: VerificationRecord,
+): number {
+  const storedProgress =
+    record.findings?.processing?.progress;
 
-    document_count:
-      documentPackage.length,
-
-    checks: {
-      ...emptyChecks,
-    },
-
-    processing: {
-      stage:
-        "complete",
-
-      progress:
+  if (
+    typeof storedProgress ===
+    "number"
+  ) {
+    return Math.max(
+      0,
+      Math.min(
         100,
-
-      message:
-        "Verification workflow completed. Detailed verification checks remain unassessed.",
-    },
-  };
-
-  const {
-    error,
-  } = await supabase
-    .from("verifications")
-    .update({
-      status:
-        "processed",
-
-      trust_score:
-        0,
-
-      confidence:
-        0,
-
-      risk:
-        null,
-
-      findings,
-    })
-    .eq(
-      "id",
-      id
-    );
-
-  if (error) {
-    console.error(
-      "FINALIZATION ERROR:",
-      error
-    );
-
-    throw new Error(
-      `Verification result could not be saved: ${error.message}`
+        storedProgress,
+      ),
     );
   }
+
+  return 8;
+}
+
+function getProcessingStage(
+  record: VerificationRecord,
+): ProcessingStage {
+  return (
+    record.findings?.processing?.stage ||
+    (record.status ===
+    "processed"
+      ? "complete"
+      : record.status ===
+          "failed"
+        ? "failed"
+        : "received")
+  );
+}
+
+function getProcessingMessage(
+  record: VerificationRecord,
+): string {
+  return (
+    record.findings?.processing
+      ?.message ||
+    "PropertySure AI is preparing your verification analysis..."
+  );
+}
+
+/*
+ * ============================================================
+ * VISUAL PROCESSING STAGE
+ * ============================================================
+ */
+
+function getVisualStepState(
+  step:
+    | "received"
+    | "identification"
+    | "analysis"
+    | "fraud"
+    | "report",
+  progress: number,
+  processingComplete: boolean,
+): "complete" | "active" | "pending" {
+  if (processingComplete) {
+    return "complete";
+  }
+
+  if (step === "received") {
+    return "complete";
+  }
+
+  if (step === "identification") {
+    return progress >= 8
+      ? "complete"
+      : "active";
+  }
+
+  if (step === "analysis") {
+    if (progress >= 69) {
+      return "complete";
+    }
+
+    if (progress >= 22) {
+      return "active";
+    }
+
+    return "pending";
+  }
+
+  if (step === "fraud") {
+    if (progress >= 83) {
+      return "complete";
+    }
+
+    if (progress >= 69) {
+      return "active";
+    }
+
+    return "pending";
+  }
+
+  if (step === "report") {
+    if (processingComplete) {
+      return "complete";
+    }
+
+    if (progress >= 94) {
+      return "active";
+    }
+
+    return "pending";
+  }
+
+  return "pending";
 }
 
 /*
@@ -461,8 +591,6 @@ export default function ProcessingPage() {
   /*
    * ============================================================
    * PAGE LOADING
-   *
-   * This controls the standard PropertySure AI loading screen.
    * ============================================================
    */
 
@@ -480,14 +608,14 @@ export default function ProcessingPage() {
     processingStage,
     setProcessingStage,
   ] = useState<ProcessingStage>(
-    "received"
+    "received",
   );
 
   const [
     processingMessage,
     setProcessingMessage,
   ] = useState(
-    "Preparing secure verification..."
+    "Preparing secure verification...",
   );
 
   const [
@@ -506,7 +634,7 @@ export default function ProcessingPage() {
     uploadDate,
     setUploadDate,
   ] = useState(
-    "Processing..."
+    "Processing...",
   );
 
   const [
@@ -541,7 +669,7 @@ export default function ProcessingPage() {
       }
 
       return getDocumentIdentity(
-        primaryDocument
+        primaryDocument,
       );
     }, [
       primaryDocument,
@@ -560,85 +688,29 @@ export default function ProcessingPage() {
 
   /*
    * ============================================================
-   * VISUAL PROCESSING STAGE
-   * ============================================================
-   */
-
-  const visualStepState = (
-    step:
-      | "received"
-      | "identification"
-      | "analysis"
-      | "fraud"
-      | "report"
-  ) => {
-    if (
-      processingComplete
-    ) {
-      return "complete";
-    }
-
-    if (
-      step === "received"
-    ) {
-      return "complete";
-    }
-
-    if (
-      step === "identification"
-    ) {
-      return "complete";
-    }
-
-    if (
-      step === "analysis"
-    ) {
-      if (
-        progress >= 22 &&
-        progress < 69
-      ) {
-        return "active";
-      }
-
-      if (
-        progress >= 69
-      ) {
-        return "complete";
-      }
-
-      return "active";
-    }
-
-    if (
-      step === "fraud"
-    ) {
-      if (
-        progress >= 69
-      ) {
-        return "active";
-      }
-
-      return "pending";
-    }
-
-    if (
-      step === "report"
-    ) {
-      if (
-        progress >= 94
-      ) {
-        return "active";
-      }
-
-      return "pending";
-    }
-
-    return "pending";
-  };
-
-  /*
-   * ============================================================
    * MAIN PROCESSING WORKFLOW
+   * ============================================================
+   *
+   * The Processing page is only the user-facing processing
+   * experience.
+   *
+   * The actual verification is performed by:
+   *
+   * POST /api/verify-document/essential
+   *
+   * That API:
+   *
+   * - verifies the Essential payment
+   * - loads the submitted document package
+   * - downloads the actual documents
+   * - sends them to the AI verification engine
+   * - performs the Essential checks
+   * - calculates trust score
+   * - calculates confidence
+   * - calculates risk
+   * - saves the completed result
+   *
+   * This page does NOT create a fake 0/100 result.
    * ============================================================
    */
 
@@ -654,7 +726,7 @@ export default function ProcessingPage() {
 
     const params =
       new URLSearchParams(
-        window.location.search
+        window.location.search,
       );
 
     const id =
@@ -667,15 +739,193 @@ export default function ProcessingPage() {
       return;
     }
 
-    /*
-     * TypeScript now knows this is definitely a string.
-     */
     const verificationIdFromUrl =
       id;
 
     setVerificationId(
-      verificationIdFromUrl
+      verificationIdFromUrl,
     );
+
+    let cancelled = false;
+
+    /*
+     * ==========================================================
+     * PROCESSING PROGRESS POLLER
+     * ==========================================================
+     *
+     * The Essential API performs the actual analysis.
+     *
+     * While it is running, this poller reads the processing
+     * progress saved by that API so the Processing page can
+     * reflect the real server-side stage.
+     *
+     * It does NOT perform verification itself.
+     * ==========================================================
+     */
+
+    async function pollVerification(
+      idToPoll: string,
+    ) {
+      while (!cancelled) {
+        try {
+          const loaded =
+            await loadVerification(
+              idToPoll,
+            );
+
+          const verification =
+            loaded.verification;
+
+          if (cancelled) {
+            return;
+          }
+
+          const currentPackage =
+            createDocumentPackage(
+              verification,
+            );
+
+          if (
+            currentPackage.length >
+            0
+          ) {
+            setDocumentPackage(
+              currentPackage,
+            );
+          }
+
+          if (
+            verification.created_at
+          ) {
+            setUploadDate(
+              new Date(
+                verification.created_at,
+              ).toLocaleString(
+                "en-NG",
+                {
+                  day:
+                    "2-digit",
+
+                  month:
+                    "short",
+
+                  year:
+                    "numeric",
+
+                  hour:
+                    "2-digit",
+
+                  minute:
+                    "2-digit",
+                },
+              ),
+            );
+          }
+
+          const currentProgress =
+            getProcessingProgress(
+              verification,
+            );
+
+          const currentStage =
+            getProcessingStage(
+              verification,
+            );
+
+          const currentMessage =
+            getProcessingMessage(
+              verification,
+            );
+
+          setProgress(
+            currentProgress,
+          );
+
+          setProcessingStage(
+            currentStage,
+          );
+
+          setProcessingMessage(
+            currentMessage,
+          );
+
+          /*
+           * If the server has completed, show the completed
+           * state. The main workflow remains responsible for
+           * the final redirect.
+           */
+
+          if (
+            verification.status ===
+              "processed" ||
+            currentStage ===
+              "complete"
+          ) {
+            setProgress(100);
+
+            setProcessingStage(
+              "complete",
+            );
+
+            setProcessingMessage(
+              "Verification completed successfully.",
+            );
+
+            setProcessingComplete(
+              true,
+            );
+
+            return;
+          }
+
+          /*
+           * If the server has failed, stop polling.
+           *
+           * The main verification request will also receive
+           * the API error and display it to the user.
+           */
+
+          if (
+            verification.status ===
+              "failed" ||
+            currentStage ===
+              "failed"
+          ) {
+            return;
+          }
+
+          await new Promise(
+            (resolve) =>
+              setTimeout(
+                resolve,
+                800,
+              ),
+          );
+        } catch (
+          pollError
+        ) {
+          /*
+           * Polling is supplementary UI functionality.
+           *
+           * If a temporary polling request fails, do not
+           * destroy the actual verification request.
+           */
+
+          console.error(
+            "PROCESSING POLL ERROR:",
+            pollError,
+          );
+
+          await new Promise(
+            (resolve) =>
+              setTimeout(
+                resolve,
+                1200,
+              ),
+          );
+        }
+      }
+    }
 
     async function processVerification() {
       try {
@@ -685,45 +935,36 @@ export default function ProcessingPage() {
          * ======================================================
          */
 
-        const verification =
+        const loaded =
           await loadVerification(
-            verificationIdFromUrl
+            verificationIdFromUrl,
           );
 
-        if (!verification) {
-          setLoading(false);
+        const verification =
+          loaded.verification;
 
-          return;
+        const selectedPlan =
+          loaded.plan;
+
+        if (!selectedPlan) {
+          throw new Error(
+            "The paid verification plan could not be determined from the payment record.",
+          );
         }
 
         /*
          * ======================================================
-         * DOCUMENT PACKAGE
-         * ======================================================
-         *
-         * IMPORTANT:
-         *
-         * We use the exact package saved by Review Package.
-         *
-         * This preserves:
-         *
-         * - documentType
-         * - documentTitleDetected
-         * - nameDetected
-         * - classification confidence
-         * - original uploaded filename
-         *
-         * The AI identity therefore carries forward.
+         * PRESERVE REVIEWED PACKAGE
          * ======================================================
          */
 
         const reviewedPackage =
           createDocumentPackage(
-            verification
+            verification,
           );
 
         setDocumentPackage(
-          reviewedPackage
+          reviewedPackage,
         );
 
         /*
@@ -737,7 +978,7 @@ export default function ProcessingPage() {
         ) {
           setUploadDate(
             new Date(
-              verification.created_at
+              verification.created_at,
             ).toLocaleString(
               "en-NG",
               {
@@ -755,8 +996,8 @@ export default function ProcessingPage() {
 
                 minute:
                   "2-digit",
-              }
-            )
+              },
+            ),
           );
         }
 
@@ -770,20 +1011,18 @@ export default function ProcessingPage() {
           verification.status ===
           "processed"
         ) {
-          setProgress(
-            100
-          );
+          setProgress(100);
 
           setProcessingStage(
-            "complete"
+            "complete",
           );
 
           setProcessingMessage(
-            "Verification completed successfully."
+            "Verification completed successfully.",
           );
 
           setProcessingComplete(
-            true
+            true,
           );
 
           setLoading(false);
@@ -792,11 +1031,17 @@ export default function ProcessingPage() {
             true;
 
           setTimeout(() => {
-            window.location.href =
-              `/result?id=${encodeURIComponent(
-                verificationIdFromUrl
-              )}`;
-          }, 800);
+            if (!cancelled) {
+              window.location.href =
+                selectedPlan === "professional"
+                  ? `/professional-report?id=${encodeURIComponent(
+                      verificationIdFromUrl,
+                    )}`
+                  : `/result?id=${encodeURIComponent(
+                      verificationIdFromUrl,
+                    )}`;
+            }
+          }, 900);
 
           return;
         }
@@ -811,207 +1056,197 @@ export default function ProcessingPage() {
           verification.status ===
           "failed"
         ) {
-          setProcessingStage(
-            "failed"
-          );
-
-          setErrorMessage(
-            "The verification could not be completed."
-          );
-
-          setLoading(false);
-
-          return;
-        }
-
-        /*
-         * ======================================================
-         * START PROCESSING
-         * ======================================================
-         */
-
-        const {
-          error:
-            processingError,
-        } =
-          await supabase
-            .from(
-              "verifications"
-            )
-            .update({
-              status:
-                "processing",
-
-              findings: {
-                ...(verification.findings ||
-                  {}),
-
-                document_package:
-                  reviewedPackage,
-
-                document_count:
-                  reviewedPackage.length,
-
-                checks: {
-                  ...emptyChecks,
-                },
-
-                processing: {
-                  stage:
-                    "received",
-
-                  progress:
-                    8,
-
-                  message:
-                    processingStages[0]
-                      .message,
-                },
-              },
-            })
-            .eq(
-              "id",
-              verificationIdFromUrl
-            );
-
-        if (
-          processingError
-        ) {
           throw new Error(
-            `Could not start verification: ${processingError.message}`
+            verification.findings
+              ?.processing
+              ?.message ||
+              "The verification could not be completed.",
           );
         }
 
         /*
          * ======================================================
-         * THE STANDARD LOADING SCREEN ENDS HERE.
-         *
-         * Processing page now becomes visible.
+         * INITIAL UI STATE
          * ======================================================
          */
+
+        setProgress(
+          Math.max(
+            8,
+            getProcessingProgress(
+              verification,
+            ),
+          ),
+        );
+
+        setProcessingStage(
+          getProcessingStage(
+            verification,
+          ),
+        );
+
+        setProcessingMessage(
+          getProcessingMessage(
+            verification,
+          ),
+        );
 
         setLoading(false);
 
         /*
          * ======================================================
-         * PROCESSING STAGES
+         * START PROGRESS POLLING
+         * ======================================================
+         *
+         * This runs alongside the real paid-plan verification
+         * request.
          * ======================================================
          */
 
-        for (
-          const item
-          of processingStages
-        ) {
-          if (
-            redirecting.current
-          ) {
-            return;
-          }
+        void pollVerification(
+          verificationIdFromUrl,
+        );
 
-          setProcessingStage(
-            item.stage
+        /*
+         * ======================================================
+         * START THE PAID VERIFICATION ENGINE
+         * ======================================================
+         *
+         * The status endpoint tells us which plan was actually
+         * paid for. The Processing page must never guess the plan
+         * or default a Professional customer to Essential.
+         *
+         * Essential      -> Essential engine
+         * Professional   -> Professional engine
+         * Premium        -> blocked until Premium engine exists
+         * ======================================================
+         */
+
+        if (selectedPlan === "premium") {
+          throw new Error(
+            "Premium verification is not yet available in the current verification engine.",
           );
+        }
 
-          setProgress(
-            item.progress
+        const verificationEndpoint =
+          selectedPlan === "professional"
+            ? "/api/verify-document/professional"
+            : "/api/verify-document/essential";
+
+        const {
+          data: { session: currentSession },
+        } = await supabase.auth.getSession();
+
+        if (!currentSession?.access_token) {
+          throw new Error(
+            "Your session could not be verified. Please sign in again.",
           );
+        }
 
-          setProcessingMessage(
-            item.message
-          );
+        const response =
+          await fetch(
+            verificationEndpoint,
+            {
+              method: "POST",
 
-          await supabase
-            .from(
-              "verifications"
-            )
-            .update({
-              findings: {
-                document_package:
-                  reviewedPackage,
-
-                document_count:
-                  reviewedPackage.length,
-
-                checks: {
-                  ...emptyChecks,
-                },
-
-                processing: {
-                  stage:
-                    item.stage,
-
-                  progress:
-                    item.progress,
-
-                  message:
-                    item.message,
-                },
+              headers: {
+                "Content-Type":
+                  "application/json",
+                Authorization:
+                  `Bearer ${currentSession.access_token}`,
               },
-            })
-            .eq(
-              "id",
-              verificationIdFromUrl
-            );
 
-          await new Promise(
-            (resolve) =>
-              setTimeout(
-                resolve,
-                item.stage ===
-                  "received"
-                  ? 650
-                  : 850
-              )
+              body: JSON.stringify({
+                verificationId:
+                  verificationIdFromUrl,
+              }),
+
+              cache: "no-store",
+            },
+          );
+
+        let data:
+          | {
+              success?: boolean;
+              error?: string;
+              verificationId?: string;
+              trustScore?: number;
+              confidence?: number;
+              risk?: string;
+              plan?: string;
+            }
+          | null =
+          null;
+
+        try {
+          data =
+            await response.json();
+        } catch {
+          data = null;
+        }
+
+        if (
+          !response.ok ||
+          !data?.success
+        ) {
+          throw new Error(
+            data?.error ||
+              `${selectedPlan === "professional" ? "Professional" : "Essential"} verification could not be completed.`,
           );
         }
 
         /*
          * ======================================================
-         * FINALIZE
+         * SERVER HAS COMPLETED THE AI VERIFICATION
+         * ======================================================
+         *
+         * The API has already saved:
+         *
+         * status
+         * trust_score
+         * confidence
+         * risk
+         * findings
+         *
+         * Reload the record so the Result page receives the
+         * exact final database state.
          * ======================================================
          */
 
-        setProcessingMessage(
-          "Finalizing your verification report..."
-        );
+        const completedLoaded =
+          await loadVerification(
+            verificationIdFromUrl,
+          );
 
-        setProgress(
-          97
-        );
+        const completedVerification =
+          completedLoaded.verification;
 
-        await new Promise(
-          (resolve) =>
-            setTimeout(
-              resolve,
-              700
-            )
-        );
+        const completedPackage =
+          createDocumentPackage(
+            completedVerification,
+          );
 
-        await finalizeBasicVerification(
-          verificationIdFromUrl,
-          reviewedPackage
-        );
+        if (
+          completedPackage.length >
+          0
+        ) {
+          setDocumentPackage(
+            completedPackage,
+          );
+        }
 
-        /*
-         * ======================================================
-         * COMPLETE
-         * ======================================================
-         */
+        setProgress(100);
 
         setProcessingStage(
-          "complete"
-        );
-
-        setProgress(
-          100
+          "complete",
         );
 
         setProcessingMessage(
-          "Verification workflow completed successfully."
+          "Verification completed successfully.",
         );
 
         setProcessingComplete(
-          true
+          true,
         );
 
         redirecting.current =
@@ -1021,42 +1256,79 @@ export default function ProcessingPage() {
           (resolve) =>
             setTimeout(
               resolve,
-              900
-            )
+              900,
+            ),
         );
 
-        window.location.href =
-          `/result?id=${encodeURIComponent(
-            verificationIdFromUrl
-          )}`;
+        if (!cancelled) {
+          window.location.href =
+            selectedPlan === "professional"
+              ? `/professional-report?id=${encodeURIComponent(
+                  verificationIdFromUrl,
+                )}`
+              : `/result?id=${encodeURIComponent(
+                  verificationIdFromUrl,
+                )}`;
+        }
       } catch (
         error
       ) {
         console.error(
           "PROCESSING ERROR:",
-          error
+          error,
         );
 
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Unknown verification error.";
+        /*
+         * ======================================================
+         * IMPORTANT
+         * ======================================================
+         *
+         * If the real Essential API fails:
+         *
+         * - do NOT create a fake result
+         * - do NOT save 0/100
+         * - do NOT mark the verification processed
+         *
+         * Show the actual error instead.
+         * ======================================================
+         */
 
-        setProcessingStage(
-          "failed"
-        );
+        if (!cancelled) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Unknown verification error.";
 
-        setErrorMessage(
-          message
-        );
+          setProcessingStage(
+            "failed",
+          );
 
-        setLoading(false);
+          setErrorMessage(
+            message,
+          );
+
+          setLoading(false);
+        }
       }
     }
 
-    processVerification();
+    /*
+     * ==========================================================
+     * RUN REAL VERIFICATION
+     * ==========================================================
+     */
+
+    void processVerification();
+
+    /*
+     * ==========================================================
+     * CLEANUP
+     * ==========================================================
+     */
 
     return () => {
+      cancelled = true;
+
       redirecting.current =
         true;
     };
@@ -1438,7 +1710,7 @@ export default function ProcessingPage() {
                     {processingComplete
                       ? "Verification complete"
                       : primaryDocumentIdentity !==
-                        "Property Documents"
+                          "Property Documents"
                         ? `Analyzing ${primaryDocumentIdentity}...`
                         : "Analyzing documents..."}
                   </strong>
@@ -1446,7 +1718,7 @@ export default function ProcessingPage() {
                   <span>
                     {processingComplete
                       ? "Your verification result is ready."
-                      : "Our AI is examining your files for key details, structure and authenticity."}
+                      : processingMessage}
                   </span>
                 </div>
               </div>
@@ -1476,22 +1748,22 @@ export default function ProcessingPage() {
               }
             >
               <ProcessingStep
-                state={
-                  visualStepState(
-                    "received"
-                  )
-                }
+                state={getVisualStepState(
+                  "received",
+                  progress,
+                  processingComplete,
+                )}
                 title="Document package received"
                 description="Your submitted documents have been securely received."
                 status="100%"
               />
 
               <ProcessingStep
-                state={
-                  visualStepState(
-                    "identification"
-                  )
-                }
+                state={getVisualStepState(
+                  "identification",
+                  progress,
+                  processingComplete,
+                )}
                 title="Document identification"
                 description={
                   documentPackage.length > 0
@@ -1502,47 +1774,55 @@ export default function ProcessingPage() {
               />
 
               <ProcessingStep
-                state={
-                  visualStepState(
-                    "analysis"
-                  )
-                }
+                state={getVisualStepState(
+                  "analysis",
+                  progress,
+                  processingComplete,
+                )}
                 title="Verification analysis"
                 description="AI is examining document content, structure and consistency."
                 status={
-                  progress >= 69
+                  processingComplete
                     ? "Complete"
-                    : "In progress..."
+                    : progress >= 22
+                      ? "In progress..."
+                      : "Pending"
                 }
               />
 
               <ProcessingStep
-                state={
-                  visualStepState(
-                    "fraud"
-                  )
-                }
+                state={getVisualStepState(
+                  "fraud",
+                  progress,
+                  processingComplete,
+                )}
                 title="Fraud & authenticity checks"
                 description="Checking for suspicious alterations and inconsistencies."
                 status={
-                  progress >= 83
+                  processingComplete
                     ? "Complete"
-                    : "Pending"
+                    : progress >= 83
+                      ? "Complete"
+                      : progress >= 69
+                        ? "In progress..."
+                        : "Pending"
                 }
               />
 
               <ProcessingStep
-                state={
-                  visualStepState(
-                    "report"
-                  )
-                }
+                state={getVisualStepState(
+                  "report",
+                  progress,
+                  processingComplete,
+                )}
                 title="Verification report"
                 description="Your verification findings are being prepared."
                 status={
                   processingComplete
                     ? "Ready"
-                    : "Pending"
+                    : progress >= 94
+                      ? "In progress..."
+                      : "Pending"
                 }
                 last
               />
@@ -1669,7 +1949,7 @@ export default function ProcessingPage() {
             </p>
 
             <small>
-              © 2026 PropertySure AI. All rights reserved.
+              ©️ 2026 PropertySure AI. All rights reserved.
             </small>
           </footer>
         </div>

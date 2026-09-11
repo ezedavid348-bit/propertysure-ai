@@ -1,7 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import AppShell from "../../AppShell/AppShell";
 import { supabase } from "../../lib/supabase";
 import styles from "./checkout.module.css";
@@ -33,7 +38,24 @@ const PLANS: Record<PlanKey, Plan> = {
 };
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+
+  /*
+   * Always start Checkout at the top when the page is mounted.
+   *
+   * This prevents the browser from restoring the previous scroll
+   * position after returning from Select Plan through Change Plan.
+   *
+   * No layout, workflow, payment, or styling behavior is changed.
+   */
+  useLayoutEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "auto",
+    });
+  }, []);
 
   const verificationId = searchParams.get("id") || "";
   const planParam = searchParams.get("plan") || "professional";
@@ -95,12 +117,21 @@ export default function CheckoutPage() {
     }).format(amount);
   };
 
+  /*
+   * IMPORTANT:
+   * Use the same Next.js client-side navigation pattern as Select Plan.
+   * Do not use window.location.href here.
+   *
+   * This keeps the checkout route transition inside the Next.js app
+   * and prevents the workflow/layout from being affected by a full
+   * browser navigation when the customer changes their plan.
+   */
   const goBackToPlan = () => {
     const query = verificationId
       ? `?id=${encodeURIComponent(verificationId)}`
       : "";
 
-    window.location.href = `/verify/select-plan${query}`;
+    router.push(`/verify/select-plan${query}`);
   };
 
   const handlePayment = async () => {
@@ -207,6 +238,136 @@ export default function CheckoutPage() {
     >
       <main className={styles.page}>
         <div className={styles.container}>
+
+          {/* =====================================================
+              VERIFICATION WORKFLOW
+              Same structure and wording as Select Plan.
+              Step 4 is active on Secure Checkout.
+              ===================================================== */}
+
+          <section
+            className={styles.workflow}
+            aria-label="Verification workflow"
+          >
+            {/* STEP 1 */}
+
+            <div className={styles.workflowItem}>
+              <span
+                className={styles.workflowNumberDone}
+              >
+                ✓
+              </span>
+
+              <div>
+                <strong>
+                  Upload Documents
+                </strong>
+
+                <span>
+                  Add your property documents
+                </span>
+              </div>
+            </div>
+
+            <div
+              className={styles.workflowLineActive}
+            />
+
+            {/* STEP 2 */}
+
+            <div className={styles.workflowItem}>
+              <span
+                className={styles.workflowNumberDone}
+              >
+                ✓
+              </span>
+
+              <div>
+                <strong>
+                  Review Package
+                </strong>
+
+                <span>
+                  Confirm your documents
+                </span>
+              </div>
+            </div>
+
+            <div
+              className={styles.workflowLineActive}
+            />
+
+            {/* STEP 3 */}
+
+            <div className={styles.workflowItem}>
+              <span
+                className={styles.workflowNumberDone}
+              >
+                ✓
+              </span>
+
+              <div>
+                <strong>
+                  Select Plan
+                </strong>
+
+                <span>
+                  Choose your service
+                </span>
+              </div>
+            </div>
+
+            <div
+              className={styles.workflowLineActive}
+            />
+
+            {/* STEP 4 */}
+
+            <div
+              className={`${styles.workflowItem} ${styles.workflowCurrent}`}
+            >
+              <span
+                className={styles.workflowNumberActive}
+              >
+                4
+              </span>
+
+              <div>
+                <strong>
+                  Secure Checkout
+                </strong>
+
+                <span>
+                  Complete payment
+                </span>
+              </div>
+            </div>
+
+            <div
+              className={styles.workflowLine}
+            />
+
+            {/* STEP 5 */}
+
+            <div className={styles.workflowItem}>
+              <span
+                className={styles.workflowNumber}
+              >
+                5
+              </span>
+
+              <div>
+                <strong>
+                  Verification
+                </strong>
+
+                <span>
+                  AI analysis and results
+                </span>
+              </div>
+            </div>
+          </section>
+
           {/* Header */}
           <div className={styles.header}>
             <div>
@@ -314,6 +475,7 @@ export default function CheckoutPage() {
                     type="button"
                     className={styles.changePlanButton}
                     onClick={goBackToPlan}
+                    disabled={paymentLoading}
                   >
                     Change Plan
                   </button>
@@ -446,6 +608,7 @@ export default function CheckoutPage() {
                 type="button"
                 className={styles.backButton}
                 onClick={goBackToPlan}
+                disabled={paymentLoading}
               >
                 <span>←</span>
                 Back to Select Plan

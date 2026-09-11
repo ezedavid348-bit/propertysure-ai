@@ -1,3 +1,7 @@
+/* ============================================================
+   EXISTING CHECKOUT STYLES
+   ============================================================ */
+
 .page {
   min-height: calc(100vh - 80px);
   background:
@@ -14,6 +18,160 @@
   width: min(1180px, 100%);
   margin: 0 auto;
 }
+
+/* ============================================================
+   VERIFICATION WORKFLOW
+   Exact workflow structure adapted from Select Plan.
+   ============================================================ */
+
+.workflow {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    50px
+    minmax(0, 1fr)
+    50px
+    minmax(0, 1fr)
+    50px
+    minmax(0, 1fr)
+    50px
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  padding:
+    18px 20px;
+
+  border:
+    1px solid
+    #e2eaf3;
+
+  border-radius: 15px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 8px 28px
+    rgba(20, 55, 90, 0.05);
+
+  margin-bottom: 40px;
+}
+
+.workflowItem {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  min-width: 0;
+}
+
+.workflowItem > div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  min-width: 0;
+}
+
+.workflowItem strong {
+  color: #172b43;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  line-height: 1.2;
+}
+
+.workflowItem span:last-child {
+  color: #8191a5;
+
+  font-size: 10px;
+
+  line-height: 1.4;
+}
+
+.workflowCurrent strong {
+  color: #168eff;
+}
+
+.workflowNumber,
+.workflowNumberDone,
+.workflowNumberActive {
+  width: 32px;
+  height: 32px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.workflowNumber {
+  border:
+    1px solid
+    #d8e2ed;
+
+  background: #f5f8fb;
+
+  color: #8b9bad;
+}
+
+.workflowNumberDone {
+  border:
+    1px solid
+    rgba(32, 190, 119, 0.2);
+
+  background:
+    rgba(32, 190, 119, 0.1);
+
+  color: #16a86b;
+}
+
+.workflowNumberActive {
+  background: #168eff;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 5px 14px
+    rgba(22, 142, 255, 0.22);
+}
+
+.workflowLine,
+.workflowLineActive {
+  height: 1px;
+
+  width: 100%;
+}
+
+.workflowLine {
+  background: #e1e8f0;
+}
+
+.workflowLineActive {
+  background:
+    linear-gradient(
+      90deg,
+      #1cb879,
+      #168eff
+    );
+}
+
+/* ============================================================
+   EXISTING CHECKOUT STYLES
+   ============================================================ */
 
 .header {
   display: flex;
@@ -534,13 +692,9 @@
   font-size: 10px;
 }
 
-.trustDivider {
-  width: 1px;
-  height: 35px;
-  background: #e2e8f0;
-}
-
-/* Loading */
+/* ============================================================
+   Loading
+   ============================================================ */
 
 .loadingScreen {
   display: flex;
@@ -642,7 +796,44 @@
 
 /* Tablet */
 
-@media (max-width: 900px) {
+@media (max-width: 1050px) {
+  .workflow {
+    grid-template-columns:
+      minmax(0, 1fr)
+      28px
+      minmax(0, 1fr)
+      28px
+      minmax(0, 1fr)
+      28px
+      minmax(0, 1fr)
+      28px
+      minmax(0, 1fr);
+
+    padding:
+      16px 14px;
+  }
+
+  .workflowItem {
+    gap: 7px;
+  }
+
+  .workflowItem strong {
+    font-size: 10px;
+  }
+
+  .workflowItem span:last-child {
+    font-size: 8px;
+  }
+
+  .workflowNumber,
+  .workflowNumberDone,
+  .workflowNumberActive {
+    width: 29px;
+    height: 29px;
+
+    font-size: 10px;
+  }
+
   .page {
     padding: 32px 20px 55px;
   }
@@ -667,10 +858,109 @@
 
 /* Mobile */
 
+@media (max-width: 850px) {
+  .workflow {
+    grid-template-columns:
+      repeat(5, minmax(0, 1fr));
+
+    gap: 10px;
+  }
+
+  .workflowLine,
+  .workflowLineActive {
+    display: none;
+  }
+
+  .workflowItem {
+    flex-direction: column;
+
+    align-items: center;
+
+    text-align: center;
+
+    gap: 7px;
+  }
+
+  .workflowItem > div {
+    align-items: center;
+  }
+
+  .workflowItem strong {
+    font-size: 10px;
+  }
+
+  .workflowItem span:last-child {
+    font-size: 8px;
+  }
+}
+
 @media (max-width: 600px) {
   .page {
     min-height: 100vh;
     padding: 25px 14px 45px;
+  }
+
+  .workflow {
+    display: grid;
+
+    grid-template-columns:
+      repeat(5, minmax(0, 1fr));
+
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+
+    margin:
+      0 0 28px;
+
+    padding:
+      14px 8px;
+
+    box-sizing: border-box;
+
+    border-radius: 13px;
+
+    gap: 5px;
+
+    align-items: start;
+
+    position: relative;
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .workflowItem {
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .workflowItem > div {
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .workflowNumber,
+  .workflowNumberDone,
+  .workflowNumberActive {
+    width: 31px;
+    height: 31px;
+
+    font-size: 10px;
+  }
+
+  .workflowItem {
+    gap: 6px;
+  }
+
+  .workflowItem strong {
+    font-size: 8px;
+
+    line-height: 1.25;
+  }
+
+  .workflowItem span:last-child {
+    display: none;
   }
 
   .header {
@@ -763,5 +1053,51 @@
   .trustSection {
     margin-top: 16px;
     padding: 17px;
+  }
+}
+
+@media (max-width: 380px) {
+  .workflow {
+    display: grid;
+
+    grid-template-columns:
+      repeat(5, minmax(0, 1fr));
+
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+
+    margin:
+      0 0 28px;
+
+    padding:
+      12px 5px;
+
+    box-sizing: border-box;
+
+    align-items: start;
+
+    gap: 4px;
+
+    position: relative;
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .workflowItem {
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .workflowItem strong {
+    font-size: 7px;
+  }
+
+  .workflowNumber,
+  .workflowNumberDone,
+  .workflowNumberActive {
+    width: 28px;
+    height: 28px;
   }
 }

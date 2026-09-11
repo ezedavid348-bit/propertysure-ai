@@ -776,11 +776,13 @@ WEEK START
 
 type WeekStart =
   | "Monday"
-  | "Sunday";
+  | "Sunday"
+  | "Saturday";
 
 const weekStartOptions: WeekStart[] = [
   "Monday",
   "Sunday",
+  "Saturday",
 ];
 
 /*
@@ -1682,7 +1684,9 @@ export default function LanguageRegionPage() {
             savedWeekStart ===
               "Monday" ||
             savedWeekStart ===
-              "Sunday"
+              "Sunday" ||
+            savedWeekStart ===
+              "Saturday"
           ) {
             setWeekStartsOn(
               savedWeekStart
