@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Suspense,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -37,7 +38,7 @@ const PLANS: Record<PlanKey, Plan> = {
   },
 };
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -158,6 +159,7 @@ export default function CheckoutPage() {
         setError(
           "Your session has expired. Please refresh the page and try again.",
         );
+        setPaymentLoading(false);
         return;
       }
 
@@ -369,6 +371,7 @@ export default function CheckoutPage() {
           </section>
 
           {/* Header */}
+
           <div className={styles.header}>
             <div>
               <div className={styles.eyebrow}>
@@ -390,6 +393,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* Error */}
+
           {error && (
             <div className={styles.errorBanner}>
               <span className={styles.errorIcon}>!</span>
@@ -398,10 +402,15 @@ export default function CheckoutPage() {
           )}
 
           {/* Main checkout grid */}
+
           <div className={styles.checkoutGrid}>
+
             {/* Left column */}
+
             <div className={styles.leftColumn}>
+
               {/* Verification summary */}
+
               <section className={styles.card}>
                 <div className={styles.cardHeader}>
                   <div>
@@ -447,7 +456,9 @@ export default function CheckoutPage() {
                       Service
                     </span>
 
-                    <strong>Property Verification</strong>
+                    <strong>
+                      Property Verification
+                    </strong>
                   </div>
 
                   <div className={styles.summaryItem}>
@@ -455,12 +466,15 @@ export default function CheckoutPage() {
                       Payment
                     </span>
 
-                    <strong>One-time payment</strong>
+                    <strong>
+                      One-time payment
+                    </strong>
                   </div>
                 </div>
               </section>
 
               {/* Selected plan */}
+
               <section className={styles.card}>
                 <div className={styles.cardHeader}>
                   <div>
@@ -487,9 +501,13 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className={styles.planContent}>
-                    <h3>{selectedPlan.name} Verification</h3>
+                    <h3>
+                      {selectedPlan.name} Verification
+                    </h3>
 
-                    <p>{selectedPlan.description}</p>
+                    <p>
+                      {selectedPlan.description}
+                    </p>
                   </div>
 
                   <div className={styles.planPrice}>
@@ -499,11 +517,16 @@ export default function CheckoutPage() {
               </section>
 
               {/* Secure payment information */}
+
               <section className={styles.securityCard}>
-                <div className={styles.securityIcon}>🔒</div>
+                <div className={styles.securityIcon}>
+                  🔒
+                </div>
 
                 <div className={styles.securityContent}>
-                  <h3>Secure Payment</h3>
+                  <h3>
+                    Secure Payment
+                  </h3>
 
                   <p>
                     Your payment will be securely processed through
@@ -532,13 +555,16 @@ export default function CheckoutPage() {
             </div>
 
             {/* Right column */}
+
             <aside className={styles.orderCard}>
               <div className={styles.orderHeader}>
                 <span className={styles.cardEyebrow}>
                   ORDER SUMMARY
                 </span>
 
-                <h2>Payment Details</h2>
+                <h2>
+                  Payment Details
+                </h2>
               </div>
 
               <div className={styles.orderPlan}>
@@ -547,7 +573,9 @@ export default function CheckoutPage() {
                     Plan
                   </span>
 
-                  <strong>{selectedPlan.name}</strong>
+                  <strong>
+                    {selectedPlan.name}
+                  </strong>
                 </div>
 
                 <span className={styles.orderPlanTag}>
@@ -558,7 +586,9 @@ export default function CheckoutPage() {
               <div className={styles.divider} />
 
               <div className={styles.priceRow}>
-                <span>Verification service</span>
+                <span>
+                  Verification service
+                </span>
 
                 <strong>
                   {formatCurrency(selectedPlan.price)}
@@ -566,18 +596,26 @@ export default function CheckoutPage() {
               </div>
 
               <div className={styles.priceRow}>
-                <span>Processing fee</span>
+                <span>
+                  Processing fee
+                </span>
 
-                <strong>Included</strong>
+                <strong>
+                  Included
+                </strong>
               </div>
 
               <div className={styles.divider} />
 
               <div className={styles.totalRow}>
                 <div>
-                  <span>Total</span>
+                  <span>
+                    Total
+                  </span>
 
-                  <small>Amount payable</small>
+                  <small>
+                    Amount payable
+                  </small>
                 </div>
 
                 <strong>
@@ -589,16 +627,22 @@ export default function CheckoutPage() {
                 type="button"
                 className={styles.payButton}
                 onClick={handlePayment}
-                disabled={paymentLoading || !verificationId}
+                disabled={
+                  paymentLoading ||
+                  !verificationId
+                }
               >
                 {paymentLoading ? (
                   <>
-                    <span className={styles.buttonSpinner} />
+                    <span
+                      className={styles.buttonSpinner}
+                    />
                     Preparing Payment...
                   </>
                 ) : (
                   <>
-                    Pay {formatCurrency(selectedPlan.price)}
+                    Pay{" "}
+                    {formatCurrency(selectedPlan.price)}
                     <span>→</span>
                   </>
                 )}
@@ -622,40 +666,99 @@ export default function CheckoutPage() {
           </div>
 
           {/* Bottom trust section */}
+
           <section className={styles.trustSection}>
             <div className={styles.trustItem}>
-              <div className={styles.trustIcon}>🔒</div>
+              <div className={styles.trustIcon}>
+                🔒
+              </div>
 
               <div>
-                <strong>Secure Payment</strong>
-                <span>Protected payment processing</span>
+                <strong>
+                  Secure Payment
+                </strong>
+
+                <span>
+                  Protected payment processing
+                </span>
               </div>
             </div>
 
             <div className={styles.trustDivider} />
 
             <div className={styles.trustItem}>
-              <div className={styles.trustIcon}>✓</div>
+              <div className={styles.trustIcon}>
+                ✓
+              </div>
 
               <div>
-                <strong>One-Time Payment</strong>
-                <span>No recurring charges</span>
+                <strong>
+                  One-Time Payment
+                </strong>
+
+                <span>
+                  No recurring charges
+                </span>
               </div>
             </div>
 
             <div className={styles.trustDivider} />
 
             <div className={styles.trustItem}>
-              <div className={styles.trustIcon}>▣</div>
+              <div className={styles.trustIcon}>
+                ▣
+              </div>
 
               <div>
-                <strong>Digital Receipt</strong>
-                <span>Payment confirmation provided</span>
+                <strong>
+                  Digital Receipt
+                </strong>
+
+                <span>
+                  Payment confirmation provided
+                </span>
               </div>
             </div>
           </section>
         </div>
       </main>
     </AppShell>
+  );
+}
+
+/*
+ * Next.js production-build requirement:
+ *
+ * useSearchParams() is used inside CheckoutPageContent.
+ * The page itself therefore renders that component inside
+ * a Suspense boundary so static generation/export can complete.
+ *
+ * No checkout functionality or visual layout is changed.
+ */
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className={styles.loadingScreen}>
+          <div className={styles.loadingLogo}>◇</div>
+
+          <div className={styles.loadingTitle}>
+            PropertySure AI
+          </div>
+
+          <div className={styles.loadingDots}>
+            <span />
+            <span />
+            <span />
+          </div>
+
+          <div className={styles.loadingText}>
+            Loading...
+          </div>
+        </div>
+      }
+    >
+      <CheckoutPageContent />
+    </Suspense>
   );
 }

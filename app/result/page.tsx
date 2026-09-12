@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Suspense,
   useEffect,
   useMemo,
   useRef,
@@ -880,7 +881,7 @@ function getLocationStatusClass(
   return styles.locationStatusInconclusive;
 }
 
-export default function ResultPage() {
+function ResultPageContent() {
   const searchParams =
     useSearchParams();
 
@@ -3542,5 +3543,40 @@ export default function ResultPage() {
         )}
       </main>
     </AppShell>
+  );
+}
+
+export default function ResultPage() {
+  return (
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "grid",
+            placeItems: "center",
+            padding: "24px",
+          }}
+        >
+          <div
+            style={{
+              width: "36px",
+              height: "36px",
+              border: "3px solid rgba(15, 23, 42, 0.12)",
+              borderTopColor: "#0f172a",
+              borderRadius: "50%",
+              animation: "resultPageSpin 0.8s linear infinite",
+            }}
+          />
+          <style jsx>{`
+            @keyframes resultPageSpin {
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      }
+    >
+      <ResultPageContent />
+    </Suspense>
   );
 }

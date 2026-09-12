@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function PaymentCallbackPage() {
+function PaymentCallbackContent() {
   const searchParams = useSearchParams();
 
   const [message, setMessage] = useState(
@@ -141,5 +141,69 @@ export default function PaymentCallbackPage() {
         }
       `}</style>
     </main>
+  );
+}
+
+export default function PaymentCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <main
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "24px",
+            background:
+              "linear-gradient(135deg, #07111f 0%, #0b1728 100%)",
+            color: "#ffffff",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ maxWidth: "520px" }}>
+            <div
+              style={{
+                width: "52px",
+                height: "52px",
+                margin: "0 auto 24px",
+                borderRadius: "50%",
+                border: "3px solid rgba(255,255,255,0.2)",
+                borderTopColor: "#ffffff",
+                animation: "spin 1s linear infinite",
+              }}
+            />
+
+            <h1
+              style={{
+                marginBottom: "12px",
+                fontSize: "28px",
+              }}
+            >
+              Confirming Payment
+            </h1>
+
+            <p
+              style={{
+                color: "rgba(255,255,255,0.7)",
+                fontSize: "16px",
+              }}
+            >
+              Please wait while we confirm your payment...
+            </p>
+          </div>
+
+          <style jsx>{`
+            @keyframes spin {
+              to {
+                transform: rotate(360deg);
+              }
+            }
+          `}</style>
+        </main>
+      }
+    >
+      <PaymentCallbackContent />
+    </Suspense>
   );
 }
