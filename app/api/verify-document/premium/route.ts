@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
  * PROPERTYSURE AI — PROFESSIONAL VERIFICATION ENGINE
  * ============================================================
  *
- * Professional verification:
+ * Premium verification:
  *
  * - Multi-document analysis
  * - Cross-document consistency
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
  * - Property-information analysis
  * - GPS/location consistency when usable GPS data exists
  * - Structured risk assessment
- * - Professional recommendation
+ * - Premium recommendation
  *
  * IMPORTANT:
  *
@@ -29,7 +29,7 @@ export const dynamic = "force-dynamic";
  * - surveyor certification
  * - legal opinion
  *
- * Those require independent evidence or professional services.
+ * Those require independent evidence or premium services.
  * ============================================================
  */
 
@@ -65,12 +65,12 @@ type DocumentChecks = {
   documentCompleteness: CheckValue;
 };
 
-type ProfessionalDocumentResult = {
+type PremiumDocumentResult = {
   documentName: string;
   documentType: string;
   documentTitle: string;
   confidence: number;
-  professionalStatus:
+  premiumStatus:
     | "reviewed"
     | "attention"
     | "inconclusive";
@@ -139,15 +139,42 @@ type RiskAssessment = {
   transactionRisk: RiskLevel;
 };
 
-type ProfessionalFindings = {
+
+type PremiumCheckStatus =
+  | "verified"
+  | "attention"
+  | "pending"
+  | "not_conclusive"
+  | "not_performed";
+
+type PremiumDueDiligenceCheck = {
+  id: string;
+  label: string;
+  category: string;
+  status: PremiumCheckStatus;
+  description: string;
+  evidence?: string;
+  required: boolean;
+};
+
+type PremiumDueDiligence = {
+  checks: PremiumDueDiligenceCheck[];
+  verifiedCount: number;
+  attentionCount: number;
+  pendingCount: number;
+  notConclusiveCount: number;
+  notPerformedCount: number;
+};
+
+type PremiumFindings = {
   document_package?: DocumentPackageItem[];
   document_count?: number;
   checks?: DocumentChecks;
 
-  professional?: {
-    plan: "professional";
+  premium?: {
+    plan: "premium";
     completed_at?: string;
-    document_results?: ProfessionalDocumentResult[];
+    document_results?: PremiumDocumentResult[];
     confidence?: number;
     trust_score?: number;
     risk?: RiskLevel;
@@ -162,6 +189,7 @@ type ProfessionalFindings = {
     location?: Record<string, unknown>;
     gps?: Record<string, unknown>;
     scope?: Record<string, unknown>;
+    premium_due_diligence?: PremiumDueDiligence;
     outstanding_issues?: string[];
     next_steps?: string[];
   };
@@ -171,6 +199,7 @@ type ProfessionalFindings = {
   title?: OwnershipTitleAnalysis;
   property?: PropertyAnalysis;
   risk_assessment?: RiskAssessment;
+  premium_due_diligence?: PremiumDueDiligence;
   location?: Record<string, unknown>;
   gps?: Record<string, unknown>;
 
@@ -701,7 +730,7 @@ function parseAIJson(
 
     if (!match) {
       throw new Error(
-        "AI returned unreadable Professional verification data.",
+        "AI returned unreadable Premium verification data.",
       );
     }
 
@@ -770,7 +799,7 @@ async function callOpenAI(
 
     throw new Error(
       payload?.error?.message ||
-        "OpenAI Professional verification analysis failed.",
+        "OpenAI Premium verification analysis failed.",
     );
   }
 
@@ -781,7 +810,7 @@ async function callOpenAI(
 
   if (!outputText) {
     throw new Error(
-      "AI returned no Professional verification result.",
+      "AI returned no Premium verification result.",
     );
   }
 
@@ -818,9 +847,9 @@ async function analyzeDocument(
     `data:${actualMimeType};base64,${bytes.toString("base64")}`;
 
   const prompt = `
-You are PropertySure AI's Professional property-document verification engine.
+You are PropertySure AI's Premium property-document verification engine.
 
-Analyze the ACTUAL supplied Nigerian property document as part of a professional multi-document property due-diligence workflow.
+Analyze the ACTUAL supplied Nigerian property document as part of a premium multi-document property due-diligence workflow.
 
 Document type from package review:
 ${documentType || "Unknown"}
@@ -856,7 +885,7 @@ Return JSON only:
   "documentTitle":"string",
   "confidence":0,
   "summary":"string",
-  "professionalStatus":"reviewed",
+  "premiumStatus":"reviewed",
   "keyFindings":[],
   "ownershipFindings":[],
   "titleFindings":[],
@@ -985,7 +1014,7 @@ Rules:
       checks,
     );
 
-  const professionalStatus =
+  const premiumStatus =
     checks.noForgery === false ||
     allChecks.some(
       (value) =>
@@ -998,7 +1027,7 @@ Rules:
         )
         ? "inconclusive"
         : asString(
-              parsed.professionalStatus,
+              parsed.premiumStatus,
             )
               .toLowerCase() ===
             "inconclusive"
@@ -1035,12 +1064,12 @@ Rules:
         100,
       ),
 
-    professionalStatus,
+    premiumStatus,
 
     summary:
       `${asString(
         parsed.summary,
-        "Professional document analysis completed.",
+        "Premium document analysis completed.",
       )} This analysis does not independently establish government authenticity or legal ownership.`,
 
     keyFindings:
@@ -1071,7 +1100,7 @@ Rules:
     manipulationIndicators,
 
     checks,
-  } as ProfessionalDocumentResult;
+  } as PremiumDocumentResult;
 }
 
 /*
@@ -1082,7 +1111,7 @@ Rules:
 
 async function analyzePackage(
   documentResults:
-    ProfessionalDocumentResult[],
+    PremiumDocumentResult[],
   gps: GPSData,
 ) {
   const packageData =
@@ -1100,8 +1129,8 @@ async function analyzePackage(
         confidence:
           document.confidence,
 
-        professionalStatus:
-          document.professionalStatus,
+        premiumStatus:
+          document.premiumStatus,
 
         summary:
           document.summary,
@@ -1130,7 +1159,7 @@ async function analyzePackage(
     );
 
   const prompt = `
-You are PropertySure AI's Professional cross-document property due-diligence engine.
+You are PropertySure AI's Premium cross-document property due-diligence engine.
 
 Analyze the following document package as ONE property transaction.
 
@@ -1568,7 +1597,7 @@ Do not invent missing facts.
     summary:
       asString(
         parsed.summary,
-        "Professional property verification analysis completed.",
+        "Premium property verification analysis completed.",
       ),
 
     outstandingIssues:
@@ -1594,6 +1623,423 @@ Do not invent missing facts.
   };
 }
 
+
+/*
+ * ============================================================
+ * PREMIUM DUE-DILIGENCE STATUS
+ * ============================================================
+ */
+
+function normalizePremiumCheckStatus(
+  value: unknown,
+): PremiumCheckStatus {
+  const normalized =
+    asString(value)
+      .toLowerCase()
+      .replace(/[\s-]+/g, "_");
+
+  if (
+    normalized.includes("verified") ||
+    normalized.includes("confirmed") ||
+    normalized.includes("complete") ||
+    normalized.includes("passed") ||
+    normalized === "true"
+  ) {
+    return "verified";
+  }
+
+  if (
+    normalized.includes("attention") ||
+    normalized.includes("failed") ||
+    normalized.includes("mismatch") ||
+    normalized.includes("risk") ||
+    normalized.includes("adverse")
+  ) {
+    return "attention";
+  }
+
+  if (
+    normalized.includes("inconclusive") ||
+    normalized.includes("not_conclusive") ||
+    normalized.includes("insufficient") ||
+    normalized.includes("unable")
+  ) {
+    return "not_conclusive";
+  }
+
+  if (
+    normalized.includes("not_performed") ||
+    normalized.includes("not_done") ||
+    normalized.includes("not_included")
+  ) {
+    return "not_performed";
+  }
+
+  if (
+    normalized.includes("pending") ||
+    normalized.includes("awaiting") ||
+    normalized.includes("external")
+  ) {
+    return "pending";
+  }
+
+  if (value === true) {
+    return "verified";
+  }
+
+  if (value === false) {
+    return "attention";
+  }
+
+  return "pending";
+}
+
+function getNestedStatus(
+  source: Record<string, unknown>,
+  paths: string[][],
+): PremiumCheckStatus {
+  for (const path of paths) {
+    let current: unknown = source;
+
+    for (const segment of path) {
+      current = asRecord(current)[segment];
+    }
+
+    if (
+      current !== undefined &&
+      current !== null &&
+      asString(current)
+    ) {
+      return normalizePremiumCheckStatus(current);
+    }
+  }
+
+  return "pending";
+}
+
+function getNestedEvidence(
+  source: Record<string, unknown>,
+  paths: string[][],
+): string {
+  for (const path of paths) {
+    let current: unknown = source;
+
+    for (const segment of path) {
+      current = asRecord(current)[segment];
+    }
+
+    const value = asString(current);
+
+    if (value) {
+      return value;
+    }
+  }
+
+  return "";
+}
+
+function buildPremiumDueDiligence(
+  storedFindings: PremiumFindings,
+): PremiumDueDiligence {
+  const root = storedFindings as Record<string, unknown>;
+  const premiumRecord = asRecord(
+    storedFindings.premium,
+  );
+  const legacyRecord = asRecord(
+    root.professional,
+  );
+
+  const sources = [
+    root,
+    premiumRecord,
+    legacyRecord,
+  ];
+
+  const readStatus = (
+    keys: string[][],
+  ): PremiumCheckStatus => {
+    for (const source of sources) {
+      const status =
+        getNestedStatus(
+          source,
+          keys,
+        );
+
+      if (status !== "pending") {
+        return status;
+      }
+    }
+
+    return "pending";
+  };
+
+  const readEvidence = (
+    keys: string[][],
+  ): string => {
+    for (const source of sources) {
+      const evidence =
+        getNestedEvidence(
+          source,
+          keys,
+        );
+
+      if (evidence) {
+        return evidence;
+      }
+    }
+
+    return "";
+  };
+
+  const checks: PremiumDueDiligenceCheck[] = [
+    {
+      id: "registry_search",
+      label: "Land Registry / Title Search",
+      category: "Title & Registry",
+      status: readStatus([
+        ["premium", "registry_search", "status"],
+        ["professional", "registry_search", "status"],
+        ["registry_search", "status"],
+        ["land_registry_search", "status"],
+        ["title_search", "status"],
+      ]),
+      description:
+        "Independent land registry and title-record confirmation.",
+      evidence: readEvidence([
+        ["premium", "registry_search", "evidence"],
+        ["premium", "registry_search", "result"],
+        ["professional", "registry_search", "evidence"],
+        ["registry_search", "evidence"],
+      ]),
+      required: true,
+    },
+    {
+      id: "ownership_verification",
+      label: "Ownership Verification",
+      category: "Ownership",
+      status: readStatus([
+        ["premium", "ownership_verification", "status"],
+        ["professional", "ownership_verification", "status"],
+        ["ownership_verification", "status"],
+      ]),
+      description:
+        "Independent confirmation of the relevant owner, grantor or proprietor.",
+      evidence: readEvidence([
+        ["premium", "ownership_verification", "evidence"],
+        ["premium", "ownership_verification", "result"],
+        ["professional", "ownership_verification", "evidence"],
+        ["ownership_verification", "evidence"],
+      ]),
+      required: true,
+    },
+    {
+      id: "encumbrance_search",
+      label: "Encumbrance / Lien Search",
+      category: "Transaction Risk",
+      status: readStatus([
+        ["premium", "encumbrance_search", "status"],
+        ["professional", "encumbrance_search", "status"],
+        ["encumbrance_search", "status"],
+        ["lien_search", "status"],
+      ]),
+      description:
+        "Independent search for recorded liens, charges, restrictions or other encumbrances.",
+      evidence: readEvidence([
+        ["premium", "encumbrance_search", "evidence"],
+        ["premium", "encumbrance_search", "result"],
+        ["professional", "encumbrance_search", "evidence"],
+        ["encumbrance_search", "evidence"],
+      ]),
+      required: true,
+    },
+    {
+      id: "survey_verification",
+      label: "Survey / Cadastral Verification",
+      category: "Survey & Cadastral",
+      status: readStatus([
+        ["premium", "survey_verification", "status"],
+        ["professional", "survey_verification", "status"],
+        ["survey_verification", "status"],
+        ["cadastral_verification", "status"],
+      ]),
+      description:
+        "Independent confirmation of survey, parcel and cadastral information.",
+      evidence: readEvidence([
+        ["premium", "survey_verification", "evidence"],
+        ["premium", "survey_verification", "result"],
+        ["professional", "survey_verification", "evidence"],
+        ["survey_verification", "evidence"],
+      ]),
+      required: true,
+    },
+    {
+      id: "government_record_confirmation",
+      label: "Government Record Confirmation",
+      category: "Government Records",
+      status: readStatus([
+        ["premium", "government_record_check", "status"],
+        ["premium", "government_record_confirmation", "status"],
+        ["professional", "government_record_check", "status"],
+        ["government_record_check", "status"],
+        ["government_record_confirmation", "status"],
+      ]),
+      description:
+        "Independent confirmation of relevant government records or issuance records.",
+      evidence: readEvidence([
+        ["premium", "government_record_check", "evidence"],
+        ["premium", "government_record_confirmation", "evidence"],
+        ["professional", "government_record_check", "evidence"],
+        ["government_record_check", "evidence"],
+      ]),
+      required: true,
+    },
+    {
+      id: "physical_inspection",
+      label: "Physical Property Inspection",
+      category: "Physical Due Diligence",
+      status: readStatus([
+        ["premium", "physical_inspection", "status"],
+        ["professional", "physical_inspection", "status"],
+        ["physical_inspection", "status"],
+        ["inspection", "status"],
+      ]),
+      description:
+        "On-site inspection of the physical property and visible site conditions.",
+      evidence: readEvidence([
+        ["premium", "physical_inspection", "evidence"],
+        ["premium", "physical_inspection", "findings"],
+        ["professional", "physical_inspection", "evidence"],
+        ["physical_inspection", "evidence"],
+      ]),
+      required: true,
+    },
+    {
+      id: "legal_review",
+      label: "Legal / Lawyer Review",
+      category: "Professional Review",
+      status: readStatus([
+        ["premium", "legal_review", "status"],
+        ["professional", "legal_review", "status"],
+        ["legal_review", "status"],
+        ["lawyer_review", "status"],
+        ["legal_opinion", "status"],
+      ]),
+      description:
+        "Qualified legal review of title, transaction documents and identified legal issues.",
+      evidence: readEvidence([
+        ["premium", "legal_review", "evidence"],
+        ["premium", "legal_review", "opinion"],
+        ["professional", "legal_review", "evidence"],
+        ["legal_review", "evidence"],
+        ["legal_opinion", "evidence"],
+      ]),
+      required: true,
+    },
+    {
+      id: "surveyor_review",
+      label: "Surveyor / Cadastral Professional Review",
+      category: "Professional Review",
+      status: readStatus([
+        ["premium", "surveyor_review", "status"],
+        ["professional", "surveyor_review", "status"],
+        ["surveyor_review", "status"],
+      ]),
+      description:
+        "Qualified surveyor review where parcel, boundary or cadastral confirmation is required.",
+      evidence: readEvidence([
+        ["premium", "surveyor_review", "evidence"],
+        ["premium", "surveyor_review", "findings"],
+        ["professional", "surveyor_review", "evidence"],
+        ["surveyor_review", "evidence"],
+      ]),
+      required: true,
+    },
+    {
+      id: "engineer_review",
+      label: "Engineer / Structural Review",
+      category: "Professional Review",
+      status: readStatus([
+        ["premium", "engineer_review", "status"],
+        ["professional", "engineer_review", "status"],
+        ["engineer_review", "status"],
+        ["structural_review", "status"],
+      ]),
+      description:
+        "Qualified engineering review where the property, building condition or transaction requires it.",
+      evidence: readEvidence([
+        ["premium", "engineer_review", "evidence"],
+        ["premium", "engineer_review", "findings"],
+        ["professional", "engineer_review", "evidence"],
+        ["engineer_review", "evidence"],
+        ["structural_review", "evidence"],
+      ]),
+      required: false,
+    },
+  ];
+
+  return {
+    checks,
+    verifiedCount: checks.filter(
+      (check) =>
+        check.status === "verified",
+    ).length,
+    attentionCount: checks.filter(
+      (check) =>
+        check.status === "attention",
+    ).length,
+    pendingCount: checks.filter(
+      (check) =>
+        check.status === "pending",
+    ).length,
+    notConclusiveCount: checks.filter(
+      (check) =>
+        check.status === "not_conclusive",
+    ).length,
+    notPerformedCount: checks.filter(
+      (check) =>
+        check.status === "not_performed",
+    ).length,
+  };
+}
+
+function hasPremiumExternalAdverseFinding(
+  dueDiligence: PremiumDueDiligence,
+) {
+  return dueDiligence.checks.some(
+    (check) =>
+      check.status === "attention",
+  );
+}
+
+function hasPremiumExternalPendingCheck(
+  dueDiligence: PremiumDueDiligence,
+) {
+  return dueDiligence.checks.some(
+    (check) =>
+      check.status === "pending" ||
+      check.status === "not_performed" ||
+      check.status === "not_conclusive",
+  );
+}
+
+function buildPremiumConclusion(
+  assessment: string,
+  recommendation: string,
+  dueDiligence: PremiumDueDiligence,
+) {
+  const externalText =
+    dueDiligence.attentionCount > 0
+      ? "One or more independent Premium due-diligence checks require attention."
+      : dueDiligence.pendingCount > 0 ||
+          dueDiligence.notPerformedCount > 0
+        ? "Independent Premium due-diligence checks remain pending or not performed."
+        : dueDiligence.notConclusiveCount > 0
+          ? "Some Premium due-diligence checks remain not conclusive."
+          : "The available Premium due-diligence checks have returned results.";
+
+  return `${assessment}. ${externalText} Recommendation: ${recommendation}. This AI analysis does not itself establish government authenticity, legal ownership, registry confirmation, litigation clearance, surveyor certification, lawyer opinion, engineer certification, or physical inspection.`;
+}
+
 /*
  * ============================================================
  * LOCATION
@@ -1601,16 +2047,16 @@ Do not invent missing facts.
  */
 
 function normalizeGPS(
-  findings: ProfessionalFindings,
+  findings: PremiumFindings,
   body: Record<string, unknown>,
 ): GPSData {
   const raw =
     asRecord(
       findings.gps ||
         findings.location ||
-        findings.professional
+        findings.premium
           ?.gps ||
-        findings.professional
+        findings.premium
           ?.location,
     );
 
@@ -1799,7 +2245,7 @@ function buildLocationResult(
  */
 
 function mergeChecks(
-  results: ProfessionalDocumentResult[],
+  results: PremiumDocumentResult[],
 ): DocumentChecks {
   if (results.length === 0) {
     return {
@@ -2117,7 +2563,7 @@ function sanitizeRecommendation(
   return "Further Verification Required";
 }
 
-function buildProfessionalSummary(
+function buildPremiumSummary(
   assessment: string,
   recommendation: string,
   documentCount: number,
@@ -2134,7 +2580,7 @@ function buildProfessionalSummary(
         ? "A geographic discrepancy was identified and should be reviewed before relying on the property location information."
         : "GPS/location evidence is not conclusive from the available data.";
 
-  return `${assessment}. Professional analysis covered ${documentCount} submitted document${documentCount === 1 ? "" : "s"}, cross-document consistency, ownership/title consistency, property information, and location signals. ${locationText} ${
+  return `${assessment}. Premium analysis covered ${documentCount} submitted document${documentCount === 1 ? "" : "s"}, cross-document consistency, ownership/title consistency, property information, and location signals. ${locationText} ${
     cross.discrepancies.length >
     0
       ? `${cross.discrepancies.length} cross-document discrepancy item${
@@ -2282,7 +2728,7 @@ export async function POST(
      * The status route already confirmed that payment exists.
      *
      * We independently check it here before allowing the
-     * Professional engine to run.
+     * Premium engine to run.
      * ----------------------------------------------------------
      */
 
@@ -2306,7 +2752,7 @@ export async function POST(
         )
         .eq(
           "plan",
-          "professional",
+          "premium",
         )
         .eq(
           "status",
@@ -2330,14 +2776,14 @@ export async function POST(
       );
 
       return jsonError(
-        `Professional payment record could not be checked: ${paymentError.message}`,
+        `Premium payment record could not be checked: ${paymentError.message}`,
         500,
       );
     }
 
     if (!payment) {
       return jsonError(
-        "A confirmed Professional payment is required before verification can begin.",
+        "A confirmed Premium payment is required before verification can begin.",
         402,
       );
     }
@@ -2350,7 +2796,7 @@ export async function POST(
 
     const storedFindings =
       (verification.findings ||
-        {}) as ProfessionalFindings;
+        {}) as PremiumFindings;
 
     let documentPackage =
       Array.isArray(
@@ -2403,9 +2849,17 @@ export async function POST(
      * ----------------------------------------------------------
      */
 
+    const initialPremiumDueDiligence =
+      buildPremiumDueDiligence(
+        storedFindings,
+      );
+
     const initialFindings:
-      ProfessionalFindings = {
+      PremiumFindings = {
       ...storedFindings,
+
+      premium_due_diligence:
+        initialPremiumDueDiligence,
 
       document_package:
         documentPackage,
@@ -2415,12 +2869,12 @@ export async function POST(
 
       processing: {
         stage:
-          "professional_document_analysis",
+          "premium_document_analysis",
 
         progress: 15,
 
         message:
-          "Professional AI verification analysis has started.",
+          "Premium AI verification analysis has started.",
       },
     };
 
@@ -2446,7 +2900,7 @@ export async function POST(
       initialUpdateError
     ) {
       throw new Error(
-        `Professional processing state could not be saved: ${initialUpdateError.message}`,
+        `Premium processing state could not be saved: ${initialUpdateError.message}`,
       );
     }
 
@@ -2457,7 +2911,7 @@ export async function POST(
      */
 
     const documentResults:
-      ProfessionalDocumentResult[] =
+      PremiumDocumentResult[] =
       [];
 
     for (
@@ -2489,12 +2943,12 @@ export async function POST(
 
             processing: {
               stage:
-                "professional_document_analysis",
+                "premium_document_analysis",
 
               progress,
 
               message:
-                `Professional analysis of document ${
+                `Premium analysis of document ${
                   index + 1
                 } of ${
                   documentPackage.length
@@ -2622,9 +3076,12 @@ export async function POST(
         findings: {
           ...initialFindings,
 
-          professional: {
+          premium: {
             plan:
-              "professional",
+              "premium",
+
+            premium_due_diligence:
+              initialPremiumDueDiligence,
 
             document_results:
               documentResults,
@@ -2660,7 +3117,24 @@ export async function POST(
 
     /*
      * ----------------------------------------------------------
-     * 12. MERGE CHECKS
+     * 12. PREMIUM DUE-DILIGENCE STATUS
+     * ----------------------------------------------------------
+     *
+     * The AI engine does not independently perform registry,
+     * government, legal, surveyor, engineer or physical checks.
+     * Preserve any independently supplied evidence when present;
+     * otherwise keep those checks pending rather than claiming
+     * completion.
+     */
+
+    const premiumDueDiligence =
+      buildPremiumDueDiligence(
+        storedFindings,
+      );
+
+    /*
+     * ----------------------------------------------------------
+     * 13. MERGE CHECKS
      * ----------------------------------------------------------
      */
 
@@ -2825,10 +3299,45 @@ export async function POST(
         packageAnalysis.assessment,
       );
 
-    const recommendation =
+    let recommendation =
       sanitizeRecommendation(
         packageAnalysis.recommendation,
       );
+
+    /*
+     * Premium rule:
+     * Pending external checks do not create High Risk by themselves.
+     * However, when there are no adverse core findings and independent
+     * Premium checks are still pending, the conclusion must remain
+     * provisional and require further verification.
+     */
+
+    if (
+      hasPremiumExternalAdverseFinding(
+        premiumDueDiligence,
+      )
+    ) {
+      if (
+        assessment !==
+          "High Risk" &&
+        assessment !==
+          "Attention Required"
+      ) {
+        recommendation =
+          "Proceed With Caution";
+      }
+    } else if (
+      hasPremiumExternalPendingCheck(
+        premiumDueDiligence,
+      ) &&
+      assessment !==
+        "High Risk" &&
+      assessment !==
+        "Attention Required"
+    ) {
+      recommendation =
+        "Further Verification Required";
+    }
 
     /*
      * ----------------------------------------------------------
@@ -2836,8 +3345,8 @@ export async function POST(
      * ----------------------------------------------------------
      */
 
-    const summary =
-      buildProfessionalSummary(
+    const baseSummary =
+      buildPremiumSummary(
         assessment,
         recommendation,
         documentPackage.length,
@@ -2846,6 +3355,13 @@ export async function POST(
         outstandingIssues,
       );
 
+    const summary =
+      `${baseSummary} ${buildPremiumConclusion(
+        assessment,
+        recommendation,
+        premiumDueDiligence,
+      )}`;
+
     /*
      * ----------------------------------------------------------
      * 21. FINAL FINDINGS
@@ -2853,7 +3369,7 @@ export async function POST(
      */
 
     const finalFindings:
-      ProfessionalFindings = {
+      PremiumFindings = {
       ...storedFindings,
 
       document_package:
@@ -2864,9 +3380,9 @@ export async function POST(
 
       checks,
 
-      professional: {
+      premium: {
         plan:
-          "professional",
+          "premium",
 
         completed_at:
           new Date().toISOString(),
@@ -2928,15 +3444,55 @@ export async function POST(
           external_registry_search:
             "not_performed",
 
-          physical_property_inspection:
-            "not_performed",
-
           legal_opinion:
             "not_performed",
 
           government_issuance_confirmation:
             "not_performed",
+
+          premium_due_diligence:
+            premiumDueDiligence.checks.map(
+              (check) => ({
+                id: check.id,
+                status: check.status,
+              }),
+            ),
+
+          physical_property_inspection:
+            premiumDueDiligence.checks.find(
+              (check) =>
+                check.id ===
+                "physical_inspection",
+            )?.status ||
+            "pending",
+
+          legal_review:
+            premiumDueDiligence.checks.find(
+              (check) =>
+                check.id ===
+                "legal_review",
+            )?.status ||
+            "pending",
+
+          surveyor_review:
+            premiumDueDiligence.checks.find(
+              (check) =>
+                check.id ===
+                "surveyor_review",
+            )?.status ||
+            "pending",
+
+          engineer_review:
+            premiumDueDiligence.checks.find(
+              (check) =>
+                check.id ===
+                "engineer_review",
+            )?.status ||
+            "pending",
         },
+
+        premium_due_diligence:
+          premiumDueDiligence,
 
         outstanding_issues:
           outstandingIssues,
@@ -2969,6 +3525,9 @@ export async function POST(
       risk_assessment:
         risks,
 
+      premium_due_diligence:
+        premiumDueDiligence,
+
       location:
         locationRecord,
 
@@ -2982,7 +3541,7 @@ export async function POST(
         progress: 100,
 
         message:
-          "Professional property verification analysis completed.",
+          "Premium property verification analysis completed.",
       },
     };
 
@@ -2999,16 +3558,6 @@ export async function POST(
       await supabaseAdmin
         .from("verifications")
         .update({
-          /*
-           * Professional AI analysis is complete.
-           *
-           * The verification now enters the review stage:
-           *   status = review
-           *   review_status = pending
-           *
-           * The final review outcome can later become
-           * verified or flagged.
-           */
           status:
             "review",
 
@@ -3039,7 +3588,7 @@ export async function POST(
       );
 
       throw new Error(
-        `Professional verification result could not be saved: ${updateError.message}`,
+        `Premium verification result could not be saved: ${updateError.message}`,
       );
     }
 
@@ -3068,7 +3617,7 @@ export async function POST(
         success: true,
 
         plan:
-          "professional",
+          "premium",
 
         verificationId,
 
@@ -3102,6 +3651,9 @@ export async function POST(
         riskAssessment:
           risks,
 
+        premiumDueDiligence:
+          premiumDueDiligence,
+
         outstandingIssues,
 
         nextSteps:
@@ -3111,7 +3663,7 @@ export async function POST(
 
         scope:
           finalFindings
-            .professional
+            .premium
             ?.scope,
       },
       {
@@ -3132,7 +3684,7 @@ export async function POST(
     return jsonError(
       error instanceof Error
         ? error.message
-        : "Professional verification failed.",
+        : "Premium verification failed.",
       500,
     );
   }

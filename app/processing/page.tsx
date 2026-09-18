@@ -694,17 +694,20 @@ export default function ProcessingPage() {
    * The Processing page is only the user-facing processing
    * experience.
    *
-   * The actual verification is performed by:
+   * The actual verification is performed by the paid-plan API:
    *
    * POST /api/verify-document/essential
+   * POST /api/verify-document/professional
+   * POST /api/verify-document/premium
    *
-   * That API:
+   * The selected plan determines which verification engine is called.
+   * The API:
    *
-   * - verifies the Essential payment
+   * - verifies the payment for the selected plan
    * - loads the submitted document package
    * - downloads the actual documents
-   * - sends them to the AI verification engine
-   * - performs the Essential checks
+   * - sends them to the appropriate AI verification engine
+   * - performs the plan-specific checks
    * - calculates trust score
    * - calculates confidence
    * - calculates risk
@@ -1033,13 +1036,17 @@ export default function ProcessingPage() {
           setTimeout(() => {
             if (!cancelled) {
               window.location.href =
-                selectedPlan === "professional"
-                  ? `/professional-report?id=${encodeURIComponent(
-                      verificationIdFromUrl,
+                 selectedPlan === "premium"
+                   ? `/premium-report?id=${encodeURIComponent(
+                       verificationIdFromUrl,
                     )}`
-                  : `/result?id=${encodeURIComponent(
-                      verificationIdFromUrl,
-                    )}`;
+                   : selectedPlan === "professional"
+                     ? `/professional-report?id=${encodeURIComponent(
+                         verificationIdFromUrl,
+                       )}`
+                     : `/result?id=${encodeURIComponent(
+                         verificationIdFromUrl,
+                       )}`;
             }
           }, 900);
 
@@ -1118,20 +1125,16 @@ export default function ProcessingPage() {
          *
          * Essential      -> Essential engine
          * Professional   -> Professional engine
-         * Premium        -> blocked until Premium engine exists
+         * Premium        -> Premium engine
          * ======================================================
          */
 
-        if (selectedPlan === "premium") {
-          throw new Error(
-            "Premium verification is not yet available in the current verification engine.",
-          );
-        }
-
         const verificationEndpoint =
-          selectedPlan === "professional"
-            ? "/api/verify-document/professional"
-            : "/api/verify-document/essential";
+          selectedPlan === "premium"
+            ? "/api/verify-document/premium"
+            : selectedPlan === "professional"
+              ? "/api/verify-document/professional"
+              : "/api/verify-document/essential";
 
         const {
           data: { session: currentSession },
@@ -1262,13 +1265,17 @@ export default function ProcessingPage() {
 
         if (!cancelled) {
           window.location.href =
-            selectedPlan === "professional"
-              ? `/professional-report?id=${encodeURIComponent(
+            selectedPlan === "premium"
+              ? `/premium-report?id=${encodeURIComponent(
                   verificationIdFromUrl,
                 )}`
-              : `/result?id=${encodeURIComponent(
-                  verificationIdFromUrl,
-                )}`;
+              : selectedPlan === "professional"
+                ? `/professional-report?id=${encodeURIComponent(
+                    verificationIdFromUrl,
+                  )}`
+                : `/result?id=${encodeURIComponent(
+                    verificationIdFromUrl,
+                  )}`;
         }
       } catch (
         error
@@ -1283,7 +1290,7 @@ export default function ProcessingPage() {
          * IMPORTANT
          * ======================================================
          *
-         * If the real Essential API fails:
+         * If the real paid-plan API fails:
          *
          * - do NOT create a fake result
          * - do NOT save 0/100

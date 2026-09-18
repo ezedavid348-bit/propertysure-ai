@@ -168,8 +168,8 @@ function GoogleIcon() {
 function ArrowLeftIcon() {
   return (
     <svg
-      width="25"
-      height="25"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -1261,6 +1261,51 @@ export default function SignInPage() {
       </header>
 
       {/* ======================================================
+          BACK TO LANDING PAGE
+      ====================================================== */}
+
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "1400px",
+          margin: "0 auto",
+          padding: "0 32px",
+          boxSizing: "border-box",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() =>
+            router.push("/")
+          }
+          aria-label="Back to PropertySure AI landing page"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "7px",
+            border: "1px solid #d8e1eb",
+            background: "#ffffff",
+            color: "#1676c5",
+            borderRadius: "9px",
+            padding: "9px 13px",
+            marginTop: "4px",
+            marginBottom: "18px",
+            fontSize: "13px",
+            fontWeight: 700,
+            cursor: "pointer",
+            boxShadow:
+              "0 2px 8px rgba(16, 42, 67, 0.06)",
+          }}
+        >
+          <ArrowLeftIcon />
+
+          <span>
+            Back
+          </span>
+        </button>
+      </div>
+
+      {/* ======================================================
           MAIN CONTENT
       ====================================================== */}
 
@@ -1306,18 +1351,6 @@ export default function SignInPage() {
             and complete confidence — all in one
             place.
           </p>
-
-          {/* ==================================================
-              PROPERTY VISUAL
-
-              REAL PROPERTY IMAGE
-
-              DESKTOP:
-              Appears directly below the hero description.
-
-              MOBILE:
-              Hidden through the existing mobile CSS.
-          ================================================== */}
 
           <div
             className={

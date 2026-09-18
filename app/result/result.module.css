@@ -299,6 +299,19 @@
   );
 }
 
+.metricWarning {
+  background: linear-gradient(
+    145deg,
+    #fff8e8,
+    #ffffff
+  );
+}
+
+.metricWarning .metricIcon {
+  background: #fff0c9;
+  color: #a46600;
+}
+
 .metricIcon {
   width: 45px;
   height: 45px;
@@ -1883,4 +1896,985 @@
     width: 100%;
     justify-content: center;
   }
+}
+
+
+/* ============================================================
+   PREMIUM PROPERTY LOCATION MAP
+   GPS remains a secondary geographic verification signal.
+   ============================================================ */
+.locationMapPanel {
+  margin-top: 16px;
+  overflow: hidden;
+  border: 1px solid #dce7f4;
+  border-radius: 12px;
+  background: #f5f8fc;
+  box-shadow: 0 8px 24px rgba(30, 65, 105, 0.06);
+}
+.locationMapHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 13px 15px;
+  border-bottom: 1px solid #e5ecf5;
+  background: #ffffff;
+}
+.locationMapHeader > div > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #1268f3;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.locationMapHeader strong { display: block; color: #19385e; font-size: 12px; }
+.locationCoordinateBadge {
+  display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px;
+  border: 1px solid #d9e6f5; border-radius: 7px; background: #f4f8fd;
+  color: #355777; font-size: 9px; font-weight: 800; white-space: nowrap;
+}
+.locationMapFrame { position: relative; height: 300px; overflow: hidden; background: #eaf1f8; }
+.locationMapFrame iframe { width: 100%; height: 100%; display: block; border: 0; }
+.locationMapOverlay {
+  position: absolute; left: 14px; bottom: 14px; display: flex; align-items: center; gap: 9px;
+  max-width: calc(100% - 28px); padding: 9px 11px; border: 1px solid rgba(255,255,255,.9);
+  border-radius: 9px; background: rgba(255,255,255,.94);
+  box-shadow: 0 7px 22px rgba(19,49,82,.15); backdrop-filter: blur(5px); pointer-events: none;
+}
+.locationMapOverlay > span {
+  width: 25px; height: 25px; display: grid; place-items: center; flex: 0 0 25px;
+  border-radius: 7px; background: #eaf4ff; color: #1268f3; font-size: 13px; font-weight: 800;
+}
+.locationMapOverlay strong, .locationMapOverlay small { display: block; }
+.locationMapOverlay strong { color: #19385e; font-size: 9px; }
+.locationMapOverlay small { margin-top: 2px; color: #6d8099; font-size: 8px; }
+.locationMapFooter {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 13px;
+  border-top: 1px solid #e5ecf5; background: #ffffff;
+}
+.locationMapFooter > span { color: #71839c; font-size: 8.5px; line-height: 1.4; }
+.locationMapFooter .locationMapLink { flex: 0 0 auto; margin: 0; }
+@media (max-width: 800px) { .locationMapFrame { height: 270px; } }
+@media (max-width: 520px) {
+  .locationMapHeader, .locationMapFooter { align-items: flex-start; flex-direction: column; }
+  .locationCoordinateBadge { white-space: normal; }
+  .locationMapFrame { height: 245px; }
+  .locationMapOverlay { left: 10px; bottom: 10px; max-width: calc(100% - 20px); }
+  .locationMapFooter .locationMapLink { width: 100%; justify-content: center; }
+}
+
+
+.locationMapUnavailable {
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 32px;
+  background:
+    linear-gradient(135deg, rgba(238, 244, 250, 0.98), rgba(248, 250, 253, 0.98));
+  border-top: 1px solid #e3ebf4;
+  color: #52657a;
+}
+
+.locationMapUnavailableIcon {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #e9f0f8;
+  color: #496aa9;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.locationMapUnavailable strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #25364d;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.locationMapUnavailable p {
+  max-width: 560px;
+  margin: 0;
+  color: #718196;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .locationMapUnavailable {
+    min-height: 240px;
+    padding: 24px 18px;
+  }
+}
+
+/* ============================================================
+   PROFESSIONAL REPORT
+   The Essential Result page is the visual source of truth.
+   These additions only style Professional-specific content.
+   ============================================================ */
+
+.professionalFindingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.professionalFindingCard {
+  padding: 15px;
+  border: 1px solid #e4ebf4;
+  border-radius: 10px;
+  background: #fbfdff;
+}
+
+.professionalFindingHeading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.professionalFindingHeading > span {
+  width: 29px;
+  height: 29px;
+  flex: 0 0 29px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: #eaf3ff;
+  color: #1268f3;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.professionalFindingHeading strong,
+.professionalFindingHeading small {
+  display: block;
+}
+
+.professionalFindingHeading strong {
+  color: #183558;
+  font-size: 11px;
+}
+
+.professionalFindingHeading small {
+  margin-top: 3px;
+  color: #8190a5;
+  font-size: 8px;
+}
+
+.professionalFindingCard > p {
+  margin: 12px 0 0;
+  color: #536a86;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.professionalCheckMini {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+  border-top: 1px solid #e8eef5;
+}
+
+.professionalCheckMini > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.professionalCheckMini > div:last-child {
+  border-bottom: 0;
+}
+
+.professionalCheckMini span {
+  color: #687b94;
+  font-size: 9px;
+}
+
+.professionalCheckMini strong {
+  font-size: 8px;
+}
+
+.propertyGridItem {
+  padding: 13px 14px;
+  border: 1px solid #e7edf5;
+  border-radius: 9px;
+  background: #fbfdff;
+}
+
+.propertyGridItem span {
+  display: block;
+  margin-bottom: 6px;
+  color: #7b8ba2;
+  font-size: 9px;
+}
+
+.propertyGridItem strong {
+  display: block;
+  color: #183558;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.professionalRiskGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.professionalRiskCard {
+  padding: 12px;
+  border: 1px solid #e5ebf3;
+  border-radius: 9px;
+  background: #fbfdff;
+}
+
+.professionalRiskCard span,
+.professionalRiskCard strong {
+  display: block;
+}
+
+.professionalRiskCard span {
+  color: #71829b;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.professionalRiskCard strong {
+  margin-top: 5px;
+  font-size: 11px;
+}
+
+.riskWarning {
+  color: #b77900 !important;
+}
+
+.riskUnknown {
+  color: #60738f !important;
+}
+
+.professionalRecommendationReason {
+  margin-top: 15px;
+  padding: 14px;
+  border: 1px solid #e1eaf4;
+  border-radius: 9px;
+  background: #f7faff;
+}
+
+.professionalRecommendationReason span {
+  display: block;
+  margin-bottom: 6px;
+  color: #1268f3;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.professionalRecommendationReason p {
+  margin: 0;
+  color: #526986;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.professionalIssueList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.professionalIssueRow {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid #e4eaf2;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+  box-shadow: 0 3px 12px rgba(27, 54, 91, 0.035);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.professionalIssueRow:hover {
+  border-color: #cfdced;
+  box-shadow: 0 7px 20px rgba(27, 54, 91, 0.07);
+  transform: translateY(-1px);
+}
+
+.professionalIssueNumber {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.professionalIssueNumber span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #f3f6fb;
+  border: 1px solid #dce5f0;
+  color: #3157b8;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.professionalIssueContent {
+  min-width: 0;
+}
+
+.professionalIssueLabel {
+  display: block;
+  margin-bottom: 5px;
+  color: #71819a;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+}
+
+.professionalIssueRow p {
+  margin: 0;
+  color: #334b69;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.textSuccess {
+  color: #079c50 !important;
+}
+
+.textNeutral {
+  color: #60738f !important;
+}
+
+.textDanger {
+  color: #cf3838 !important;
+}
+
+@media (max-width: 1100px) {
+  .professionalFindingGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .professionalIssueList {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 800px) {
+  .professionalRiskGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ============================================================
+   PROFESSIONAL ANALYSIS SUMMARY
+   Clearer executive-level presentation for Professional reports.
+============================================================ */
+
+.analysisInsightGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.analysisInsightCard {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #e2e9f2;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.analysisInsightCard > span {
+  display: block;
+  margin-bottom: 8px;
+  color: #1268f3;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.35px;
+}
+
+.analysisInsightCard > strong {
+  display: block;
+  margin-bottom: 7px;
+  color: #183558;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.analysisInsightCard > p {
+  margin: 0;
+  color: #536a85;
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.analysisInsightCard ul {
+  margin: 0;
+  padding-left: 17px;
+}
+
+.analysisInsightCard li {
+  margin: 0 0 7px;
+  color: #425b78;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.analysisInsightCard li:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================================
+   PREMIUM REPORT FOOTER
+============================================================ */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  margin: 28px 24px 24px;
+  padding: 20px 22px;
+  border: 1px solid #dce5ef;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #f7faff 0%, #ffffff 100%);
+  box-shadow: 0 7px 24px rgba(31, 61, 100, 0.06);
+}
+
+.footerBrand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.footerBrand strong {
+  color: #12345f;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.footerBrand span {
+  color: #74869e;
+  font-size: 9px;
+}
+
+.footerMeta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 7px 14px;
+}
+
+.footerMeta span {
+  color: #62758f;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.footerMeta span + span {
+  padding-left: 14px;
+  border-left: 1px solid #dce4ed;
+}
+
+@media (max-width: 800px) {
+  .analysisInsightGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .footerMeta {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 560px) {
+  .footerMeta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .footerMeta span + span {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+/* Premium Professional Report refinements */
+.heroWatermark {
+  right: 28px;
+  top: 50%;
+  width: 390px;
+  height: 240px;
+  opacity: 0.92;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroWatermark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.18));
+}
+
+.heroContent {
+  max-width: 760px;
+}
+
+.hero p {
+  max-width: 700px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.summaryAssessmentPremium {
+  padding: 24px 26px;
+  border: 1px solid #e3eaf5;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f7faff 100%);
+}
+
+.summaryAssessmentHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 10px;
+}
+
+.summaryAssessmentHeader > span,
+.summaryActionMessage > span,
+.analysisRecommendationPanel > div > span {
+  color: #3157b8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.summaryAssessmentHeader strong {
+  color: #263c63;
+  font-size: 15px;
+}
+
+.summaryAssessmentPremium > p {
+  margin: 0;
+  color: #53657f;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.summaryActionMessage {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #e7edf6;
+}
+
+.summaryActionMessage p {
+  margin: 5px 0 0;
+  color: #243b60;
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.analysisInsightCard {
+  min-height: 100%;
+}
+
+.analysisInsightCard > p,
+.analysisInsightCard li {
+  color: #566985;
+  line-height: 1.6;
+}
+
+.analysisInsightCard > strong {
+  color: #274b91;
+}
+
+.analysisRiskHigh > strong {
+  color: #c54848;
+}
+
+.analysisRiskMedium > strong {
+  color: #b07820;
+}
+
+.serviceCountGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 14px;
+}
+
+.serviceCountGrid > div {
+  padding: 10px 8px;
+  border: 1px solid #e4eaf3;
+  border-radius: 10px;
+  background: #fff;
+  text-align: center;
+}
+
+.serviceCountGrid strong,
+.serviceCountGrid span {
+  display: block;
+}
+
+.serviceCountGrid strong {
+  color: #254a91;
+  font-size: 18px;
+}
+
+.serviceCountGrid span {
+  margin-top: 3px;
+  color: #74839a;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.analysisRecommendationPanel {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 22px;
+  border: 1px solid #dce6f5;
+  border-radius: 16px;
+  background: #f8fbff;
+}
+
+.analysisRecommendationIcon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+/* Professional Guidance uses the same dynamic severity language as the
+   Executive Assessment: high risk is an immediate visual warning. */
+.guidanceHigh {
+  background: #c72d2d;
+  color: #ffffff;
+  box-shadow: 0 0 0 5px #fff0f0;
+}
+
+.guidanceMedium {
+  background: #b77900;
+  color: #ffffff;
+  box-shadow: 0 0 0 5px #fff7df;
+}
+
+.guidanceLow {
+  background: #099b4c;
+  color: #ffffff;
+  box-shadow: 0 0 0 5px #edf9f2;
+}
+
+.guidanceNeutral {
+  background: #60738f;
+  color: #ffffff;
+  box-shadow: 0 0 0 5px #eef2f7;
+}
+
+.analysisRecommendationPanel h3 {
+  margin: 5px 0 6px;
+  color: #21395f;
+  font-size: 18px;
+}
+
+.analysisRecommendationPanel p {
+  margin: 0 0 12px;
+  color: #596b85;
+  line-height: 1.6;
+}
+
+.analysisRecommendationPanel strong {
+  display: block;
+  margin-top: 8px;
+  color: #3157b8;
+  font-size: 12px;
+}
+
+.textDanger {
+  color: #c54848 !important;
+}
+
+.recommendationPremiumHeader {
+  margin-bottom: 8px;
+}
+
+.recommendationCard > p {
+  color: #596b85;
+  line-height: 1.65;
+}
+
+.nextSteps {
+  margin-top: 16px;
+}
+
+.nextSteps > p {
+  margin: 7px 0 0;
+  color: #596b85;
+  line-height: 1.65;
+}
+
+.premiumServiceCallout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+  padding: 16px 18px;
+  border: 1px solid #d8e4fa;
+  border-radius: 13px;
+  background: #f6f9ff;
+}
+
+.premiumServiceCallout strong,
+.premiumServiceCallout span {
+  display: block;
+}
+
+.premiumServiceCallout strong {
+  color: #253f70;
+  font-size: 13px;
+}
+
+.premiumServiceCallout div > span {
+  margin-top: 4px;
+  color: #667792;
+  font-size: 12px;
+}
+
+.premiumServiceCallout button {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 9px;
+  padding: 11px 15px;
+  background: #2f5bd3;
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.premiumServiceCallout button span {
+  display: inline;
+  margin-left: 5px;
+}
+
+.footer {
+  margin-top: 30px;
+  padding: 24px 26px;
+  border: 1px solid #dfe7f2;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f5f8fd 100%);
+  box-shadow: 0 8px 26px rgba(26, 54, 93, 0.06);
+}
+
+.footerBrand strong {
+  color: #203d6c;
+  font-size: 15px;
+}
+
+.footerBrand span {
+  color: #75849a;
+}
+
+.footerMeta span {
+  color: #63748d;
+}
+
+@media (max-width: 900px) {
+  .heroWatermark {
+    right: 8px;
+    width: 290px;
+    height: 190px;
+    opacity: .78;
+  }
+
+  .heroContent {
+    max-width: 100%;
+  }
+
+  .serviceCountGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .premiumServiceCallout {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 560px) {
+  .heroWatermark {
+    position: absolute;
+    right: -30px;
+    top: auto;
+    bottom: -12px;
+    width: 220px;
+    height: 150px;
+    opacity: .42;
+  }
+
+  .summaryAssessmentHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .analysisRecommendationPanel {
+    grid-template-columns: 1fr;
+  }
+}
+
+.textPending {
+  color: #a8791d !important;
+}
+
+
+/* ============================================================
+   PROFESSIONAL SUMMARY REFINEMENTS
+   ============================================================ */
+.summaryAssessmentHeader > span {
+  color: #3157b8;
+}
+
+.summaryAssessmentHeader > strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.summaryRiskIcon {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 900;
+  color: #ffffff;
+  background: currentColor;
+}
+
+/* currentColor cannot be used for the icon background while preserving the
+   text color, so the icon receives its tone through the risk state below. */
+.summaryAssessmentHeader > strong.riskHigh .summaryRiskIcon {
+  background: #c72d2d;
+}
+.summaryAssessmentHeader > strong.riskMedium .summaryRiskIcon {
+  background: #b77900;
+}
+.summaryAssessmentHeader > strong.riskLow .summaryRiskIcon {
+  background: #099b4c;
+}
+.summaryAssessmentHeader > strong.riskUnknown .summaryRiskIcon {
+  background: #60738f;
+}
+
+.analysisRiskHigh {
+  border-color: #f0cccc;
+  background: #fffafa;
+}
+
+.analysisRiskMedium {
+  border-color: #eadbb9;
+  background: #fffdf8;
+}
+
+.analysisInsightCard.analysisRiskHigh > strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #c72d2d !important;
+}
+
+.analysisInsightCard.analysisRiskMedium > strong {
+  color: #b77900 !important;
+}
+
+.serviceCountVerified strong { color: #079c50 !important; }
+.serviceCountAttention strong { color: #cf3838 !important; }
+.serviceCountPending strong { color: #a8791d !important; }
+.serviceCountNeutral strong { color: #60738f !important; }
+
+.serviceCountVerified { border-color: #d9eee2 !important; background: #fbfffd !important; }
+.serviceCountAttention { border-color: #f1dada !important; background: #fffafa !important; }
+.serviceCountPending { border-color: #eee2c5 !important; background: #fffdf7 !important; }
+.serviceCountNeutral { border-color: #e1e7ef !important; background: #fbfcfe !important; }
+
+.summaryStats > div:nth-child(1) strong,
+.summaryStats > div:nth-child(2) strong,
+.summaryStats > div:nth-child(4) strong {
+  color: #183558 !important;
+}
+
+.summaryStats > div:nth-child(3) strong.riskHigh {
+  color: #c72d2d !important;
+}
+
+.summaryStats > div:nth-child(3) strong.riskMedium {
+  color: #b77900 !important;
+}
+
+.summaryStats > div:nth-child(3) strong.riskLow {
+  color: #099b4c !important;
+}
+
+@media (max-width: 560px) {
+  .summaryRiskIcon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+
+/* Tab panel layout used by the Professional report page. */
+.tabPanel {
+  position: relative;
+}
+
+.tabPanelContent {
+  display: block;
+}
+
+.checkText {
+  min-width: 0;
+  flex: 1 1 auto;
 }

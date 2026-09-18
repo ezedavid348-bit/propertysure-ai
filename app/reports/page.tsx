@@ -96,48 +96,178 @@ function numberValue(
   return fallback;
 }
 
-function normalizeStatus(
-  value: string
-): ReportStatus {
-  const normalized = value
-    .trim()
-    .toLowerCase();
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function nestedValue(
+  source: Record<string, unknown>,
+  paths: string[][]
+): unknown {
+  for (const path of paths) {
+    let current: unknown = source;
+    for (const key of path) {
+      const record = asRecord(current);
+      if (!(key in record)) {
+        current = undefined;
+        break;
+      }
+      current = record[key];
+    }
+    if (
+      current !== undefined &&
+      current !== null &&
+      String(current).trim() !== ""
+    ) {
+      return current;
+    }
+  }
+  return undefined;
+}
+
+function getNested(
+  source: Record<string, unknown>,
+  ...keys: string[]
+): unknown {
+  let current: unknown = source;
+
+  for (const key of keys) {
+    const record = asRecord(current);
+    if (!(key in record)) return undefined;
+    current = record[key];
+  }
+
+  return current;
+}
+
+function firstValue(...values: unknown[]): unknown {
+  return values.find(
+    (value) =>
+      value !== undefined &&
+      value !== null &&
+      String(value).trim() !== "",
+  );
+}
+
+function normalizeReportStatus(value: unknown): ReportStatus | null {
+  const normalized = String(value ?? "").trim().toLowerCase();
+
+  if (!normalized) return null;
+
+  // Canonical verification status values.
+  if (
+    normalized === "pending" ||
+    normalized === "processing" ||
+    normalized === "in progress" ||
+    normalized === "in_progress" ||
+    normalized === "queued" ||
+    normalized === "running" ||
+    normalized === "started" ||
+    normalized === "inconclusive" ||
+    normalized === "not started" ||
+    normalized === "not_conclusive"
+  ) {
+    return "Pending";
+  }
 
   if (
-    normalized.includes("flag") ||
-    normalized.includes("fraud") ||
-    normalized.includes("risk") ||
-    normalized.includes("reject")
+    normalized === "flagged" ||
+    normalized === "attention" ||
+    normalized === "attention required" ||
+    normalized === "attention_required" ||
+    normalized === "rejected"
   ) {
     return "Flagged";
   }
 
   if (
-    normalized.includes("pending") ||
-    normalized.includes("progress") ||
-    normalized.includes("processing") ||
-    normalized.includes("review") ||
-    normalized.includes("started")
+    normalized === "verified" ||
+    normalized === "complete" ||
+    normalized === "completed" ||
+    normalized === "processed" ||
+    normalized === "reviewed" ||
+    normalized === "generated" ||
+    normalized === "ready"
   ) {
+    return "Verified";
+  }
+
+  return null;
+}
+
+function resolveReportStatus(
+  row: Record<string, unknown>,
+  paymentPlan = ""
+): ReportStatus {
+  // Essential/Basic uses review_status for its final AI outcome.
+  // status remains the processing lifecycle value (for example, "processed"),
+  // so it must not be used as the final Essential report status.
+  const verificationLevel = normalizeVerificationLevel(row, paymentPlan);
+
+  if (verificationLevel === "Basic") {
+    const reviewStatus = normalizeReportStatus(row.review_status);
+
+    if (reviewStatus) return reviewStatus;
+
+    // An Essential verification without a final review_status has not yet
+    // recorded its final outcome. Do not infer one from risk/findings/status.
     return "Pending";
   }
 
-  return "Verified";
+  // Professional/Premium continue to use their existing canonical status.
+  // Their "processed" lifecycle state must not be reinterpreted through
+  // Essential's review_status field.
+  const databaseStatus = normalizeReportStatus(row.status);
+
+  if (databaseStatus) return databaseStatus;
+
+  // Older records may use a legacy status value. Keep the fallback explicit
+  // and status-based only; never calculate a status from risk/findings.
+  return "Pending";
 }
 
 function normalizeVerificationLevel(
-  row: Record<string, unknown>
+  row: Record<string, unknown>,
+  paymentPlan = ""
 ): VerificationLevel {
-  const raw = stringValue(row, [
-    "verification_level",
-    "verification_tier",
-    "service_level",
-    "service_tier",
-    "plan_type",
-    "package",
-    "package_type",
-    "verification_package",
-  ]).toLowerCase();
+  const findings = asRecord(row.findings);
+  const raw = [
+    paymentPlan,
+    stringValue(row, [
+      "plan",
+      "selected_plan",
+      "verification_plan",
+      "verification_level",
+      "verification_tier",
+      "service_level",
+      "service_tier",
+      "plan_type",
+      "package",
+      "package_type",
+      "verification_package",
+    ]),
+    String(findings.plan ?? ""),
+    String(findings.verification_level ?? ""),
+    String(findings.verification_tier ?? ""),
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  // If payment/row plan metadata is unavailable, infer the plan from the
+  // same Result-page findings branch that contains the document results.
+  // This keeps the report linked to the correct Essential/Professional/
+  // Premium Result page without using risk or findings to invent status.
+  if (getNested(findings, "premium") !== undefined) {
+    return "Premium";
+  }
+
+  if (getNested(findings, "professional") !== undefined) {
+    return "Professional";
+  }
+
+  if (getNested(findings, "essential") !== undefined) {
+    return "Basic";
+  }
 
   if (
     raw.includes("premium") ||
@@ -155,6 +285,7 @@ function normalizeVerificationLevel(
   }
 
   if (
+    raw.includes("essential") ||
     raw.includes("basic") ||
     raw.includes("ai")
   ) {
@@ -209,35 +340,41 @@ function formatDate(
 }
 
 function mapReport(
-  row: Record<string, unknown>
+  row: Record<string, unknown>,
+  paymentPlan = "",
+  paymentDate = ""
 ): Report {
-  const status = normalizeStatus(
-    stringValue(
-      row,
-      [
-        "status",
-        "verification_status",
-        "report_status",
-        "result_status",
-      ],
-      "Pending"
-    )
+  const status = resolveReportStatus(row, paymentPlan);
+  const findings = asRecord(row.findings);
+  const property = asRecord(
+    nestedValue(findings, [
+      ["property"],
+      ["professional", "property"],
+      ["premium", "property"],
+    ])
   );
 
   const createdAt = stringValue(
     row,
     [
-      "created_at",
-      "generated_at",
       "completed_at",
+      "generated_at",
+      "created_at",
       "updated_at",
       "started_at",
     ],
-    ""
+    paymentDate
   );
 
-  const verificationLevel =
-    normalizeVerificationLevel(row);
+  const verificationLevel = normalizeVerificationLevel(row, paymentPlan);
+
+  const packageDocuments = Array.isArray(
+    findings.documents
+  )
+    ? findings.documents.length
+    : Array.isArray(findings.document_package)
+      ? findings.document_package.length
+      : 0;
 
   const documents = numberValue(
     row,
@@ -248,7 +385,7 @@ function mapReport(
       "file_count",
       "total_documents",
     ],
-    0
+    packageDocuments
   );
 
   const reportId = stringValue(
@@ -277,20 +414,17 @@ function mapReport(
 
   const rawId = stringValue(
     row,
-    [
-      "id",
-      "verification_id",
-      "report_id",
-    ],
+    ["id", "verification_id", "report_id"],
     ""
   );
 
-  return {
-    id:
-      rawId ||
-      `${reportId}-${createdAt}`,
-
-    propertyName: stringValue(
+  const propertyName =
+    stringValue(
+      property,
+      ["name", "property_name", "title", "property_title"],
+      ""
+    ) ||
+    stringValue(
       row,
       [
         "property_name",
@@ -300,17 +434,15 @@ function mapReport(
         "property_title",
       ],
       "Property Verification"
-    ),
+    );
 
-    reportId,
-
-    status,
-
-    createdAt,
-
-    documents,
-
-    location: stringValue(
+  const location =
+    stringValue(
+      property,
+      ["location", "address", "property_location"],
+      ""
+    ) ||
+    stringValue(
       row,
       [
         "location",
@@ -321,17 +453,21 @@ function mapReport(
         "property_state",
       ],
       "Location unavailable"
-    ),
+    );
 
+  return {
+    id: rawId || `${reportId}-${createdAt}`,
+    propertyName,
+    reportId,
+    status,
+    createdAt,
+    documents,
+    location,
     verificationLevel,
-
     verifiedBy:
       status === "Pending"
         ? "Verification in progress"
-        : verificationMethod(
-            verificationLevel
-          ),
-
+        : verificationMethod(verificationLevel),
     pdfUrl: pdfUrl || null,
   };
 }
@@ -370,6 +506,11 @@ export default function ReportsPage() {
 
   const [errorMessage, setErrorMessage] =
     useState("");
+
+  const REPORTS_PER_PAGE = 10;
+
+  const [currentPage, setCurrentPage] =
+    useState(1);
 
   /*
   ============================================================
@@ -510,13 +651,55 @@ export default function ReportsPage() {
             return;
           }
 
-          const mappedReports =
-            (
-              (data || []) as Record<
-                string,
-                unknown
-              >[]
-            ).map(mapReport);
+          const rows =
+            (data || []) as Record<string, unknown>[];
+
+          const verificationIds = rows
+            .map((row) => row.id)
+            .filter(
+              (id): id is string | number =>
+                typeof id === "string" || typeof id === "number"
+            );
+
+          const paymentByVerificationId =
+            new Map<string, { plan: string; date: string }>();
+
+          if (verificationIds.length > 0) {
+            const { data: paymentsData } = await supabase
+              .from("payments")
+              .select(
+                "verification_id,plan,status,paid_at,created_at"
+              )
+              .in("verification_id", verificationIds)
+              .order("created_at", { ascending: false });
+
+            for (const payment of paymentsData || []) {
+              const key = String(payment.verification_id);
+              if (!paymentByVerificationId.has(key)) {
+                paymentByVerificationId.set(key, {
+                  plan: String(payment.plan || ""),
+                  date: String(
+                    payment.paid_at ||
+                      payment.created_at ||
+                      ""
+                  ),
+                });
+              }
+            }
+          }
+
+          const mappedReports = rows.map((row) => {
+            const payment =
+              paymentByVerificationId.get(
+                String(row.id ?? "")
+              );
+
+            return mapReport(
+              row,
+              payment?.plan || "",
+              payment?.date || ""
+            );
+          });
 
           mappedReports.sort(
             (a, b) => {
@@ -709,6 +892,33 @@ export default function ReportsPage() {
       filter,
     ]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filter]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(
+      filteredReports.length / REPORTS_PER_PAGE
+    )
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedReports = useMemo(() => {
+    const start =
+      (currentPage - 1) * REPORTS_PER_PAGE;
+
+    return filteredReports.slice(
+      start,
+      start + REPORTS_PER_PAGE
+    );
+  }, [filteredReports, currentPage]);
+
   const totalReports =
     reports.length;
 
@@ -762,9 +972,9 @@ export default function ReportsPage() {
     },
     {
       value: "Pending",
-      label: "In Progress",
+      label: "Pending",
       description:
-        "Reports still under verification",
+        "Reports awaiting verification completion",
     },
     {
       value: "Flagged",
@@ -773,6 +983,29 @@ export default function ReportsPage() {
         "Reports requiring attention",
     },
   ];
+
+  function getReportDestination(report: Report): string {
+    const id = encodeURIComponent(report.id);
+
+    // Always open the Result page belonging to the report's plan.
+    // Pending is a valid Result-page status, so it must not be sent to
+    // /processing, which can lose the original verification context.
+    if (report.verificationLevel === "Premium") {
+      return `/premium-report?id=${id}`;
+    }
+
+    if (report.verificationLevel === "Professional") {
+      return `/professional-report?id=${id}`;
+    }
+
+    return `/result?id=${id}`;
+  }
+
+  function reportActionLabel(report: Report): string {
+    if (report.status === "Pending") return "View Status";
+    if (report.status === "Flagged") return "Review Report";
+    return "View Report";
+  }
 
   /*
   ============================================================
@@ -845,35 +1078,7 @@ export default function ReportsPage() {
             styles.pageInner
           }
         >
-          {/* PAGE HEADER */}
-
-          <header
-            className={
-              styles.pageHeader
-            }
-          >
-            <div>
-              <div
-                className={
-                  styles.eyebrow
-                }
-              >
-                REPORTS
-              </div>
-
-              <h1>
-                Verification Reports
-              </h1>
-
-              <p>
-                Access and manage your
-                PropertySure AI property
-                verification reports.
-              </p>
-            </div>
-          </header>
-
-          {/* SEARCH + FILTER */}
+{/* SEARCH + FILTER */}
 
           <section
             className={
@@ -1254,7 +1459,7 @@ export default function ReportsPage() {
                     styles.statLabel
                   }
                 >
-                  IN PROGRESS
+                  PENDING
                 </span>
 
                 <strong
@@ -1270,7 +1475,7 @@ export default function ReportsPage() {
                     styles.statSubtext
                   }
                 >
-                  Under verification
+                  Awaiting completion
                 </span>
               </div>
             </div>
@@ -1435,7 +1640,7 @@ export default function ReportsPage() {
                     </span>
                   </div>
 
-                  {filteredReports.map(
+                  {paginatedReports.map(
                     (report) => (
                       <article
                         className={
@@ -1522,7 +1727,7 @@ export default function ReportsPage() {
 
                             {report.status ===
                             "Pending"
-                              ? "Verification in Progress"
+                              ? "Pending"
                               : report.status}
                           </span>
                         </div>
@@ -1551,16 +1756,11 @@ export default function ReportsPage() {
                             }
                             onClick={() =>
                               navigateTo(
-                                `/verification-details?report=${encodeURIComponent(
-                                  report.reportId
-                                )}`
+                                `${getReportDestination(report)}`
                               )
                             }
                           >
-                            {report.status ===
-                            "Verified"
-                              ? "View Report"
-                              : "View Status"}
+                            {reportActionLabel(report)}
 
                             <span>
                               →
@@ -1603,7 +1803,7 @@ export default function ReportsPage() {
                     styles.mobileReports
                   }
                 >
-                  {filteredReports.map(
+                  {paginatedReports.map(
                     (report) => (
                       <article
                         className={
@@ -1690,7 +1890,7 @@ export default function ReportsPage() {
 
                             {report.status ===
                             "Pending"
-                              ? "In Progress"
+                              ? "Pending"
                               : report.status}
                           </span>
                         </div>
@@ -1748,16 +1948,11 @@ export default function ReportsPage() {
                             }
                             onClick={() =>
                               navigateTo(
-                                `/verification-details?report=${encodeURIComponent(
-                                  report.reportId
-                                )}`
+                                `${getReportDestination(report)}`
                               )
                             }
                           >
-                            {report.status ===
-                            "Verified"
-                              ? "View Report"
-                              : "View Status"}
+                            {reportActionLabel(report)}
 
                             <span>
                               →
@@ -1800,6 +1995,85 @@ export default function ReportsPage() {
               </>
             )}
           </section>
+
+
+          {/* PAGINATION */}
+
+          {filteredReports.length > REPORTS_PER_PAGE && (
+            <nav
+              className={styles.paginationBar}
+              aria-label="Reports pagination"
+            >
+              <span className={styles.paginationSummary}>
+                Showing{" "}
+                {(currentPage - 1) * REPORTS_PER_PAGE + 1}
+                {" "}to{" "}
+                {Math.min(
+                  currentPage * REPORTS_PER_PAGE,
+                  filteredReports.length
+                )}
+                {" "}of{" "}
+                {filteredReports.length} reports
+              </span>
+
+              <div className={styles.paginationControls}>
+                <button
+                  type="button"
+                  className={styles.paginationArrow}
+                  onClick={() =>
+                    setCurrentPage((page) =>
+                      Math.max(1, page - 1)
+                    )
+                  }
+                  disabled={currentPage === 1}
+                  aria-label="Previous page"
+                >
+                  ←
+                </button>
+
+                {Array.from(
+                  { length: totalPages },
+                  (_, index) => index + 1
+                ).map((page) => (
+                  <button
+                    type="button"
+                    key={page}
+                    className={`${styles.paginationNumber} ${
+                      page === currentPage
+                        ? styles.paginationNumberActive
+                        : ""
+                    }`}
+                    onClick={() =>
+                      setCurrentPage(page)
+                    }
+                    aria-current={
+                      page === currentPage
+                        ? "page"
+                        : undefined
+                    }
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  type="button"
+                  className={styles.paginationArrow}
+                  onClick={() =>
+                    setCurrentPage((page) =>
+                      Math.min(totalPages, page + 1)
+                    )
+                  }
+                  disabled={
+                    currentPage === totalPages
+                  }
+                  aria-label="Next page"
+                >
+                  →
+                </button>
+              </div>
+            </nav>
+          )}
 
           {/* INFORMATION */}
 

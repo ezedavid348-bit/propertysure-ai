@@ -530,6 +530,62 @@ function valuesContainFalse(
 
 /*
  * ============================================================
+ * DERIVE ESSENTIAL FINAL REVIEW STATUS
+ * ============================================================
+ *
+ * Essential is an instant AI assessment.
+ *
+ * When AI processing is complete, Essential must never leave
+ * review_status as "pending". The final review status is derived
+ * from the completed AI evidence:
+ *
+ * - "flagged" when the AI found attention-required issues,
+ *   high synthetic-document risk, failed checks, or an
+ *   inconclusive document assessment.
+ * - "verified" when the completed AI assessment found no such
+ *   issues.
+ *
+ * IMPORTANT:
+ * "verified" here means the Essential AI assessment passed its
+ * defined checks. It does NOT mean government authenticity,
+ * legal ownership, registry confirmation, or physical
+ * inspection.
+ */
+function deriveEssentialReviewStatus(
+  documentResults: DocumentAIResult[],
+  checks: VerificationChecks,
+): "verified" | "flagged" {
+  const hasAttention = documentResults.some(
+    (result) =>
+      result.assessmentStatus ===
+        "attention_required" ||
+      result.syntheticDocumentRisk ===
+        "high",
+  );
+
+  const hasInconclusive = documentResults.some(
+    (result) =>
+      result.assessmentStatus ===
+      "inconclusive",
+  );
+
+  const hasFailedChecks = valuesContainFalse(
+    checks,
+  );
+
+  if (
+    hasAttention ||
+    hasInconclusive ||
+    hasFailedChecks
+  ) {
+    return "flagged";
+  }
+
+  return "verified";
+}
+
+/*
+ * ============================================================
  * DERIVE DOCUMENT ASSESSMENT
  * ============================================================
  *
@@ -1911,6 +1967,17 @@ export async function POST(
       );
 
     /*
+     * Essential processing is complete at this point.
+     * The final AI review outcome must therefore be either
+     * "verified" or "flagged" — never "pending".
+     */
+    const reviewStatus =
+      deriveEssentialReviewStatus(
+        documentResults,
+        checks,
+      );
+
+    /*
      * ----------------------------------------------------------
      * SAVE FINAL RESULT
      * ----------------------------------------------------------
@@ -1974,8 +2041,16 @@ export async function POST(
           "verifications",
         )
         .update({
+          /*
+           * "processed" describes the AI processing lifecycle.
+           * "review_status" describes the completed Essential
+           * outcome and must be verified/flagged here.
+           */
           status:
             "processed",
+
+          review_status:
+            reviewStatus,
 
           trust_score:
             trustScore,
@@ -2023,6 +2098,8 @@ export async function POST(
       confidence,
 
       risk,
+
+      reviewStatus,
 
       checks,
 

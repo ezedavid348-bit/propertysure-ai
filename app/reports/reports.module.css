@@ -180,49 +180,6 @@
    PAGE HEADER
 ========================================================= */
 
-.pageHeader {
-  display: flex;
-  align-items: flex-start;
-
-  padding-bottom: 20px;
-
-  border-bottom: 1px solid #e5edf6;
-}
-
-.eyebrow {
-  margin-bottom: 8px;
-
-  color: #168eff;
-
-  font-size: 10px;
-  line-height: 1;
-
-  font-weight: 800;
-
-  letter-spacing: 1.6px;
-}
-
-.pageHeader h1 {
-  margin: 0;
-
-  color: #102542;
-
-  font-size: clamp(27px, 3vw, 36px);
-  line-height: 1.15;
-
-  font-weight: 700;
-
-  letter-spacing: -0.7px;
-}
-
-.pageHeader p {
-  margin: 9px 0 0;
-
-  color: #6f839d;
-
-  font-size: 13px;
-  line-height: 1.55;
-}
 
 /* =========================================================
    DATABASE NOTICE
@@ -315,7 +272,7 @@
 ========================================================= */
 
 .filterPanel {
-  margin-top: 18px;
+  margin-top: 0;
 
   padding: 10px;
 
@@ -1434,7 +1391,7 @@
   ===================================================== */
 
   .filterPanel {
-    margin-top: 15px;
+    margin-top: 0;
 
     padding: 7px;
 
@@ -1914,5 +1871,97 @@
 
   .mobileStatusRow .statusBadge {
     font-size: 7px;
+  }
+}
+/* ============================================================
+   REPORTS PAGINATION
+   ============================================================ */
+
+.paginationBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 20px;
+  padding: 14px 2px 4px;
+}
+
+.paginationSummary {
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.paginationNumber,
+.paginationArrow {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #374151;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+
+.paginationNumber:hover:not(:disabled),
+.paginationArrow:hover:not(:disabled) {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.paginationNumberActive {
+  background: #0f2747;
+  border-color: #0f2747;
+  color: #ffffff;
+}
+
+.paginationArrow:disabled,
+.paginationNumber:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .paginationBar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .paginationControls {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .paginationNumber,
+  .paginationArrow {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+@media (max-width: 380px) {
+  .paginationControls {
+    gap: 4px;
+  }
+
+  .paginationNumber,
+  .paginationArrow {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
   }
 }

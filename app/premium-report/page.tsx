@@ -3,8 +3,9 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AppShell from "../AppShell/AppShell";
+import LoadingScreen from "../AppShell/LoadingScreen";
 import { supabase } from "../lib/supabase";
-import styles from "./professional-report.module.css";
+import styles from "../professional-report/professional-report.module.css";
 
 type CheckValue = boolean | null;
 type RiskLevel = "Low" | "Medium" | "High" | "Not Conclusive";
@@ -59,7 +60,7 @@ type PaymentRecord = {
   paid_at?: string | null;
 };
 
-type ProfessionalServiceCheck = {
+type PremiumServiceCheck = {
   label: string;
   description: string;
   status: "Verified" | "Attention Required" | "Pending" | "Not Conclusive";
@@ -254,7 +255,7 @@ function normalizeChecks(value: unknown): VerificationChecks {
   };
 }
 
-function getProfessionalChecks(findings: Record<string, unknown>): VerificationChecks {
+function getPremiumChecks(findings: Record<string, unknown>): VerificationChecks {
   return normalizeChecks(
     firstValue(
       getNested(findings, "professional", "checks"),
@@ -304,7 +305,7 @@ function checkDescription(key: keyof VerificationChecks, value: CheckValue): str
   return descriptions[key];
 }
 
-function normalizeServiceCheckStatus(value: unknown): ProfessionalServiceCheck["status"] {
+function normalizeServiceCheckStatus(value: unknown): PremiumServiceCheck["status"] {
   if (typeof value === "boolean") return value ? "Verified" : "Attention Required";
   const normalized = stringValue(value).toLowerCase();
   if (!normalized) return "Pending";
@@ -325,10 +326,10 @@ function getServiceCheckValue(findings: Record<string, unknown>, ownership: Reco
   return null;
 }
 
-function getProfessionalServiceChecks(
+function getPremiumServiceChecks(
   findings: Record<string, unknown>,
   ownership: Record<string, unknown>,
-): ProfessionalServiceCheck[] {
+): PremiumServiceCheck[] {
   const definitions: Array<{ label: string; description: string; paths: string[] }> = [
     {
       label: "Land Registry / Title Search",
@@ -349,6 +350,17 @@ function getProfessionalServiceChecks(
         "professional.ownership_verification",
         "professional.ownership.status",
         "ownership.status",
+      ],
+    },
+    {
+      label: "Encumbrance / Lien Search",
+      description: "Review for recorded encumbrances, restrictions, liens, or similar title concerns.",
+      paths: [
+        "professional.encumbrance_search.status",
+        "professional.encumbrance_search",
+        "professional.risk_assessment.encumbrance_status",
+        "encumbrance_search.status",
+        "encumbrance_search",
       ],
     },
     {
@@ -373,6 +385,36 @@ function getProfessionalServiceChecks(
         "professional.government_search",
         "government_record_check.status",
         "government_record_check",
+      ],
+    },
+    {
+      label: "Physical Property Inspection",
+      description: "On-site inspection of the property and its visible physical characteristics against the submitted property evidence, where an inspection record is available.",
+      paths: [
+        "professional.physical_inspection.status",
+        "professional.physical_inspection",
+        "professional.site_inspection.status",
+        "professional.site_inspection",
+        "physical_inspection.status",
+        "physical_inspection",
+        "site_inspection.status",
+        "site_inspection",
+      ],
+    },
+    {
+      label: "Legal / Professional Review",
+      description: "Professional review of title, transaction, survey, or site findings by the applicable lawyer, surveyor, engineer, or other qualified professional where engaged.",
+      paths: [
+        "professional.legal_review.status",
+        "professional.legal_review",
+        "professional.lawyer_review.status",
+        "professional.lawyer_review",
+        "professional.surveyor_review.status",
+        "professional.surveyor_review",
+        "professional.engineer_review.status",
+        "professional.engineer_review",
+        "legal_review.status",
+        "legal_review",
       ],
     },
   ];
@@ -730,7 +772,7 @@ function simplifyFinding(value: string): string {
     [/obtain\s+reliable\s+identity\s+documents.*$/i, "Reliable identity and transaction records should be provided to confirm the parties involved."],
     [/validate\s+the\s+QR\s+code.*$/i, "The original document and QR code should be checked through the official source."],
     [/independently\s+confirm\s+file\s+number.*$/i, "The file number, survey reference, and title details should be independently confirmed."],
-    [/obtain\s+an\s+independent\s+title\s+encumbrance\s+search\.?/i, "An independent title search should be completed."],
+    [/obtain\s+an\s+independent\s+title\s+encumbrance\s+search\.?/i, "An independent title and encumbrance search should be completed."],
     [/confirm\s+the\s+correct\s+parcel\s+location\s+and\s+coordinates.*$/i, "The exact property location and coordinates should be confirmed using reliable survey records."],
     [/no\s+additional\s+documents\s+were\s+supplied.*$/i, "More supporting documents are needed to clear the ownership, property, or location differences."],
     [/confirm\s+whether\s+the\s+intended\s+parcel\s+is\s+(.+?)(?:\.|$)/i, "The correct plot/parcel needs to be confirmed."],
@@ -765,17 +807,17 @@ function getRiskInterpretation(risk: RiskLevel): string {
   return "The available evidence is not enough to give the property a reliable risk conclusion. More information and the outstanding checks are needed before you make a transaction decision.";
 }
 
-function getConfidenceExplanation(confidence: number | null, serviceCounts: Record<ProfessionalServiceCheck["status"], number>): string {
+function getConfidenceExplanation(confidence: number | null, serviceCounts: Record<PremiumServiceCheck["status"], number>): string {
   if (confidence === null) {
-    return "The Professional engine did not provide a confidence score. More evidence and completed external checks are needed for a stronger assessment.";
+    return "The Premium engine did not provide a confidence score. More evidence and completed external checks are needed for a stronger assessment.";
   }
   if (confidence < 50) {
-    return `The ${confidence}% score means the available evidence was not strong enough for the Professional analysis to be highly confident. This is mainly a limitation of the evidence available to the assessment; it is not a ${confidence}% probability of fraud. ${serviceCounts.Pending > 0 ? `${serviceCounts.Pending} external checks are still pending.` : "Complete any remaining external checks before relying on the result."}`;
+    return `The ${confidence}% score means the available evidence was not strong enough for the Premium analysis to be highly confident. This is mainly a limitation of the evidence available to the assessment; it is not a ${confidence}% probability of fraud. ${serviceCounts.Pending > 0 ? `${serviceCounts.Pending} external checks are still pending.` : "Complete any remaining external checks before relying on the result."}`;
   }
-  return `The Professional engine has ${confidence}% confidence in the available analysis and evidence. This is an analysis-confidence measure, not a probability that the property is genuine or fraudulent.`;
+  return `The Premium engine has ${confidence}% confidence in the available analysis and evidence. This is an analysis-confidence measure, not a probability that the property is genuine or fraudulent.`;
 }
 
-function isProfessionalAnalysisComplete(
+function isPremiumAnalysisComplete(
   findings: Record<string, unknown>,
   verification: VerificationRecord,
 ): boolean {
@@ -808,11 +850,11 @@ function isProfessionalAnalysisComplete(
 
   if (professionalCompletedAt) return true;
 
-  // Older records may not have a dedicated Professional status marker.
+  // Older records may not have a dedicated Premium status marker.
   return verification.status === "processed" || verification.status === "completed";
 }
 
-function ProfessionalReportContent() {
+function PremiumReportContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const verificationId = searchParams.get("id") || "";
@@ -862,8 +904,8 @@ function ProfessionalReportContent() {
           setPayment((paymentData || null) as PaymentRecord | null);
         }
       } catch (loadError) {
-        console.error("PROFESSIONAL REPORT LOAD ERROR:", loadError);
-        if (mounted) setError(loadError instanceof Error ? loadError.message : "Unable to load the Professional report.");
+        console.error("PREMIUM REPORT LOAD ERROR:", loadError);
+        if (mounted) setError(loadError instanceof Error ? loadError.message : "Unable to load the Premium report.");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -907,12 +949,12 @@ function ProfessionalReportContent() {
     getNested(findings, "professional", "title"),
   ));
   const coreDocumentChecks = useMemo(
-    () => getProfessionalChecks(findings),
+    () => getPremiumChecks(findings),
     [findings],
   );
 
-  const professionalServiceChecks = useMemo(
-    () => getProfessionalServiceChecks(findings, ownership),
+  const premiumServiceChecks = useMemo(
+    () => getPremiumServiceChecks(findings, ownership),
     [findings, ownership],
   );
   const crossDocument = asRecord(firstValue(
@@ -927,21 +969,21 @@ function ProfessionalReportContent() {
     payment?.paid_at,
   );
 
-  const professionalAnalysisComplete = isProfessionalAnalysisComplete(
+  const premiumAnalysisComplete = isPremiumAnalysisComplete(
     findings,
     verification || { id: verificationId },
   );
 
-  const packageStatus = !professionalAnalysisComplete
+  const packageStatus = !premiumAnalysisComplete
     ? "Pending"
     : assessment === "High Risk" || assessment === "Attention Required"
       ? "Attention Required"
-      : "Professional Complete";
+      : "Premium Complete";
 
   const executiveSummary = stringValue(
     getNested(findings, "professional", "executive_summary"),
     findings.executive_summary,
-  ) || "The Professional report will present the consolidated assessment once the Professional verification engine has supplied its findings.";
+  ) || "The Premium report will present the consolidated assessment once the Premium verification engine has supplied its findings.";
 
   const recommendationReason = stringValue(
     getNested(findings, "professional", "recommendation", "reason"),
@@ -954,18 +996,18 @@ function ProfessionalReportContent() {
     getNested(findings, "professional", "recommendation", "reason"),
   ) || "This recommendation is based on the available document, property, ownership, location, risk, and external verification findings.";
 
-  const professionalKeyFindingsRaw = firstValue(
+  const premiumKeyFindingsRaw = firstValue(
     getNested(findings, "professional", "key_findings"),
     findings.key_findings,
     getNested(findings, "professional", "findings"),
   );
 
-  const professionalKeyFindings: string[] = Array.isArray(professionalKeyFindingsRaw)
-    ? professionalKeyFindingsRaw
+  const premiumKeyFindings: string[] = Array.isArray(premiumKeyFindingsRaw)
+    ? premiumKeyFindingsRaw
         .map((item) => stringValue(item))
         .filter(Boolean)
-    : stringValue(professionalKeyFindingsRaw)
-        ? [stringValue(professionalKeyFindingsRaw)]
+    : stringValue(premiumKeyFindingsRaw)
+        ? [stringValue(premiumKeyFindingsRaw)]
         : [];
 
   const outstandingIssues = firstValue(
@@ -978,67 +1020,38 @@ function ProfessionalReportContent() {
     ? outstandingIssues.map((issue) => stringValue(issue)).filter(Boolean)
     : [];
 
-  const summaryFindings = professionalKeyFindings.length > 0
-    ? professionalKeyFindings
+  const summaryFindings = premiumKeyFindings.length > 0
+    ? premiumKeyFindings
     : issueItems;
 
   const userFriendlyFindings = summaryFindings
     .map(simplifyFinding)
     .filter(Boolean);
 
-  const serviceCheckCounts = professionalServiceChecks.reduce(
+  const serviceCheckCounts = premiumServiceChecks.reduce(
     (counts, check) => {
       counts[check.status] += 1;
       return counts;
     },
-    { Verified: 0, "Attention Required": 0, Pending: 0, "Not Conclusive": 0 } as Record<ProfessionalServiceCheck["status"], number>,
+    { Verified: 0, "Attention Required": 0, Pending: 0, "Not Conclusive": 0 } as Record<PremiumServiceCheck["status"], number>,
   );
 
-  const professionalAnalysisNarrative = !professionalAnalysisComplete
-    ? `Your Professional verification is still being processed. ${documents.length > 0 ? `${documents.length} document${documents.length === 1 ? " is" : "s are"} already in the verification package. ` : ""}${serviceCheckCounts.Pending > 0 ? `${serviceCheckCounts.Pending} external Professional checks are still pending. ` : ""}The final Professional assessment, confidence score, and recommendation will be shown when the Professional engine completes its analysis.`
-    : executiveSummary.startsWith("The Professional report will present")
-      ? `We reviewed ${documents.length} document${documents.length === 1 ? "" : "s"} in this Professional package. The current result is ${overallRisk.toLowerCase()} risk. ${serviceCheckCounts.Pending > 0 ? `${serviceCheckCounts.Pending} external due-diligence checks are still pending, so the assessment is not yet fully confirmed.` : "The available external due-diligence checks have been assessed."}`
+  const professionalAnalysisNarrative = !premiumAnalysisComplete
+    ? `Your Premium verification is still being processed. ${documents.length > 0 ? `${documents.length} document${documents.length === 1 ? " is" : "s are"} already in the verification package. ` : ""}${serviceCheckCounts.Pending > 0 ? `${serviceCheckCounts.Pending} external Premium checks are still pending. ` : ""}The final Premium assessment, confidence score, and recommendation will be shown when the Premium engine completes its analysis.`
+    : executiveSummary.startsWith("The Premium report will present")
+      ? `We reviewed ${documents.length} document${documents.length === 1 ? "" : "s"} in this Premium package. The current result is ${overallRisk.toLowerCase()} risk. ${serviceCheckCounts.Pending > 0 ? `${serviceCheckCounts.Pending} external due-diligence checks are still pending, so the assessment is not yet fully confirmed.` : "The available external due-diligence checks have been assessed."}`
       : executiveSummary;
 
-  const verificationStatusCounts = useMemo(() => {
-    // The Analysis Summary must use the exact same package-level checks
-    // rendered in the Verification Checks tab. Do not derive these counts
-    // from the document-package fallback, because a fallback document may
-    // not contain its own `findings` object even though the Professional
-    // engine supplied package-level check results.
-    const counts: Record<ProfessionalServiceCheck["status"], number> = {
-      Verified: 0,
-      "Attention Required": 0,
-      Pending: 0,
-      "Not Conclusive": 0,
-    };
-
-    (Object.keys(coreDocumentChecks) as Array<keyof VerificationChecks>).forEach((key) => {
-      const value = coreDocumentChecks[key];
-      if (value === true) counts.Verified += 1;
-      else if (value === false) counts["Attention Required"] += 1;
-      else counts["Not Conclusive"] += 1;
-    });
-
-    // The four external Professional checks are separate from the seven
-    // core AI document checks and remain dynamically counted by status.
-    professionalServiceChecks.forEach((check) => {
-      counts[check.status] += 1;
-    });
-
-    return counts;
-  }, [coreDocumentChecks, professionalServiceChecks]);
-
-  const externalPendingCount = professionalServiceChecks.filter(
+  const externalPendingCount = premiumServiceChecks.filter(
     (check) => check.status === "Pending",
   ).length;
 
   const confidenceNarrative = getConfidenceExplanation(confidence, serviceCheckCounts);
   const riskInterpretation = getRiskInterpretation(overallRisk);
   const userActionMessage = overallRisk === "High"
-    ? "Before you pay, sign, transfer money, or rely on this property document, resolve the issues below and complete the pending Professional checks."
+    ? "Before you pay, sign, transfer money, or rely on this property document, resolve the issues below and complete the pending Premium checks."
     : overallRisk === "Medium"
-      ? "Before proceeding, clarify the issues below and complete the outstanding Professional checks."
+      ? "Before proceeding, clarify the issues below and complete the outstanding Premium checks."
       : overallRisk === "Low"
         ? "The available assessment is encouraging, but complete any required official checks before completing the transaction."
         : "Do not make a final transaction decision yet. More evidence and verification are needed.";
@@ -1069,7 +1082,7 @@ function ProfessionalReportContent() {
   ];
 
 
-  const serviceStatusMap = new Map(professionalServiceChecks.map((check) => [check.label, check.status]));
+  const serviceStatusMap = new Map(premiumServiceChecks.map((check) => [check.label, check.status]));
 
   const scopeRows: Array<[string, string, "complete" | "pending" | "attention" | "neutral"]> = [
     ["AI Document Analysis", documents.length > 0 ? "Completed" : "Not completed", documents.length > 0 ? "complete" : "neutral"],
@@ -1079,10 +1092,11 @@ function ProfessionalReportContent() {
     ["Property Location / GPS Analysis", location.latitude !== null && location.longitude !== null ? "Available" : "Not conclusive", location.latitude !== null && location.longitude !== null ? "complete" : "neutral"],
     ["Land Registry / Title Search", serviceStatusMap.get("Land Registry / Title Search") || "Pending", serviceStatusMap.get("Land Registry / Title Search") === "Attention Required" ? "attention" : serviceStatusMap.get("Land Registry / Title Search") === "Verified" ? "complete" : serviceStatusMap.get("Land Registry / Title Search") === "Pending" ? "pending" : "neutral"],
     ["Ownership Verification", serviceStatusMap.get("Ownership Verification") || "Pending", serviceStatusMap.get("Ownership Verification") === "Attention Required" ? "attention" : serviceStatusMap.get("Ownership Verification") === "Verified" ? "complete" : serviceStatusMap.get("Ownership Verification") === "Pending" ? "pending" : "neutral"],
+    ["Encumbrance / Lien Search", serviceStatusMap.get("Encumbrance / Lien Search") || "Pending", serviceStatusMap.get("Encumbrance / Lien Search") === "Attention Required" ? "attention" : serviceStatusMap.get("Encumbrance / Lien Search") === "Verified" ? "complete" : serviceStatusMap.get("Encumbrance / Lien Search") === "Pending" ? "pending" : "neutral"],
     ["Survey / Cadastral Verification", serviceStatusMap.get("Survey / Cadastral Verification") || "Pending", serviceStatusMap.get("Survey / Cadastral Verification") === "Attention Required" ? "attention" : serviceStatusMap.get("Survey / Cadastral Verification") === "Verified" ? "complete" : serviceStatusMap.get("Survey / Cadastral Verification") === "Pending" ? "pending" : "neutral"],
     ["Government Record Confirmation", serviceStatusMap.get("Government Record Confirmation") || "Pending", serviceStatusMap.get("Government Record Confirmation") === "Attention Required" ? "attention" : serviceStatusMap.get("Government Record Confirmation") === "Verified" ? "complete" : serviceStatusMap.get("Government Record Confirmation") === "Pending" ? "pending" : "neutral"],
-    ["Physical Property Inspection", "Not included in this review", "neutral"],
-    ["Legal Opinion", "Not included in this review", "neutral"],
+    ["Physical Property Inspection", premiumServiceChecks.find((check) => check.label === "Physical Property Inspection")?.status || "Pending", premiumServiceChecks.find((check) => check.label === "Physical Property Inspection")?.status === "Attention Required" ? "attention" : premiumServiceChecks.find((check) => check.label === "Physical Property Inspection")?.status === "Verified" ? "complete" : premiumServiceChecks.find((check) => check.label === "Physical Property Inspection")?.status === "Pending" ? "pending" : "neutral"],
+    ["Legal / Professional Review", premiumServiceChecks.find((check) => check.label === "Legal / Professional Review")?.status || "Pending", premiumServiceChecks.find((check) => check.label === "Legal / Professional Review")?.status === "Attention Required" ? "attention" : premiumServiceChecks.find((check) => check.label === "Legal / Professional Review")?.status === "Verified" ? "complete" : premiumServiceChecks.find((check) => check.label === "Legal / Professional Review")?.status === "Pending" ? "pending" : "neutral"],
   ];
 
   async function openDocument(document: PackageDocument, index: number) {
@@ -1138,17 +1152,7 @@ function ProfessionalReportContent() {
   }
 
   if (loading) {
-    return (
-      <AppShell activePath="/verify" headerPath="/result">
-        <div className={styles.loadingPage}>
-          <div className={styles.loadingCard}>
-            <div className={styles.loadingSpinner} />
-            <h2>Loading verification result</h2>
-            <p>Retrieving your completed property analysis...</p>
-          </div>
-        </div>
-      </AppShell>
-    );
+    return <LoadingScreen />;
   }
 
   if (error || !verification) {
@@ -1158,7 +1162,7 @@ function ProfessionalReportContent() {
           <div className={styles.errorCard}>
             <div className={styles.errorIcon}>!</div>
             <h2>Unable to load result</h2>
-            <p>{error || "The Professional verification result could not be loaded."}</p>
+            <p>{error || "The Premium verification result could not be loaded."}</p>
             <button type="button" className={styles.primaryButton} onClick={() => router.push("/dashboard")}>
               Back to Dashboard
             </button>
@@ -1181,13 +1185,13 @@ function ProfessionalReportContent() {
 
           <div className={styles.heroContent}>
             <div className={styles.completeBadge}>
-              <span>{professionalAnalysisComplete ? "✓" : "i"}</span>
-              {professionalAnalysisComplete ? "PROFESSIONAL VERIFICATION COMPLETE" : "PROFESSIONAL VERIFICATION PENDING"}
+              <span>{premiumAnalysisComplete ? "✓" : "i"}</span>
+              {premiumAnalysisComplete ? "PREMIUM VERIFICATION COMPLETE" : "PREMIUM VERIFICATION PENDING"}
             </div>
 
             <h1>Property Verification Report</h1>
 
-            <p>Professional due-diligence review of your property document package by PropertySure AI.</p>
+            <p>Premium due-diligence review of your property document package by PropertySure AI.</p>
              <p className={styles.heroSubtext}>Review the findings, verification checks, risks, and next steps below.</p>
 
             <div className={styles.heroMeta}>
@@ -1197,11 +1201,11 @@ function ProfessionalReportContent() {
               </div>
               <div className={styles.heroMetaItem}>
                 <span className={styles.metaIcon}>◫</span>
-                <div><small>{professionalAnalysisComplete ? "Completed" : "Status"}</small><strong>{professionalAnalysisComplete ? formatDateTime(completedAt) : "Pending"}</strong></div>
+                <div><small>{premiumAnalysisComplete ? "Completed" : "Status"}</small><strong>{premiumAnalysisComplete ? formatDateTime(completedAt) : "Pending"}</strong></div>
               </div>
               <div className={styles.heroMetaItem}>
                 <span className={styles.metaIcon}>▣</span>
-                <div><small>Plan</small><strong>Professional</strong></div>
+                <div><small>Plan</small><strong>Premium</strong></div>
               </div>
               <div className={styles.heroMetaItem}>
                 <span className={styles.metaIcon}>▱</span>
@@ -1218,7 +1222,7 @@ function ProfessionalReportContent() {
           </div>
           <div className={`${styles.metricCard} ${styles.metricBlue}`}>
             <div className={styles.metricIcon}>▮</div>
-            <div><span>Professional AI Confidence</span><strong>{professionalAnalysisComplete && confidence !== null ? confidence : "—"}<small>{professionalAnalysisComplete && confidence !== null ? "%" : ""}</small></strong><p>{professionalAnalysisComplete ? "Confidence in the available Professional analysis." : "Available when the Professional analysis is complete."}</p></div>
+            <div><span>Premium AI Confidence</span><strong>{premiumAnalysisComplete && confidence !== null ? confidence : "—"}<small>{premiumAnalysisComplete && confidence !== null ? "%" : ""}</small></strong><p>{premiumAnalysisComplete ? "Confidence in the available Premium analysis." : "Available when the Premium analysis is complete."}</p></div>
           </div>
           <div className={`${styles.metricCard} ${overallRisk === "High" ? styles.metricWarning : styles.metricGreen}`}>
             <div className={styles.metricIcon}>!</div>
@@ -1226,7 +1230,7 @@ function ProfessionalReportContent() {
           </div>
           <div className={`${styles.metricCard} ${packageStatus === "Attention Required" ? styles.metricWarning : packageStatus === "Pending" ? styles.metricBlue : styles.metricGreen}`}>
             <div className={styles.metricIcon}>▣</div>
-            <div><span>Package Status</span><strong>{packageStatus}</strong><p>{professionalAnalysisComplete ? `${documents.length} of ${documents.length} submitted document${documents.length === 1 ? "" : "s"} reviewed.` : "Professional analysis is still pending."}</p></div>
+            <div><span>Package Status</span><strong>{packageStatus}</strong><p>{premiumAnalysisComplete ? `${documents.length} of ${documents.length} submitted document${documents.length === 1 ? "" : "s"} reviewed.` : "Premium analysis is still pending."}</p></div>
           </div>
         </section>
 
@@ -1244,17 +1248,17 @@ function ProfessionalReportContent() {
           <div className={styles.sectionHeader}>
             <div>
               <h2><span>▣</span> Documents Reviewed</h2>
-              <p>Documents included in the Professional verification package.</p>
+              <p>Documents included in the Premium verification package.</p>
             </div>
             <div className={styles.packageProgress}>
-              <div className={styles.progressIcon}>{professionalAnalysisComplete ? "✓" : "i"}</div>
-              <div><strong>{professionalAnalysisComplete ? `${documents.length} of ${documents.length} documents reviewed` : `${documents.length} document${documents.length === 1 ? "" : "s"} submitted — Professional analysis pending`}</strong><div className={styles.progressTrack}><span style={{ width: professionalAnalysisComplete && documents.length ? "100%" : "0%" }} /></div><small>{professionalAnalysisComplete && documents.length ? "100%" : "Pending"}</small></div>
+              <div className={styles.progressIcon}>{premiumAnalysisComplete ? "✓" : "i"}</div>
+              <div><strong>{premiumAnalysisComplete ? `${documents.length} of ${documents.length} documents reviewed` : `${documents.length} document${documents.length === 1 ? "" : "s"} submitted — Premium analysis pending`}</strong><div className={styles.progressTrack}><span style={{ width: premiumAnalysisComplete && documents.length ? "100%" : "0%" }} /></div><small>{premiumAnalysisComplete && documents.length ? "100%" : "Pending"}</small></div>
             </div>
           </div>
 
           <div className={styles.tableWrap}>
             <table className={styles.documentTable}>
-              <thead><tr><th>#</th><th>Document Type</th><th>Document Reference</th><th>AI Confidence</th><th>Professional Status</th><th>Key Finding</th><th>Actions</th></tr></thead>
+              <thead><tr><th>#</th><th>Document Type</th><th>Document Reference</th><th>AI Confidence</th><th>Premium Status</th><th>Key Finding</th><th>Actions</th></tr></thead>
               <tbody>
                 {documents.map((document, index) => {
                   const confidenceValue = clampScore(numberValue(document.ai_confidence, document.confidence));
@@ -1275,11 +1279,11 @@ function ProfessionalReportContent() {
               </tbody>
             </table>
           </div>
-          {documents.length === 0 && <div className={styles.emptyState}>Professional document findings are not available yet.</div>}
+          {documents.length === 0 && <div className={styles.emptyState}>Premium document findings are not available yet.</div>}
         </section>
 
         <section className={styles.card}>
-          <div className={styles.cardTitle}><span>▣</span><div><h2>Document Findings</h2><p>Individual document-level findings supplied by the Professional verification engine.</p></div></div>
+          <div className={styles.cardTitle}><span>▣</span><div><h2>Document Findings</h2><p>Individual document-level findings supplied by the Premium verification engine.</p></div></div>
           <div className={styles.professionalFindingGrid}>
             {documents.map((document, index) => {
               const checks = getDocumentChecks(document);
@@ -1287,12 +1291,12 @@ function ProfessionalReportContent() {
               return (
                 <article className={styles.professionalFindingCard} key={`${document.name || "document"}-${index}`}>
                   <div className={styles.professionalFindingHeading}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{getDocumentType(document)}</strong><small>{getDocumentReference(document, index, verification.id)}</small></div></div>
-                  <p>{stringValue(document.summary, getNested(document.findings || {}, "summary"), getNested(document.findings || {}, "assessment")) || "No document-level Professional summary is available yet."}</p>
+                  <p>{stringValue(document.summary, getNested(document.findings || {}, "summary"), getNested(document.findings || {}, "assessment")) || "No document-level Premium summary is available yet."}</p>
                   {entries.length > 0 && <div className={styles.professionalCheckMini}>{entries.map((key) => <div key={key}><span>{checkLabel(key)}</span><strong className={checks[key] === false ? styles.detailAttention : checks[key] === true ? styles.detailPassed : styles.detailReviewed}>{checks[key] === true ? "No Issue Detected" : checks[key] === false ? "Attention" : "Not Conclusive"}</strong></div>)}</div>}
                 </article>
               );
             })}
-            {documents.length === 0 && <div className={styles.emptyState}>No document-level Professional findings are available yet.</div>}
+            {documents.length === 0 && <div className={styles.emptyState}>No document-level Premium findings are available yet.</div>}
           </div>
         </section>
             </div>
@@ -1301,7 +1305,7 @@ function ProfessionalReportContent() {
           {activeTab === "checks" && (
             <div className={styles.tabPanelContent}>
         <section id="professional-checks" className={styles.card}>
-          <div className={styles.cardTitle}><span>▣</span><div><h2>Verification Checks</h2><p>Package-level checks from the Professional verification workflow.</p></div></div>
+          <div className={styles.cardTitle}><span>▣</span><div><h2>Verification Checks</h2><p>Package-level checks from the Premium verification workflow.</p></div></div>
           <div className={styles.checkList}>
             {(Object.keys(coreDocumentChecks) as Array<keyof VerificationChecks>).map((key) => {
               const value = coreDocumentChecks[key];
@@ -1311,9 +1315,9 @@ function ProfessionalReportContent() {
         </section>
 
         <section className={styles.card}>
-          <div className={styles.cardTitle}><span>⌖</span><div><h2>Professional Verification Checks</h2><p>Additional due-diligence checks are shown separately from the core AI document assessment. Checks that require an external source remain pending until that verification is completed.</p></div></div>
+          <div className={styles.cardTitle}><span>⌖</span><div><h2>Premium Verification Checks</h2><p>Additional due-diligence checks are shown separately from the core AI document assessment. Checks that require an external source remain pending until that verification is completed.</p></div></div>
           <div className={styles.checkList}>
-            {professionalServiceChecks.map((check) => {
+            {premiumServiceChecks.map((check) => {
               const statusClass = check.status === "Verified"
                 ? styles.checkBadgePassed
                 : check.status === "Attention Required"
@@ -1332,6 +1336,29 @@ function ProfessionalReportContent() {
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        <section className={styles.card}>
+          <div className={styles.cardTitle}><span>◆</span><div><h2>Premium Due-Diligence Overview</h2><p>The Premium review extends the AI document assessment with independent title, ownership, registry, survey, government-record, physical inspection, and professional-review checks. External checks remain pending until evidence is actually supplied.</p></div></div>
+          <div className={styles.professionalFindingGrid}>
+            {premiumServiceChecks.map((check) => {
+              const statusClass = check.status === "Verified" ? styles.checkBadgePassed : check.status === "Attention Required" ? styles.checkBadgeFailed : styles.checkBadgeReview;
+              const iconClass = check.status === "Verified" ? styles.checkPassed : check.status === "Attention Required" ? styles.checkFailed : styles.checkReview;
+              return (
+                <article className={styles.professionalFindingCard} key={`premium-${check.label}`}>
+                  <div className={styles.professionalFindingHeading}><span>◆</span><div><strong>{check.label}</strong><small>Premium due-diligence service</small></div></div>
+                  <p>{check.description}</p>
+                  <div className={styles.professionalCheckMini}>
+                    <div><span>Current status</span><strong className={iconClass}>{check.status}</strong></div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+          <div style={{ marginTop: 16, padding: "12px 14px", border: "1px solid #e5ebf2", borderRadius: 12, background: "#f7f9fc" }}>
+            <strong style={{ display: "block", color: "#183558", fontSize: 10 }}>Premium evidence rule</strong>
+            <p style={{ margin: "5px 0 0", color: "#718097", fontSize: 9, lineHeight: 1.55 }}>A pending external check is not treated as a failed check and does not by itself create a High Risk result. Premium conclusions should reflect the evidence actually available at the time of the report.</p>
           </div>
         </section>
             </div>
@@ -1508,7 +1535,7 @@ function ProfessionalReportContent() {
                 }}
               >
                 Based on the property information currently available to the
-                Professional review.
+                Premium review.
               </p>
             </div>
 
@@ -1536,12 +1563,12 @@ function ProfessionalReportContent() {
               <strong
                 style={{
                   display: "block",
-                  color: professionalAnalysisComplete ? "#176b46" : "#68788d",
+                  color: premiumAnalysisComplete ? "#176b46" : "#68788d",
                   fontSize: 14,
                   lineHeight: 1.35,
                 }}
               >
-                {professionalAnalysisComplete ? "Professional Analysis Complete" : "Professional Analysis Pending"}
+                {premiumAnalysisComplete ? "Premium Analysis Complete" : "Premium Analysis Pending"}
               </strong>
               <p
                 style={{
@@ -1551,9 +1578,9 @@ function ProfessionalReportContent() {
                   lineHeight: 1.45,
                 }}
               >
-                {professionalAnalysisComplete
-                  ? "The displayed property profile reflects the completed Professional analysis."
-                  : "Property information may be visible before all Professional checks are completed."}
+                {premiumAnalysisComplete
+                  ? "The displayed property profile reflects the completed Premium analysis."
+                  : "Property information may be visible before all Premium checks are completed."}
               </p>
             </div>
           </div>
@@ -1630,9 +1657,9 @@ function ProfessionalReportContent() {
                   lineHeight: 1.45,
                 }}
               >
-                {professionalAnalysisComplete
-                  ? "Available Professional findings"
-                  : "Professional title checks pending"}
+                {premiumAnalysisComplete
+                  ? "Available Premium findings"
+                  : "Premium title checks pending"}
               </strong>
             </div>
             <span
@@ -1640,15 +1667,15 @@ function ProfessionalReportContent() {
                 flexShrink: 0,
                 padding: "5px 9px",
                 borderRadius: 999,
-                background: professionalAnalysisComplete ? "#eaf3ff" : "#f0f3f6",
-                color: professionalAnalysisComplete ? "#1557a6" : "#718096",
+                background: premiumAnalysisComplete ? "#eaf3ff" : "#f0f3f6",
+                color: premiumAnalysisComplete ? "#1557a6" : "#718096",
                 fontSize: 8,
                 fontWeight: 800,
                 letterSpacing: "0.05em",
                 textTransform: "uppercase",
               }}
             >
-              {professionalAnalysisComplete ? "Reviewed" : "Pending"}
+              {premiumAnalysisComplete ? "Reviewed" : "Pending"}
             </span>
           </div>
 
@@ -1989,14 +2016,14 @@ function ProfessionalReportContent() {
           {activeTab === "summary" && (
             <div className={styles.tabPanelContent}>
         <section id="professional-summary" className={styles.card}>
-          <div className={styles.cardTitle}><span>▤</span><div><h2>Analysis Summary</h2><p>Overall Professional assessment of the submitted property document package.</p></div></div>
+          <div className={styles.cardTitle}><span>▤</span><div><h2>Analysis Summary</h2><p>Overall Premium assessment of the submitted property document package.</p></div></div>
           <div className={styles.summaryContent}>
             <div className={styles.summaryAssessmentPremium}>
               <div className={styles.summaryAssessmentHeader}>
                  <span>EXECUTIVE ASSESSMENT</span>
-                 <strong className={professionalAnalysisComplete ? riskClass(overallRisk) : styles.riskUnknown}>
-                   <span className={styles.summaryRiskIcon} aria-hidden="true">{!professionalAnalysisComplete ? "i" : overallRisk === "High" ? "!" : overallRisk === "Medium" ? "!" : overallRisk === "Low" ? "✓" : "i"}</span>
-                   {professionalAnalysisComplete ? `${overallRisk} Risk` : "Pending"}
+                 <strong className={premiumAnalysisComplete ? riskClass(overallRisk) : styles.riskUnknown}>
+                   <span className={styles.summaryRiskIcon} aria-hidden="true">{!premiumAnalysisComplete ? "i" : overallRisk === "High" ? "!" : overallRisk === "Medium" ? "!" : overallRisk === "Low" ? "✓" : "i"}</span>
+                   {premiumAnalysisComplete ? `${overallRisk} Risk` : "Pending"}
                  </strong>
                </div>
               <p>{professionalAnalysisNarrative}</p>
@@ -2016,40 +2043,50 @@ function ProfessionalReportContent() {
                     ))}
                   </ul>
                 ) : (
-                  <p>{professionalAnalysisComplete ? "The Professional analysis did not return specific findings yet." : "Professional findings will appear here when the analysis is complete."}</p>
+                  <p>{premiumAnalysisComplete ? "The Premium analysis did not return specific findings yet." : "Premium findings will appear here when the analysis is complete."}</p>
                 )}
               </article>
 
               <article className={`${styles.analysisInsightCard} ${overallRisk === "High" ? styles.analysisRiskHigh : overallRisk === "Medium" ? styles.analysisRiskMedium : ""}`}>
                 <span>WHAT THE RISK MEANS</span>
-                <strong>{professionalAnalysisComplete ? overallRisk : "Pending"}</strong>
-                <p>{professionalAnalysisComplete ? riskInterpretation : "The final risk interpretation will appear when the Professional analysis is complete."}</p>
+                <strong>{premiumAnalysisComplete ? overallRisk : "Pending"}</strong>
+                <p>{premiumAnalysisComplete ? riskInterpretation : "The final risk interpretation will appear when the Premium analysis is complete."}</p>
               </article>
 
               <article className={styles.analysisInsightCard}>
                 <span>CONFIDENCE IN THIS ANALYSIS</span>
-                <strong>{professionalAnalysisComplete && confidence !== null ? `${confidence}%` : "Not available"}</strong>
-                <p>{professionalAnalysisComplete ? confidenceNarrative : "A Professional confidence score will appear after the Professional analysis is completed. It describes confidence in the available evidence and analysis, not a probability of fraud."}</p>
+                <strong>{premiumAnalysisComplete && confidence !== null ? `${confidence}%` : "Not available"}</strong>
+                <p>{premiumAnalysisComplete ? confidenceNarrative : "A Premium confidence score will appear after the Premium analysis is completed. It describes confidence in the available evidence and analysis, not a probability of fraud."}</p>
               </article>
 
               <article className={styles.analysisInsightCard}>
-                 <span>PROFESSIONAL DUE DILIGENCE</span>
+                 <span>PREMIUM DUE DILIGENCE</span>
                  <div className={styles.serviceCountGrid}>
-                   <div className={styles.serviceCountVerified}><strong>{verificationStatusCounts.Verified}</strong><span>Verified</span></div>
-                   <div className={styles.serviceCountAttention}><strong>{verificationStatusCounts["Attention Required"]}</strong><span>Attention</span></div>
-                   <div className={styles.serviceCountPending}><strong>{verificationStatusCounts.Pending}</strong><span>Pending</span></div>
-                   <div className={styles.serviceCountNeutral}><strong>{verificationStatusCounts["Not Conclusive"]}</strong><span>Not conclusive</span></div>
+                   <div className={styles.serviceCountVerified}><strong>{serviceCheckCounts.Verified}</strong><span>Verified</span></div>
+                   <div className={styles.serviceCountAttention}><strong>{serviceCheckCounts["Attention Required"]}</strong><span>Attention</span></div>
+                   <div className={styles.serviceCountPending}><strong>{serviceCheckCounts.Pending}</strong><span>Pending</span></div>
+                   <div className={styles.serviceCountNeutral}><strong>{serviceCheckCounts["Not Conclusive"]}</strong><span>Not conclusive</span></div>
                  </div>
-                 <p>{externalPendingCount > 0 ? `${externalPendingCount} external Professional checks are still pending. The other counts reflect verification checks already assessed from the submitted documents.` : "The Professional verification checks have recorded outcomes based on the available evidence."}</p>
+                 <p>{externalPendingCount > 0 ? `${externalPendingCount} external Premium checks are still pending. The other counts reflect verification checks already assessed from the submitted documents.` : "The Premium verification checks have recorded outcomes based on the available evidence."}</p>
                </article>
+            </div>
+
+            <div className={styles.analysisInsightCard} style={{ marginTop: 16 }}>
+              <span>PREMIUM DUE-DILIGENCE SCOPE</span>
+              <p style={{ marginTop: 8 }}>
+                Premium due diligence extends the document analysis with title and registry search, ownership verification, encumbrance or lien search, survey/cadastral verification, government-record confirmation, physical property inspection, and applicable legal or professional review.
+              </p>
+              <p style={{ marginTop: 10 }}>
+                The status of each Premium due-diligence service is shown in the Verification Checks tab. This section describes the scope only and does not duplicate the overall verification statistics above.
+              </p>
             </div>
 
             <div className={styles.analysisRecommendationPanel}>
               <div className={`${styles.analysisRecommendationIcon} ${overallRisk === "High" ? styles.guidanceHigh : overallRisk === "Medium" ? styles.guidanceMedium : overallRisk === "Low" ? styles.guidanceLow : styles.guidanceNeutral}`} aria-hidden="true">{overallRisk === "High" || overallRisk === "Medium" ? "!" : overallRisk === "Low" ? "✓" : "i"}</div>
               <div>
-                <span>PROFESSIONAL GUIDANCE</span>
-                <h3>{professionalAnalysisComplete ? recommendation : "Professional Analysis Pending"}</h3>
-                <p>{professionalAnalysisComplete ? recommendationText : "The final Professional recommendation will be generated after the Professional verification engine completes its analysis."}</p>
+                <span>PREMIUM GUIDANCE</span>
+                <h3>{premiumAnalysisComplete ? recommendation : "Premium Analysis Pending"}</h3>
+                <p>{premiumAnalysisComplete ? recommendationText : "The final Premium recommendation will be generated after the Premium verification engine completes its analysis."}</p>
                 <strong>Need deeper verification?</strong>
                 <p>Use the Premium or Custom due-diligence service for the outstanding registry, ownership, survey, government-record, physical inspection, or other professional checks that apply to your transaction.</p>
               </div>
@@ -2065,8 +2102,8 @@ function ProfessionalReportContent() {
                 <span>Property type</span>
               </div>
               <div>
-                <strong className={professionalAnalysisComplete ? riskClass(overallRisk) : styles.riskUnknown}>{professionalAnalysisComplete ? assessment : "Pending"}</strong>
-                <span>Professional assessment</span>
+                <strong className={premiumAnalysisComplete ? riskClass(overallRisk) : styles.riskUnknown}>{premiumAnalysisComplete ? assessment : "Pending"}</strong>
+                <span>Premium assessment</span>
               </div>
               <div>
                 <strong>{formatDate(completedAt)}</strong>
@@ -2093,7 +2130,7 @@ function ProfessionalReportContent() {
               ))
             ) : (
               <div className={styles.emptyState}>
-                No outstanding issues have been supplied by the Professional verification engine yet.
+                No outstanding issues have been supplied by the Premium verification engine yet.
               </div>
             )}
           </div>
@@ -2115,12 +2152,12 @@ function ProfessionalReportContent() {
         <footer className={styles.footer}>
           <div className={styles.footerBrand}>
             <strong>PropertySure AI</strong>
-            <span>Professional Property Verification Report</span>
+            <span>Premium Property Verification Report</span>
           </div>
           <div className={styles.footerMeta}>
             <span>Verification ID #{verification.id}</span>
-            <span>Professional Plan</span>
-            <span>Assessment: {professionalAnalysisComplete ? assessment : "Pending"}</span>
+            <span>Premium Plan</span>
+            <span>Assessment: {premiumAnalysisComplete ? assessment : "Pending"}</span>
             {String(payment?.status || "").toLowerCase() === "paid" && <span>Payment: {formatCurrency(payment?.amount)}</span>}
           </div>
         </footer>
@@ -2144,8 +2181,8 @@ function ProfessionalReportContent() {
                   <div className={styles.detailItem}><span>Document Type</span><strong>{getDocumentType(selectedDocument)}</strong></div>
                   <div className={styles.detailItem}><span>Document Reference</span><strong>{getDocumentReference(selectedDocument, selectedDocumentIndex, verification.id)}</strong></div>
                   <div className={styles.detailItem}><span>AI Confidence</span><strong>{clampScore(numberValue(selectedDocument.ai_confidence, selectedDocument.confidence)) !== null ? `${clampScore(numberValue(selectedDocument.ai_confidence, selectedDocument.confidence))}%` : "—"}</strong></div>
-                  <div className={styles.detailItem}><span>Professional Status</span><strong>{stringValue(selectedDocument.status, selectedDocument.result) || "Pending"}</strong></div>
-                  <div className={styles.detailSummary}><span>Analysis Summary</span><p>{stringValue(selectedDocument.summary, getNested(selectedDocument.findings || {}, "summary")) || "No document-level Professional summary is available yet."}</p></div>
+                  <div className={styles.detailItem}><span>Premium Status</span><strong>{stringValue(selectedDocument.status, selectedDocument.result) || "Pending"}</strong></div>
+                  <div className={styles.detailSummary}><span>Analysis Summary</span><p>{stringValue(selectedDocument.summary, getNested(selectedDocument.findings || {}, "summary")) || "No document-level Premium summary is available yet."}</p></div>
                 </div>
               </div>
               <div className={styles.modalChecks}><h3>Document Checks</h3>{(Object.keys(getDocumentChecks(selectedDocument)) as Array<keyof VerificationChecks>).map((key) => { const value = getDocumentChecks(selectedDocument)[key]; return <div className={styles.modalCheckRow} key={key}><span>{checkLabel(key)}</span><strong className={value === true ? styles.modalPass : value === false ? styles.modalFail : styles.modalReview}>{value === true ? "No Issue Detected" : value === false ? "Attention" : "Not Conclusive"}</strong></div>; })}</div>
@@ -2157,24 +2194,14 @@ function ProfessionalReportContent() {
   );
 }
 
-function ProfessionalReportFallback() {
-  return (
-    <AppShell activePath="/verify" headerPath="/result">
-      <div className={styles.loadingPage}>
-        <div className={styles.loadingCard}>
-          <div className={styles.loadingSpinner} />
-          <h2>Loading verification result</h2>
-          <p>Retrieving your completed property analysis...</p>
-        </div>
-      </div>
-    </AppShell>
-  );
+function PremiumReportFallback() {
+  return <LoadingScreen />;
 }
 
-export default function ProfessionalReportPage() {
+export default function PremiumReportPage() {
   return (
-    <Suspense fallback={<ProfessionalReportFallback />}>
-      <ProfessionalReportContent />
+    <Suspense fallback={<PremiumReportFallback />}>
+      <PremiumReportContent />
     </Suspense>
   );
 }

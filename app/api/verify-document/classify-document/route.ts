@@ -1,6 +1,8 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+
 /*
  * ============================================================
  * OPENAI CLIENT
@@ -1494,11 +1496,6 @@ async function buildFileInput(
     );
   }
 
-  const uploadedFile =
-    await uploadFileToOpenAI(
-      file
-    );
-
   const isImage =
     mimeType ===
       "image/jpeg" ||
@@ -1511,11 +1508,60 @@ async function buildFileInput(
    * ----------------------------------------------------------
    * IMAGE
    * ----------------------------------------------------------
+   *
+   * IMPORTANT MOBILE RELIABILITY FIX:
+   *
+   * Images are sent directly to the Responses API as a data URL
+   * instead of first uploading them through the OpenAI Files API.
+   *
+   * This keeps the exact bytes received by this API together with
+   * the image input and avoids an unnecessary intermediate file
+   * reference. It is especially useful for images uploaded from
+   * mobile browsers/cameras.
+   * ----------------------------------------------------------
    */
 
   if (
-    isImage
+    isImage &&
+    file.size <= 5 * 1024 * 1024
   ) {
+    const bytes =
+      Buffer.from(
+        await file.arrayBuffer()
+      );
+
+    if (
+      bytes.length <=
+      0
+    ) {
+      throw new Error(
+        "The supplied image could not be read."
+      );
+    }
+
+    const base64 =
+      bytes.toString(
+        "base64"
+      );
+
+    const imageDataUrl =
+      `data:${
+        mimeType === "image/jpg"
+          ? "image/jpeg"
+          : mimeType
+      };base64,${base64}`;
+
+    console.log(
+      "PROPERTY SURE AI: IMAGE RECEIVED FOR CLASSIFICATION:",
+      {
+        fileName: file.name,
+        mimeType,
+        sizeBytes: file.size,
+        dataUrlBytes: imageDataUrl.length,
+        source: "multipart-form-data",
+      }
+    );
+
     return [
       {
         type:
@@ -1524,35 +1570,30 @@ async function buildFileInput(
         text: `
 DOCUMENT ${documentNumber}
 
-Inspect the ACTUAL IMAGE CONTENT.
+Inspect the ACTUAL IMAGE CONTENT carefully.
 
-Do not use a filename as evidence.
+This is a property document image uploaded by a user.
+Perform visual document reading/OCR yourself. Mentally zoom into the image and inspect the entire page, including the header, body text, names, seals/stamps, signatures, numbers and lower sections.
+
+Do not use the filename, file path, URL, metadata or storage identifier as evidence.
 
 Determine:
 
 1. Actual document type.
-2. Actual visible document title.
+2. Actual visible document title or heading.
 3. Actual relevant person's name.
+4. Important visible property/document information.
+5. Any preliminary document-analysis findings supported by what is actually visible.
 
-"nameDetected" MUST come from visible document content.
+If the title clearly identifies the document type, preserve that document type even if some other fields are blurry.
 
-Look for:
+For "nameDetected", use only a person's name that is actually visible in the document and clearly associated with the property or transaction. Do not guess or complete an unclear name.
 
-Owner
-Proprietor
-Applicant
-Grantee
-Purchaser
-Assignee
-Allottee
-Beneficiary
-or equivalent wording.
+If no relevant person's name can be reliably read, return an empty string.
 
-If no relevant person's name can be reliably read:
+Do not treat unreadable text alone as evidence of forgery or high risk.
 
-return an empty string.
-
-NEVER use a filename, file path or URL as the person's name.
+NEVER use a filename, file path, URL, storage path or metadata as evidence for the document type or person's name.
         `,
       },
 
@@ -1560,8 +1601,8 @@ NEVER use a filename, file path or URL as the person's name.
         type:
           "input_image",
 
-        file_id:
-          uploadedFile.id,
+        image_url:
+          imageDataUrl,
 
         detail:
           "high",
@@ -1571,9 +1612,17 @@ NEVER use a filename, file path or URL as the person's name.
 
   /*
    * ----------------------------------------------------------
-   * PDF
+   * PDF / LARGE IMAGE
    * ----------------------------------------------------------
+   *
+   * Larger images use the OpenAI Files API to avoid putting a
+   * very large base64 data URL directly into the request.
    */
+
+  const uploadedFile =
+    await uploadFileToOpenAI(
+      file
+    );
 
   return [
     {
@@ -1617,10 +1666,22 @@ NEVER use a filename, file path or URL as the person's name.
 
     {
       type:
-        "input_file",
+        mimeType === "application/pdf"
+          ? "input_file"
+          : "input_image",
 
-      file_id:
-        uploadedFile.id,
+      ...(mimeType === "application/pdf"
+        ? {
+            file_id:
+              uploadedFile.id,
+          }
+        : {
+            file_id:
+              uploadedFile.id,
+
+            detail:
+              "high",
+          }),
     },
   ];
 }
@@ -2321,6 +2382,16 @@ export async function POST(
           );
         }
 
+        console.log(
+          "PROPERTY SURE AI: MULTIPART DOCUMENT RECEIVED:",
+          {
+            fileName: file.name,
+            mimeType: fileMimeType,
+            sizeBytes: file.size,
+            lastModified: file.lastModified,
+          }
+        );
+
         /*
          * Upload actual file content to OpenAI.
          */
@@ -2617,7 +2688,13 @@ ${documentText}
       response.output_text?.trim();
 
     console.log(
-      "PROPERTY SURE AI: Structured output received."
+      "PROPERTY SURE AI: Structured output received.",
+      {
+        hasOutput: Boolean(rawOutput),
+        outputLength: rawOutput?.length || 0,
+        documentsReceived,
+        documentsSentToAI,
+      }
     );
 
     if (
@@ -2685,6 +2762,19 @@ ${documentText}
       normalizeClassificationResult(
         result
       );
+
+    console.log(
+      "PROPERTY SURE AI: CLASSIFICATION VALUES:",
+      {
+        documentType: result.documentType,
+        documentTypeConfidence: result.documentTypeConfidence,
+        documentTitleDetected: result.documentTitleDetected,
+        nameDetected: result.nameDetected,
+        trustScore: result.trustScore,
+        confidence: result.confidence,
+        risk: result.risk,
+      }
+    );
 
     /*
      * ========================================================

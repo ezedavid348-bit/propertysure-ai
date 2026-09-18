@@ -1,0 +1,441 @@
+.page {
+  min-height: 100%;
+  background: #f3f8fd;
+  color: #13294b;
+}
+
+.pageInner {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 24px 28px 48px;
+}
+
+.topBar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 14px;
+}
+
+.backButton {
+  border: 0;
+  background: transparent;
+  color: #1676c5;
+  padding: 5px 0;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.backButton:hover {
+  color: #1676c5;
+}
+
+.hero {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+  padding: 22px 24px;
+  border: 1px solid #dce8f2;
+  border-radius: 16px;
+  background: linear-gradient(
+    100deg,
+    #f8fbff 0%,
+    #ffffff 70%,
+    #f4f9ff 100%
+  );
+  box-shadow: 0 5px 18px rgba(24, 48, 78, 0.035);
+}
+
+.heroIcon {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: #fee8ea;
+  color: #dc3035;
+  font-size: 27px;
+  font-weight: 900;
+}
+
+.heroCopy {
+  min-width: 0;
+}
+
+.eyebrow,
+.sectionEyebrow {
+  color: #1681d8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.heroCopy h1 {
+  margin: 5px 0 6px;
+  color: #142d54;
+  font-size: clamp(25px, 3vw, 34px);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.heroCopy p {
+  max-width: 760px;
+  margin: 0;
+  color: #60718a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 18px;
+  align-items: start;
+}
+
+.formCard,
+.sideCard,
+.successCard {
+  border: 1px solid #dce7f1;
+  border-radius: 14px;
+  background: #fbfdff;
+  box-shadow: 0 3px 13px rgba(24, 48, 78, 0.03);
+}
+
+.cardHeader {
+  padding: 20px 20px 17px;
+  border-bottom: 1px solid #e5edf4;
+}
+
+.cardHeader h2,
+.sideCard h2 {
+  margin: 5px 0 6px;
+  color: #132d55;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.cardHeader p,
+.sideCard p {
+  margin: 0;
+  color: #718096;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.form {
+  padding: 20px;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.field > span {
+  color: #24486c;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  border: 1px solid #d5e2ed;
+  border-radius: 9px;
+  outline: 0;
+  background: #fff;
+  color: #19385e;
+  padding: 11px 12px;
+  font: inherit;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+.field input,
+.field select {
+  min-height: 42px;
+}
+
+.field textarea {
+  min-height: 145px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #9aaabd;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: #76b7e7;
+  box-shadow: 0 0 0 3px rgba(22, 129, 216, 0.08);
+}
+
+.field small {
+  color: #8091a6;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.infoBox {
+  display: flex;
+  gap: 11px;
+  margin: 4px 0 20px;
+  padding: 13px;
+  border: 1px solid #dbe8f4;
+  border-radius: 10px;
+  background: #f7fbff;
+}
+
+.infoIcon {
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #e5f2fc;
+  color: #1676c5;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.infoBox strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #24486c;
+  font-size: 11px;
+}
+
+.infoBox p {
+  margin: 0;
+  color: #647991;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.formActions,
+.successActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 40px;
+  border-radius: 9px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.primaryButton {
+  border: 0;
+  background: #e52d32;
+  color: #fff;
+}
+
+.primaryButton:hover {
+  background: #cc2429;
+}
+
+.secondaryButton {
+  border: 1px solid #d5e2ef;
+  background: #fff;
+  color: #315878;
+}
+
+.secondaryButton:hover {
+  background: #f7fbff;
+}
+
+.primaryButton span,
+.secondaryButton span {
+  margin-left: 7px;
+}
+
+.successActions .primaryButton span {
+  margin-left: 0;
+  margin-right: 7px;
+}
+
+.sideColumn {
+  display: grid;
+  gap: 15px;
+}
+
+.sideCard {
+  padding: 18px;
+}
+
+.sideIcon {
+  width: 39px;
+  height: 39px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 13px;
+  border-radius: 11px;
+  background: #fff4d8;
+  color: #a87400;
+  font-weight: 900;
+}
+
+.sideCard ul {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  color: #60718a;
+}
+
+.sideCard li {
+  margin-bottom: 10px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.successCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  max-width: 850px;
+  margin: 45px auto 0;
+  padding: 28px;
+}
+
+.successIcon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: #e6f7f2;
+  color: #159b7d;
+  font-size: 27px;
+  font-weight: 900;
+}
+
+.successCard h1 {
+  margin: 6px 0 8px;
+  color: #142d54;
+  font-size: 27px;
+}
+
+.successCard p {
+  margin: 0;
+  color: #60718a;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 18px 0 20px;
+  padding: 12px 14px;
+  border: 1px solid #dbe8f4;
+  border-radius: 10px;
+  background: #f7fbff;
+}
+
+.notice strong {
+  color: #24486c;
+  font-size: 11px;
+}
+
+.notice span {
+  color: #647991;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.successActions {
+  justify-content: flex-start;
+}
+
+.page button:focus-visible,
+.page input:focus-visible,
+.page select:focus-visible,
+.page textarea:focus-visible {
+  outline: 2px solid rgba(8, 121, 223, 0.45);
+  outline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sideColumn {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .pageInner {
+    padding: 18px 16px 36px;
+  }
+
+  .fieldGrid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .hero {
+    align-items: flex-start;
+    padding: 19px;
+  }
+
+  .sideColumn {
+    grid-template-columns: 1fr;
+  }
+
+  .successCard {
+    grid-template-columns: 1fr;
+    margin-top: 25px;
+    padding: 21px;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero {
+    flex-direction: column;
+  }
+
+  .form {
+    padding: 16px;
+  }
+
+  .cardHeader {
+    padding: 17px 16px 15px;
+  }
+
+  .formActions,
+  .successActions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+  }
+}
