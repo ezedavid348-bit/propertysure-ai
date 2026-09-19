@@ -57,6 +57,7 @@ export default function Home() {
           loop
           playsInline
           preload="auto"
+          poster="/videos/propertysure-hero-poster.jpg"
         >
           <source
             src="/videos/propertysure-hero.mp4"
