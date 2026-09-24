@@ -49,7 +49,7 @@
   background:
     radial-gradient(
       circle at 50% 42%,
-      rgba(22, 142, 255, 0.10),
+      rgba(22, 142, 255, 0.1),
       transparent 30%
     ),
     linear-gradient(
@@ -602,19 +602,17 @@
   line-height: 1.3;
 }
 
-/* =========================================================
-   TOP ACTIONS
-========================================================= */
-
 .topActions {
   display: flex;
   align-items: center;
+
   gap: 14px;
 }
 
 .headerDate {
   display: flex;
   align-items: center;
+
   gap: 7px;
 
   color: #91a7c3;
@@ -641,7 +639,6 @@
   padding: 0;
 
   border: 1px solid rgba(60, 143, 232, 0.35);
-
   border-radius: 50%;
 
   background: transparent;
@@ -762,10 +759,6 @@
   padding: 30px 32px 45px;
 }
 
-/* =========================================================
-   WELCOME SECTION
-========================================================= */
-
 .welcomeSection {
   display: flex;
   align-items: flex-start;
@@ -790,7 +783,7 @@
 }
 
 /* =========================================================
-   DESKTOP HERO CARD
+   DESKTOP HERO
 ========================================================= */
 
 .heroCard {
@@ -908,10 +901,6 @@
   line-height: 1;
 }
 
-/* =========================================================
-   DESKTOP HERO VISUAL
-========================================================= */
-
 .heroVisual {
   position: absolute;
 
@@ -954,6 +943,7 @@
 
 .heroImageOverlay {
   position: absolute;
+
   inset: 0;
 
   z-index: 2;
@@ -969,10 +959,6 @@
 
   pointer-events: none;
 }
-
-/* =========================================================
-   VERIFICATION CHECKLIST
-========================================================= */
 
 .verificationChecklist {
   position: absolute;
@@ -1058,7 +1044,7 @@
 }
 
 /* =========================================================
-   STATISTICS
+   DESKTOP STATISTICS
 ========================================================= */
 
 .statsGrid {
@@ -1178,6 +1164,7 @@
   gap: 5px;
 
   margin-top: auto;
+
   padding-top: 9px;
 
   color: #4f82ba;
@@ -1190,6 +1177,7 @@
 
 .statLink span {
   color: #168eff;
+
   font-size: 10px;
 }
 
@@ -1267,10 +1255,6 @@
   color: #168eff;
 }
 
-/* =========================================================
-   PLAN ICON
-========================================================= */
-
 .crownIcon {
   background:
     linear-gradient(
@@ -1310,14 +1294,11 @@
   font-family: inherit;
 
   font-size: 8px;
+
   font-weight: 600;
 
   cursor: pointer;
 }
-
-/* =========================================================
-   FRAUD EMPTY
-========================================================= */
 
 .fraudEmpty {
   min-height: 90px;
@@ -1388,7 +1369,7 @@
 }
 
 /* =========================================================
-   PREMIUM PLAN CARD
+   PLAN CARD
 ========================================================= */
 
 .planCard {
@@ -1410,7 +1391,7 @@
     );
 
   box-shadow:
-    0 9px 28px rgba(184, 143, 42, 0.10);
+    0 9px 28px rgba(184, 143, 42, 0.1);
 }
 
 .paidPlanCard {
@@ -1582,7 +1563,7 @@
 }
 
 /* =========================================================
-   ACTIVITY CARD
+   ACTIVITY
 ========================================================= */
 
 .activityCard {
@@ -1604,8 +1585,11 @@
   min-height: 145px;
 
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
+
   justify-content: center;
 
   text-align: center;
@@ -1616,7 +1600,9 @@
   height: 38px;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
   margin-bottom: 9px;
@@ -1636,6 +1622,7 @@
   color: #526276;
 
   font-size: 10px;
+
   line-height: 1.3;
 
   font-weight: 800;
@@ -1649,6 +1636,7 @@
   color: #8a99aa;
 
   font-size: 8px;
+
   line-height: 1.45;
 }
 
@@ -1658,6 +1646,7 @@
   padding: 0 13px;
 
   border: 0;
+
   border-radius: 8px;
 
   background:
@@ -1672,13 +1661,14 @@
   font-family: inherit;
 
   font-size: 8px;
+
   font-weight: 700;
 
   cursor: pointer;
 }
 
 /* =========================================================
-   MOBILE ELEMENTS
+   HIDDEN DESKTOP / MOBILE ELEMENTS
 ========================================================= */
 
 .mobileHeader {
@@ -1707,6 +1697,7 @@
     display: block;
 
     width: 100%;
+
     min-height: 100vh;
 
     background: #f8fafc;
@@ -1725,15 +1716,19 @@
 
   .mobileHeader {
     position: sticky;
+
     top: 0;
 
     z-index: 100;
 
     width: 100%;
+
     height: 72px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     padding: 0 16px;
@@ -1755,6 +1750,7 @@
     height: 38px;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -1773,6 +1769,7 @@
 
   .mobileBrand {
     display: flex;
+
     align-items: center;
 
     gap: 8px;
@@ -1815,6 +1812,7 @@
     height: 38px;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -1857,8 +1855,13 @@
 
     display: block;
 
+    /*
+     * Moved the dashboard content upward so the
+     * greeting, date, hero card and statistics
+     * appear higher on the screen.
+     */
     padding:
-      18px
+      6px
       16px
       96px;
   }
@@ -1873,12 +1876,18 @@
     width: 100%;
 
     display: flex;
+
     align-items: flex-start;
+
     justify-content: space-between;
 
     gap: 10px;
 
-    margin-bottom: 14px;
+    /*
+     * Reduced spacing below the greeting so the
+     * Verify Property card moves upward.
+     */
+    margin-bottom: 6px;
   }
 
   .mobileWelcomeText {
@@ -1897,6 +1906,7 @@
     color: #081b3d;
 
     font-size: 28px;
+
     line-height: 1.1;
 
     font-weight: 800;
@@ -1912,6 +1922,7 @@
     color: #64748b;
 
     font-size: 10px;
+
     line-height: 1.45;
   }
 
@@ -1919,6 +1930,7 @@
     flex-shrink: 0;
 
     display: inline-flex;
+
     align-items: center;
 
     gap: 6px;
@@ -1947,11 +1959,16 @@
 
   .mobileHeaderDate .icon {
     color: #168eff;
+
     font-size: 12px;
   }
 
   /* =======================================================
      MOBILE VERIFY PROPERTY
+
+     SHORT CARD:
+     The previous 290px height was too tall.
+     This is intentionally kept at 195px.
   ======================================================= */
 
   .mobileHeroCard {
@@ -1960,6 +1977,7 @@
     width: 100%;
 
     height: 195px;
+
     min-height: 195px;
 
     overflow: visible;
@@ -1998,6 +2016,7 @@
     color: #168eff;
 
     font-size: 6.5px;
+
     line-height: 1.2;
 
     font-weight: 800;
@@ -2011,6 +2030,7 @@
     color: #081b3d;
 
     font-size: 19px;
+
     line-height: 1.1;
 
     font-weight: 800;
@@ -2026,6 +2046,7 @@
     color: #607086;
 
     font-size: 8px;
+
     line-height: 1.38;
   }
 
@@ -2033,7 +2054,9 @@
     min-height: 33px;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     gap: 6px;
@@ -2067,6 +2090,7 @@
 
   .mobileHeroButton > span {
     font-size: 13px;
+
     line-height: 1;
   }
 
@@ -2084,6 +2108,7 @@
     inset: 0;
 
     width: 100%;
+
     height: 100%;
 
     overflow: visible;
@@ -2097,11 +2122,17 @@
     position: absolute;
 
     right: -7px;
-    bottom: 25px;
+
+    /*
+     * Image moved UP so the house sits higher
+     * inside the short card.
+     */
+    bottom: 42px;
 
     z-index: 2;
 
     width: 220px;
+
     height: 145px;
 
     display: block;
@@ -2141,6 +2172,7 @@
     position: absolute;
 
     top: -7px;
+
     right: 7px;
 
     z-index: 20;
@@ -2163,6 +2195,7 @@
 
   .mobileVerificationChecklist div {
     display: flex;
+
     align-items: center;
 
     gap: 5px;
@@ -2172,6 +2205,7 @@
     color: #526276;
 
     font-size: 6.7px;
+
     line-height: 1.1;
 
     font-weight: 600;
@@ -2179,10 +2213,13 @@
 
   .mobileVerificationChecklist span {
     width: 11px;
+
     height: 11px;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     flex: 0 0 11px;
@@ -2202,7 +2239,8 @@
     position: absolute;
 
     right: 8px;
-    bottom: 17px;
+
+    bottom: 8px;
 
     z-index: 20;
 
@@ -2243,7 +2281,9 @@
     min-height: 100px;
 
     display: flex;
+
     flex-direction: column;
+
     align-items: flex-start;
 
     padding: 10px;
@@ -2274,10 +2314,13 @@
 
   .mobileStatIcon {
     width: 30px;
+
     height: 30px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     margin-bottom: 6px;
@@ -2291,6 +2334,7 @@
     color: #53657c;
 
     font-size: 8.5px;
+
     line-height: 1.2;
 
     font-weight: 700;
@@ -2302,6 +2346,7 @@
     color: #081b3d;
 
     font-size: 20px;
+
     line-height: 1;
 
     font-weight: 800;
@@ -2315,6 +2360,7 @@
     color: #168eff;
 
     font-size: 6.8px;
+
     line-height: 1.2;
 
     font-weight: 600;
@@ -2343,7 +2389,9 @@
 
   .mobileCardHeader {
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 10px;
@@ -2355,6 +2403,7 @@
     min-width: 0;
 
     display: flex;
+
     align-items: center;
 
     gap: 9px;
@@ -2362,10 +2411,13 @@
 
   .mobileCardIcon {
     width: 31px;
+
     height: 31px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     flex: 0 0 31px;
@@ -2396,6 +2448,7 @@
     color: #101827;
 
     font-size: 12px;
+
     line-height: 1.25;
 
     font-weight: 800;
@@ -2427,6 +2480,7 @@
 
   .mobileFraudEmpty {
     display: flex;
+
     align-items: flex-start;
 
     gap: 10px;
@@ -2447,10 +2501,13 @@
 
   .mobileFraudCheck {
     width: 35px;
+
     height: 35px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     flex: 0 0 35px;
@@ -2470,6 +2527,7 @@
     color: #286847;
 
     font-size: 10px;
+
     line-height: 1.3;
   }
 
@@ -2479,6 +2537,7 @@
     color: #748a7c;
 
     font-size: 8px;
+
     line-height: 1.5;
   }
 
@@ -2504,7 +2563,7 @@
       );
 
     box-shadow:
-      0 9px 26px rgba(184, 143, 42, 0.10);
+      0 9px 26px rgba(184, 143, 42, 0.1);
   }
 
   .mobilePaidPlanCard {
@@ -2540,6 +2599,7 @@
     color: #9b6e08;
 
     font-size: 7px;
+
     line-height: 1;
 
     font-weight: 800;
@@ -2555,6 +2615,7 @@
     color: #3b2d0b;
 
     font-size: 13px;
+
     line-height: 1.3;
 
     font-weight: 800;
@@ -2568,6 +2629,7 @@
     color: #786a4b;
 
     font-size: 8px;
+
     line-height: 1.5;
   }
 
@@ -2609,7 +2671,9 @@
 
   .mobileActivityEmpty {
     display: flex;
+
     flex-direction: column;
+
     align-items: center;
 
     padding:
@@ -2622,10 +2686,13 @@
 
   .mobileEmptyIcon {
     width: 43px;
+
     height: 43px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     margin-bottom: 9px;
@@ -2645,6 +2712,7 @@
     color: #526276;
 
     font-size: 11px;
+
     line-height: 1.3;
 
     font-weight: 800;
@@ -2658,6 +2726,7 @@
     color: #8a99aa;
 
     font-size: 8px;
+
     line-height: 1.5;
   }
 
@@ -2727,8 +2796,11 @@
     min-width: 0;
 
     display: flex;
+
     flex-direction: column;
+
     align-items: center;
+
     justify-content: center;
 
     gap: 4px;
@@ -2752,6 +2824,7 @@
 
   .bottomNavItem span {
     font-size: 7px;
+
     line-height: 1.2;
 
     font-weight: 600;
@@ -2762,7 +2835,7 @@
   }
 
   /* =======================================================
-     MOBILE FULLSCREEN MENU
+     MOBILE MENU
   ======================================================= */
 
   .mobileMenu {
@@ -2773,6 +2846,7 @@
     z-index: 200;
 
     display: flex;
+
     flex-direction: column;
 
     padding: 25px 20px;
@@ -2791,7 +2865,9 @@
 
   .mobileMenuHeader {
     display: flex;
+
     align-items: flex-start;
+
     justify-content: space-between;
 
     gap: 15px;
@@ -2801,6 +2877,7 @@
 
   .mobileMenuBrand {
     display: flex;
+
     align-items: center;
 
     gap: 8px;
@@ -2846,10 +2923,13 @@
 
   .closeMenu {
     width: 38px;
+
     height: 38px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     padding: 0;
@@ -2869,6 +2949,7 @@
 
   .mobileMenuNav {
     display: flex;
+
     flex-direction: column;
 
     gap: 5px;
@@ -2876,9 +2957,11 @@
 
   .mobileNavItem {
     width: 100%;
+
     min-height: 45px;
 
     display: flex;
+
     align-items: center;
 
     gap: 12px;
@@ -2917,10 +3000,13 @@
 
   .mobileNavIcon {
     width: 19px;
+
     height: 19px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     color: #8db9e9;
@@ -2999,6 +3085,7 @@
 
   .mobileUser {
     display: flex;
+
     align-items: center;
 
     gap: 10px;
@@ -3022,10 +3109,13 @@
 
   .mobileAvatar {
     width: 34px;
+
     height: 34px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     border-radius: 50%;
@@ -3066,6 +3156,7 @@
     min-height: 43px;
 
     display: flex;
+
     align-items: center;
 
     gap: 9px;
@@ -3110,7 +3201,7 @@
 
   .mobileContent {
     padding:
-      16px
+      5px
       12px
       94px;
   }
@@ -3118,7 +3209,7 @@
   .mobileWelcomeHeader {
     gap: 8px;
 
-    margin-bottom: 12px;
+    margin-bottom: 5px;
   }
 
   .mobileWelcomeText h1 {
@@ -3139,10 +3230,13 @@
     font-size: 7px;
   }
 
+  /*
+   * Keep the card SHORT on smaller phones too.
+   */
   .mobileHeroCard {
-    height: 190px;
+    height: 185px;
 
-    min-height: 190px;
+    min-height: 185px;
 
     padding:
       16px
@@ -3163,6 +3257,7 @@
     font-size: 7.7px;
 
     margin-top: 5px;
+
     margin-bottom: 7px;
   }
 
@@ -3174,6 +3269,9 @@
     font-size: 7.8px;
   }
 
+  /*
+   * Keep the image high and compact.
+   */
   .mobileHeroHouseImage {
     width: 205px;
 
@@ -3181,7 +3279,7 @@
 
     right: -5px;
 
-    bottom: 23px;
+    bottom: 34px;
   }
 
   .mobileVerificationChecklist {
@@ -3191,7 +3289,9 @@
 
     width: 136px;
 
-    padding: 5px 7px;
+    padding:
+      5px
+      7px;
   }
 
   .mobileVerificationChecklist div {
@@ -3211,7 +3311,7 @@
   .mobileHeroSlogan {
     right: 7px;
 
-    bottom: 14px;
+    bottom: 6px;
 
     font-size: 6.8px;
   }

@@ -20,21 +20,43 @@ type IconProps = {
 };
 
 /* ============================================================
-   PROPERTYSURE AI LOGO
+   PROPERTYsure AI BRANDING
+   EXTRACTED DIRECTLY FROM SIGN UP PAGE
 ============================================================ */
 
-function PropertySureLogo({
-  size = 25,
-}: IconProps) {
+function LogoMark({ size = 23 }: IconProps) {
   return (
     <span
-      className={styles.propertyLogo}
+      className={styles.brandDiamondMark}
       style={{
         fontSize: `${size}px`,
+        color: "#168eff",
+        lineHeight: 1,
       }}
       aria-hidden="true"
     >
       ◆
+    </span>
+  );
+}
+
+function PropertySureBrand({
+  className = "",
+}: {
+  className?: string;
+}) {
+  return (
+    <span
+      className={`${styles.topBrandText} ${className}`}
+    >
+      <span>
+        PropertySure
+        <strong> AI</strong>
+      </span>
+
+      <small>
+        AI-POWERED PROPERTY DUE DILIGENCE
+      </small>
     </span>
   );
 }
@@ -560,7 +582,6 @@ export default function SignInPage() {
       router.replace(
         "/dashboard"
       );
-
     } catch (err: any) {
       console.error(
         "OTP VERIFICATION ERROR:",
@@ -909,17 +930,15 @@ export default function SignInPage() {
           styles.page
         }
       >
-
         <div
           className={
             styles.verificationCard
           }
         >
-
           <button
             type="button"
             className={
-              styles.backButton
+              styles.verificationBackButton
             }
             onClick={() => {
               setShowVerification(
@@ -941,37 +960,18 @@ export default function SignInPage() {
               styles.verificationContent
             }
           >
-
-            <div
-              className={
-                styles.verificationBrand
+            <button
+              type="button"
+              className={`${styles.topBrand} ${styles.verificationBrand}`}
+              onClick={() =>
+                router.push("/")
               }
+              aria-label="PropertySure AI home"
             >
+              <LogoMark size={20} />
 
-              <PropertySureLogo
-                size={38}
-              />
-
-              <div
-                className={
-                  styles.verificationBrandName
-                }
-              >
-                PropertySure
-                <strong>
-                  {" "}AI
-                </strong>
-              </div>
-
-            </div>
-
-            <div
-              className={
-                styles.verificationBrandSubtitle
-              }
-            >
-              AI-POWERED PROPERTY DUE DILIGENCE
-            </div>
+              <PropertySureBrand />
+            </button>
 
             <div
               className={
@@ -1007,7 +1007,6 @@ export default function SignInPage() {
                 styles.otpContainer
               }
             >
-
               {[
                 0,
                 1,
@@ -1062,7 +1061,6 @@ export default function SignInPage() {
                   />
                 )
               )}
-
             </div>
 
             <div
@@ -1070,7 +1068,6 @@ export default function SignInPage() {
                 styles.verificationHint
               }
             >
-
               <div
                 className={
                   styles.verificationHintIcon
@@ -1086,7 +1083,6 @@ export default function SignInPage() {
                 to complete your
                 secure sign-in.
               </span>
-
             </div>
 
             {error && (
@@ -1154,7 +1150,6 @@ export default function SignInPage() {
                   ? "Sending..."
                   : "Resend code"}
               </button>
-
             </div>
 
             <div
@@ -1162,20 +1157,15 @@ export default function SignInPage() {
                 styles.secureText
               }
             >
-
               <LockIcon size={16} />
 
               <span>
                 Your account is protected
                 by PropertySure AI
               </span>
-
             </div>
-
           </div>
-
         </div>
-
       </main>
     );
   }
@@ -1190,7 +1180,6 @@ export default function SignInPage() {
         styles.page
       }
     >
-
       {/* ======================================================
           TOP BRAND / CREATE ACCOUNT
       ====================================================== */}
@@ -1200,7 +1189,6 @@ export default function SignInPage() {
           styles.topHeader
         }
       >
-
         <button
           type="button"
           className={
@@ -1211,28 +1199,9 @@ export default function SignInPage() {
           }
           aria-label="Go to PropertySure AI home"
         >
+          <LogoMark size={20} />
 
-          <PropertySureLogo
-            size={39}
-          />
-
-          <div
-            className={
-              styles.topBrandText
-            }
-          >
-            <span>
-              PropertySure
-              <strong>
-                {" "}AI
-              </strong>
-            </span>
-
-            <small>
-              AI-POWERED PROPERTY DUE DILIGENCE
-            </small>
-          </div>
-
+          <PropertySureBrand />
         </button>
 
         <div
@@ -1240,7 +1209,6 @@ export default function SignInPage() {
             styles.topSignup
           }
         >
-
           <span>
             Don't have an account?
           </span>
@@ -1255,54 +1223,46 @@ export default function SignInPage() {
           >
             Create an account
           </button>
-
         </div>
-
       </header>
 
       {/* ======================================================
-          BACK TO LANDING PAGE
+          BACK TO HOME
       ====================================================== */}
 
       <div
-        style={{
-          width: "100%",
-          maxWidth: "1400px",
-          margin: "0 auto",
-          padding: "0 32px",
-          boxSizing: "border-box",
-        }}
+        className={
+          styles.backRow
+        }
       >
-        <button
-          type="button"
-          onClick={() =>
-            router.push("/")
+        <div
+          className={
+            styles.backRowInner
           }
-          aria-label="Back to PropertySure AI landing page"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "7px",
-            border: "1px solid #d8e1eb",
-            background: "#ffffff",
-            color: "#1676c5",
-            borderRadius: "9px",
-            padding: "9px 13px",
-            marginTop: "4px",
-            marginBottom: "18px",
-            fontSize: "13px",
-            fontWeight: 700,
-            cursor: "pointer",
-            boxShadow:
-              "0 2px 8px rgba(16, 42, 67, 0.06)",
-          }}
         >
-          <ArrowLeftIcon />
+          <button
+            type="button"
+            className={
+              styles.backButton
+            }
+            onClick={() =>
+              router.push("/")
+            }
+            aria-label="Back to PropertySure AI home"
+          >
+            <span
+              className={
+                styles.backArrow
+              }
+            >
+              ←
+            </span>
 
-          <span>
-            Back
-          </span>
-        </button>
+            <span>
+              Back to Home
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* ======================================================
@@ -1314,9 +1274,9 @@ export default function SignInPage() {
           styles.mainLayout
         }
       >
-
         {/* ====================================================
-            LEFT SIDE
+            DESKTOP HERO
+            REMAINS INTACT ON DESKTOP
         ==================================================== */}
 
         <div
@@ -1324,7 +1284,6 @@ export default function SignInPage() {
             styles.heroPanel
           }
         >
-
           <div
             className={
               styles.heroEyebrow
@@ -1357,7 +1316,6 @@ export default function SignInPage() {
               styles.propertyVisual
             }
           >
-
             <img
               src="/property-visual.png"
               alt="Property verification and safer property decisions"
@@ -1365,9 +1323,7 @@ export default function SignInPage() {
                 styles.propertyImage
               }
             />
-
           </div>
-
         </div>
 
         {/* ====================================================
@@ -1379,46 +1335,11 @@ export default function SignInPage() {
             styles.signinCard
           }
         >
-
-          <div
-            className={
-              styles.cardBrand
-            }
-          >
-
-            <PropertySureLogo
-              size={38}
-            />
-
-            <div>
-              <div
-                className={
-                  styles.cardBrandName
-                }
-              >
-                PropertySure
-                <strong>
-                  {" "}AI
-                </strong>
-              </div>
-
-              <div
-                className={
-                  styles.cardBrandTagline
-                }
-              >
-                AI-POWERED PROPERTY DUE DILIGENCE
-              </div>
-            </div>
-
-          </div>
-
           <div
             className={
               styles.header
             }
           >
-
             <div
               className={
                 styles.eyebrow
@@ -1436,7 +1357,6 @@ export default function SignInPage() {
               journey with secure access to your
               dashboard.
             </p>
-
           </div>
 
           {error && (
@@ -1459,16 +1379,13 @@ export default function SignInPage() {
             </div>
           )}
 
-          {/* ==================================================
-              EMAIL
-          ================================================== */}
+          {/* EMAIL */}
 
           <div
             className={
               styles.fieldGroup
             }
           >
-
             <label>
               Email Address
             </label>
@@ -1478,7 +1395,6 @@ export default function SignInPage() {
                 styles.inputBox
               }
             >
-
               <div
                 className={
                   styles.fieldIcon
@@ -1504,21 +1420,16 @@ export default function SignInPage() {
                   loading
                 }
               />
-
             </div>
-
           </div>
 
-          {/* ==================================================
-              PASSWORD
-          ================================================== */}
+          {/* PASSWORD */}
 
           <div
             className={
               styles.fieldGroup
             }
           >
-
             <label>
               Password
             </label>
@@ -1528,7 +1439,6 @@ export default function SignInPage() {
                 styles.passwordBox
               }
             >
-
               <div
                 className={
                   styles.fieldIcon
@@ -1577,27 +1487,21 @@ export default function SignInPage() {
               >
                 <EyeIcon />
               </button>
-
             </div>
-
           </div>
 
-          {/* ==================================================
-              ACCOUNT OPTIONS
-          ================================================== */}
+          {/* ACCOUNT OPTIONS */}
 
           <div
             className={
               styles.accountOptions
             }
           >
-
             <label
               className={
                 styles.remember
               }
             >
-
               <input
                 type="checkbox"
                 checked={
@@ -1613,7 +1517,6 @@ export default function SignInPage() {
               <span>
                 Remember me
               </span>
-
             </label>
 
             <button
@@ -1630,12 +1533,9 @@ export default function SignInPage() {
             >
               Forgot password?
             </button>
-
           </div>
 
-          {/* ==================================================
-              SIGN IN BUTTON
-          ================================================== */}
+          {/* SIGN IN BUTTON */}
 
           <button
             type="button"
@@ -1650,7 +1550,6 @@ export default function SignInPage() {
               googleLoading
             }
           >
-
             <span>
               {loading
                 ? "Checking Account..."
@@ -1660,19 +1559,15 @@ export default function SignInPage() {
             {!loading && (
               <ArrowRightIcon />
             )}
-
           </button>
 
-          {/* ==================================================
-              SECURITY MESSAGE
-          ================================================== */}
+          {/* SECURITY MESSAGE */}
 
           <div
             className={
               styles.securityMessage
             }
           >
-
             <div
               className={
                 styles.securityIcon
@@ -1688,19 +1583,15 @@ export default function SignInPage() {
               we'll send a security code to
               your email.
             </span>
-
           </div>
 
-          {/* ==================================================
-              DIVIDER
-          ================================================== */}
+          {/* DIVIDER */}
 
           <div
             className={
               styles.divider
             }
           >
-
             <span />
 
             <div>
@@ -1708,12 +1599,9 @@ export default function SignInPage() {
             </div>
 
             <span />
-
           </div>
 
-          {/* ==================================================
-              GOOGLE
-          ================================================== */}
+          {/* GOOGLE */}
 
           <button
             type="button"
@@ -1728,7 +1616,6 @@ export default function SignInPage() {
               googleLoading
             }
           >
-
             <GoogleIcon />
 
             <span>
@@ -1736,19 +1623,15 @@ export default function SignInPage() {
                 ? "Connecting..."
                 : "Continue with Google"}
             </span>
-
           </button>
 
-          {/* ==================================================
-              MOBILE SIGN UP
-          ================================================== */}
+          {/* MOBILE SIGN UP */}
 
           <div
             className={
               styles.signupText
             }
           >
-
             Don't have an account?{" "}
 
             <button
@@ -1761,11 +1644,8 @@ export default function SignInPage() {
             >
               Create an account
             </button>
-
           </div>
-
         </div>
-
       </section>
 
       {/* ======================================================
@@ -1777,13 +1657,11 @@ export default function SignInPage() {
           styles.trustFeatures
         }
       >
-
         <div
           className={
             styles.trustFeature
           }
         >
-
           <div
             className={
               styles.trustIcon
@@ -1803,7 +1681,6 @@ export default function SignInPage() {
               Across the property industry
             </span>
           </div>
-
         </div>
 
         <div
@@ -1817,7 +1694,6 @@ export default function SignInPage() {
             styles.trustFeature
           }
         >
-
           <div
             className={
               styles.trustIcon
@@ -1837,7 +1713,6 @@ export default function SignInPage() {
               Smarter tools. Safer decisions.
             </span>
           </div>
-
         </div>
 
         <div
@@ -1851,7 +1726,6 @@ export default function SignInPage() {
             styles.trustFeature
           }
         >
-
           <div
             className={
               styles.trustIcon
@@ -1871,11 +1745,8 @@ export default function SignInPage() {
               Powered by AI
             </span>
           </div>
-
         </div>
-
       </section>
-
     </main>
   );
 }

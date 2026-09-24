@@ -8,11 +8,19 @@ import {
   useState,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+
 import AppShell from "../../AppShell/AppShell";
+import LoadingScreen from "../../AppShell/LoadingScreen";
+import VerificationWorkflow from "../components/VerificationWorkflow";
+
 import { supabase } from "../../lib/supabase";
+
 import styles from "./checkout.module.css";
 
-type PlanKey = "essential" | "professional" | "premium";
+type PlanKey =
+  | "essential"
+  | "professional"
+  | "premium";
 
 type Plan = {
   name: string;
@@ -24,17 +32,22 @@ const PLANS: Record<PlanKey, Plan> = {
   essential: {
     name: "Essential",
     price: 299999,
-    description: "Fast AI-powered property document verification",
+    description:
+      "Basic document-level verification for property owners, buyers and sellers.",
   },
+
   professional: {
     name: "Professional",
     price: 549999,
-    description: "Advanced verification with ownership and registry checks",
+    description:
+      "Comprehensive title, ownership, survey and regulatory verification for property buyers and investors.",
   },
+
   premium: {
     name: "Premium",
     price: 999999,
-    description: "Full property due diligence and professional review",
+    description:
+      "Complete property and site due diligence combining documents, government searches, planning, building, litigation and physical verification.",
   },
 };
 
@@ -44,11 +57,6 @@ function CheckoutPageContent() {
 
   /*
    * Always start Checkout at the top when the page is mounted.
-   *
-   * This prevents the browser from restoring the previous scroll
-   * position after returning from Select Plan through Change Plan.
-   *
-   * No layout, workflow, payment, or styling behavior is changed.
    */
   useLayoutEffect(() => {
     window.scrollTo({
@@ -58,8 +66,12 @@ function CheckoutPageContent() {
     });
   }, []);
 
-  const verificationId = searchParams.get("id") || "";
-  const planParam = searchParams.get("plan") || "professional";
+  const verificationId =
+    searchParams.get("id") || "";
+
+  const planParam =
+    searchParams.get("plan") ||
+    "professional";
 
   const selectedPlanKey: PlanKey =
     planParam === "essential" ||
@@ -73,35 +85,51 @@ function CheckoutPageContent() {
     [selectedPlanKey],
   );
 
-  const [documentCount, setDocumentCount] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [paymentLoading, setPaymentLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [documentCount, setDocumentCount] =
+    useState<number | null>(null);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [paymentLoading, setPaymentLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
 
   useEffect(() => {
     let mounted = true;
 
-    const loadCheckoutData = async () => {
-      try {
-        /*
-         * The verification ID is intentionally kept in the URL.
-         * The payment API uses this ID to retrieve and validate
-         * the real verification record and document package.
-         */
+    const loadCheckoutData =
+      async () => {
+        try {
+          /*
+           * The verification ID remains in the URL.
+           *
+           * The payment API uses this ID to retrieve
+           * and validate the actual verification record
+           * and document package.
+           */
 
-        if (mounted) {
-          // Document count will be loaded from the verification record
-          // as the checkout data layer is expanded.
-          setDocumentCount(null);
-          setLoading(false);
+          if (mounted) {
+            /*
+             * Document count will be loaded from the
+             * verification record as the checkout data
+             * layer is expanded.
+             */
+            setDocumentCount(null);
+            setLoading(false);
+          }
+        } catch {
+          if (mounted) {
+            setError(
+              "Unable to load checkout details.",
+            );
+
+            setLoading(false);
+          }
         }
-      } catch {
-        if (mounted) {
-          setError("Unable to load checkout details.");
-          setLoading(false);
-        }
-      }
-    };
+      };
 
     loadCheckoutData();
 
@@ -110,34 +138,41 @@ function CheckoutPageContent() {
     };
   }, [verificationId]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      maximumFractionDigits: 0,
-    }).format(amount);
+  const formatCurrency = (
+    amount: number,
+  ) => {
+    return new Intl.NumberFormat(
+      "en-NG",
+      {
+        style: "currency",
+        currency: "NGN",
+        maximumFractionDigits: 0,
+      },
+    ).format(amount);
   };
 
   /*
-   * IMPORTANT:
-   * Use the same Next.js client-side navigation pattern as Select Plan.
-   * Do not use window.location.href here.
-   *
-   * This keeps the checkout route transition inside the Next.js app
-   * and prevents the workflow/layout from being affected by a full
-   * browser navigation when the customer changes their plan.
+   * Return to Select Plan while preserving
+   * the verification ID.
    */
   const goBackToPlan = () => {
     const query = verificationId
-      ? `?id=${encodeURIComponent(verificationId)}`
+      ? `?id=${encodeURIComponent(
+          verificationId,
+        )}`
       : "";
 
-    router.push(`/verify/select-plan${query}`);
+    router.push(
+      `/verify/select-plan${query}`,
+    );
   };
 
   const handlePayment = async () => {
     if (!verificationId) {
-      setError("Verification ID is missing.");
+      setError(
+        "Verification ID is missing.",
+      );
+
       return;
     }
 
@@ -146,49 +181,56 @@ function CheckoutPageContent() {
 
     try {
       /*
-       * Get the currently authenticated Supabase session.
-       *
-       * The payment API uses the access token to verify that the
-       * current user owns the verification being paid for.
+       * Get the authenticated Supabase session.
        */
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } =
+        await supabase.auth.getSession();
 
       if (!session?.access_token) {
         setError(
           "Your session has expired. Please refresh the page and try again.",
         );
+
         setPaymentLoading(false);
+
         return;
       }
 
       /*
-       * Send only the verification ID and selected plan.
+       * Send only the verification ID and
+       * selected plan.
        *
        * The server determines the official price.
-       * The browser is NOT trusted to determine the payment amount.
        */
-      const response = await fetch(
-        "/api/payments/paystack/initialize",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
-            verificationId,
-            plan: selectedPlanKey,
-          }),
-        },
-      );
+      const response =
+        await fetch(
+          "/api/payments/paystack/initialize",
+          {
+            method: "POST",
 
-      const data = await response.json();
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              Authorization: `Bearer ${session.access_token}`,
+            },
+
+            body: JSON.stringify({
+              verificationId,
+              plan: selectedPlanKey,
+            }),
+          },
+        );
+
+      const data =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data?.error || "Unable to initialize payment.",
+          data?.error ||
+            "Unable to initialize payment.",
         );
       }
 
@@ -199,12 +241,16 @@ function CheckoutPageContent() {
       }
 
       /*
-       * Paystack has successfully initialized the transaction.
-       * Redirect the customer to the secure Paystack checkout page.
+       * Paystack has initialized the transaction.
+       * Redirect to the secure Paystack checkout.
        */
-      window.location.href = data.authorizationUrl;
+      window.location.href =
+        data.authorizationUrl;
     } catch (paymentError) {
-      console.error("Payment initialization error:", paymentError);
+      console.error(
+        "Payment initialization error:",
+        paymentError,
+      );
 
       setError(
         paymentError instanceof Error
@@ -217,20 +263,7 @@ function CheckoutPageContent() {
   };
 
   if (loading) {
-    return (
-      <div className={styles.loadingScreen}>
-        <div className={styles.loadingLogo}>◇</div>
-        <div className={styles.loadingTitle}>PropertySure AI</div>
-
-        <div className={styles.loadingDots}>
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <div className={styles.loadingText}>Loading...</div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -242,193 +275,159 @@ function CheckoutPageContent() {
         <div className={styles.container}>
 
           {/* =====================================================
-              VERIFICATION WORKFLOW
-              Same structure and wording as Select Plan.
-              Step 4 is active on Secure Checkout.
-              ===================================================== */}
+              SHARED SEVEN-STEP VERIFICATION WORKFLOW
 
-          <section
-            className={styles.workflow}
-            aria-label="Verification workflow"
-          >
-            {/* STEP 1 */}
+              Step 6 = Secure Checkout
+          ===================================================== */}
 
-            <div className={styles.workflowItem}>
-              <span
-                className={styles.workflowNumberDone}
-              >
-                ✓
-              </span>
+          <VerificationWorkflow
+            activeStep={6}
+            backHref={
+              verificationId
+                ? `/verify/select-plan?id=${encodeURIComponent(
+                    verificationId,
+                  )}`
+                : "/verify/select-plan"
+            }
+            backLabel="Back to Select Plan"
+            showTopBack={true}
+            showBottomActions={false}
+            showSecurityNote={false}
+          />
 
-              <div>
-                <strong>
-                  Upload Documents
-                </strong>
-
-                <span>
-                  Add your property documents
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={styles.workflowLineActive}
-            />
-
-            {/* STEP 2 */}
-
-            <div className={styles.workflowItem}>
-              <span
-                className={styles.workflowNumberDone}
-              >
-                ✓
-              </span>
-
-              <div>
-                <strong>
-                  Review Package
-                </strong>
-
-                <span>
-                  Confirm your documents
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={styles.workflowLineActive}
-            />
-
-            {/* STEP 3 */}
-
-            <div className={styles.workflowItem}>
-              <span
-                className={styles.workflowNumberDone}
-              >
-                ✓
-              </span>
-
-              <div>
-                <strong>
-                  Select Plan
-                </strong>
-
-                <span>
-                  Choose your service
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={styles.workflowLineActive}
-            />
-
-            {/* STEP 4 */}
-
-            <div
-              className={`${styles.workflowItem} ${styles.workflowCurrent}`}
-            >
-              <span
-                className={styles.workflowNumberActive}
-              >
-                4
-              </span>
-
-              <div>
-                <strong>
-                  Secure Checkout
-                </strong>
-
-                <span>
-                  Complete payment
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={styles.workflowLine}
-            />
-
-            {/* STEP 5 */}
-
-            <div className={styles.workflowItem}>
-              <span
-                className={styles.workflowNumber}
-              >
-                5
-              </span>
-
-              <div>
-                <strong>
-                  Verification
-                </strong>
-
-                <span>
-                  AI analysis and results
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* Header */}
+          {/* =====================================================
+              HEADER
+          ===================================================== */}
 
           <div className={styles.header}>
             <div>
-              <div className={styles.eyebrow}>
+              <div
+                className={styles.eyebrow}
+              >
                 PROPERTY VERIFICATION
               </div>
 
-              <h1>Secure Checkout</h1>
+              <h1>
+                Secure Checkout
+              </h1>
 
               <p>
-                Complete your payment to begin your PropertySure AI
+                Complete your payment to begin
+                your PropertySure AI
                 verification.
               </p>
             </div>
 
-            <div className={styles.secureBadge}>
-              <span className={styles.lockIcon}>✓</span>
+            <div
+              className={
+                styles.secureBadge
+              }
+            >
+              <span
+                className={
+                  styles.lockIcon
+                }
+              >
+                ✓
+              </span>
+
               Secure Checkout
             </div>
           </div>
 
-          {/* Error */}
+          {/* =====================================================
+              ERROR
+          ===================================================== */}
 
           {error && (
-            <div className={styles.errorBanner}>
-              <span className={styles.errorIcon}>!</span>
+            <div
+              className={
+                styles.errorBanner
+              }
+            >
+              <span
+                className={
+                  styles.errorIcon
+                }
+              >
+                !
+              </span>
+
               <span>{error}</span>
             </div>
           )}
 
-          {/* Main checkout grid */}
+          {/* =====================================================
+              MAIN CHECKOUT GRID
+          ===================================================== */}
 
-          <div className={styles.checkoutGrid}>
+          <div
+            className={
+              styles.checkoutGrid
+            }
+          >
 
-            {/* Left column */}
+            {/* =================================================
+                LEFT COLUMN
+            ================================================= */}
 
-            <div className={styles.leftColumn}>
+            <div
+              className={
+                styles.leftColumn
+              }
+            >
 
-              {/* Verification summary */}
+              {/* ===============================================
+                  VERIFICATION SUMMARY
+              =============================================== */}
 
-              <section className={styles.card}>
-                <div className={styles.cardHeader}>
+              <section
+                className={styles.card}
+              >
+                <div
+                  className={
+                    styles.cardHeader
+                  }
+                >
                   <div>
-                    <span className={styles.cardEyebrow}>
+                    <span
+                      className={
+                        styles.cardEyebrow
+                      }
+                    >
                       VERIFICATION SUMMARY
                     </span>
 
-                    <h2>Your Property Verification</h2>
+                    <h2>
+                      Your Property
+                      Verification
+                    </h2>
                   </div>
 
-                  <div className={styles.statusBadge}>
+                  <div
+                    className={
+                      styles.statusBadge
+                    }
+                  >
                     Ready for payment
                   </div>
                 </div>
 
-                <div className={styles.summaryGrid}>
-                  <div className={styles.summaryItem}>
-                    <span className={styles.summaryLabel}>
+                <div
+                  className={
+                    styles.summaryGrid
+                  }
+                >
+                  <div
+                    className={
+                      styles.summaryItem
+                    }
+                  >
+                    <span
+                      className={
+                        styles.summaryLabel
+                      }
+                    >
                       Verification ID
                     </span>
 
@@ -439,20 +438,37 @@ function CheckoutPageContent() {
                     </strong>
                   </div>
 
-                  <div className={styles.summaryItem}>
-                    <span className={styles.summaryLabel}>
+                  <div
+                    className={
+                      styles.summaryItem
+                    }
+                  >
+                    <span
+                      className={
+                        styles.summaryLabel
+                      }
+                    >
                       Documents
                     </span>
 
                     <strong>
-                      {documentCount !== null
+                      {documentCount !==
+                      null
                         ? `${documentCount} Documents`
                         : "Document package"}
                     </strong>
                   </div>
 
-                  <div className={styles.summaryItem}>
-                    <span className={styles.summaryLabel}>
+                  <div
+                    className={
+                      styles.summaryItem
+                    }
+                  >
+                    <span
+                      className={
+                        styles.summaryLabel
+                      }
+                    >
                       Service
                     </span>
 
@@ -461,8 +477,16 @@ function CheckoutPageContent() {
                     </strong>
                   </div>
 
-                  <div className={styles.summaryItem}>
-                    <span className={styles.summaryLabel}>
+                  <div
+                    className={
+                      styles.summaryItem
+                    }
+                  >
+                    <span
+                      className={
+                        styles.summaryLabel
+                      }
+                    >
                       Payment
                     </span>
 
@@ -473,80 +497,152 @@ function CheckoutPageContent() {
                 </div>
               </section>
 
-              {/* Selected plan */}
+              {/* ===============================================
+                  SELECTED PLAN
+              =============================================== */}
 
-              <section className={styles.card}>
-                <div className={styles.cardHeader}>
+              <section
+                className={styles.card}
+              >
+                <div
+                  className={
+                    styles.cardHeader
+                  }
+                >
                   <div>
-                    <span className={styles.cardEyebrow}>
+                    <span
+                      className={
+                        styles.cardEyebrow
+                      }
+                    >
                       SELECTED PLAN
                     </span>
 
-                    <h2>{selectedPlan.name}</h2>
+                    <h2>
+                      {selectedPlan.name}
+                    </h2>
                   </div>
 
                   <button
                     type="button"
-                    className={styles.changePlanButton}
-                    onClick={goBackToPlan}
-                    disabled={paymentLoading}
+                    className={
+                      styles.changePlanButton
+                    }
+                    onClick={
+                      goBackToPlan
+                    }
+                    disabled={
+                      paymentLoading
+                    }
                   >
                     Change Plan
                   </button>
                 </div>
 
-                <div className={styles.planDetails}>
-                  <div className={styles.planIcon}>
+                <div
+                  className={
+                    styles.planDetails
+                  }
+                >
+                  <div
+                    className={
+                      styles.planIcon
+                    }
+                  >
                     ✓
                   </div>
 
-                  <div className={styles.planContent}>
+                  <div
+                    className={
+                      styles.planContent
+                    }
+                  >
                     <h3>
-                      {selectedPlan.name} Verification
+                      {selectedPlan.name}{" "}
+                      Verification
                     </h3>
 
                     <p>
-                      {selectedPlan.description}
+                      {
+                        selectedPlan.description
+                      }
                     </p>
                   </div>
 
-                  <div className={styles.planPrice}>
-                    {formatCurrency(selectedPlan.price)}
+                  <div
+                    className={
+                      styles.planPrice
+                    }
+                  >
+                    {formatCurrency(
+                      selectedPlan.price,
+                    )}
                   </div>
                 </div>
               </section>
 
-              {/* Secure payment information */}
+              {/* ===============================================
+                  SECURE PAYMENT INFORMATION
+              =============================================== */}
 
-              <section className={styles.securityCard}>
-                <div className={styles.securityIcon}>
+              <section
+                className={
+                  styles.securityCard
+                }
+              >
+                <div
+                  className={
+                    styles.securityIcon
+                  }
+                >
                   🔒
                 </div>
 
-                <div className={styles.securityContent}>
+                <div
+                  className={
+                    styles.securityContent
+                  }
+                >
                   <h3>
                     Secure Payment
                   </h3>
 
                   <p>
-                    Your payment will be securely processed through
-                    Paystack. PropertySure AI does not store your card
+                    Your payment will be
+                    securely processed
+                    through Paystack.
+                    PropertySure AI does
+                    not store your card
                     details.
                   </p>
 
-                  <div className={styles.securityFeatures}>
+                  <div
+                    className={
+                      styles.securityFeatures
+                    }
+                  >
                     <div>
-                      <span>✓</span>
-                      Secure payment processing
+                      <span>
+                        ✓
+                      </span>
+
+                      Secure payment
+                      processing
                     </div>
 
                     <div>
-                      <span>✓</span>
+                      <span>
+                        ✓
+                      </span>
+
                       One-time payment
                     </div>
 
                     <div>
-                      <span>✓</span>
+                      <span>
+                        ✓
+                      </span>
+
                       Payment receipt
                     </div>
                   </div>
@@ -554,11 +650,25 @@ function CheckoutPageContent() {
               </section>
             </div>
 
-            {/* Right column */}
+            {/* =================================================
+                RIGHT COLUMN
+            ================================================= */}
 
-            <aside className={styles.orderCard}>
-              <div className={styles.orderHeader}>
-                <span className={styles.cardEyebrow}>
+            <aside
+              className={
+                styles.orderCard
+              }
+            >
+              <div
+                className={
+                  styles.orderHeader
+                }
+              >
+                <span
+                  className={
+                    styles.cardEyebrow
+                  }
+                >
                   ORDER SUMMARY
                 </span>
 
@@ -567,9 +677,17 @@ function CheckoutPageContent() {
                 </h2>
               </div>
 
-              <div className={styles.orderPlan}>
+              <div
+                className={
+                  styles.orderPlan
+                }
+              >
                 <div>
-                  <span className={styles.orderPlanLabel}>
+                  <span
+                    className={
+                      styles.orderPlanLabel
+                    }
+                  >
                     Plan
                   </span>
 
@@ -578,24 +696,42 @@ function CheckoutPageContent() {
                   </strong>
                 </div>
 
-                <span className={styles.orderPlanTag}>
+                <span
+                  className={
+                    styles.orderPlanTag
+                  }
+                >
                   One-time
                 </span>
               </div>
 
-              <div className={styles.divider} />
+              <div
+                className={
+                  styles.divider
+                }
+              />
 
-              <div className={styles.priceRow}>
+              <div
+                className={
+                  styles.priceRow
+                }
+              >
                 <span>
                   Verification service
                 </span>
 
                 <strong>
-                  {formatCurrency(selectedPlan.price)}
+                  {formatCurrency(
+                    selectedPlan.price,
+                  )}
                 </strong>
               </div>
 
-              <div className={styles.priceRow}>
+              <div
+                className={
+                  styles.priceRow
+                }
+              >
                 <span>
                   Processing fee
                 </span>
@@ -605,9 +741,17 @@ function CheckoutPageContent() {
                 </strong>
               </div>
 
-              <div className={styles.divider} />
+              <div
+                className={
+                  styles.divider
+                }
+              />
 
-              <div className={styles.totalRow}>
+              <div
+                className={
+                  styles.totalRow
+                }
+              >
                 <div>
                   <span>
                     Total
@@ -619,14 +763,20 @@ function CheckoutPageContent() {
                 </div>
 
                 <strong>
-                  {formatCurrency(selectedPlan.price)}
+                  {formatCurrency(
+                    selectedPlan.price,
+                  )}
                 </strong>
               </div>
 
               <button
                 type="button"
-                className={styles.payButton}
-                onClick={handlePayment}
+                className={
+                  styles.payButton
+                }
+                onClick={
+                  handlePayment
+                }
                 disabled={
                   paymentLoading ||
                   !verificationId
@@ -635,41 +785,76 @@ function CheckoutPageContent() {
                 {paymentLoading ? (
                   <>
                     <span
-                      className={styles.buttonSpinner}
+                      className={
+                        styles.buttonSpinner
+                      }
                     />
+
                     Preparing Payment...
                   </>
                 ) : (
                   <>
                     Pay{" "}
-                    {formatCurrency(selectedPlan.price)}
-                    <span>→</span>
+                    {formatCurrency(
+                      selectedPlan.price,
+                    )}
+
+                    <span>
+                      →
+                    </span>
                   </>
                 )}
               </button>
 
               <button
                 type="button"
-                className={styles.backButton}
-                onClick={goBackToPlan}
-                disabled={paymentLoading}
+                className={
+                  styles.backButton
+                }
+                onClick={
+                  goBackToPlan
+                }
+                disabled={
+                  paymentLoading
+                }
               >
                 <span>←</span>
+
                 Back to Select Plan
               </button>
 
-              <p className={styles.paymentNote}>
-                You will be redirected to the secure Paystack payment
-                page to complete your transaction.
+              <p
+                className={
+                  styles.paymentNote
+                }
+              >
+                You will be redirected to
+                the secure Paystack payment
+                page to complete your
+                transaction.
               </p>
             </aside>
           </div>
 
-          {/* Bottom trust section */}
+          {/* =====================================================
+              BOTTOM TRUST SECTION
+          ===================================================== */}
 
-          <section className={styles.trustSection}>
-            <div className={styles.trustItem}>
-              <div className={styles.trustIcon}>
+          <section
+            className={
+              styles.trustSection
+            }
+          >
+            <div
+              className={
+                styles.trustItem
+              }
+            >
+              <div
+                className={
+                  styles.trustIcon
+                }
+              >
                 🔒
               </div>
 
@@ -679,15 +864,28 @@ function CheckoutPageContent() {
                 </strong>
 
                 <span>
-                  Protected payment processing
+                  Protected payment
+                  processing
                 </span>
               </div>
             </div>
 
-            <div className={styles.trustDivider} />
+            <div
+              className={
+                styles.trustDivider
+              }
+            />
 
-            <div className={styles.trustItem}>
-              <div className={styles.trustIcon}>
+            <div
+              className={
+                styles.trustItem
+              }
+            >
+              <div
+                className={
+                  styles.trustIcon
+                }
+              >
                 ✓
               </div>
 
@@ -702,10 +900,22 @@ function CheckoutPageContent() {
               </div>
             </div>
 
-            <div className={styles.trustDivider} />
+            <div
+              className={
+                styles.trustDivider
+              }
+            />
 
-            <div className={styles.trustItem}>
-              <div className={styles.trustIcon}>
+            <div
+              className={
+                styles.trustItem
+              }
+            >
+              <div
+                className={
+                  styles.trustIcon
+                }
+              >
                 ▣
               </div>
 
@@ -715,7 +925,8 @@ function CheckoutPageContent() {
                 </strong>
 
                 <span>
-                  Payment confirmation provided
+                  Payment confirmation
+                  provided
                 </span>
               </div>
             </div>
@@ -727,35 +938,15 @@ function CheckoutPageContent() {
 }
 
 /*
- * Next.js production-build requirement:
- *
- * useSearchParams() is used inside CheckoutPageContent.
- * The page itself therefore renders that component inside
- * a Suspense boundary so static generation/export can complete.
- *
- * No checkout functionality or visual layout is changed.
+ * useSearchParams() is inside CheckoutPageContent,
+ * so keep the Suspense boundary for Next.js production builds.
  */
+
 export default function CheckoutPage() {
   return (
     <Suspense
       fallback={
-        <div className={styles.loadingScreen}>
-          <div className={styles.loadingLogo}>◇</div>
-
-          <div className={styles.loadingTitle}>
-            PropertySure AI
-          </div>
-
-          <div className={styles.loadingDots}>
-            <span />
-            <span />
-            <span />
-          </div>
-
-          <div className={styles.loadingText}>
-            Loading...
-          </div>
-        </div>
+        <LoadingScreen />
       }
     >
       <CheckoutPageContent />

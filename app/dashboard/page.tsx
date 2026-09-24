@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { supabase } from "../lib/supabase";
+import AppShell from "../AppShell/AppShell";
+import LoadingScreen from "../AppShell/LoadingScreen";
+
 import styles from "./dashboard.module.css";
 
 type DashboardUser = {
@@ -15,15 +18,6 @@ type DashboardUser = {
 };
 
 type IconName =
-  | "dashboard"
-  | "verify"
-  | "properties"
-  | "history"
-  | "fraud"
-  | "reports"
-  | "account"
-  | "settings"
-  | "bell"
   | "calendar"
   | "check"
   | "clock"
@@ -31,21 +25,10 @@ type IconName =
   | "document"
   | "shield"
   | "crown"
-  | "arrow"
-  | "menu"
-  | "close";
+  | "arrow";
 
 function Icon({ name }: { name: IconName }) {
   const icons: Record<IconName, string> = {
-    dashboard: "▦",
-    verify: "⇧",
-    properties: "⌂",
-    history: "◷",
-    fraud: "◈",
-    reports: "▤",
-    account: "◯",
-    settings: "⚙",
-    bell: "🔔",
     calendar: "▣",
     check: "✓",
     clock: "◷",
@@ -54,8 +37,6 @@ function Icon({ name }: { name: IconName }) {
     shield: "◇",
     crown: "♛",
     arrow: "→",
-    menu: "☰",
-    close: "×",
   };
 
   return (
@@ -139,52 +120,19 @@ export default function DashboardPage() {
   const [loadingUser, setLoadingUser] =
     useState(true);
 
-  const [menuOpen, setMenuOpen] =
-    useState(false);
-
   const [currentDate, setCurrentDate] =
     useState<Date | null>(null);
 
   const navigateTo = (path: string) => {
-    setMenuOpen(false);
     router.push(path);
   };
 
-  const navItems = [
-    {
-      icon: "dashboard" as IconName,
-      label: "Dashboard",
-      path: "/dashboard",
-    },
-    {
-      icon: "verify" as IconName,
-      label: "Verify Property",
-      path: "/verify",
-    },
-    {
-      icon: "properties" as IconName,
-      label: "My Properties",
-      path: "/my-properties",
-    },
-    {
-      icon: "history" as IconName,
-      label: "Verification History",
-      path: "/verification-history",
-    },
-    {
-      icon: "fraud" as IconName,
-      label: "Fraud Watch",
-      path: "/fraud-watch",
-    },
-    {
-      icon: "reports" as IconName,
-      label: "Reports",
-      path: "/reports",
-    },
-  ];
-
   useEffect(() => {
     setCurrentDate(new Date());
+
+    const timeInterval = window.setInterval(() => {
+      setCurrentDate(new Date());
+    }, 60 * 1000);
 
     let mounted = true;
 
@@ -229,7 +177,7 @@ export default function DashboardPage() {
         const fallbackName = email
           ? email
               .split("@")[0]
-              .replace(/[._-]+/g, " ")
+              .replace(/[.\_-]+/g, " ")
               .replace(
                 /\b\w/g,
                 (letter: string) =>
@@ -283,23 +231,9 @@ export default function DashboardPage() {
 
     return () => {
       mounted = false;
+      window.clearInterval(timeInterval);
     };
   }, [router]);
-
-  const handleSignOut = async () => {
-    try {
-      setMenuOpen(false);
-
-      await supabase.auth.signOut();
-
-      router.replace("/signin");
-    } catch (error) {
-      console.error(
-        "Sign out error:",
-        error
-      );
-    }
-  };
 
   const planName =
     user.plan || "Free Plan";
@@ -312,25 +246,8 @@ export default function DashboardPage() {
       .toLowerCase()
       .includes("free");
 
-  const isPremium =
-    planName
-      .toLowerCase()
-      .includes("premium");
-
   const isPaid =
     !isFree;
-
-  const desktopDate = currentDate
-    ? new Intl.DateTimeFormat(
-        "en-GB",
-        {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        }
-      ).format(currentDate)
-    : "";
 
   const mobileDate = currentDate
     ? new Intl.DateTimeFormat(
@@ -346,379 +263,81 @@ export default function DashboardPage() {
 
   /*
    * =========================================================
-   * LOADING SCREEN
+   * TIME-BASED DASHBOARD GREETING
    * =========================================================
    *
-   * This is intentionally simple and branded.
-   * The same loading pattern can be reused on other pages.
+   * Before 12:00 PM  -> Good morning
+   * 12:00 PM–5:59 PM -> Good afternoon
+   * 6:00 PM onward    -> Good evening
+   *
+   * The current time is refreshed every 60 seconds
+   * so the greeting automatically changes while the
+   * Dashboard remains open.
+   *
+   * Falls back to "Hello" while currentDate
+   * has not yet been initialized.
+   */
+
+  const greeting = currentDate
+    ? currentDate.getHours() < 12
+      ? "Good morning"
+      : currentDate.getHours() < 18
+        ? "Good afternoon"
+        : "Good evening"
+    : "Hello";
+
+  /*
+   * =========================================================
+   * SHARED DASHBOARD LOADING SCREEN
+   * =========================================================
+   *
+   * Uses the same shared LoadingScreen component
+   * used by the other AppShell pages.
    */
 
   if (loadingUser) {
-    return (
-      <main
-        className={
-          styles.loadingPage
-        }
-      >
-        <div
-          className={
-            styles.loadingBrand
-          }
-        >
-          <span
-            className={
-              styles.loadingDiamond
-            }
-          />
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </div>
-
-        <div
-          className={
-            styles.loadingIndicator
-          }
-          aria-hidden="true"
-        >
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <p className={styles.loadingText}>
-          Loading...
-        </p>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
+  /*
+   * =========================================================
+   * SHARED APP SHELL
+   * =========================================================
+   *
+   * AppShell now provides:
+   *
+   * Desktop:
+   * - Sidebar
+   * - Top header
+   * - Account section
+   * - Settings
+   * - Support
+   * - User/profile area
+   *
+   * Mobile:
+   * - Mobile header
+   * - Mobile menu
+   * - Bottom navigation
+   *
+   * The Dashboard content below remains unchanged.
+   */
+
   return (
-    <main className={styles.dashboard}>
-
-      {/* ==================================================
-          DESKTOP SIDEBAR
-      ================================================== */}
-
-      <aside className={styles.sidebar}>
-        <button
-          className={styles.brand}
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <div
-            className={
-              styles.brandDiamond
-            }
-          >
-            ◆
-          </div>
-
-          <div>
-            <div
-              className={
-                styles.brandName
-              }
-            >
-              PropertySure
-              <strong> AI</strong>
-            </div>
-
-            <div
-              className={
-                styles.brandSubtitle
-              }
-            >
-              AI-Powered Property
-              <br />
-              Due Diligence
-            </div>
-          </div>
-        </button>
-
-        <nav
-          className={
-            styles.sidebarNav
-          }
-        >
-          {navItems.map((item) => (
-            <button
-              key={item.path}
-              className={`${
-                styles.navItem
-              } ${
-                item.path ===
-                "/dashboard"
-                  ? styles.active
-                  : ""
-              }`}
-              onClick={() =>
-                navigateTo(item.path)
-              }
-            >
-              <span
-                className={
-                  styles.navIcon
-                }
-              >
-                <Icon
-                  name={item.icon}
-                />
-              </span>
-
-              <span>
-                {item.label}
-              </span>
-            </button>
-          ))}
-        </nav>
-
-        <div
-          className={
-            styles.accountLabel
-          }
-        >
-          ACCOUNT
-        </div>
-
-        <button
-          className={styles.navItem}
-          onClick={() =>
-            navigateTo("/account")
-          }
-        >
-          <span
-            className={
-              styles.navIcon
-            }
-          >
-            <Icon name="account" />
-          </span>
-
-          <span>Account</span>
-        </button>
-
-        <button
-          className={styles.navItem}
-          onClick={() =>
-            navigateTo("/settings")
-          }
-        >
-          <span
-            className={
-              styles.navIcon
-            }
-          >
-            <Icon name="settings" />
-          </span>
-
-          <span>Settings</span>
-        </button>
-
-        <div className={styles.helpBox}>
-          <div
-            className={
-              styles.helpTitle
-            }
-          >
-            Need Help?
-          </div>
-
-          <div
-            className={
-              styles.helpText
-            }
-          >
-            Our support team is
-            ready to assist you.
-          </div>
-
-          <button
-            className={
-              styles.supportButton
-            }
-            onClick={() =>
-              navigateTo("/account")
-            }
-          >
-            Contact Support
-          </button>
-        </div>
-
-        <button
-          className={
-            styles.sidebarUser
-          }
-          onClick={() =>
-            navigateTo("/account")
-          }
-        >
-          <div className={styles.avatar}>
-            {user.initial}
-          </div>
-
-          <div
-            className={
-              styles.sidebarUserInfo
-            }
-          >
-            <div
-              className={
-                styles.userName
-              }
-            >
-              {user.fullName}
-            </div>
-
-            <div
-              className={
-                styles.userPlan
-              }
-            >
-              {isPremium
-                ? "♛ Premium Plan"
-                : planName}
-            </div>
-          </div>
-        </button>
-      </aside>
-
+    <AppShell activePath="/dashboard">
       {/* ==================================================
           DESKTOP CONTENT
       ================================================== */}
 
       <section className={styles.content}>
-        <header className={styles.topBar}>
-          <div
-            className={
-              styles.topBarLeft
-            }
-          >
-            <div
-              className={
-                styles.eyebrow
-              }
-            >
-              PROPERTYSURE AI
-            </div>
-
-            <div
-              className={
-                styles.headerPageTitle
-              }
-            >
-              Dashboard
-            </div>
-
-            <div
-              className={
-                styles.headerDescription
-              }
-            >
-              Stay ahead of property
-              risks with AI-powered
-              due diligence.
-            </div>
-          </div>
-
-          <div
-            className={
-              styles.topActions
-            }
-          >
-            <div
-              className={
-                styles.headerDate
-              }
-            >
-              <Icon name="calendar" />
-
-              <span>
-                {desktopDate}
-              </span>
-            </div>
-
-            <button
-              className={
-                styles.notificationButton
-              }
-              onClick={() =>
-                navigateTo(
-                  "/account/notifications"
-                )
-              }
-              aria-label="Notifications"
-            >
-              <Icon name="bell" />
-
-              <span
-                className={
-                  styles.notificationDot
-                }
-              />
-            </button>
-
-            <button
-              className={
-                styles.profileButton
-              }
-              onClick={() =>
-                navigateTo("/account")
-              }
-            >
-              <div
-                className={
-                  styles.profileAvatar
-                }
-              >
-                {user.initial}
-              </div>
-
-              <div
-                className={
-                  styles.profileInfo
-                }
-              >
-                <div
-                  className={
-                    styles.profileName
-                  }
-                >
-                  {user.fullName}
-                </div>
-
-                <div
-                  className={
-                    styles.profilePlan
-                  }
-                >
-                  {planName}
-                </div>
-              </div>
-
-              <span
-                className={
-                  styles.profileChevron
-                }
-              >
-                ⌄
-              </span>
-            </button>
-          </div>
-        </header>
-
-        {/* ==================================================
-            DESKTOP MAIN CONTENT
-        ================================================== */}
-
         <div
           className={
             styles.mainContent
           }
         >
+          {/* ==================================================
+              DESKTOP WELCOME
+          ================================================== */}
+
           <section
             className={
               styles.welcomeSection
@@ -726,7 +345,7 @@ export default function DashboardPage() {
           >
             <div>
               <h2>
-                Hello,{" "}
+                {greeting},{" "}
                 {user.firstName} 👋
               </h2>
             </div>
@@ -770,7 +389,9 @@ export default function DashboardPage() {
                   styles.primaryButton
                 }
                 onClick={() =>
-                  navigateTo("/verify")
+                  navigateTo(
+                    "/verify/property-details"
+                  )
                 }
               >
                 <span>+</span>
@@ -1035,6 +656,10 @@ export default function DashboardPage() {
               styles.lowerGrid
             }
           >
+            {/* ==================================================
+                FRAUD WATCH
+            ================================================== */}
+
             <div
               className={
                 styles.dashboardCard
@@ -1114,11 +739,13 @@ export default function DashboardPage() {
             </div>
 
             {/* ==================================================
-                PREMIUM PLAN CARD
+                PLAN CARD
             ================================================== */}
 
             <div
-              className={`${styles.dashboardCard} ${styles.planCard} ${
+              className={`${styles.dashboardCard} ${
+                styles.planCard
+              } ${
                 isPaid
                   ? styles.paidPlanCard
                   : styles.freePlanCard
@@ -1162,7 +789,7 @@ export default function DashboardPage() {
                 }
               >
                 <h4>
-                  You’re on the{" "}
+                  You’re on{" "}
                   {planName}
                 </h4>
 
@@ -1272,7 +899,9 @@ export default function DashboardPage() {
                   styles.emptyVerifyButton
                 }
                 onClick={() =>
-                  navigateTo("/verify")
+                  navigateTo(
+                    "/verify/property-details"
+                  )
                 }
               >
                 + Verify Property
@@ -1283,281 +912,7 @@ export default function DashboardPage() {
       </section>
 
       {/* ==================================================
-          MOBILE HEADER
-      ================================================== */}
-
-      <header
-        className={
-          styles.mobileHeader
-        }
-      >
-        <button
-          className={
-            styles.mobileMenuButton
-          }
-          onClick={() =>
-            setMenuOpen(true)
-          }
-          aria-label="Open navigation"
-        >
-          <Icon name="menu" />
-        </button>
-
-        <button
-          className={
-            styles.mobileBrand
-          }
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <span
-            className={
-              styles.mobileDiamond
-            }
-          >
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </button>
-
-        <button
-          className={
-            styles.mobileNotificationButton
-          }
-          onClick={() =>
-            navigateTo(
-              "/account/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-          <Icon name="bell" />
-
-          <span
-            className={
-              styles.mobileNotificationDot
-            }
-          />
-        </button>
-      </header>
-
-      {/* ==================================================
-          MOBILE MENU
-      ================================================== */}
-
-      {menuOpen && (
-        <div
-          className={
-            styles.mobileMenu
-          }
-        >
-          <div
-            className={
-              styles.mobileMenuHeader
-            }
-          >
-            <div>
-              <button
-                className={
-                  styles.mobileMenuBrand
-                }
-                onClick={() =>
-                  navigateTo(
-                    "/dashboard"
-                  )
-                }
-              >
-                <span>◆</span>
-
-                <div>
-                  PropertySure
-                  <strong> AI</strong>
-                </div>
-              </button>
-
-              <div
-                className={
-                  styles.mobileMenuSubtitle
-                }
-              >
-                AI-Powered Property
-                Due Diligence
-              </div>
-            </div>
-
-            <button
-              className={
-                styles.closeMenu
-              }
-              onClick={() =>
-                setMenuOpen(false)
-              }
-              aria-label="Close navigation"
-            >
-              <Icon name="close" />
-            </button>
-          </div>
-
-          <nav
-            className={
-              styles.mobileMenuNav
-            }
-          >
-            {navItems.map((item) => (
-              <button
-                key={item.path}
-                className={`${
-                  styles.mobileNavItem
-                } ${
-                  item.path ===
-                  "/dashboard"
-                    ? styles.active
-                    : ""
-                }`}
-                onClick={() =>
-                  navigateTo(item.path)
-                }
-              >
-                <span
-                  className={
-                    styles.mobileNavIcon
-                  }
-                >
-                  <Icon
-                    name={item.icon}
-                  />
-                </span>
-
-                <span>
-                  {item.label}
-                </span>
-              </button>
-            ))}
-          </nav>
-
-          <div
-            className={
-              styles.mobileAccountLabel
-            }
-          >
-            ACCOUNT
-          </div>
-
-          <button
-            className={
-              styles.mobileNavItem
-            }
-            onClick={() =>
-              navigateTo("/account")
-            }
-          >
-            <span
-              className={
-                styles.mobileNavIcon
-              }
-            >
-              <Icon name="account" />
-            </span>
-
-            <span>Account</span>
-          </button>
-
-          <button
-            className={
-              styles.mobileNavItem
-            }
-            onClick={() =>
-              navigateTo("/settings")
-            }
-          >
-            <span
-              className={
-                styles.mobileNavIcon
-              }
-            >
-              <Icon name="settings" />
-            </span>
-
-            <span>Settings</span>
-          </button>
-
-          <div
-            className={
-              styles.mobileHelpBox
-            }
-          >
-            <div
-              className={
-                styles.mobileHelpTitle
-              }
-            >
-              Need Help?
-            </div>
-
-            <div
-              className={
-                styles.mobileHelpText
-              }
-            >
-              Our support team is
-              ready to assist you.
-            </div>
-
-            <button
-              onClick={() =>
-                navigateTo("/account")
-              }
-            >
-              Contact Support
-            </button>
-          </div>
-
-          <button
-            className={
-              styles.mobileUser
-            }
-            onClick={() =>
-              navigateTo("/account")
-            }
-          >
-            <div
-              className={
-                styles.mobileAvatar
-              }
-            >
-              {user.initial}
-            </div>
-
-            <div>
-              <strong>
-                {user.fullName}
-              </strong>
-
-              <span>
-                {planName}
-              </span>
-            </div>
-          </button>
-
-          <button
-            className={
-              styles.mobileSignOut
-            }
-            onClick={handleSignOut}
-          >
-            <Icon name="arrow" />
-            Sign Out
-          </button>
-        </div>
-      )}
-
-      {/* ==================================================
-          MOBILE CONTENT
+          MOBILE DASHBOARD CONTENT
       ================================================== */}
 
       <section
@@ -1565,7 +920,6 @@ export default function DashboardPage() {
           styles.mobileContent
         }
       >
-
         {/* ==================================================
             MOBILE WELCOME
         ================================================== */}
@@ -1581,15 +935,9 @@ export default function DashboardPage() {
             }
           >
             <h1>
-              Hello,{" "}
+              {greeting},{" "}
               {user.firstName} 👋
             </h1>
-
-            <p>
-              Stay ahead of property
-              risks with AI-powered
-              due diligence.
-            </p>
           </div>
 
           <div
@@ -1643,7 +991,9 @@ export default function DashboardPage() {
                 styles.mobileHeroButton
               }
               onClick={() =>
-                navigateTo("/verify")
+                navigateTo(
+                  "/verify/property-details"
+                )
               }
             >
               <span>+</span>
@@ -1934,7 +1284,7 @@ export default function DashboardPage() {
             }
           >
             <h3>
-              You’re on the{" "}
+              You’re on{" "}
               {planName}
             </h3>
 
@@ -2021,7 +1371,9 @@ export default function DashboardPage() {
 
             <button
               onClick={() =>
-                navigateTo("/verify")
+                navigateTo(
+                  "/verify/property-details"
+                )
               }
             >
               + Verify Property
@@ -2029,86 +1381,6 @@ export default function DashboardPage() {
           </div>
         </section>
       </section>
-
-      {/* ==================================================
-          MOBILE BOTTOM NAV
-      ================================================== */}
-
-      <nav
-        className={
-          styles.bottomNav
-        }
-      >
-        <button
-          className={`${styles.bottomNavItem} ${styles.active}`}
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <Icon name="dashboard" />
-          <span>
-            Dashboard
-          </span>
-        </button>
-
-        <button
-          className={
-            styles.bottomNavItem
-          }
-          onClick={() =>
-            navigateTo("/verify")
-          }
-        >
-          <Icon name="verify" />
-          <span>
-            Verify
-          </span>
-        </button>
-
-        <button
-          className={
-            styles.bottomNavItem
-          }
-          onClick={() =>
-            navigateTo(
-              "/my-properties"
-            )
-          }
-        >
-          <Icon name="properties" />
-          <span>
-            Properties
-          </span>
-        </button>
-
-        <button
-          className={
-            styles.bottomNavItem
-          }
-          onClick={() =>
-            navigateTo("/reports")
-          }
-        >
-          <Icon name="reports" />
-          <span>
-            Reports
-          </span>
-        </button>
-
-        <button
-          className={
-            styles.bottomNavItem
-          }
-          onClick={() =>
-            navigateTo("/account")
-          }
-        >
-          <Icon name="account" />
-          <span>
-            Account
-          </span>
-        </button>
-      </nav>
-    </main>
+    </AppShell>
   );
 }

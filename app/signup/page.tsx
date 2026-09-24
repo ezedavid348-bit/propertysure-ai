@@ -13,7 +13,11 @@ function LogoMark({ size = 23 }: IconProps) {
   return (
     <span
       className="brandDiamondMark"
-      style={{ fontSize: `${size}px` }}
+      style={{
+        fontSize: `${size}px`,
+        color: "#168eff",
+        lineHeight: 1,
+      }}
       aria-hidden="true"
     >
       ◆
@@ -37,7 +41,6 @@ function UserIcon({ size = 21 }: IconProps) {
         stroke="currentColor"
         strokeWidth="1.8"
       />
-
       <path
         d="M5 20C5.8 15.9 8.1 14 12 14C15.9 14 18.2 15.9 19 20"
         stroke="currentColor"
@@ -86,7 +89,6 @@ function MailIcon({ size = 21 }: IconProps) {
         stroke="currentColor"
         strokeWidth="1.8"
       />
-
       <path
         d="M4 7L12 13L20 7"
         stroke="currentColor"
@@ -116,7 +118,6 @@ function LockIcon({ size = 21 }: IconProps) {
         stroke="currentColor"
         strokeWidth="1.8"
       />
-
       <path
         d="M8 10V7C8 4.8 9.8 3 12 3C14.2 3 16 4.8 16 7V10"
         stroke="currentColor"
@@ -141,7 +142,6 @@ function EyeIcon({ size = 20 }: IconProps) {
         stroke="currentColor"
         strokeWidth="1.8"
       />
-
       <circle
         cx="12"
         cy="12"
@@ -166,17 +166,14 @@ function GoogleIcon() {
         d="M21.35 12.23C21.35 11.57 21.29 10.93 21.17 10.32H12V14.05H17.1C16.88 15.25 16.2 16.27 15.23 16.94V19.38H18.35C20.18 17.69 21.35 15.2 21.35 12.23Z"
         fill="#4285F4"
       />
-
       <path
         d="M12 21.5C14.61 21.5 16.8 20.64 18.35 19.38L15.23 16.94C14.37 17.52 13.27 17.86 12 17.86C9.48 17.86 7.34 16.16 6.58 13.87H3.36V16.39C4.9 19.42 8.08 21.5 12 21.5Z"
         fill="#34A853"
       />
-
       <path
         d="M6.58 13.87C6.39 13.32 6.28 12.73 6.28 12.12C6.28 11.51 6.39 10.92 6.58 10.37V7.85H3.36C2.7 9.16 2.33 10.64 2.33 12.12C2.33 13.6 2.7 15.08 3.36 16.39L6.58 13.87Z"
         fill="#FBBC05"
       />
-
       <path
         d="M12 6.38C13.42 6.38 14.7 6.87 15.7 7.82L18.42 5.1C16.8 3.59 14.61 2.65 12 2.65C8.08 2.65 4.9 4.73 3.36 7.85L6.58 10.37C7.34 8.08 9.48 6.38 12 6.38Z"
         fill="#EA4335"
@@ -201,37 +198,8 @@ function ArrowRightIcon() {
         strokeWidth="2"
         strokeLinecap="round"
       />
-
       <path
         d="M13 6L19 12L13 18"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ArrowLeftIcon() {
-  return (
-    <svg
-      width="21"
-      height="21"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <path
-        d="M19 12H5"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-
-      <path
-        d="M11 6L5 12L11 18"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -256,7 +224,6 @@ function ShieldCheckIcon({ size = 25 }: IconProps) {
         stroke="#168EFF"
         strokeWidth="1.7"
       />
-
       <path
         d="M8.5 12L10.8 14.3L15.5 9.6"
         stroke="#168EFF"
@@ -286,7 +253,6 @@ function CheckCircleIcon() {
         stroke="#168EFF"
         strokeWidth="1.5"
       />
-
       <path
         d="M8 12.2L10.6 14.8L16.2 9.3"
         stroke="#168EFF"
@@ -322,6 +288,50 @@ function InputBox({
   );
 }
 
+/* =========================================================
+   PHONE HELPERS
+========================================================= */
+
+function normalizeNigeriaPhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+
+  if (digits.startsWith("234")) {
+    return `+${digits}`;
+  }
+
+  if (digits.startsWith("0")) {
+    return `+234${digits.slice(1)}`;
+  }
+
+  return `+234${digits}`;
+}
+
+function isValidNigeriaPhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+
+  let localNumber = digits;
+
+  if (localNumber.startsWith("234")) {
+    localNumber = localNumber.slice(3);
+  }
+
+  if (localNumber.startsWith("0")) {
+    localNumber = localNumber.slice(1);
+  }
+
+  return localNumber.length === 10;
+}
+
+function maskPhone(phoneNumber: string) {
+  const digits = phoneNumber.replace(/\D/g, "");
+
+  if (digits.length < 7) {
+    return phoneNumber;
+  }
+
+  return `+234 ${digits.slice(3, 6)}***${digits.slice(-2)}`;
+}
+
 export default function SignUpPage() {
   const router = useRouter();
 
@@ -348,6 +358,11 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  /* =========================================================
+     EMAIL VERIFICATION STATE
+     KEEPING ORIGINAL FLOW
+  ========================================================= */
+
   const [showVerification, setShowVerification] =
     useState(false);
 
@@ -360,9 +375,125 @@ export default function SignUpPage() {
   const [resending, setResending] =
     useState(false);
 
-  // ============================================================
-  // CREATE ACCOUNT
-  // ============================================================
+  /* =========================================================
+     PHONE VERIFICATION STATE
+  ========================================================= */
+
+  const [showPhoneVerification, setShowPhoneVerification] =
+    useState(false);
+
+  const [phoneVerificationNumber, setPhoneVerificationNumber] =
+    useState("");
+
+  const [phoneVerificationOtpId, setPhoneVerificationOtpId] =
+    useState("");
+
+  const [phoneVerificationCode, setPhoneVerificationCode] =
+    useState("");
+
+  const [phoneVerifying, setPhoneVerifying] =
+    useState(false);
+
+  const [phoneResending, setPhoneResending] =
+    useState(false);
+
+  /* =========================================================
+     START PHONE VERIFICATION
+     
+     IMPORTANT:
+     This is ONLY called after successful email verification.
+     
+     Robase is now responsible for generating and sending
+     the 6-digit SMS verification code.
+  ========================================================= */
+
+  const startPhoneVerification = async (
+    normalizedPhone: string
+  ) => {
+    setError("");
+    setSuccess("");
+
+    setPhoneVerificationNumber(
+      normalizedPhone
+    );
+
+    setPhoneVerificationOtpId("");
+    setPhoneVerificationCode("");
+
+    /*
+     * Show the phone screen BEFORE attempting the SMS
+     * request so any SMS-provider error appears on
+     * the phone verification screen.
+     */
+    setShowVerification(false);
+    setShowPhoneVerification(true);
+
+    try {
+      const response =
+        await fetch(
+          "/api/phone-verification",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              action: "send",
+              phone: normalizedPhone,
+            }),
+          }
+        );
+
+      const result =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !result?.success
+      ) {
+        throw new Error(
+          result?.error ||
+            "We couldn't send the phone verification code. Please try again."
+        );
+      }
+
+      /*
+       * Store the Robase OTP ID.
+       *
+       * This ID is required later when the user
+       * enters the 6-digit code.
+       */
+      setPhoneVerificationOtpId(
+        result.otpId
+      );
+
+      /*
+       * Use the phone returned by our server so
+       * the displayed number is the normalized number.
+       */
+      if (result.phone) {
+        setPhoneVerificationNumber(
+          result.phone
+        );
+      }
+
+      setSuccess(
+        "A 6-digit verification code has been sent to your phone."
+      );
+    } catch (err: any) {
+      setError(
+        err?.message ||
+          "We couldn't send the phone verification code. Please try again."
+      );
+    }
+  };
+
+  /* =========================================================
+     SIGN UP
+     
+     ORIGINAL EMAIL SIGNUP LOGIC PRESERVED.
+  ========================================================= */
 
   const handleSignUp = async () => {
     setError("");
@@ -375,6 +506,13 @@ export default function SignUpPage() {
 
     if (!phone.trim()) {
       setError("Please enter your phone number.");
+      return;
+    }
+
+    if (!isValidNigeriaPhone(phone)) {
+      setError(
+        "Please enter a valid Nigerian phone number."
+      );
       return;
     }
 
@@ -413,6 +551,9 @@ export default function SignUpPage() {
       const cleanEmail =
         email.trim().toLowerCase();
 
+      const normalizedPhone =
+        normalizeNigeriaPhone(phone);
+
       const { data, error: signUpError } =
         await supabase.auth.signUp({
           email: cleanEmail,
@@ -420,7 +561,8 @@ export default function SignUpPage() {
           options: {
             data: {
               full_name: fullName.trim(),
-              phone: phone.trim(),
+              phone: normalizedPhone,
+              phone_verified: false,
             },
           },
         });
@@ -429,8 +571,15 @@ export default function SignUpPage() {
         throw signUpError;
       }
 
+      /*
+       * ORIGINAL EMAIL VERIFICATION FLOW.
+       *
+       * We do NOT send SMS here.
+       * Email verification must happen first.
+       */
       if (data.user && !data.session) {
         setVerificationCode("");
+        setShowPhoneVerification(false);
         setShowVerification(true);
 
         setSuccess(
@@ -440,8 +589,16 @@ export default function SignUpPage() {
         return;
       }
 
+      /*
+       * If Supabase immediately gives us a session,
+       * we still require phone verification before
+       * entering the dashboard.
+       */
       if (data.session) {
-        router.push("/dashboard");
+        await startPhoneVerification(
+          normalizedPhone
+        );
+
         return;
       }
 
@@ -458,9 +615,14 @@ export default function SignUpPage() {
     }
   };
 
-  // ============================================================
-  // VERIFY EMAIL
-  // ============================================================
+  /* =========================================================
+     VERIFY EMAIL
+     
+     EMAIL REMAINS 8 DIGITS.
+     
+     After successful email verification,
+     Robase phone verification starts.
+  ========================================================= */
 
   const handleVerifyEmail = async (
     codeOverride?: string
@@ -484,6 +646,9 @@ export default function SignUpPage() {
       const cleanEmail =
         email.trim().toLowerCase();
 
+      /*
+       * ORIGINAL WORKING EMAIL VERIFICATION CALL.
+       */
       const { data, error: verifyError } =
         await supabase.auth.verifyOtp({
           email: cleanEmail,
@@ -495,8 +660,26 @@ export default function SignUpPage() {
         throw verifyError;
       }
 
+      /*
+       * EMAIL IS NOW VERIFIED.
+       *
+       * Move directly to Robase phone verification.
+       */
       if (data.session) {
-        router.push("/dashboard");
+        if (!isValidNigeriaPhone(phone)) {
+          setError(
+            "Your email was verified, but your phone number is invalid. Please contact support."
+          );
+          return;
+        }
+
+        const normalizedPhone =
+          normalizeNigeriaPhone(phone);
+
+        await startPhoneVerification(
+          normalizedPhone
+        );
+
         return;
       }
 
@@ -504,6 +687,9 @@ export default function SignUpPage() {
         "Your email was verified, but we couldn't start your session. Please sign in."
       );
     } catch (err: any) {
+      /*
+       * Only email verification errors arrive here.
+       */
       setError(
         err?.message ||
           "Invalid verification code. Please check your email and try again."
@@ -513,9 +699,11 @@ export default function SignUpPage() {
     }
   };
 
-  // ============================================================
-  // OTP INPUT
-  // ============================================================
+  /* =========================================================
+     EMAIL OTP INPUT
+     
+     ORIGINAL 8-DIGIT FLOW PRESERVED
+  ========================================================= */
 
   const handleOtpChange = (
     index: number,
@@ -563,10 +751,6 @@ export default function SignUpPage() {
     }
   };
 
-  // ============================================================
-  // OTP PASTE
-  // ============================================================
-
   const handleOtpPaste = (
     e: React.ClipboardEvent<HTMLInputElement>
   ) => {
@@ -598,10 +782,6 @@ export default function SignUpPage() {
       void handleVerifyEmail(pastedCode);
     }
   };
-
-  // ============================================================
-  // OTP KEYBOARD
-  // ============================================================
 
   const handleOtpKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
@@ -636,9 +816,11 @@ export default function SignUpPage() {
     }
   };
 
-  // ============================================================
-  // RESEND
-  // ============================================================
+  /* =========================================================
+     EMAIL RESEND
+     
+     ORIGINAL LOGIC PRESERVED
+  ========================================================= */
 
   const handleResendCode = async () => {
     setError("");
@@ -682,9 +864,345 @@ export default function SignUpPage() {
     }
   };
 
-  // ============================================================
-  // GOOGLE SIGNUP
-  // ============================================================
+  /* =========================================================
+     PHONE OTP VERIFICATION
+     
+     ROB﻿ASE HANDLES THE ACTUAL OTP VERIFICATION.
+     
+     Supabase phone_change verification is NO LONGER USED.
+  ========================================================= */
+
+  const handleVerifyPhone = async (
+    codeOverride?: string
+  ) => {
+    setError("");
+    setSuccess("");
+
+    const code =
+      codeOverride ?? phoneVerificationCode;
+
+    if (!/^\d{6}$/.test(code)) {
+      setError(
+        "Please enter the 6-digit phone verification code."
+      );
+      return;
+    }
+
+    if (!phoneVerificationNumber) {
+      setError(
+        "We couldn't determine your phone number. Please start again."
+      );
+      return;
+    }
+
+    if (!phoneVerificationOtpId) {
+      setError(
+        "Your phone verification session has expired. Please request a new code."
+      );
+      return;
+    }
+
+    try {
+      setPhoneVerifying(true);
+
+      /*
+       * Send the OTP ID and 6-digit code to our
+       * server-side Robase route.
+       */
+      const response =
+        await fetch(
+          "/api/phone-verification",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              action: "verify",
+              otpId:
+                phoneVerificationOtpId,
+              code,
+            }),
+          }
+        );
+
+      const result =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !result?.success ||
+        result?.verified !== true
+      ) {
+        throw new Error(
+          result?.error ||
+            "Invalid or expired phone verification code."
+        );
+      }
+
+      /*
+       * Robase has successfully verified the phone.
+       *
+       * Store the verified state in the authenticated
+       * Supabase user's metadata.
+       */
+      const { error: updateUserError } =
+        await supabase.auth.updateUser({
+          data: {
+            phone:
+              phoneVerificationNumber,
+            phone_verified: true,
+          },
+        });
+
+      if (updateUserError) {
+        throw updateUserError;
+      }
+
+      /*
+       * Confirm that an authenticated session still exists.
+       */
+      const { data: sessionData } =
+        await supabase.auth.getSession();
+
+      if (!sessionData.session) {
+        throw new Error(
+          "Your phone was verified, but we couldn't start your session."
+        );
+      }
+
+      setSuccess(
+        "Your email and phone have both been verified."
+      );
+
+      router.replace("/dashboard");
+    } catch (err: any) {
+      setError(
+        err?.message ||
+          "Invalid phone verification code. Please check the SMS and try again."
+      );
+    } finally {
+      setPhoneVerifying(false);
+    }
+  };
+
+  /* =========================================================
+     PHONE OTP INPUT
+     
+     6 DIGITS
+  ========================================================= */
+
+  const handlePhoneOtpChange = (
+    index: number,
+    value: string
+  ) => {
+    const digits =
+      value.replace(/\D/g, "");
+
+    if (!digits) {
+      const code =
+        phoneVerificationCode.split("");
+
+      code[index] = "";
+
+      setPhoneVerificationCode(
+        code.join("").slice(0, 6)
+      );
+
+      return;
+    }
+
+    const digit = digits[0];
+
+    const code =
+      phoneVerificationCode.split("");
+
+    code[index] = digit;
+
+    const newCode =
+      code.join("").slice(0, 6);
+
+    setPhoneVerificationCode(newCode);
+
+    if (index < 5) {
+      document
+        .getElementById(
+          `phone-otp-${index + 1}`
+        )
+        ?.focus();
+    }
+
+    if (
+      newCode.length === 6 &&
+      /^\d{6}$/.test(newCode)
+    ) {
+      void handleVerifyPhone(newCode);
+    }
+  };
+
+  const handlePhoneOtpPaste = (
+    e: React.ClipboardEvent<HTMLInputElement>
+  ) => {
+    e.preventDefault();
+
+    const pastedCode =
+      e.clipboardData
+        .getData("text")
+        .replace(/\D/g, "")
+        .slice(0, 6);
+
+    if (!pastedCode) {
+      return;
+    }
+
+    setPhoneVerificationCode(
+      pastedCode
+    );
+
+    const nextIndex =
+      Math.min(pastedCode.length, 5);
+
+    document
+      .getElementById(
+        `phone-otp-${nextIndex}`
+      )
+      ?.focus();
+
+    if (
+      pastedCode.length === 6 &&
+      /^\d{6}$/.test(pastedCode)
+    ) {
+      void handleVerifyPhone(pastedCode);
+    }
+  };
+
+  const handlePhoneOtpKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    if (
+      e.key === "Backspace" &&
+      !phoneVerificationCode[index] &&
+      index > 0
+    ) {
+      document
+        .getElementById(
+          `phone-otp-${index - 1}`
+        )
+        ?.focus();
+    }
+
+    if (
+      e.key === "ArrowLeft" &&
+      index > 0
+    ) {
+      document
+        .getElementById(
+          `phone-otp-${index - 1}`
+        )
+        ?.focus();
+    }
+
+    if (
+      e.key === "ArrowRight" &&
+      index < 5
+    ) {
+      document
+        .getElementById(
+          `phone-otp-${index + 1}`
+        )
+        ?.focus();
+    }
+  };
+
+  /* =========================================================
+     PHONE RESEND
+     
+     ROB﻿ASE SENDS A NEW OTP.
+  ========================================================= */
+
+  const handleResendPhoneCode = async () => {
+    setError("");
+    setSuccess("");
+
+    if (!phoneVerificationNumber) {
+      setError(
+        "We couldn't determine your phone number."
+      );
+      return;
+    }
+
+    try {
+      setPhoneResending(true);
+
+      /*
+       * Ask our server to request a new Robase OTP.
+       */
+      const response =
+        await fetch(
+          "/api/phone-verification",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              action: "send",
+              phone:
+                phoneVerificationNumber,
+            }),
+          }
+        );
+
+      const result =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !result?.success
+      ) {
+        throw new Error(
+          result?.error ||
+            "We couldn't resend the phone verification code. Please try again."
+        );
+      }
+
+      /*
+       * A new OTP has a new Robase OTP ID.
+       * Replace the previous ID.
+       */
+      setPhoneVerificationOtpId(
+        result.otpId
+      );
+
+      if (result.phone) {
+        setPhoneVerificationNumber(
+          result.phone
+        );
+      }
+
+      setPhoneVerificationCode("");
+
+      setSuccess(
+        "A new 6-digit verification code has been sent to your phone."
+      );
+    } catch (err: any) {
+      setError(
+        err?.message ||
+          "We couldn't resend the phone verification code. Please try again."
+      );
+    } finally {
+      setPhoneResending(false);
+    }
+  };
+
+  /* =========================================================
+     GOOGLE SIGNUP
+     
+     ORIGINAL FLOW PRESERVED
+  ========================================================= */
 
   const handleGoogleSignUp = async () => {
     setError("");
@@ -703,7 +1221,6 @@ export default function SignUpPage() {
       const { error: googleError } =
         await supabase.auth.signInWithOAuth({
           provider: "google",
-
           options: {
             redirectTo:
               `${window.location.origin}/dashboard`,
@@ -723,10 +1240,6 @@ export default function SignUpPage() {
     }
   };
 
-  // ============================================================
-  // MASK EMAIL
-  // ============================================================
-
   const emailParts =
     email.trim().split("@");
 
@@ -738,23 +1251,22 @@ export default function SignUpPage() {
         )}***@${emailParts[1]}`
       : "your email address";
 
-  // ============================================================
-  // EMAIL VERIFICATION SCREEN
-  // ============================================================
+  /* ============================================================
+     PHONE VERIFICATION SCREEN
+  ============================================================ */
 
-  if (showVerification) {
+  if (showPhoneVerification) {
     return (
       <main className="page verificationPage">
 
         <header className="topHeader">
-
           <button
             type="button"
             className="topBrand"
             onClick={() => router.push("/")}
             aria-label="PropertySure AI home"
           >
-            <LogoMark size={39} />
+            <LogoMark size={20} />
 
             <span className="topBrandText">
               <span>
@@ -782,28 +1294,252 @@ export default function SignUpPage() {
               Sign In
             </button>
           </div>
-
         </header>
 
-        <div className="verificationCard">
+        <div className="backRow">
+          <div className="backRowInner">
+            <button
+              type="button"
+              className="backButton"
+              onClick={() => router.push("/")}
+              aria-label="Back to PropertySure AI home"
+            >
+              <span className="backArrow">
+                ←
+              </span>
 
-          <button
-            type="button"
-            className="backButton"
-            onClick={() => {
-              setShowVerification(false);
-              setError("");
-              setSuccess("");
-            }}
-            aria-label="Back to account creation"
-          >
-            <ArrowLeftIcon />
-          </button>
+              <span>Back to Home</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="verificationCard">
 
           <div className="verificationContent">
 
             <div className="verificationLogo">
-              <LogoMark size={72} />
+              <LogoMark size={48} />
+            </div>
+
+            <div className="verificationEyebrow">
+              PHONE VERIFICATION
+            </div>
+
+            <h1>
+              Verify your phone
+            </h1>
+
+            <p className="verificationText">
+              We've sent a 6-digit verification code to
+            </p>
+
+            <div className="verificationEmail">
+              {maskPhone(
+                phoneVerificationNumber
+              )}
+            </div>
+
+            <div className="otpContainer phoneOtpContainer">
+
+              {[0, 1, 2, 3, 4, 5].map(
+                (index) => (
+                  <input
+                    key={index}
+                    id={`phone-otp-${index}`}
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete={
+                      index === 0
+                        ? "one-time-code"
+                        : "off"
+                    }
+                    maxLength={1}
+                    value={
+                      phoneVerificationCode[
+                        index
+                      ] || ""
+                    }
+                    onChange={(e) =>
+                      handlePhoneOtpChange(
+                        index,
+                        e.target.value
+                      )
+                    }
+                    onPaste={
+                      index === 0
+                        ? handlePhoneOtpPaste
+                        : undefined
+                    }
+                    onKeyDown={(e) =>
+                      handlePhoneOtpKeyDown(
+                        e,
+                        index
+                      )
+                    }
+                    className="otpInput"
+                    disabled={
+                      phoneVerifying
+                    }
+                  />
+                )
+              )}
+
+            </div>
+
+            <div className="verificationHint">
+
+              <div className="verificationHintIcon">
+                <ShieldCheckIcon />
+              </div>
+
+              <span>
+                Enter the 6-digit code sent to
+                <br />
+                your phone number securely.
+              </span>
+
+            </div>
+
+            {error && (
+              <div className="errorBox">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="successBox">
+                {success}
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="primaryButton"
+              onClick={() =>
+                handleVerifyPhone()
+              }
+              disabled={
+                phoneVerifying ||
+                phoneVerificationCode.length !==
+                  6
+              }
+            >
+              {phoneVerifying
+                ? "Verifying..."
+                : "Verify Phone"}
+
+              {!phoneVerifying && (
+                <ArrowRightIcon />
+              )}
+            </button>
+
+            <div className="resendText">
+
+              Didn't receive the code?{" "}
+
+              <button
+                type="button"
+                onClick={
+                  handleResendPhoneCode
+                }
+                disabled={phoneResending}
+              >
+                {phoneResending
+                  ? "Sending..."
+                  : "Resend code"}
+              </button>
+
+            </div>
+
+            <div className="secureText">
+
+              <LockIcon size={16} />
+
+              <span>
+                Your information is secure with
+                PropertySure AI
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </main>
+    );
+  }
+
+  /* ============================================================
+     EMAIL VERIFICATION SCREEN
+     
+     ORIGINAL SCREEN PRESERVED
+  ============================================================ */
+
+  if (showVerification) {
+    return (
+      <main className="page verificationPage">
+
+        <header className="topHeader">
+          <button
+            type="button"
+            className="topBrand"
+            onClick={() => router.push("/")}
+            aria-label="PropertySure AI home"
+          >
+            <LogoMark size={20} />
+
+            <span className="topBrandText">
+              <span>
+                PropertySure
+                <strong> AI</strong>
+              </span>
+
+              <small>
+                AI-POWERED PROPERTY DUE DILIGENCE
+              </small>
+            </span>
+          </button>
+
+          <div className="topSignup">
+            <span>
+              Already have an account?
+            </span>
+
+            <button
+              type="button"
+              onClick={() =>
+                router.push("/signin")
+              }
+            >
+              Sign In
+            </button>
+          </div>
+        </header>
+
+        <div className="backRow">
+          <div className="backRowInner">
+            <button
+              type="button"
+              className="backButton"
+              onClick={() => router.push("/")}
+              aria-label="Back to PropertySure AI home"
+            >
+              <span className="backArrow">
+                ←
+              </span>
+
+              <span>Back to Home</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="verificationCard">
+
+          <div className="verificationContent">
+
+            <div className="verificationLogo">
+              <LogoMark size={48} />
             </div>
 
             <div className="verificationEyebrow">
@@ -947,16 +1683,12 @@ export default function SignUpPage() {
     );
   }
 
-  // ============================================================
-  // SIGN-UP SCREEN
-  // ============================================================
+  /* ============================================================
+     SIGN-UP SCREEN
+  ============================================================ */
 
   return (
     <main className="page">
-
-      {/* ======================================================
-          TOP HEADER
-      ====================================================== */}
 
       <header className="topHeader">
 
@@ -967,7 +1699,7 @@ export default function SignUpPage() {
           aria-label="PropertySure AI home"
         >
 
-          <LogoMark size={39} />
+          <LogoMark size={20} />
 
           <span className="topBrandText">
 
@@ -1003,15 +1735,24 @@ export default function SignUpPage() {
 
       </header>
 
-      {/* ======================================================
-          MAIN LAYOUT
-      ====================================================== */}
+      <div className="backRow">
+        <div className="backRowInner">
+          <button
+            type="button"
+            className="backButton"
+            onClick={() => router.push("/")}
+            aria-label="Back to PropertySure AI home"
+          >
+            <span className="backArrow">
+              ←
+            </span>
+
+            <span>Back to Home</span>
+          </button>
+        </div>
+      </div>
 
       <div className="mainLayout">
-
-        {/* ====================================================
-            LEFT HERO
-        ==================================================== */}
 
         <section className="heroPanel">
 
@@ -1072,7 +1813,7 @@ export default function SignUpPage() {
             <div className="heroFeature">
 
               <div className="heroFeatureIcon">
-                <LogoMark size={28} />
+                <LogoMark size={20} />
               </div>
 
               <div>
@@ -1121,10 +1862,6 @@ export default function SignUpPage() {
 
         </section>
 
-        {/* ====================================================
-            SIGNUP CARD
-        ==================================================== */}
-
         <section className="signupCard">
 
           <div className="cardHeader">
@@ -1156,8 +1893,6 @@ export default function SignUpPage() {
             </div>
           )}
 
-          {/* FULL NAME */}
-
           <InputBox
             label="Full Name"
             icon={<UserIcon />}
@@ -1173,8 +1908,6 @@ export default function SignUpPage() {
               autoComplete="name"
             />
           </InputBox>
-
-          {/* PHONE */}
 
           <div className="fieldGroup">
 
@@ -1217,8 +1950,6 @@ export default function SignUpPage() {
 
           </div>
 
-          {/* EMAIL */}
-
           <InputBox
             label="Email Address"
             icon={<MailIcon />}
@@ -1234,8 +1965,6 @@ export default function SignUpPage() {
               autoComplete="email"
             />
           </InputBox>
-
-          {/* PASSWORD */}
 
           <div className="fieldGroup">
 
@@ -1284,8 +2013,6 @@ export default function SignUpPage() {
             </div>
 
           </div>
-
-          {/* CONFIRM PASSWORD */}
 
           <div className="fieldGroup">
 
@@ -1337,8 +2064,6 @@ export default function SignUpPage() {
 
           </div>
 
-          {/* TERMS */}
-
           <label className="terms">
 
             <input
@@ -1365,8 +2090,6 @@ export default function SignUpPage() {
 
           </label>
 
-          {/* CREATE ACCOUNT */}
-
           <button
             type="button"
             className="primaryButton"
@@ -1385,8 +2108,6 @@ export default function SignUpPage() {
             )}
           </button>
 
-          {/* DIVIDER */}
-
           <div className="divider">
 
             <span />
@@ -1398,8 +2119,6 @@ export default function SignUpPage() {
             <span />
 
           </div>
-
-          {/* GOOGLE */}
 
           <button
             type="button"
@@ -1421,8 +2140,6 @@ export default function SignUpPage() {
 
           </button>
 
-          {/* SIGN IN */}
-
           <div className="signinText">
 
             Already have an account?{" "}
@@ -1441,10 +2158,6 @@ export default function SignUpPage() {
         </section>
 
       </div>
-
-      {/* ======================================================
-          TRUST STRIP
-      ====================================================== */}
 
       <div className="trustFeatures">
 
@@ -1491,7 +2204,7 @@ export default function SignUpPage() {
         <div className="trustFeature">
 
           <div className="trustIcon">
-            <LogoMark size={24} />
+            <LogoMark size={20} />
           </div>
 
           <div>
@@ -1508,7 +2221,6 @@ export default function SignUpPage() {
 
       </div>
 
-      
     </main>
   );
 }

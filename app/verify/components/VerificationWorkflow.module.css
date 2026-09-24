@@ -1,0 +1,630 @@
+/* ============================================================
+   TOP BACK LINK
+============================================================ */
+
+.backLink {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #3978d4;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.backLink span {
+  font-size: 16px;
+
+  line-height: 1;
+}
+
+.backLink:hover {
+  color: #168eff;
+}
+
+/* ============================================================
+   WORKFLOW
+============================================================ */
+
+.workflowCard {
+  width: 100%;
+
+  display: flex;
+
+  align-items: stretch;
+
+  margin-top: 18px;
+
+  padding: 16px 18px;
+
+  border: 1px solid #dce5ef;
+
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 5px 20px
+    rgba(15, 35, 60, 0.04);
+
+  /*
+   * Keep the entire workflow inside the card.
+   * Each step gets equal space.
+   */
+  overflow: hidden;
+}
+
+.workflowStep {
+  min-width: 0;
+
+  flex: 1 1 0;
+
+  display: flex;
+
+  align-items: center;
+
+  overflow: hidden;
+}
+
+.workflowStepButton {
+  width: 100%;
+
+  min-width: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: inherit;
+
+  text-align: left;
+
+  font-family: inherit;
+
+  overflow: hidden;
+}
+
+.workflowStepButton:disabled {
+  cursor: default;
+}
+
+.workflowStepButton:not(:disabled) {
+  cursor: pointer;
+}
+
+.workflowNumber {
+  width: 31px;
+
+  height: 31px;
+
+  flex: 0 0 31px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border: 1px solid #cbd7e5;
+
+  border-radius: 50%;
+
+  background: #f6f9fc;
+
+  color: #73869d;
+
+  font-size: 11px;
+
+  font-weight: 800;
+}
+
+.workflowStepButton > div:last-child {
+  min-width: 0;
+
+  flex: 1;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+
+  overflow: hidden;
+}
+
+.workflowStep strong {
+  display: block;
+
+  width: 100%;
+
+  min-width: 0;
+
+  color: #24364b;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  line-height: 1.2;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+.workflowStep span {
+  display: block;
+
+  width: 100%;
+
+  min-width: 0;
+
+  color: #8495a8;
+
+  font-size: 8px;
+
+  line-height: 1.2;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
+   ACTIVE STEP
+============================================================ */
+
+.workflowActive .workflowNumber {
+  border-color: #168eff;
+
+  background: #168eff;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 4px 12px
+    rgba(22, 142, 255, 0.25);
+}
+
+.workflowActive strong {
+  color: #168eff;
+}
+
+/* ============================================================
+   COMPLETED STEP
+============================================================ */
+
+.workflowComplete .workflowNumber {
+  border-color: #20aa72;
+
+  background: #20aa72;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 4px 12px
+    rgba(32, 170, 114, 0.2);
+
+  font-size: 14px;
+}
+
+.workflowComplete strong {
+  color: #24875f;
+}
+
+/* ============================================================
+   WORKFLOW CONNECTOR
+============================================================ */
+
+.workflowLine {
+  flex: 0 0 18px;
+
+  align-self: center;
+
+  height: 1px;
+
+  margin: 0 7px;
+
+  background: #dbe4ed;
+}
+
+/* ============================================================
+   ACTIONS
+============================================================ */
+
+.actions {
+  display: grid;
+
+  grid-template-columns:
+    115px minmax(0, 1fr);
+
+  gap: 12px;
+
+  margin-top: 13px;
+}
+
+.backButton,
+.continueButton {
+  height: 52px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 8px;
+
+  font-family: inherit;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+/* ============================================================
+   BACK BUTTON
+============================================================ */
+
+.backButton {
+  gap: 8px;
+
+  border: 1px solid #d6e0eb;
+
+  background: #ffffff;
+
+  color: #1e3046;
+}
+
+.backButton span {
+  font-size: 17px;
+
+  font-weight: 400;
+}
+
+.backButton:hover {
+  border-color: #b9c9da;
+
+  background: #f9fbfd;
+}
+
+/* ============================================================
+   CONTINUE BUTTON
+============================================================ */
+
+.continueButton {
+  position: relative;
+
+  padding: 0 55px 0 20px;
+
+  border: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      #08a968,
+      #07995f
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 9px 24px
+    rgba(12, 163, 99, 0.2);
+}
+
+.continueButton b {
+  position: absolute;
+
+  right: 20px;
+
+  font-size: 21px;
+
+  font-weight: 400;
+}
+
+.continueButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 12px 28px
+    rgba(12, 163, 99, 0.26);
+}
+
+.continueButton:disabled {
+  opacity: 0.65;
+
+  cursor: not-allowed;
+
+  box-shadow: none;
+}
+
+/* ============================================================
+   SECURITY NOTE
+============================================================ */
+
+.securityNote {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 5px;
+
+  margin-top: 10px;
+
+  color: #8b98a8;
+
+  font-size: 7px;
+
+  text-align: center;
+}
+
+.securityNote span {
+  font-size: 8px;
+}
+
+/* ============================================================
+   TABLET
+============================================================ */
+
+@media (max-width: 1050px) {
+  .workflowCard {
+    padding-left: 10px;
+
+    padding-right: 10px;
+  }
+
+  .workflowStepButton {
+    gap: 5px;
+  }
+
+  .workflowNumber {
+    width: 28px;
+
+    height: 28px;
+
+    flex-basis: 28px;
+  }
+
+  .workflowStep strong {
+    font-size: 8px;
+  }
+
+  .workflowStep span {
+    font-size: 7px;
+  }
+
+  .workflowLine {
+    flex-basis: 12px;
+
+    margin: 0 4px;
+  }
+}
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media (max-width: 700px) {
+  .backLink {
+    font-size: 10px;
+  }
+
+  .workflowCard {
+    display: grid;
+
+    grid-template-columns:
+      repeat(7, minmax(0, 1fr));
+
+    gap: 1px;
+
+    margin-top: 15px;
+
+    padding: 11px 3px;
+  }
+
+  .workflowStep {
+    width: 100%;
+
+    min-width: 0;
+
+    display: flex;
+
+    align-items: stretch;
+
+    gap: 0;
+  }
+
+  .workflowLine {
+    display: none;
+  }
+
+  .workflowStepButton {
+    width: 100%;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 5px;
+
+    text-align: center;
+  }
+
+  .workflowStepButton > div:last-child {
+    width: 100%;
+
+    flex: none;
+
+    align-items: center;
+
+    overflow: visible;
+  }
+
+  .workflowNumber {
+    width: 27px;
+
+    height: 27px;
+
+    flex-basis: 27px;
+
+    font-size: 9px;
+  }
+
+  .workflowComplete .workflowNumber {
+    font-size: 12px;
+  }
+
+  .workflowStep strong {
+    width: 100%;
+
+    font-size: 6.5px;
+
+    line-height: 1.2;
+
+    white-space: normal;
+
+    overflow: visible;
+
+    text-overflow: clip;
+
+    text-align: center;
+  }
+
+  .workflowStep span {
+    width: 100%;
+
+    font-size: 5px;
+
+    line-height: 1.25;
+
+    white-space: normal;
+
+    overflow: visible;
+
+    text-overflow: clip;
+
+    text-align: center;
+  }
+
+  /* ========================================================
+     MOBILE ACTIONS
+  ======================================================== */
+
+  .actions {
+    grid-template-columns:
+      88px minmax(0, 1fr);
+
+    gap: 8px;
+
+    margin-top: 9px;
+  }
+
+  .backButton,
+  .continueButton {
+    height: 51px;
+
+    font-size: 8px;
+  }
+
+  .backButton {
+    gap: 5px;
+  }
+
+  .backButton span {
+    font-size: 14px;
+  }
+
+  .continueButton {
+    padding: 0 34px 0 10px;
+  }
+
+  .continueButton b {
+    right: 11px;
+
+    font-size: 17px;
+  }
+
+  .securityNote {
+    margin-top: 8px;
+
+    font-size: 6px;
+  }
+
+  .securityNote span {
+    font-size: 7px;
+  }
+}
+
+/* ============================================================
+   SMALL PHONES
+============================================================ */
+
+@media (max-width: 380px) {
+  .workflowCard {
+    padding-left: 1px;
+
+    padding-right: 1px;
+  }
+
+  .workflowNumber {
+    width: 24px;
+
+    height: 24px;
+
+    flex-basis: 24px;
+
+    font-size: 8px;
+  }
+
+  .workflowComplete .workflowNumber {
+    font-size: 10px;
+  }
+
+  .workflowStepButton {
+    gap: 4px;
+  }
+
+  .workflowStep strong {
+    font-size: 5.7px;
+  }
+
+  .workflowStep span {
+    font-size: 4.5px;
+  }
+
+  .actions {
+    grid-template-columns:
+      82px minmax(0, 1fr);
+  }
+}

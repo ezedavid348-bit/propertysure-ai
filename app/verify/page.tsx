@@ -14,6 +14,9 @@ import type {
 import { supabase } from "../lib/supabase";
 
 import AppShell from "../AppShell/AppShell";
+import LoadingScreen from "../AppShell/LoadingScreen";
+
+import VerificationWorkflow from "./components/VerificationWorkflow";
 
 import styles from "./verify.module.css";
 
@@ -93,8 +96,11 @@ function formatFileSize(bytes: number): string {
   ).toFixed(2)} MB`;
 }
 
-function createSafeFileName(fileName: string): string {
-  const lastDot = fileName.lastIndexOf(".");
+function createSafeFileName(
+  fileName: string
+): string {
+  const lastDot =
+    fileName.lastIndexOf(".");
 
   const extension =
     lastDot >= 0
@@ -135,7 +141,8 @@ function getFileKey(file: File): string {
 function createDocumentId(): string {
   if (
     typeof crypto !== "undefined" &&
-    typeof crypto.randomUUID === "function"
+    typeof crypto.randomUUID ===
+      "function"
   ) {
     return crypto.randomUUID();
   }
@@ -171,9 +178,12 @@ export default function VerifyPage() {
    */
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setLoadingPage(false);
-    }, 350);
+    const timer = window.setTimeout(
+      () => {
+        setLoadingPage(false);
+      },
+      350
+    );
 
     return () => {
       window.clearTimeout(timer);
@@ -239,7 +249,9 @@ export default function VerifyPage() {
         continue;
       }
 
-      currentSelectionKeys.add(fileKey);
+      currentSelectionKeys.add(
+        fileKey
+      );
 
       validFiles.push(file);
     }
@@ -292,7 +304,9 @@ export default function VerifyPage() {
     event: ChangeEvent<HTMLInputElement>
   ) {
     if (event.target.files) {
-      addDocuments(event.target.files);
+      addDocuments(
+        event.target.files
+      );
     }
 
     event.target.value = "";
@@ -689,46 +703,12 @@ export default function VerifyPage() {
 
   /*
    * ============================================================
-   * DASHBOARD-STYLE LOADING
+   * LOADING
    * ============================================================
    */
 
   if (loadingPage) {
-    return (
-      <main className={styles.loadingPage}>
-        <div className={styles.loadingBrand}>
-          <span
-            className={
-              styles.loadingDiamond
-            }
-          />
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </div>
-
-        <div
-          className={
-            styles.loadingIndicator
-          }
-          aria-hidden="true"
-        >
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <p
-          className={
-            styles.loadingText
-          }
-        >
-          Loading...
-        </p>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   /*
@@ -740,166 +720,23 @@ export default function VerifyPage() {
   return (
     <AppShell activePath="/verify">
       <main className={styles.page}>
-        <div
-          className={
-            styles.content
-          }
-        >
-          {/* WORKFLOW */}
+        <div className={styles.content}>
+          {/* ==================================================
+              SHARED VERIFICATION NAVIGATION
+          ================================================== */}
 
-          <section
-            className={
-              styles.workflowCard
-            }
-          >
-            <div
-              className={`${styles.workflowStep} ${styles.workflowActive}`}
-            >
-              <div
-                className={
-                  styles.workflowNumber
-                }
-              >
-                1
-              </div>
+          <VerificationWorkflow
+            activeStep={3}
+            backHref="/verify/document-guide"
+            backLabel="Back to Document Guide"
+            showTopBack={true}
+            showBottomActions={false}
+            showSecurityNote={false}
+          />
 
-              <div>
-                <strong>
-                  Upload Documents
-                </strong>
-
-                <span>
-                  Add your property
-                  documents
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.workflowLine
-              }
-            />
-
-            <div
-              className={
-                styles.workflowStep
-              }
-            >
-              <div
-                className={
-                  styles.workflowNumber
-                }
-              >
-                2
-              </div>
-
-              <div>
-                <strong>
-                  Review Package
-                </strong>
-
-                <span>
-                  Confirm your
-                  documents
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.workflowLine
-              }
-            />
-
-            <div
-              className={
-                styles.workflowStep
-              }
-            >
-              <div
-                className={
-                  styles.workflowNumber
-                }
-              >
-                3
-              </div>
-
-              <div>
-                <strong>
-                  Select Plan
-                </strong>
-
-                <span>
-                  Choose your
-                  service
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.workflowLine
-              }
-            />
-
-            <div
-              className={
-                styles.workflowStep
-              }
-            >
-              <div
-                className={
-                  styles.workflowNumber
-                }
-              >
-                4
-              </div>
-
-              <div>
-                <strong>
-                  Secure Checkout
-                </strong>
-
-                <span>
-                  Complete payment
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.workflowLine
-              }
-            />
-
-            <div
-              className={
-                styles.workflowStep
-              }
-            >
-              <div
-                className={
-                  styles.workflowNumber
-                }
-              >
-                5
-              </div>
-
-              <div>
-                <strong>
-                  Verification
-                </strong>
-
-                <span>
-                  AI analysis and
-                  results
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* UPLOAD + SECURITY */}
+          {/* ==================================================
+              UPLOAD + SECURITY
+          ================================================== */}
 
           <section
             className={
@@ -998,15 +835,27 @@ export default function VerifyPage() {
                     Supported formats:
                   </span>
 
-                  <b className={styles.pdf}>
+                  <b
+                    className={
+                      styles.pdf
+                    }
+                  >
                     PDF
                   </b>
 
-                  <b className={styles.jpg}>
+                  <b
+                    className={
+                      styles.jpg
+                    }
+                  >
                     JPG
                   </b>
 
-                  <b className={styles.png}>
+                  <b
+                    className={
+                      styles.png
+                    }
+                  >
                     PNG
                   </b>
                 </div>
@@ -1074,7 +923,9 @@ export default function VerifyPage() {
             </aside>
           </section>
 
-          {/* UPLOADED DOCUMENTS */}
+          {/* ==================================================
+              UPLOADED DOCUMENTS
+          ================================================== */}
 
           {hasDocuments && (
             <section
@@ -1210,7 +1061,9 @@ export default function VerifyPage() {
             </section>
           )}
 
-          {/* ERROR */}
+          {/* ==================================================
+              ERROR
+          ================================================== */}
 
           {uploadError && (
             <div
@@ -1226,36 +1079,9 @@ export default function VerifyPage() {
             </div>
           )}
 
-          {/* CONTINUE TO REVIEW */}
-
-          <button
-            type="button"
-            className={`${styles.reviewButton} ${
-              !hasDocuments ||
-              isUploading
-                ? styles.reviewDisabled
-                : ""
-            }`}
-            disabled={
-              !hasDocuments ||
-              isUploading
-            }
-            onClick={
-              handleVerification
-            }
-          >
-            <span>
-              {isUploading
-                ? "Uploading Documents..."
-                : "Continue to Review"}
-            </span>
-
-            {!isUploading && (
-              <b>→</b>
-            )}
-          </button>
-
-          {/* COMMON DOCUMENTS */}
+          {/* ==================================================
+              COMMON DOCUMENTS
+          ================================================== */}
 
           <section
             className={
@@ -1324,7 +1150,9 @@ export default function VerifyPage() {
             </div>
           </section>
 
-          {/* FEATURES */}
+          {/* ==================================================
+              FEATURES
+          ================================================== */}
 
           <section
             className={
@@ -1415,6 +1243,80 @@ export default function VerifyPage() {
               </span>
             </div>
           </section>
+
+          {/* ==================================================
+              UPLOAD PAGE ACTIONS
+              Kept here because Continue must first execute
+              the Supabase upload and create the verification.
+          ================================================== */}
+
+          <div
+            className={
+              styles.actions
+            }
+          >
+            <button
+              type="button"
+              className={
+                styles.backButton
+              }
+              onClick={() => {
+                if (isUploading) {
+                  return;
+                }
+
+                window.location.href =
+                  "/verify/document-guide";
+              }}
+              disabled={
+                isUploading
+              }
+            >
+              <span>←</span>
+              Back
+            </button>
+
+            <button
+              type="button"
+              className={
+                styles.continueButton
+              }
+              disabled={
+                !hasDocuments ||
+                isUploading
+              }
+              onClick={
+                handleVerification
+              }
+            >
+              <span>
+                {isUploading
+                  ? "Uploading Documents..."
+                  : "Continue to Review"}
+              </span>
+
+              {!isUploading && (
+                <b>→</b>
+              )}
+            </button>
+          </div>
+
+          {/* ==================================================
+              SECURITY NOTE
+          ================================================== */}
+
+          <div
+            className={
+              styles.securityNote
+            }
+          >
+            <span>🔒</span>
+
+            Your documents remain
+            securely stored while your
+            verification is being
+            processed.
+          </div>
         </div>
       </main>
     </AppShell>

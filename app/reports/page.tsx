@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
 import AppShell from "../AppShell/AppShell";
+import LoadingScreen from "../AppShell/LoadingScreen";
 import styles from "./reports.module.css";
 
 /*
@@ -96,8 +97,12 @@ function numberValue(
   return fallback;
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" && !Array.isArray(value)
+function asRecord(
+  value: unknown
+): Record<string, unknown> {
+  return value &&
+    typeof value === "object" &&
+    !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
 }
@@ -108,14 +113,18 @@ function nestedValue(
 ): unknown {
   for (const path of paths) {
     let current: unknown = source;
+
     for (const key of path) {
       const record = asRecord(current);
+
       if (!(key in record)) {
         current = undefined;
         break;
       }
+
       current = record[key];
     }
+
     if (
       current !== undefined &&
       current !== null &&
@@ -124,6 +133,7 @@ function nestedValue(
       return current;
     }
   }
+
   return undefined;
 }
 
@@ -135,7 +145,9 @@ function getNested(
 
   for (const key of keys) {
     const record = asRecord(current);
+
     if (!(key in record)) return undefined;
+
     current = record[key];
   }
 
@@ -147,16 +159,19 @@ function firstValue(...values: unknown[]): unknown {
     (value) =>
       value !== undefined &&
       value !== null &&
-      String(value).trim() !== "",
+      String(value).trim() !== ""
   );
 }
 
-function normalizeReportStatus(value: unknown): ReportStatus | null {
-  const normalized = String(value ?? "").trim().toLowerCase();
+function normalizeReportStatus(
+  value: unknown
+): ReportStatus | null {
+  const normalized = String(value ?? "")
+    .trim()
+    .toLowerCase();
 
   if (!normalized) return null;
 
-  // Canonical verification status values.
   if (
     normalized === "pending" ||
     normalized === "processing" ||
@@ -201,30 +216,28 @@ function resolveReportStatus(
   row: Record<string, unknown>,
   paymentPlan = ""
 ): ReportStatus {
-  // Essential/Basic uses review_status for its final AI outcome.
-  // status remains the processing lifecycle value (for example, "processed"),
-  // so it must not be used as the final Essential report status.
-  const verificationLevel = normalizeVerificationLevel(row, paymentPlan);
+  const verificationLevel =
+    normalizeVerificationLevel(
+      row,
+      paymentPlan
+    );
 
   if (verificationLevel === "Basic") {
-    const reviewStatus = normalizeReportStatus(row.review_status);
+    const reviewStatus =
+      normalizeReportStatus(
+        row.review_status
+      );
 
     if (reviewStatus) return reviewStatus;
 
-    // An Essential verification without a final review_status has not yet
-    // recorded its final outcome. Do not infer one from risk/findings/status.
     return "Pending";
   }
 
-  // Professional/Premium continue to use their existing canonical status.
-  // Their "processed" lifecycle state must not be reinterpreted through
-  // Essential's review_status field.
-  const databaseStatus = normalizeReportStatus(row.status);
+  const databaseStatus =
+    normalizeReportStatus(row.status);
 
   if (databaseStatus) return databaseStatus;
 
-  // Older records may use a legacy status value. Keep the fallback explicit
-  // and status-based only; never calculate a status from risk/findings.
   return "Pending";
 }
 
@@ -233,8 +246,10 @@ function normalizeVerificationLevel(
   paymentPlan = ""
 ): VerificationLevel {
   const findings = asRecord(row.findings);
+
   const raw = [
     paymentPlan,
+
     stringValue(row, [
       "plan",
       "selected_plan",
@@ -248,24 +263,43 @@ function normalizeVerificationLevel(
       "package_type",
       "verification_package",
     ]),
-    String(findings.plan ?? ""),
-    String(findings.verification_level ?? ""),
-    String(findings.verification_tier ?? ""),
-  ].filter(Boolean).join(" ").toLowerCase();
 
-  // If payment/row plan metadata is unavailable, infer the plan from the
-  // same Result-page findings branch that contains the document results.
-  // This keeps the report linked to the correct Essential/Professional/
-  // Premium Result page without using risk or findings to invent status.
-  if (getNested(findings, "premium") !== undefined) {
+    String(findings.plan ?? ""),
+    String(
+      findings.verification_level ?? ""
+    ),
+    String(
+      findings.verification_tier ?? ""
+    ),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (
+    getNested(
+      findings,
+      "premium"
+    ) !== undefined
+  ) {
     return "Premium";
   }
 
-  if (getNested(findings, "professional") !== undefined) {
+  if (
+    getNested(
+      findings,
+      "professional"
+    ) !== undefined
+  ) {
     return "Professional";
   }
 
-  if (getNested(findings, "essential") !== undefined) {
+  if (
+    getNested(
+      findings,
+      "essential"
+    ) !== undefined
+  ) {
     return "Basic";
   }
 
@@ -344,8 +378,13 @@ function mapReport(
   paymentPlan = "",
   paymentDate = ""
 ): Report {
-  const status = resolveReportStatus(row, paymentPlan);
+  const status = resolveReportStatus(
+    row,
+    paymentPlan
+  );
+
   const findings = asRecord(row.findings);
+
   const property = asRecord(
     nestedValue(findings, [
       ["property"],
@@ -366,15 +405,20 @@ function mapReport(
     paymentDate
   );
 
-  const verificationLevel = normalizeVerificationLevel(row, paymentPlan);
+  const verificationLevel =
+    normalizeVerificationLevel(
+      row,
+      paymentPlan
+    );
 
-  const packageDocuments = Array.isArray(
-    findings.documents
-  )
-    ? findings.documents.length
-    : Array.isArray(findings.document_package)
-      ? findings.document_package.length
-      : 0;
+  const packageDocuments =
+    Array.isArray(findings.documents)
+      ? findings.documents.length
+      : Array.isArray(
+            findings.document_package
+          )
+        ? findings.document_package.length
+        : 0;
 
   const documents = numberValue(
     row,
@@ -414,14 +458,23 @@ function mapReport(
 
   const rawId = stringValue(
     row,
-    ["id", "verification_id", "report_id"],
+    [
+      "id",
+      "verification_id",
+      "report_id",
+    ],
     ""
   );
 
   const propertyName =
     stringValue(
       property,
-      ["name", "property_name", "title", "property_title"],
+      [
+        "name",
+        "property_name",
+        "title",
+        "property_title",
+      ],
       ""
     ) ||
     stringValue(
@@ -439,7 +492,11 @@ function mapReport(
   const location =
     stringValue(
       property,
-      ["location", "address", "property_location"],
+      [
+        "location",
+        "address",
+        "property_location",
+      ],
       ""
     ) ||
     stringValue(
@@ -456,7 +513,9 @@ function mapReport(
     );
 
   return {
-    id: rawId || `${reportId}-${createdAt}`,
+    id:
+      rawId ||
+      `${reportId}-${createdAt}`,
     propertyName,
     reportId,
     status,
@@ -467,7 +526,9 @@ function mapReport(
     verifiedBy:
       status === "Pending"
         ? "Verification in progress"
-        : verificationMethod(verificationLevel),
+        : verificationMethod(
+            verificationLevel
+          ),
     pdfUrl: pdfUrl || null,
   };
 }
@@ -539,8 +600,7 @@ export default function ReportsPage() {
         const {
           data,
           error,
-        } =
-          await supabase.auth.getUser();
+        } = await supabase.auth.getUser();
 
         if (error) {
           console.warn(
@@ -635,10 +695,8 @@ export default function ReportsPage() {
                   error.message,
                 details:
                   error.details,
-                hint:
-                  error.hint,
-                code:
-                  error.code,
+                hint: error.hint,
+                code: error.code,
               }
             );
 
@@ -652,54 +710,102 @@ export default function ReportsPage() {
           }
 
           const rows =
-            (data || []) as Record<string, unknown>[];
+            (data || []) as Record<
+              string,
+              unknown
+            >[];
 
-          const verificationIds = rows
-            .map((row) => row.id)
-            .filter(
-              (id): id is string | number =>
-                typeof id === "string" || typeof id === "number"
-            );
+          const verificationIds =
+            rows
+              .map((row) => row.id)
+              .filter(
+                (
+                  id
+                ): id is
+                  | string
+                  | number =>
+                  typeof id ===
+                    "string" ||
+                  typeof id ===
+                    "number"
+              );
 
           const paymentByVerificationId =
-            new Map<string, { plan: string; date: string }>();
+            new Map<
+              string,
+              {
+                plan: string;
+                date: string;
+              }
+            >();
 
-          if (verificationIds.length > 0) {
-            const { data: paymentsData } = await supabase
+          if (
+            verificationIds.length >
+            0
+          ) {
+            const {
+              data: paymentsData,
+            } = await supabase
               .from("payments")
               .select(
                 "verification_id,plan,status,paid_at,created_at"
               )
-              .in("verification_id", verificationIds)
-              .order("created_at", { ascending: false });
+              .in(
+                "verification_id",
+                verificationIds
+              )
+              .order(
+                "created_at",
+                {
+                  ascending: false,
+                }
+              );
 
-            for (const payment of paymentsData || []) {
-              const key = String(payment.verification_id);
-              if (!paymentByVerificationId.has(key)) {
-                paymentByVerificationId.set(key, {
-                  plan: String(payment.plan || ""),
-                  date: String(
-                    payment.paid_at ||
-                      payment.created_at ||
-                      ""
-                  ),
-                });
+            for (
+              const payment of
+                paymentsData || []
+            ) {
+              const key = String(
+                payment.verification_id
+              );
+
+              if (
+                !paymentByVerificationId.has(
+                  key
+                )
+              ) {
+                paymentByVerificationId.set(
+                  key,
+                  {
+                    plan: String(
+                      payment.plan || ""
+                    ),
+                    date: String(
+                      payment.paid_at ||
+                        payment.created_at ||
+                        ""
+                    ),
+                  }
+                );
               }
             }
           }
 
-          const mappedReports = rows.map((row) => {
-            const payment =
-              paymentByVerificationId.get(
-                String(row.id ?? "")
-              );
+          const mappedReports =
+            rows.map((row) => {
+              const payment =
+                paymentByVerificationId.get(
+                  String(
+                    row.id ?? ""
+                  )
+                );
 
-            return mapReport(
-              row,
-              payment?.plan || "",
-              payment?.date || ""
-            );
-          });
+              return mapReport(
+                row,
+                payment?.plan || "",
+                payment?.date || ""
+              );
+            });
 
           mappedReports.sort(
             (a, b) => {
@@ -899,25 +1005,39 @@ export default function ReportsPage() {
   const totalPages = Math.max(
     1,
     Math.ceil(
-      filteredReports.length / REPORTS_PER_PAGE
+      filteredReports.length /
+        REPORTS_PER_PAGE
     )
   );
 
   useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
+    if (
+      currentPage >
+      totalPages
+    ) {
+      setCurrentPage(
+        totalPages
+      );
     }
-  }, [currentPage, totalPages]);
+  }, [
+    currentPage,
+    totalPages,
+  ]);
 
-  const paginatedReports = useMemo(() => {
-    const start =
-      (currentPage - 1) * REPORTS_PER_PAGE;
+  const paginatedReports =
+    useMemo(() => {
+      const start =
+        (currentPage - 1) *
+        REPORTS_PER_PAGE;
 
-    return filteredReports.slice(
-      start,
-      start + REPORTS_PER_PAGE
-    );
-  }, [filteredReports, currentPage]);
+      return filteredReports.slice(
+        start,
+        start + REPORTS_PER_PAGE
+      );
+    }, [
+      filteredReports,
+      currentPage,
+    ]);
 
   const totalReports =
     reports.length;
@@ -984,32 +1104,54 @@ export default function ReportsPage() {
     },
   ];
 
-  function getReportDestination(report: Report): string {
-    const id = encodeURIComponent(report.id);
+  function getReportDestination(
+    report: Report
+  ): string {
+    const id =
+      encodeURIComponent(
+        report.id
+      );
 
-    // Always open the Result page belonging to the report's plan.
-    // Pending is a valid Result-page status, so it must not be sent to
-    // /processing, which can lose the original verification context.
-    if (report.verificationLevel === "Premium") {
+    if (
+      report.verificationLevel ===
+      "Premium"
+    ) {
       return `/premium-report?id=${id}`;
     }
 
-    if (report.verificationLevel === "Professional") {
+    if (
+      report.verificationLevel ===
+      "Professional"
+    ) {
       return `/professional-report?id=${id}`;
     }
 
     return `/result?id=${id}`;
   }
 
-  function reportActionLabel(report: Report): string {
-    if (report.status === "Pending") return "View Status";
-    if (report.status === "Flagged") return "Review Report";
+  function reportActionLabel(
+    report: Report
+  ): string {
+    if (
+      report.status ===
+      "Pending"
+    ) {
+      return "View Status";
+    }
+
+    if (
+      report.status ===
+      "Flagged"
+    ) {
+      return "Review Report";
+    }
+
     return "View Report";
   }
 
   /*
   ============================================================
-  LOADING SCREEN
+  SHARED LOADING SCREEN
   ============================================================
   */
 
@@ -1017,49 +1159,7 @@ export default function ReportsPage() {
     loadingUser ||
     loadingReports
   ) {
-    return (
-      <main
-        className={
-          styles.loadingPage
-        }
-      >
-        <div
-          className={
-            styles.loadingBrand
-          }
-        >
-          <span
-            className={
-              styles.loadingDiamond
-            }
-          />
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </div>
-
-        <div
-          className={
-            styles.loadingIndicator
-          }
-          aria-hidden="true"
-        >
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <p
-          className={
-            styles.loadingText
-          }
-        >
-          Loading...
-        </p>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   /*
@@ -1078,7 +1178,7 @@ export default function ReportsPage() {
             styles.pageInner
           }
         >
-{/* SEARCH + FILTER */}
+          {/* SEARCH + FILTER */}
 
           <section
             className={
@@ -1100,9 +1200,12 @@ export default function ReportsPage() {
 
               <input
                 value={search}
-                onChange={(event) =>
+                onChange={(
+                  event
+                ) =>
                   setSearch(
-                    event.target.value
+                    event.target
+                      .value
                   )
                 }
                 placeholder="Search by property, report ID or location"
@@ -1137,188 +1240,72 @@ export default function ReportsPage() {
                 }`}
                 onClick={() =>
                   setFilterOpen(
-                    (current) =>
-                      !current
+                    (value) =>
+                      !value
                   )
                 }
+                type="button"
                 aria-expanded={
                   filterOpen
                 }
-                aria-haspopup="listbox"
               >
-                <div
-                  className={
-                    styles.filterTriggerLeft
-                  }
-                >
-                  <div
-                    className={`${styles.filterStatusIcon} ${
-                      filter ===
-                      "Verified"
-                        ? styles.verified
-                        : filter ===
-                            "Pending"
-                          ? styles.pending
-                          : filter ===
-                              "Flagged"
-                            ? styles.flagged
-                            : styles.all
-                    }`}
-                  >
-                    {filter ===
-                    "Verified"
-                      ? "✓"
-                      : filter ===
-                          "Pending"
-                        ? "◷"
-                        : filter ===
-                            "Flagged"
-                          ? "!"
-                          : "▤"}
-                  </div>
+                <span>
+                  {filter}
+                </span>
 
-                  <div
-                    className={
-                      styles.filterTriggerText
-                    }
-                  >
-                    <span>
-                      FILTER REPORTS
-                    </span>
-
-                    <strong>
-                      {
-                        filterOptions.find(
-                          (option) =>
-                            option.value ===
-                            filter
-                        )?.label
-                      }
-                    </strong>
-                  </div>
-                </div>
-
-                <span
-                  className={
-                    styles.filterChevron
-                  }
-                >
-                  ⌄
+                <span>
+                  {filterOpen
+                    ? "⌃"
+                    : "⌄"}
                 </span>
               </button>
 
               {filterOpen && (
-                <>
-                  <button
-                    className={
-                      styles.filterBackdrop
-                    }
-                    aria-label="Close filter"
-                    onClick={() =>
-                      setFilterOpen(
-                        false
-                      )
-                    }
-                  />
-
-                  <div
-                    className={
-                      styles.filterMenu
-                    }
-                    role="listbox"
-                    aria-label="Filter reports"
-                  >
-                    {filterOptions.map(
-                      (option) => (
-                        <button
-                          key={
+                <div
+                  className={
+                    styles.filterMenu
+                  }
+                >
+                  {filterOptions.map(
+                    (option) => (
+                      <button
+                        key={
+                          option.value
+                        }
+                        type="button"
+                        className={`${styles.filterOption} ${
+                          filter ===
+                          option.value
+                            ? styles.filterOptionActive
+                            : ""
+                        }`}
+                        onClick={() => {
+                          setFilter(
                             option.value
+                          );
+                          setFilterOpen(
+                            false
+                          );
+                        }}
+                      >
+                        <span>
+                          {
+                            option.label
                           }
-                          className={`${styles.filterOption} ${
-                            filter ===
-                            option.value
-                              ? styles.selected
-                              : ""
-                          }`}
-                          onClick={() => {
-                            setFilter(
-                              option.value
-                            );
+                        </span>
 
-                            setFilterOpen(
-                              false
-                            );
-                          }}
-                          role="option"
-                          aria-selected={
-                            filter ===
-                            option.value
+                        <small>
+                          {
+                            option.description
                           }
-                        >
-                          <div
-                            className={`${styles.filterStatusIcon} ${
-                              option.value ===
-                              "Verified"
-                                ? styles.verified
-                                : option.value ===
-                                    "Pending"
-                                  ? styles.pending
-                                  : option.value ===
-                                      "Flagged"
-                                    ? styles.flagged
-                                    : styles.all
-                            }`}
-                          >
-                            {option.value ===
-                            "Verified"
-                              ? "✓"
-                              : option.value ===
-                                  "Pending"
-                                ? "◷"
-                                : option.value ===
-                                    "Flagged"
-                                  ? "!"
-                                  : "▤"}
-                          </div>
-
-                          <div
-                            className={
-                              styles.filterOptionText
-                            }
-                          >
-                            <strong>
-                              {
-                                option.label
-                              }
-                            </strong>
-
-                            <span>
-                              {
-                                option.description
-                              }
-                            </span>
-                          </div>
-
-                          {filter ===
-                            option.value && (
-                            <span
-                              className={
-                                styles.selectedCheck
-                              }
-                            >
-                              ✓
-                            </span>
-                          )}
-                        </button>
-                      )
-                    )}
-                  </div>
-                </>
+                        </small>
+                      </button>
+                    )
+                  )}
+                </div>
               )}
             </div>
           </section>
-
-          {/* DATABASE NOTICE */}
 
           {errorMessage && (
             <div
@@ -1340,8 +1327,7 @@ export default function ReportsPage() {
                 }
               >
                 <strong>
-                  Reports are temporarily
-                  unavailable
+                  Reports data unavailable
                 </strong>
 
                 <p>
@@ -1350,8 +1336,9 @@ export default function ReportsPage() {
               </div>
 
               <button
-                onClick={
-                  loadReports
+                type="button"
+                onClick={() =>
+                  loadReports()
                 }
               >
                 Retry
@@ -1359,223 +1346,181 @@ export default function ReportsPage() {
             </div>
           )}
 
-          {/* SUMMARY */}
+          {/* PAGE HEADER */}
+
+          <section
+            className={
+              styles.pageHeader
+            }
+          >
+            <div
+              className={
+                styles.pageHeaderIcon
+              }
+            >
+              ▤
+            </div>
+
+            <div>
+              <h1>
+                Reports
+              </h1>
+
+              <p>
+                View and manage your
+                property verification
+                reports.
+              </p>
+            </div>
+          </section>
+
+          {/* STATS */}
 
           <section
             className={
               styles.statsGrid
             }
           >
-            <div
+            <article
               className={
                 styles.statCard
               }
             >
               <div
-                className={`${styles.statIcon} ${styles.statBlue}`}
+                className={
+                  styles.statIcon
+                }
               >
                 ▤
               </div>
 
               <div>
-                <span
-                  className={
-                    styles.statLabel
-                  }
-                >
-                  TOTAL REPORTS
+                <span>
+                  Total Reports
                 </span>
 
-                <strong
-                  className={
-                    styles.statNumber
-                  }
-                >
+                <strong>
                   {totalReports}
                 </strong>
-
-                <span
-                  className={
-                    styles.statSubtext
-                  }
-                >
-                  All reports
-                </span>
               </div>
-            </div>
+            </article>
 
-            <div
+            <article
               className={
                 styles.statCard
               }
             >
               <div
-                className={`${styles.statIcon} ${styles.statGreen}`}
+                className={
+                  styles.statIcon
+                }
               >
                 ✓
               </div>
 
               <div>
-                <span
-                  className={
-                    styles.statLabel
-                  }
-                >
-                  VERIFIED
+                <span>
+                  Verified
                 </span>
 
-                <strong
-                  className={
-                    styles.statNumber
-                  }
-                >
+                <strong>
                   {verifiedReports}
                 </strong>
-
-                <span
-                  className={
-                    styles.statSubtext
-                  }
-                >
-                  Completed
-                </span>
               </div>
-            </div>
+            </article>
 
-            <div
+            <article
               className={
                 styles.statCard
               }
             >
               <div
-                className={`${styles.statIcon} ${styles.statOrange}`}
+                className={
+                  styles.statIcon
+                }
               >
                 ◷
               </div>
 
               <div>
-                <span
-                  className={
-                    styles.statLabel
-                  }
-                >
-                  PENDING
+                <span>
+                  Pending
                 </span>
 
-                <strong
-                  className={
-                    styles.statNumber
-                  }
-                >
+                <strong>
                   {pendingReports}
                 </strong>
-
-                <span
-                  className={
-                    styles.statSubtext
-                  }
-                >
-                  Awaiting completion
-                </span>
               </div>
-            </div>
+            </article>
 
-            <div
+            <article
               className={
                 styles.statCard
               }
             >
               <div
-                className={`${styles.statIcon} ${styles.statRed}`}
+                className={
+                  styles.statIcon
+                }
               >
                 !
               </div>
 
               <div>
-                <span
-                  className={
-                    styles.statLabel
-                  }
-                >
-                  FLAGGED
+                <span>
+                  Flagged
                 </span>
 
-                <strong
-                  className={
-                    styles.statNumber
-                  }
-                >
+                <strong>
                   {flaggedReports}
                 </strong>
-
-                <span
-                  className={
-                    styles.statSubtext
-                  }
-                >
-                  Needs attention
-                </span>
               </div>
-            </div>
+            </article>
           </section>
-
-          {/* REPORTS HEADER */}
-
-          <div
-            className={
-              styles.reportsSectionHeader
-            }
-          >
-            <div>
-              <h2>
-                Verification Reports
-              </h2>
-
-              <p>
-                Your property due-diligence
-                verification records
-              </p>
-            </div>
-
-            <span>
-              {filteredReports.length}{" "}
-              {filteredReports.length ===
-              1
-                ? "report"
-                : "reports"}
-            </span>
-          </div>
 
           {/* REPORTS */}
 
           <section
             className={
-              styles.reportsContainer
+              styles.reportsSection
             }
           >
-            {loadingReports ? (
-              <div
-                className={
-                  styles.loadingReportsCard
-                }
-              >
-                <div
-                  className={
-                    styles.loadingSpinner
-                  }
-                />
-
-                <h3>
-                  Loading reports
-                </h3>
+            <div
+              className={
+                styles.sectionHeader
+              }
+            >
+              <div>
+                <h2>
+                  Verification Reports
+                </h2>
 
                 <p>
-                  Retrieving your
-                  verification reports...
+                  {filteredReports.length}{" "}
+                  report
+                  {filteredReports.length ===
+                  1
+                    ? ""
+                    : "s"}{" "}
+                  found
                 </p>
               </div>
-            ) : filteredReports.length ===
-              0 ? (
+
+              <button
+                type="button"
+                className={
+                  styles.refreshButton
+                }
+                onClick={() =>
+                  loadReports()
+                }
+              >
+                ↻ Refresh
+              </button>
+            </div>
+
+            {paginatedReports.length ===
+            0 ? (
               <div
                 className={
                   styles.emptyReportCard
@@ -1590,19 +1535,15 @@ export default function ReportsPage() {
                 </div>
 
                 <h3>
-                  {search ||
-                  filter !==
-                    "All Reports"
-                    ? "No matching reports"
-                    : "No reports yet"}
+                  No reports found
                 </h3>
 
                 <p>
                   {search ||
                   filter !==
                     "All Reports"
-                    ? "Try changing your search or filter to find another verification report."
-                    : "Your completed property verification reports will appear here automatically after a verification is completed."}
+                    ? "Try changing your search or filter."
+                    : "Your property verification reports will appear here once you complete a verification."}
                 </p>
               </div>
             ) : (
@@ -1646,7 +1587,9 @@ export default function ReportsPage() {
                         className={
                           styles.tableRow
                         }
-                        key={report.id}
+                        key={
+                          report.id
+                        }
                       >
                         <div
                           className={
@@ -1737,12 +1680,10 @@ export default function ReportsPage() {
                             styles.dateCell
                           }
                         >
-                          {
-                            formatDate(
-                              report.createdAt,
-                              report.status
-                            )
-                          }
+                          {formatDate(
+                            report.createdAt,
+                            report.status
+                          )}
                         </div>
 
                         <div
@@ -1756,11 +1697,17 @@ export default function ReportsPage() {
                             }
                             onClick={() =>
                               navigateTo(
-                                `${getReportDestination(report)}`
+                                getReportDestination(
+                                  report
+                                )
                               )
                             }
                           >
-                            {reportActionLabel(report)}
+                            {
+                              reportActionLabel(
+                                report
+                              )
+                            }
 
                             <span>
                               →
@@ -1809,7 +1756,9 @@ export default function ReportsPage() {
                         className={
                           styles.mobileReportCard
                         }
-                        key={report.id}
+                        key={
+                          report.id
+                        }
                       >
                         <div
                           className={
@@ -1909,12 +1858,10 @@ export default function ReportsPage() {
                             </span>
 
                             <strong>
-                              {
-                                formatDate(
-                                  report.createdAt,
-                                  report.status
-                                )
-                              }
+                              {formatDate(
+                                report.createdAt,
+                                report.status
+                              )}
                             </strong>
                           </div>
 
@@ -1948,11 +1895,17 @@ export default function ReportsPage() {
                             }
                             onClick={() =>
                               navigateTo(
-                                `${getReportDestination(report)}`
+                                getReportDestination(
+                                  report
+                                )
                               )
                             }
                           >
-                            {reportActionLabel(report)}
+                            {
+                              reportActionLabel(
+                                report
+                              )
+                            }
 
                             <span>
                               →
@@ -1996,113 +1949,64 @@ export default function ReportsPage() {
             )}
           </section>
 
-
           {/* PAGINATION */}
 
-          {filteredReports.length > REPORTS_PER_PAGE && (
-            <nav
-              className={styles.paginationBar}
-              aria-label="Reports pagination"
-            >
-              <span className={styles.paginationSummary}>
-                Showing{" "}
-                {(currentPage - 1) * REPORTS_PER_PAGE + 1}
-                {" "}to{" "}
-                {Math.min(
-                  currentPage * REPORTS_PER_PAGE,
-                  filteredReports.length
-                )}
-                {" "}of{" "}
-                {filteredReports.length} reports
-              </span>
-
-              <div className={styles.paginationControls}>
-                <button
-                  type="button"
-                  className={styles.paginationArrow}
-                  onClick={() =>
-                    setCurrentPage((page) =>
-                      Math.max(1, page - 1)
-                    )
-                  }
-                  disabled={currentPage === 1}
-                  aria-label="Previous page"
-                >
-                  ←
-                </button>
-
-                {Array.from(
-                  { length: totalPages },
-                  (_, index) => index + 1
-                ).map((page) => (
-                  <button
-                    type="button"
-                    key={page}
-                    className={`${styles.paginationNumber} ${
-                      page === currentPage
-                        ? styles.paginationNumberActive
-                        : ""
-                    }`}
-                    onClick={() =>
-                      setCurrentPage(page)
-                    }
-                    aria-current={
-                      page === currentPage
-                        ? "page"
-                        : undefined
-                    }
-                  >
-                    {page}
-                  </button>
-                ))}
-
-                <button
-                  type="button"
-                  className={styles.paginationArrow}
-                  onClick={() =>
-                    setCurrentPage((page) =>
-                      Math.min(totalPages, page + 1)
-                    )
-                  }
-                  disabled={
-                    currentPage === totalPages
-                  }
-                  aria-label="Next page"
-                >
-                  →
-                </button>
-              </div>
-            </nav>
-          )}
-
-          {/* INFORMATION */}
-
-          <div
-            className={
-              styles.infoBar
-            }
-          >
+          {filteredReports.length >
+            REPORTS_PER_PAGE && (
             <div
               className={
-                styles.infoIcon
+                styles.pagination
               }
             >
-              ⓘ
-            </div>
+              <button
+                type="button"
+                disabled={
+                  currentPage === 1
+                }
+                onClick={() =>
+                  setCurrentPage(
+                    (page) =>
+                      Math.max(
+                        1,
+                        page - 1
+                      )
+                  )
+                }
+              >
+                ← Previous
+              </button>
 
-            <div>
-              <strong>
-                Verification reports
-              </strong>
+              <span>
+                Page{" "}
+                <strong>
+                  {currentPage}
+                </strong>{" "}
+                of{" "}
+                <strong>
+                  {totalPages}
+                </strong>
+              </span>
 
-              <p>
-                Reports are generated from the
-                complete property verification
-                package, including document analysis
-                and verification results.
-              </p>
+              <button
+                type="button"
+                disabled={
+                  currentPage ===
+                  totalPages
+                }
+                onClick={() =>
+                  setCurrentPage(
+                    (page) =>
+                      Math.min(
+                        totalPages,
+                        page + 1
+                      )
+                  )
+                }
+              >
+                Next →
+              </button>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </AppShell>

@@ -1,137 +1,226 @@
+/* =========================================================
+   PROPERTYSURE AI — REPORT SUSPICIOUS
+   Premium report submission interface
+   ========================================================= */
+
 .page {
+  width: 100%;
   min-height: 100%;
-  background: #f3f8fd;
-  color: #13294b;
+  background: #f4f8fc;
+  color: #17345e;
+  box-sizing: border-box;
 }
 
 .pageInner {
-  width: min(1180px, 100%);
+  width: 100%;
+  max-width: 1420px;
   margin: 0 auto;
-  padding: 24px 28px 48px;
+  padding: 22px 30px 55px;
+  box-sizing: border-box;
 }
+
+/* =========================================================
+   TOP NAVIGATION
+   ========================================================= */
 
 .topBar {
   display: flex;
-  justify-content: flex-start;
-  margin-bottom: 14px;
+  align-items: center;
+  margin-bottom: 18px;
 }
 
 .backButton {
-  border: 0;
-  background: transparent;
-  color: #1676c5;
-  padding: 5px 0;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #d7e3ee;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #45627f;
+  font-family: inherit;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(27, 63, 103, 0.025);
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.18s ease;
 }
 
 .backButton:hover {
-  color: #1676c5;
+  border-color: #b8cede;
+  background: #f8fbfe;
+  transform: translateX(-1px);
 }
 
-.hero {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 18px;
-  padding: 22px 24px;
-  border: 1px solid #dce8f2;
-  border-radius: 16px;
-  background: linear-gradient(
-    100deg,
-    #f8fbff 0%,
-    #ffffff 70%,
-    #f4f9ff 100%
-  );
-  box-shadow: 0 5px 18px rgba(24, 48, 78, 0.035);
+.backButton span {
+  color: #147ddd;
+  font-size: 15px;
 }
 
-.heroIcon {
-  width: 58px;
-  height: 58px;
-  flex: 0 0 58px;
-  display: grid;
-  place-items: center;
-  border-radius: 15px;
-  background: #fee8ea;
-  color: #dc3035;
-  font-size: 27px;
-  font-weight: 900;
-}
-
-.heroCopy {
-  min-width: 0;
-}
-
-.eyebrow,
-.sectionEyebrow {
-  color: #1681d8;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-}
-
-.heroCopy h1 {
-  margin: 5px 0 6px;
-  color: #142d54;
-  font-size: clamp(25px, 3vw, 34px);
-  line-height: 1.08;
-  letter-spacing: -0.03em;
-}
-
-.heroCopy p {
-  max-width: 760px;
-  margin: 0;
-  color: #60718a;
-  font-size: 13px;
-  line-height: 1.6;
-}
+/* =========================================================
+   MAIN LAYOUT
+   ========================================================= */
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 330px;
-  gap: 18px;
+  grid-template-columns:
+    minmax(0, 1fr)
+    330px;
+  gap: 20px;
   align-items: start;
 }
 
-.formCard,
-.sideCard,
-.successCard {
-  border: 1px solid #dce7f1;
-  border-radius: 14px;
-  background: #fbfdff;
-  box-shadow: 0 3px 13px rgba(24, 48, 78, 0.03);
+/* =========================================================
+   FORM CARD
+   ========================================================= */
+
+.formCard {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #d9e5ef;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow:
+    0 12px 35px rgba(25, 62, 100, 0.055),
+    0 2px 7px rgba(25, 62, 100, 0.025);
 }
+
+/* =========================================================
+   CARD HEADER
+   ========================================================= */
 
 .cardHeader {
-  padding: 20px 20px 17px;
-  border-bottom: 1px solid #e5edf4;
+  padding: 24px 26px 0;
 }
 
-.cardHeader h2,
-.sideCard h2 {
-  margin: 5px 0 6px;
-  color: #132d55;
+.cardHeaderTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.cardHeaderIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  border: 1px solid #cfe3f5;
+  border-radius: 13px;
+  background:
+    linear-gradient(
+      145deg,
+      #eef8ff 0%,
+      #e1f1ff 100%
+    );
+  color: #087cda;
   font-size: 20px;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  box-shadow:
+    0 5px 14px rgba(20, 125, 221, 0.08);
 }
 
-.cardHeader p,
-.sideCard p {
-  margin: 0;
-  color: #718096;
-  font-size: 12px;
-  line-height: 1.6;
+.sectionEyebrow {
+  color: #167bcf;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 1.15px;
+  text-transform: uppercase;
 }
+
+.cardHeader h1 {
+  margin: 5px 0 5px;
+  color: #18345d;
+  font-size: 23px;
+  font-weight: 760;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+}
+
+.cardHeader p {
+  max-width: 680px;
+  margin: 0;
+  color: #71849c;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.headerRule {
+  height: 1px;
+  margin-top: 22px;
+  background:
+    linear-gradient(
+      90deg,
+      #e1eaf2 0%,
+      #edf3f8 70%,
+      transparent 100%
+    );
+}
+
+/* =========================================================
+   FORM
+   ========================================================= */
 
 .form {
-  padding: 20px;
+  padding: 0 26px 26px;
+}
+
+.formSection {
+  padding: 22px 0;
+  border-bottom: 1px solid #edf2f6;
+}
+
+.formSection:last-of-type {
+  border-bottom: 0;
+}
+
+.formSectionHeading {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 17px;
+}
+
+.formSectionHeading > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border-radius: 7px;
+  background: #edf6fd;
+  color: #197dce;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.formSectionHeading strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #294767;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.formSectionHeading small {
+  display: block;
+  color: #8a9aae;
+  font-size: 9px;
+  line-height: 1.4;
 }
 
 .fieldGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
   gap: 15px;
 }
 
@@ -139,303 +228,1181 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
-  margin-bottom: 16px;
+  min-width: 0;
 }
 
 .field > span {
-  color: #24486c;
+  display: block;
+  color: #355574;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.field > span b {
+  margin-left: 3px;
+  color: #e23847;
+  font-size: 10px;
+}
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.inputWrap,
+.selectWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 12px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: #7090ad;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
+  pointer-events: none;
 }
 
 .field input,
 .field select,
 .field textarea {
   width: 100%;
-  border: 1px solid #d5e2ed;
-  border-radius: 9px;
-  outline: 0;
-  background: #fff;
-  color: #19385e;
-  padding: 11px 12px;
-  font: inherit;
-  font-size: 12px;
   box-sizing: border-box;
+  border: 1px solid #d5e2ec;
+  outline: none;
+  border-radius: 10px;
+  background: #fbfdff;
+  color: #294767;
+  font-family: inherit;
+  font-size: 11px;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .field input,
 .field select {
-  min-height: 42px;
+  height: 43px;
+}
+
+.field input,
+.field select {
+  padding: 0 12px;
+}
+
+.inputWrap input {
+  padding-left: 39px;
+}
+
+.selectWrap select {
+  padding-left: 39px;
+  padding-right: 34px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.selectWrap::after {
+  content: "⌄";
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-55%);
+  color: #7089a3;
+  font-size: 13px;
+  pointer-events: none;
 }
 
 .field textarea {
   min-height: 145px;
   resize: vertical;
+  padding: 12px 13px;
   line-height: 1.55;
 }
 
 .field input::placeholder,
 .field textarea::placeholder {
-  color: #9aaabd;
+  color: #9aabba;
+}
+
+.field input:hover,
+.field select:hover,
+.field textarea:hover {
+  border-color: #c4d6e5;
+  background: #ffffff;
 }
 
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-  border-color: #76b7e7;
-  box-shadow: 0 0 0 3px rgba(22, 129, 216, 0.08);
+  border-color: #70afe0;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 3px rgba(20, 125, 221, 0.08);
+}
+
+.field input:disabled,
+.field select:disabled,
+.field textarea:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .field small {
-  color: #8091a6;
-  font-size: 10px;
-  line-height: 1.45;
+  color: #8999ab;
+  font-size: 8px;
+  line-height: 1.5;
 }
+
+/* =========================================================
+   INFO BOX
+   ========================================================= */
 
 .infoBox {
   display: flex;
+  align-items: flex-start;
   gap: 11px;
-  margin: 4px 0 20px;
-  padding: 13px;
-  border: 1px solid #dbe8f4;
-  border-radius: 10px;
-  background: #f7fbff;
+  margin-top: 21px;
+  padding: 13px 14px;
+  border: 1px solid #d6e8f6;
+  border-radius: 11px;
+  background:
+    linear-gradient(
+      135deg,
+      #f5fbff 0%,
+      #edf7ff 100%
+    );
 }
 
 .infoIcon {
-  width: 25px;
-  height: 25px;
-  flex: 0 0 25px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #e5f2fc;
-  color: #1676c5;
-  font-size: 12px;
-  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 27px;
+  height: 27px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: #dceeff;
+  color: #137bd2;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .infoBox strong {
   display: block;
   margin-bottom: 3px;
-  color: #24486c;
-  font-size: 11px;
+  color: #294767;
+  font-size: 10px;
+  font-weight: 750;
 }
 
 .infoBox p {
   margin: 0;
-  color: #647991;
+  color: #71869e;
+  font-size: 8px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.errorMessage {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 14px;
+  padding: 11px 13px;
+  border: 1px solid #f0caca;
+  border-radius: 10px;
+  background: #fff7f7;
+  color: #b4232d;
+}
+
+.errorMessage > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #ffe2e4;
+  color: #c82835;
   font-size: 10px;
+  font-weight: 800;
+}
+
+.errorMessage p {
+  margin: 1px 0 0;
+  font-size: 9px;
   line-height: 1.5;
 }
 
-.formActions,
-.successActions {
+/* =========================================================
+   FORM ACTIONS
+   ========================================================= */
+
+.formActions {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
+  padding-top: 21px;
 }
 
 .primaryButton,
 .secondaryButton {
-  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 39px;
+  box-sizing: border-box;
+  padding: 0 16px;
   border-radius: 9px;
-  padding: 10px 14px;
-  font-size: 12px;
-  font-weight: 800;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 750;
   cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .primaryButton {
-  border: 0;
-  background: #e52d32;
-  color: #fff;
+  border: 1px solid #0878d1;
+  background:
+    linear-gradient(
+      135deg,
+      #087fe0 0%,
+      #096fc5 100%
+    );
+  color: #ffffff;
+  box-shadow:
+    0 7px 16px rgba(8, 127, 224, 0.17);
 }
 
-.primaryButton:hover {
-  background: #cc2429;
+.primaryButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 10px 20px rgba(8, 127, 224, 0.22);
 }
 
 .secondaryButton {
-  border: 1px solid #d5e2ef;
-  background: #fff;
-  color: #315878;
+  border: 1px solid #d5e1eb;
+  background: #ffffff;
+  color: #506a85;
 }
 
-.secondaryButton:hover {
-  background: #f7fbff;
+.secondaryButton:hover:not(:disabled) {
+  border-color: #b9ccdc;
+  background: #f8fbfe;
 }
 
-.primaryButton span,
+.primaryButton span {
+  font-size: 15px;
+  font-weight: 400;
+}
+
 .secondaryButton span {
-  margin-left: 7px;
+  color: #147ddd;
+  font-size: 14px;
 }
 
-.successActions .primaryButton span {
-  margin-left: 0;
-  margin-right: 7px;
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
 }
+
+/* =========================================================
+   RIGHT COLUMN
+   ========================================================= */
 
 .sideColumn {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 15px;
+  min-width: 0;
+}
+
+/* =========================================================
+   SIDE CARD
+   ========================================================= */
+
+.sideCard,
+.trustCard,
+.processCard {
+  box-sizing: border-box;
+  border: 1px solid #d9e5ef;
+  border-radius: 17px;
+  background: #ffffff;
+  box-shadow:
+    0 9px 27px rgba(25, 62, 100, 0.045);
 }
 
 .sideCard {
-  padding: 18px;
+  padding: 19px;
+}
+
+.sideCardTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
 }
 
 .sideIcon {
-  width: 39px;
-  height: 39px;
-  display: grid;
-  place-items: center;
-  margin-bottom: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
   border-radius: 11px;
-  background: #fff4d8;
-  color: #a87400;
-  font-weight: 900;
+  background: #fff0d6;
+  color: #c27d00;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.sideCard h2,
+.trustCard h2,
+.processCard h2 {
+  margin: 4px 0 0;
+  color: #1d3b60;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.sideDivider {
+  height: 1px;
+  margin: 16px 0 13px;
+  background: #edf2f6;
 }
 
 .sideCard ul {
-  margin: 14px 0 0;
-  padding-left: 18px;
-  color: #60718a;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .sideCard li {
-  margin-bottom: 10px;
-  font-size: 11px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.sideCard li > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e8f7ee;
+  color: #23914b;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.sideCard li p {
+  margin: 1px 0 0;
+  color: #667d97;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   TRUST CARD
+   ========================================================= */
+
+.trustCard {
+  padding: 19px;
+  border-color: #cfe1ef;
+  background:
+    linear-gradient(
+      145deg,
+      #fafdff 0%,
+      #f1f8fd 100%
+    );
+}
+
+.trustCardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.trustIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 37px;
+  height: 37px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  background: #dceeff;
+  color: #087bdc;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.trustCard p {
+  margin: 15px 0 15px;
+  color: #687f98;
+  font-size: 9px;
+  line-height: 1.65;
+}
+
+.trustFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 11px;
+  border-top: 1px solid #dce9f3;
+}
+
+.trustFooter span:first-child {
+  color: #2b4b6b;
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.trustFooter span:last-child {
+  color: #8295a9;
+  font-size: 8px;
+}
+
+/* =========================================================
+   PROCESS CARD
+   ========================================================= */
+
+.processCard {
+  padding: 19px;
+}
+
+.processCard > .sectionEyebrow {
+  margin-bottom: 3px;
+}
+
+.processCard h2 {
+  margin-top: 0;
+}
+
+.processSteps {
+  margin-top: 17px;
+}
+
+.processStep {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.processStep > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 29px;
+  height: 29px;
+  flex: 0 0 auto;
+  border: 1px solid #d3e6f5;
+  border-radius: 9px;
+  background: #eef7fd;
+  color: #167bcf;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.processStep strong {
+  display: block;
+  margin: 2px 0 3px;
+  color: #355574;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.processStep p {
+  margin: 0;
+  color: #8293a7;
+  font-size: 8px;
   line-height: 1.5;
 }
 
+.processLine {
+  width: 1px;
+  height: 19px;
+  margin: 2px 0 2px 14px;
+  background: #dce8f1;
+}
+
+/* =========================================================
+   SUCCESS
+   ========================================================= */
+
 .successCard {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: 70px minmax(0, 1fr);
   gap: 20px;
-  align-items: start;
   max-width: 850px;
-  margin: 45px auto 0;
-  padding: 28px;
+  margin: 30px auto;
+  padding: 30px;
+  box-sizing: border-box;
+  border: 1px solid #d6e6f1;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow:
+    0 14px 40px rgba(25, 62, 100, 0.07);
 }
 
 .successIcon {
-  width: 58px;
-  height: 58px;
-  display: grid;
-  place-items: center;
-  border-radius: 15px;
-  background: #e6f7f2;
-  color: #159b7d;
-  font-size: 27px;
-  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 62px;
+  height: 62px;
+  border-radius: 18px;
+  background: #e5f7ec;
+  color: #24924b;
+  font-size: 29px;
+  font-weight: 800;
+}
+
+.successContent .eyebrow {
+  color: #24924b;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.1px;
 }
 
 .successCard h1 {
-  margin: 6px 0 8px;
-  color: #142d54;
-  font-size: 27px;
+  margin: 5px 0 8px;
+  color: #18345d;
+  font-size: 25px;
+  font-weight: 760;
 }
 
 .successCard p {
+  max-width: 650px;
   margin: 0;
-  color: #60718a;
-  font-size: 13px;
+  color: #71849b;
+  font-size: 11px;
   line-height: 1.65;
 }
 
 .notice {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin: 18px 0 20px;
-  padding: 12px 14px;
-  border: 1px solid #dbe8f4;
-  border-radius: 10px;
-  background: #f7fbff;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 13px;
+  border: 1px solid #d7e6f2;
+  border-radius: 11px;
+  background: #f5faff;
+}
+
+.noticeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: #dceeff;
+  color: #147ddd;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .notice strong {
-  color: #24486c;
-  font-size: 11px;
+  display: block;
+  margin-bottom: 3px;
+  color: #294767;
+  font-size: 9px;
 }
 
 .notice span {
-  color: #647991;
-  font-size: 10px;
+  display: block;
+  color: #71869e;
+  font-size: 8px;
   line-height: 1.5;
 }
 
 .successActions {
-  justify-content: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 20px;
 }
 
-.page button:focus-visible,
-.page input:focus-visible,
-.page select:focus-visible,
-.page textarea:focus-visible {
-  outline: 2px solid rgba(8, 121, 223, 0.45);
-  outline-offset: 3px;
-}
+/* =========================================================
+   TABLET
+   ========================================================= */
 
-@media (max-width: 900px) {
+@media (max-width: 1050px) {
+  .pageInner {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
   .layout {
     grid-template-columns: 1fr;
   }
 
   .sideColumn {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .processCard {
+    grid-column: 1 / -1;
   }
 }
 
-@media (max-width: 700px) {
-  .pageInner {
-    padding: 18px 16px 36px;
-  }
+/* =========================================================
+   SMALL TABLET
+   ========================================================= */
 
+@media (max-width: 720px) {
   .fieldGrid {
     grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .hero {
-    align-items: flex-start;
-    padding: 19px;
   }
 
   .sideColumn {
     grid-template-columns: 1fr;
   }
 
+  .processCard {
+    grid-column: auto;
+  }
+
   .successCard {
     grid-template-columns: 1fr;
-    margin-top: 25px;
-    padding: 21px;
+    margin-top: 20px;
   }
 }
 
-@media (max-width: 520px) {
-  .hero {
-    flex-direction: column;
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 620px) {
+  .page {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
   }
 
-  .form {
-    padding: 16px;
+  .pageInner {
+    width: 100%;
+    max-width: 100%;
+    padding: 12px 10px 105px !important;
+  }
+
+  .topBar {
+    margin-bottom: 11px;
+  }
+
+  .backButton {
+    min-height: 32px;
+    padding: 0 10px;
+    border-radius: 8px;
+    font-size: 9px;
+  }
+
+  .backButton span {
+    font-size: 13px;
+  }
+
+  .layout {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* =======================================================
+     MOBILE FORM CARD
+     ======================================================= */
+
+  .formCard {
+    width: 100%;
+    border-radius: 15px;
+    box-shadow:
+      0 8px 25px rgba(25, 62, 100, 0.045);
   }
 
   .cardHeader {
-    padding: 17px 16px 15px;
+    padding: 16px 14px 0;
   }
 
-  .formActions,
-  .successActions {
-    flex-direction: column-reverse;
-    align-items: stretch;
+  .cardHeaderTop {
+    gap: 10px;
+  }
+
+  .cardHeaderIcon {
+    width: 39px;
+    height: 39px;
+    border-radius: 11px;
+    font-size: 17px;
+  }
+
+  .sectionEyebrow {
+    font-size: 7px;
+    letter-spacing: 0.9px;
+  }
+
+  .cardHeader h1 {
+    margin-top: 4px;
+    font-size: 17px;
+    letter-spacing: -0.2px;
+  }
+
+  .cardHeader p {
+    font-size: 8px;
+    line-height: 1.5;
+  }
+
+  .headerRule {
+    margin-top: 15px;
+  }
+
+  .form {
+    padding: 0 14px 15px;
+  }
+
+  .formSection {
+    padding: 16px 0;
+  }
+
+  .formSectionHeading {
+    gap: 8px;
+    margin-bottom: 13px;
+  }
+
+  .formSectionHeading > span {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    font-size: 7px;
+  }
+
+  .formSectionHeading strong {
+    font-size: 10px;
+  }
+
+  .formSectionHeading small {
+    font-size: 7px;
+  }
+
+  .fieldGrid {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  .field {
+    gap: 5px;
+  }
+
+  .field > span {
+    font-size: 8px;
+  }
+
+  .field > span b {
+    font-size: 8px;
+  }
+
+  .field input,
+  .field select {
+    height: 39px;
+    border-radius: 8px;
+    font-size: 9px;
+  }
+
+  .field input,
+  .field select {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .inputWrap input,
+  .selectWrap select {
+    padding-left: 34px;
+  }
+
+  .inputIcon {
+    left: 10px;
+    width: 16px;
+    font-size: 10px;
+  }
+
+  .selectWrap::after {
+    right: 11px;
+    font-size: 11px;
+  }
+
+  .field textarea {
+    min-height: 125px;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 9px;
+  }
+
+  .field small {
+    font-size: 7px;
+  }
+
+  .infoBox {
+    gap: 8px;
+    margin-top: 14px;
+    padding: 10px;
+    border-radius: 9px;
+  }
+
+  .infoIcon {
+    width: 23px;
+    height: 23px;
+    border-radius: 7px;
+    font-size: 10px;
+  }
+
+  .infoBox strong {
+    font-size: 8px;
+  }
+
+  .infoBox p {
+    font-size: 7px;
+  }
+
+  .errorMessage {
+    padding: 9px 10px;
+  }
+
+  .errorMessage > span {
+    width: 18px;
+    height: 18px;
+  }
+
+  .errorMessage p {
+    font-size: 7px;
+  }
+
+  .formActions {
+    gap: 7px;
+    padding-top: 15px;
   }
 
   .primaryButton,
   .secondaryButton {
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    font-size: 8px;
+  }
+
+  .primaryButton span,
+  .secondaryButton span {
+    font-size: 12px;
+  }
+
+  /* =======================================================
+     MOBILE SIDE CARDS
+     ======================================================= */
+
+  .sideColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .sideCard,
+  .trustCard,
+  .processCard {
     width: 100%;
+    border-radius: 14px;
+  }
+
+  .sideCard {
+    padding: 14px;
+  }
+
+  .sideIcon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    font-size: 15px;
+  }
+
+  .sideCard h2,
+  .trustCard h2,
+  .processCard h2 {
+    font-size: 12px;
+  }
+
+  .sideDivider {
+    margin: 12px 0 11px;
+  }
+
+  .sideCard ul {
+    gap: 9px;
+  }
+
+  .sideCard li {
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .sideCard li > span {
+    width: 18px;
+    height: 18px;
+    font-size: 8px;
+  }
+
+  .sideCard li p {
+    font-size: 8px;
+    line-height: 1.5;
+  }
+
+  .trustCard {
+    padding: 14px;
+  }
+
+  .trustIcon {
+    width: 33px;
+    height: 33px;
+    border-radius: 9px;
+    font-size: 13px;
+  }
+
+  .trustCard p {
+    margin: 11px 0;
+    font-size: 8px;
+    line-height: 1.6;
+  }
+
+  .trustFooter {
+    padding-top: 9px;
+  }
+
+  .trustFooter span {
+    font-size: 7px !important;
+  }
+
+  .processCard {
+    padding: 14px;
+  }
+
+  .processSteps {
+    margin-top: 13px;
+  }
+
+  .processStep {
+    gap: 8px;
+  }
+
+  .processStep > span {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    font-size: 7px;
+  }
+
+  .processStep strong {
+    font-size: 8px;
+  }
+
+  .processStep p {
+    font-size: 7px;
+  }
+
+  .processLine {
+    height: 14px;
+    margin-left: 12px;
+  }
+
+  /* =======================================================
+     MOBILE SUCCESS
+     ======================================================= */
+
+  .successCard {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    margin: 12px 0;
+    padding: 19px 15px;
+    border-radius: 15px;
+  }
+
+  .successIcon {
+    width: 49px;
+    height: 49px;
+    border-radius: 14px;
+    font-size: 23px;
+  }
+
+  .successCard h1 {
+    font-size: 19px;
+  }
+
+  .successCard p {
+    font-size: 9px;
+    line-height: 1.6;
+  }
+
+  .notice {
+    gap: 8px;
+    margin-top: 13px;
+    padding: 10px;
+  }
+
+  .noticeIcon {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+
+  .notice strong {
+    font-size: 8px;
+  }
+
+  .notice span {
+    font-size: 7px;
+  }
+
+  .successActions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 7px;
+  }
+
+  .successActions button {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 390px) {
+  .pageInner {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .cardHeader {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .form {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .cardHeader h1 {
+    font-size: 16px;
+  }
+
+  .formSectionHeading strong {
+    font-size: 9px;
+  }
+
+  .field > span {
+    font-size: 7.5px;
+  }
+
+  .sideCard,
+  .trustCard,
+  .processCard {
+    padding: 12px;
+  }
+}
+
+/* =========================================================
+   VERY SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 340px) {
+  .cardHeaderIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .cardHeader h1 {
+    font-size: 15px;
+  }
+
+  .cardHeader p {
+    font-size: 7px;
+  }
+
+  .formSectionHeading small {
+    font-size: 6.5px;
+  }
+
+  .field input,
+  .field select {
+    height: 37px;
+    font-size: 8px;
+  }
+
+  .field textarea {
+    min-height: 115px;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    font-size: 7px;
+  }
+}
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+.backButton:focus-visible,
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  outline: 3px solid rgba(20, 125, 221, 0.2);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .backButton,
+  .primaryButton,
+  .secondaryButton,
+  .field input,
+  .field select,
+  .field textarea {
+    transition: none;
   }
 }

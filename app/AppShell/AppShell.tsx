@@ -25,7 +25,7 @@ const mainNavItems: NavItem[] = [
   },
   {
     label: "Verify Property",
-    path: "/verify",
+    path: "/verify/property-details",
     icon: "⇧",
   },
   {
@@ -71,7 +71,7 @@ const bottomNavItems: NavItem[] = [
   },
   {
     label: "Verify",
-    path: "/verify",
+    path: "/verify/property-details",
     icon: "⇧",
   },
   {
@@ -461,7 +461,40 @@ export default function AppShell({
     window.location.href = "/sign-out";
   }
 
+  /*
+   * IMPORTANT:
+   *
+   * Verify Property is now the entry point for the
+   * entire verification workflow.
+   *
+   * The workflow pages still use activePath="/verify",
+   * so they must remain highlighted while the user
+   * moves through:
+   *
+   * Property Details
+   * Document Guide
+   * Upload Documents
+   * Review Package
+   * Select Plan
+   * Secure Checkout
+   * Verification
+   */
   function isActive(path: string) {
+    if (
+      path === "/verify/property-details"
+    ) {
+      return (
+        activePath === "/verify" ||
+        activePath ===
+          "/verify/property-details" ||
+        activePath.startsWith(
+          "/verify/"
+        ) ||
+        activePath === "/processing" ||
+        activePath === "/result"
+      );
+    }
+
     return path === activePath;
   }
 

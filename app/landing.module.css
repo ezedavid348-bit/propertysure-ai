@@ -81,10 +81,6 @@
 
   z-index: 0;
 
-  /*
-    Keeps the media layer visually stable while
-    the actual MP4 is being prepared.
-  */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 
@@ -183,6 +179,7 @@
 
 /* =========================================================
    BRAND
+   Exact AppShell branding
 ========================================================= */
 
 .brand {
@@ -205,44 +202,37 @@
   cursor: pointer;
 }
 
-.brandLogo {
-  display: flex;
+.brandDiamond {
+  width: 15px;
+  height: 15px;
+
+  flex: 0 0 15px;
+
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  width: 28px;
-  height: 28px;
+  color: #168eff;
+
+  font-size: 15px;
+  line-height: 1;
 }
 
-.brandDiamond {
-  display: block;
-
-  width: 12px;
-  height: 12px;
-
-  transform: rotate(45deg);
-
-  border-radius: 2px;
-
-  background: #1676c5;
-
-  box-shadow:
-    0 0 16px rgba(46, 168, 255, 0.32);
-}
-
-.brandName {
+.brandText {
   color: #ffffff;
 
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
 
-  letter-spacing: -0.35px;
+  font-weight: 800;
+
+  letter-spacing: -0.025em;
 
   white-space: nowrap;
 }
 
-.brandName span {
-  color: #2ea8ff;
+.brandText strong {
+  color: #168eff;
 }
 
 /* =========================================================
@@ -982,11 +972,11 @@
     display: block !important;
 
     /*
-      Slightly enlarge the video and move
-      its visual framing upward.
+      Same visual scale.
+      Only move the mobile visual slightly upward.
     */
     transform:
-      translate(-50%, -53%)
+      translate(-50%, -56%)
       scale(1.06) !important;
 
     object-fit: cover !important;
@@ -1049,21 +1039,20 @@
   }
 
   .brand {
-    gap: 7px;
-  }
-
-  .brandLogo {
-    width: 25px;
-    height: 25px;
+    gap: 9px;
   }
 
   .brandDiamond {
-    width: 10px;
-    height: 10px;
+    width: 15px;
+    height: 15px;
+
+    flex: 0 0 15px;
+
+    font-size: 15px;
   }
 
-  .brandName {
-    font-size: 15px;
+  .brandText {
+    font-size: 17px;
   }
 
   .menuButton {
@@ -1102,10 +1091,6 @@
 
     margin: 0;
 
-    /*
-      Increased bottom padding creates
-      breathing room beneath the buttons.
-    */
     padding:
       100px
       20px
@@ -1121,9 +1106,10 @@
     padding: 0;
 
     /*
-      Raise the complete hero composition slightly.
+      Move the text/buttons upward without
+      changing their size.
     */
-    transform: translateY(-8px);
+    transform: translateY(-35px);
   }
 
   /* =====================================================
@@ -1141,9 +1127,6 @@
   .title {
     width: 100%;
 
-    /*
-      Controlled size for the longer headline.
-    */
     font-size: clamp(38px, 11.2vw, 54px);
 
     line-height: 0.98;
@@ -1236,7 +1219,7 @@
   }
 
   .heroContent {
-    transform: translateY(-6px);
+    transform: translateY(-32px);
   }
 
   .title {
@@ -1290,7 +1273,7 @@
   }
 
   .heroContent {
-    transform: translateY(-4px);
+    transform: translateY(-28px);
   }
 
   .eyebrow {

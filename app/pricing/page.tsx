@@ -1,449 +1,479 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import styles from "./pricing.module.css";
+
+type Plan = {
+  name: string;
+  label: string;
+  subtitle: string;
+  description: string;
+  price: string;
+  audience: string;
+  featured?: boolean;
+  premium?: boolean;
+  features: string[];
+};
+
+const PLANS: Plan[] = [
+  {
+    name: "Essential",
+    label: "ESSENTIAL",
+    subtitle: "Digital verification",
+    description:
+      "Digital document-package verification and property-signal assessment for buyers who want evidence before committing capital.",
+    price: "₦399K",
+    audience:
+      "Individual property buyers and straightforward transactions.",
+    features: [
+      "AI document verification",
+      "Document authenticity assessment",
+      "Property information analysis",
+      "Risk and inconsistency signals",
+      "Digital verification report",
+      "Downloadable PDF report",
+    ],
+  },
+  {
+    name: "Professional",
+    label: "PROFESSIONAL",
+    subtitle: "Enhanced due diligence",
+    description:
+      "Expanded verification, professional review and deeper due diligence checks for higher-value or more complex property transactions.",
+    price: "₦849K",
+    audience:
+      "Buyers, investors and higher-value property transactions.",
+    featured: true,
+    features: [
+      "Everything in Essential",
+      "Enhanced document analysis",
+      "Deeper due-diligence review",
+      "Ownership verification",
+      "Property history checks",
+      "Priority support",
+    ],
+  },
+  {
+    name: "Premium",
+    label: "PREMIUM",
+    subtitle: "On-site due diligence",
+    description:
+      "Comprehensive due diligence with on-site inspection and relevant professional and government-search components.",
+    price: "₦1.399M",
+    audience:
+      "High-value, complex or higher-risk property transactions.",
+    premium: true,
+    features: [
+      "Everything in Professional",
+      "On-site property inspection",
+      "GPS and location verification",
+      "Professional review",
+      "Government-search components",
+      "Comprehensive due-diligence report",
+    ],
+  },
+];
+
+const COMPARISON_ROWS = [
+  {
+    feature: "AI document verification",
+    essential: true,
+    professional: true,
+    premium: true,
+  },
+  {
+    feature: "Property information analysis",
+    essential: true,
+    professional: true,
+    premium: true,
+  },
+  {
+    feature: "Risk and inconsistency analysis",
+    essential: true,
+    professional: true,
+    premium: true,
+  },
+  {
+    feature: "Enhanced due-diligence review",
+    essential: false,
+    professional: true,
+    premium: true,
+  },
+  {
+    feature: "Ownership / property history checks",
+    essential: false,
+    professional: true,
+    premium: true,
+  },
+  {
+    feature: "On-site inspection",
+    essential: false,
+    professional: false,
+    premium: true,
+  },
+  {
+    feature: "GPS / location verification",
+    essential: false,
+    professional: false,
+    premium: true,
+  },
+  {
+    feature: "Professional / government-search components",
+    essential: false,
+    professional: false,
+    premium: true,
+  },
+];
+
 export default function PricingPage() {
+  const router = useRouter();
+
+  function navigate(path: string) {
+    router.push(path);
+  }
+
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-      background: `
-linear-gradient(rgba(5,11,24,0.88), rgba(5,11,24,0.92)),
-url("/pricing-blueprint.png") center/cover no-repeat,
-radial-gradient(circle at top, #0E2348 0%, #08111F 45%, #050B18 100%)
-`,
-        color: "white",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-{/* HERO SECTION */}
+    <main className={styles.page}>
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
-<section
-  style={{
-    maxWidth: "1200px",
-    margin: "0 auto",
-    padding: "110px 20px 80px",
-    textAlign: "center",
-  }}
->
-  <div
-    style={{
-      display: "inline-block",
-      padding: "10px 22px",
-      borderRadius: "999px",
-      background: "rgba(46,168,255,0.12)",
-      border: "1px solid rgba(46,168,255,0.25)",
-      color: "#A7D9FF",
-      fontWeight: "700",
-      letterSpacing: "2px",
-      fontSize: "14px",
-      marginBottom: "28px",
-    }}
-  >
-    PRICING PLANS
-  </div>
+      <header className={styles.header}>
+        <div className={styles.headerInner}>
+          <button
+            type="button"
+            className={styles.brand}
+            onClick={() => navigate("/")}
+            aria-label="PropertySure AI home"
+          >
+            <span className={styles.brandDiamond}>
+              ◆
+            </span>
 
-  <h1
-    style={{
-      fontSize: "clamp(42px,7vw,72px)",
-      fontWeight: "800",
-      lineHeight: "1.1",
-      marginBottom: "28px",
-    }}
-  >
-    Choose the Right
-    <br />
-    Verification Plan
-  </h1>
+            <span className={styles.brandText}>
+              PropertySure <strong>AI</strong>
+            </span>
+          </button>
+        </div>
+      </header>
 
-  <p
-    style={{
-      maxWidth: "760px",
-      margin: "0 auto",
-      color: "#B6C2D2",
-      fontSize: "20px",
-      lineHeight: "1.8",
-    }}
-  >
-    Whether you're buying your first property, investing from abroad,
-    or purchasing high-value real estate, PropertySure AI provides
-    professional verification and due diligence before you pay.
-  </p>
+      {/* =====================================================
+          BACK TO HOME
+      ===================================================== */}
 
-  <div
-    style={{
-      marginTop: "45px",
-      display: "flex",
-      justifyContent: "center",
-      gap: "16px",
-      flexWrap: "wrap",
-    }}
-  >
-    <div
-      style={{
-        background: "rgba(46,168,255,0.12)",
-        border: "1px solid rgba(46,168,255,0.25)",
-        padding: "12px 20px",
-        borderRadius: "999px",
-        color: "#D9F2FF",
-      }}
-    >
-      ⚡ Fast Turnaround
-    </div>
+      <div className={styles.backRow}>
+        <div className={styles.backRowInner}>
+          <button
+            type="button"
+            className={styles.backButton}
+            onClick={() => navigate("/")}
+            aria-label="Back to PropertySure AI home"
+          >
+            <span className={styles.backArrow}>
+              ←
+            </span>
 
-    <div
-      style={{
-        background: "rgba(46,168,255,0.12)",
-        border: "1px solid rgba(46,168,255,0.25)",
-        padding: "12px 20px",
-        borderRadius: "999px",
-        color: "#D9F2FF",
-      }}
-    >
-      🛡️ Fraud Protection
-    </div>
+            <span>Back to Home</span>
+          </button>
+        </div>
+      </div>
 
-    <div
-      style={{
-        background: "rgba(46,168,255,0.12)",
-        border: "1px solid rgba(46,168,255,0.25)",
-        padding: "12px 20px",
-        borderRadius: "999px",
-        color: "#D9F2FF",
-      }}
-    >
-      📄 Professional Reports
-    </div>
-  </div>
-  {/* PRICING CARDS */}
+      <div className={styles.content}>
+        {/* =====================================================
+            SIMPLE PRICING HEADER
+        ===================================================== */}
 
-<section
-  style={{
-    maxWidth: "1250px",
-    margin: "0 auto",
-    padding: "20px 20px 100px",
-    display: "flex",
-    justifyContent: "center",
-    gap: "30px",
-    flexWrap: "wrap",
-  }}
->
-  {/* ESSENTIAL */}
+        <section className={styles.pricingHeader}>
+          <p className={styles.eyebrow}>
+            PROPERTYSURE AI
+          </p>
 
-  <div
-    style={{
-      width: "340px",
-      background: "#111827",
-      border: "1px solid rgba(255,255,255,0.08)",
-      borderRadius: "24px",
-      padding: "35px",
-    }}
-  >
-    <h2
-      style={{
-        color: "#2EA8FF",
-        fontSize: "30px",
-        marginBottom: "10px",
-      }}
-    >
-      Essential
-    </h2>
+          <h1>
+            Property verification
+            <br />
+            <span>pricing.</span>
+          </h1>
 
-    <p
-      style={{
-        color: "#B6C2D2",
-        marginBottom: "25px",
-      }}
-    >
-      Perfect for first-time property buyers.
-    </p>
+          <p className={styles.pricingHeaderText}>
+            Choose the level of due diligence that fits
+            your property transaction.
+          </p>
+        </section>
 
-    <h1
-      style={{
-        fontSize: "54px",
-        margin: 0,
-      }}
-    >
-      ₦149,999
-    </h1>
+        {/* =====================================================
+            PRICING CARDS
+        ===================================================== */}
 
-    <p
-      style={{
-        color: "#8FA3B8",
-        marginTop: "10px",
-        marginBottom: "30px",
-      }}
-    >
-      Per Verification
-    </p>
+        <section
+          className={styles.plans}
+          aria-label="PropertySure AI pricing plans"
+        >
+          {PLANS.map((plan) => (
+            <article
+              key={plan.name}
+              className={`${styles.planCard} ${
+                plan.featured
+                  ? styles.planCardFeatured
+                  : ""
+              } ${
+                plan.premium
+                  ? styles.planCardPremium
+                  : ""
+              }`}
+            >
+              {plan.featured && (
+                <div className={styles.popularBadge}>
+                  MOST POPULAR
+                </div>
+              )}
 
-    <div style={{ lineHeight: "2.1" }}>
-      <p>✅ AI Document Verification</p>
-      <p>✅ Authenticity Check</p>
-      <p>✅ Fraud Risk Analysis</p>
-      <p>✅ AI Verification Report</p>
-      <p>✅ Downloadable PDF</p>
-    </div>
+              <div className={styles.planLabel}>
+                {plan.label}
+              </div>
 
-    <button
-      onClick={() => window.location.href="/signup"}
-      style={{
-        width: "100%",
-        padding: "16px",
-        marginTop: "30px",
-        background: "#2EA8FF",
-        color: "#fff",
-        border: "none",
-        borderRadius: "12px",
-        fontSize: "18px",
-        fontWeight: "700",
-        cursor: "pointer",
-      }}
-    >
-      Choose Essential
-    </button>
-  </div>
+              <h2>{plan.name}</h2>
 
-  {/* PROFESSIONAL */}
+              <p className={styles.planSubtitle}>
+                {plan.subtitle}
+              </p>
 
-  <div
-    style={{
-      width: "340px",
-      background: "#16213A",
-      border: "2px solid #2EA8FF",
-      borderRadius: "24px",
-      padding: "35px",
-      transform: "scale(1.05)",
-      boxShadow: "0 25px 60px rgba(46,168,255,.28)",
-      position: "relative",
-    }}
-  >
-    <div
-      style={{
-        position: "absolute",
-        top: "-14px",
-        right: "20px",
-        background: "#2EA8FF",
-        color: "#fff",
-        padding: "6px 16px",
-        borderRadius: "999px",
-        fontSize: "13px",
-        fontWeight: "700",
-      }}
-    >
-      MOST POPULAR
-    </div>
+              <div className={styles.price}>
+                <strong>{plan.price}</strong>
 
-    <h2
-      style={{
-        color: "#2EA8FF",
-        fontSize: "30px",
-        marginBottom: "10px",
-      }}
-    >
-      Professional
-    </h2>
+                <span>
+                  One-time verification service
+                </span>
+              </div>
 
-    <p
-      style={{
-        color: "#B6C2D2",
-        marginBottom: "25px",
-      }}
-    >
-      Designed for property buyers, diaspora investors, and anyone purchasing high-value real estate.
-    </p>
+              <p className={styles.planDescription}>
+                {plan.description}
+              </p>
 
-    <h1
-      style={{
-        fontSize: "54px",
-        margin: 0,
-      }}
-    >
-      ₦299,999
-    </h1>
+              <div className={styles.featuresTitle}>
+                WHAT'S INCLUDED
+              </div>
 
-    <p
-      style={{
-        color: "#8FA3B8",
-        marginTop: "10px",
-        marginBottom: "30px",
-      }}
-    >
-      Per Verification
-    </p>
+              <div className={styles.features}>
+                {plan.features.map((feature) => (
+                  <div
+                    key={feature}
+                    className={styles.feature}
+                  >
+                    <span
+                      className={
+                        styles.featureCheck
+                      }
+                    >
+                      ✓
+                    </span>
 
-    <div style={{ lineHeight: "2.1" }}>
-      <p>✅ Everything in Essential</p>
-      <p>✅ Government Registry Search</p>
-      <p>✅ Ownership Verification</p>
-      <p>✅ Property History Report</p>
-      <p>✅ Priority Support</p>
-    </div>
+                    <p>{feature}</p>
+                  </div>
+                ))}
+              </div>
 
-    <button
-      onClick={() => window.location.href="/signup"}
-      style={{
-        width: "100%",
-        padding: "16px",
-        marginTop: "30px",
-        background: "#2EA8FF",
-        color: "#fff",
-        border: "none",
-        borderRadius: "12px",
-        fontSize: "18px",
-        fontWeight: "700",
-        cursor: "pointer",
-      }}
-    >
-      Choose Professional
-    </button>
-  </div>
+              <div className={styles.planFooter}>
+                <p className={styles.planAudience}>
+                  <strong>Best suited for:</strong>{" "}
+                  {plan.audience}
+                </p>
+              </div>
+            </article>
+          ))}
+        </section>
 
-  {/* PREMIUM */}
+        {/* =====================================================
+            VALUE NOTE
+        ===================================================== */}
 
-  <div
-    style={{
-      width: "340px",
-      background: "#111827",
-      border: "1px solid rgba(255,255,255,0.08)",
-      borderRadius: "24px",
-      padding: "35px",
-    }}
-  >
-    <h2
-      style={{
-        color: "#2EA8FF",
-        fontSize: "30px",
-        marginBottom: "10px",
-      }}
-    >
-      Premium
-    </h2>
+        <section className={styles.valueNote}>
+          <strong>
+            Choose the verification depth that matches
+            your transaction.
+          </strong>
 
-    <p
-      style={{
-        color: "#B6C2D2",
-        marginBottom: "25px",
-      }}
-    >
-      Complete due diligence for premium property transactions.
-    </p>
+          <span>
+            Higher levels provide deeper property
+            due-diligence coverage for more complex
+            transactions.
+          </span>
+        </section>
 
-    <h1
-      style={{
-        fontSize: "54px",
-        margin: 0,
-      }}
-    >
-      ₦699,999
-    </h1>
+        {/* =====================================================
+            COMPARISON
+        ===================================================== */}
 
-    <p
-      style={{
-        color: "#8FA3B8",
-        marginTop: "10px",
-        marginBottom: "30px",
-      }}
-    >
-      Custom Investigation
-    </p>
+        <section className={styles.comparison}>
+          <p className={styles.sectionEyebrow}>
+            PLAN COMPARISON
+          </p>
 
-    <div style={{ lineHeight: "2.1" }}>
-      <p>✅ Everything in Professional</p>
-      <p>✅ Physical Site Inspection</p>
-      <p>✅ GPS Boundary Verification</p>
-      <p>✅ Lawyer Review</p>
-      <p>✅ Litigation Check</p>
-      <p>✅ Dedicated Consultant</p>
-    </div>
+          <h2>
+            Compare the plans.
+          </h2>
 
-    <button
-      onClick={() => window.location.href="/contact"}
-      style={{
-        width: "100%",
-        padding: "16px",
-        marginTop: "30px",
-        background: "#2EA8FF",
-        color: "#fff",
-        border: "none",
-        borderRadius: "12px",
-        fontSize: "18px",
-        fontWeight: "700",
-        cursor: "pointer",
-      }}
-    >
-      Contact Sales
-    </button>
-  </div>
-</section>
-</section>
-{/* CUSTOM VERIFICATION CTA */}
+          <p className={styles.comparisonIntro}>
+            See the verification capabilities included
+            at each level.
+          </p>
 
-<section
-  style={{
-   padding: "90px 20px 140px",
-    textAlign: "center",
-    borderTop: "1px solid rgba(255,255,255,0.08)",
-    marginTop: "30px",
-  }}
->
-  <h2
-    style={{
-      fontSize: "clamp(32px,5vw,48px)",
-      fontWeight: "800",
-      marginBottom: "20px",
-    }}
-  >
-    Need a Custom Verification?
-  </h2>
+          <div className={styles.comparisonTable}>
+            <div
+              className={`${styles.tableRow} ${styles.tableHeader}`}
+            >
+              <div>
+                Verification capability
+              </div>
 
-  <p
-    style={{
-      maxWidth: "760px",
-      margin: "0 auto",
-      color: "#B6C2D2",
-      fontSize: "18px",
-      lineHeight: "1.8",
-      marginBottom: "40px",
-    }}
-  >
-    Large estates, commercial properties, government allocations,
-    diaspora investments, and complex transactions may require a
-    customised verification process. Speak with our specialists for
-    a tailored verification package.
-  </p>
+              <div>Essential</div>
 
-  <button
-    onClick={() => (window.location.href = "/contact")}
-    style={{
-      background: "#2EA8FF",
-      color: "#fff",
-      border: "none",
-      borderRadius: "12px",
-      padding: "18px 40px",
-      fontSize: "18px",
-      fontWeight: "700",
-      cursor: "pointer",
-      boxShadow: "0 15px 40px rgba(46,168,255,0.25)",
-    }}
-  >
-    Contact Our Experts
-  </button>
+              <div>Professional</div>
 
-  <p
-    style={{
-      marginTop: "35px",
-      color: "#8FA3B8",
-     fontSize: "13px",
-      lineHeight: "1.8",
-      maxWidth: "900px",
-      marginLeft: "auto",
-      marginRight: "auto",
-    }}
-  >
-    Premium pricing covers properties within our standard service area.
-    Additional travel, accommodation, government fees, legal expenses,
-    surveying, or special requirements may require a separate quotation.
-  </p>
-</section>
-</main>
+              <div>Premium</div>
+            </div>
+
+            {COMPARISON_ROWS.map((row) => (
+              <div
+                key={row.feature}
+                className={styles.tableRow}
+              >
+                <div className={styles.tableFeature}>
+                  {row.feature}
+                </div>
+
+                <div>
+                  {row.essential ? (
+                    <div className={styles.tableCheck}>
+                      ✓
+                    </div>
+                  ) : (
+                    <div className={styles.tableDash}>
+                      —
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  {row.professional ? (
+                    <div className={styles.tableCheck}>
+                      ✓
+                    </div>
+                  ) : (
+                    <div className={styles.tableDash}>
+                      —
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  {row.premium ? (
+                    <div className={styles.tableCheck}>
+                      ✓
+                    </div>
+                  ) : (
+                    <div className={styles.tableDash}>
+                      —
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* =====================================================
+            HELP
+        ===================================================== */}
+
+        <section className={styles.helpSection}>
+          <h2>
+            Need help choosing a plan?
+          </h2>
+
+          <p>
+            If you are unsure which level of property
+            due diligence fits your transaction, contact
+            PropertySure AI and we can help you understand
+            the available options.
+          </p>
+
+          <button
+            type="button"
+            className={styles.helpButton}
+            onClick={() => navigate("/contact")}
+          >
+            Contact PropertySure AI
+            <span>→</span>
+          </button>
+        </section>
+      </div>
+
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
+
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <button
+            type="button"
+            className={styles.footerBrand}
+            onClick={() => navigate("/")}
+            aria-label="PropertySure AI home"
+          >
+            <span className={styles.footerDiamond}>
+              ◆
+            </span>
+
+            <span className={styles.footerBrandText}>
+              PropertySure <strong>AI</strong>
+            </span>
+          </button>
+
+          <nav
+            className={styles.footerLinks}
+            aria-label="Footer navigation"
+          >
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+            >
+              Home
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/verify")}
+            >
+              Verify
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/pricing")}
+            >
+              Pricing
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/about")}
+            >
+              About
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/contact")}
+            >
+              Contact
+            </button>
+          </nav>
+
+          <span className={styles.footerCopy}>
+            © {new Date().getFullYear()} PropertySure AI
+          </span>
+        </div>
+      </footer>
+    </main>
   );
 }

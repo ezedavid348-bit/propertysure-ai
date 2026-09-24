@@ -2,7 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+
 import AppShell from "../../AppShell/AppShell";
+import VerificationWorkflow from "../components/VerificationWorkflow";
+
 import styles from "./select-plan.module.css";
 
 type PlanId =
@@ -25,47 +28,57 @@ const PLANS: Plan[] = [
     id: "essential",
     name: "Essential",
     description:
-      "Essential verification for individual property transactions.",
+      "Basic document-level verification for property owners, buyers and sellers.",
     price: "₦299,999",
     icon: "◆",
     features: [
       "AI Document Verification",
-      "Authenticity Check",
-      "Fraud Risk Analysis",
-      "AI Verification Report",
-      "Downloadable PDF",
+      "Document Identification & Data Extraction",
+      "Authenticity & Consistency Checks",
+      "Names, Dates & Title Information Cross-Checks",
+      "Fraud & Tampering Risk Analysis",
+      "Missing / Inconsistent Information Detection",
+      "Package Completeness Assessment",
+      "AI Findings & Downloadable Report",
     ],
   },
   {
     id: "professional",
     name: "Professional",
     description:
-      "Comprehensive verification for property buyers, investors, and most property transactions.",
+      "Comprehensive title, ownership, survey and regulatory verification for property buyers and investors.",
     price: "₦549,999",
     icon: "▥",
     popular: true,
     features: [
       "Everything in Essential",
-      "Government Registry Search",
-      "Ownership Verification",
-      "Property History Report",
-      "Priority Support",
+      "Government Title / Registry Search",
+      "Registered Owner & Title Verification",
+      "Submitted Documents vs Government Records",
+      "Survey / Plot / Land Information Verification",
+      "Property History & Encumbrance Checks where available",
+      "CAC / Seller / Agent / Developer Verification where applicable",
+      "Comprehensive Due-Diligence Report & Priority Support",
     ],
   },
   {
     id: "premium",
     name: "Premium",
     description:
-      "Complete due diligence for high-value and complex property transactions.",
+      "Complete property and site due diligence combining documents, government searches, planning, building, litigation and physical verification.",
     price: "₦999,999",
     icon: "♛",
     features: [
       "Everything in Professional",
-      "Physical Site Inspection",
-      "GPS Boundary Verification",
-      "Lawyer Review",
-      "Litigation Check",
-      "Dedicated Consultant",
+      "Planning & Zoning Verification",
+      "Permitted Land Use & Development Restrictions",
+      "Building Approval / Plan / Development Permit Verification",
+      "Building & Development Compliance Check",
+      "Property Litigation / Ownership Dispute Search",
+      "Physical Site Inspection & GPS / Location / Plot Confirmation",
+      "Site Photographs & Physical Evidence",
+      "Surveyor-Assisted Site Verification & Survey Comparison",
+      "Consolidated Premium Due-Diligence Report",
     ],
   },
 ];
@@ -85,19 +98,6 @@ export default function SelectPlanPage() {
 
   const [selectedPlan, setSelectedPlan] =
     useState<PlanId>("professional");
-
-  function goBackToReview(): void {
-    if (verificationId) {
-      router.push(
-        `/verify/review?id=${encodeURIComponent(
-          verificationId,
-        )}`,
-      );
-      return;
-    }
-
-    router.push("/verify/review");
-  }
 
   function selectPlan(planId: PlanId): void {
     setSelectedPlan(planId);
@@ -130,6 +130,12 @@ export default function SelectPlanPage() {
       });
   }
 
+  function requestLegalSupport(): void {
+    router.push(
+      "/contact?service=legal-support",
+    );
+  }
+
   return (
     <AppShell
       activePath="/verify"
@@ -137,162 +143,29 @@ export default function SelectPlanPage() {
     >
       <main className={styles.page}>
         <div className={styles.content}>
-          {/* BACK TO REVIEW */}
+          {/* ==================================================
+              SHARED VERIFICATION WORKFLOW
+              STEP 5 — SELECT PLAN
+          ================================================== */}
 
-          <button
-            type="button"
-            className={styles.backButton}
-            onClick={goBackToReview}
-          >
-            <span>←</span>
-            Back to Review Package
-          </button>
+          <VerificationWorkflow
+            activeStep={5}
+            backHref={
+              verificationId
+                ? `/verify/review?id=${encodeURIComponent(
+                    verificationId,
+                  )}`
+                : "/verify/review"
+            }
+            backLabel="Back to Review Package"
+            showTopBack={true}
+            showBottomActions={false}
+            showSecurityNote={false}
+          />
 
-          {/* =====================================================
-              WORKFLOW
-              ===================================================== */}
-
-          <section className={styles.workflow}>
-            {/* STEP 1 */}
-
-            <div className={styles.workflowItem}>
-              <span
-                className={
-                  styles.workflowNumberDone
-                }
-              >
-                ✓
-              </span>
-
-              <div>
-                <strong>
-                  Upload Documents
-                </strong>
-
-                <span>
-                  Add your property documents
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.workflowLineActive
-              }
-            />
-
-            {/* STEP 2 */}
-
-            <div className={styles.workflowItem}>
-              <span
-                className={
-                  styles.workflowNumberDone
-                }
-              >
-                ✓
-              </span>
-
-              <div>
-                <strong>
-                  Review Package
-                </strong>
-
-                <span>
-                  Confirm your documents
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.workflowLineActive
-              }
-            />
-
-            {/* STEP 3 */}
-
-            <div
-              className={`${styles.workflowItem} ${styles.workflowCurrent}`}
-            >
-              <span
-                className={
-                  styles.workflowNumberActive
-                }
-              >
-                3
-              </span>
-
-              <div>
-                <strong>
-                  Select Plan
-                </strong>
-
-                <span>
-                  Choose your service
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.workflowLine
-              }
-            />
-
-            {/* STEP 4 */}
-
-            <div className={styles.workflowItem}>
-              <span
-                className={
-                  styles.workflowNumber
-                }
-              >
-                4
-              </span>
-
-              <div>
-                <strong>
-                  Secure Checkout
-                </strong>
-
-                <span>
-                  Complete payment
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.workflowLine
-              }
-            />
-
-            {/* STEP 5 */}
-
-            <div className={styles.workflowItem}>
-              <span
-                className={
-                  styles.workflowNumber
-                }
-              >
-                5
-              </span>
-
-              <div>
-                <strong>
-                  Verification
-                </strong>
-
-                <span>
-                  AI analysis and results
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* =====================================================
-              PLAN HEADER
-              ===================================================== */}
+          {/* ==================================================
+              INTRO
+          ================================================== */}
 
           <section className={styles.intro}>
             <div className={styles.planBadge}>
@@ -301,22 +174,21 @@ export default function SelectPlanPage() {
 
             <h1>
               Select a{" "}
-              <span>
-                Verification Plan
-              </span>
+              <span>Verification Plan</span>
             </h1>
 
             <p>
-              Choose the verification service
-              that best fits your property
-              transaction. All plans include
-              AI-powered analysis and a
-              comprehensive verification
-              report.
+              Choose the level of property
+              verification that matches your
+              transaction. Each plan clearly
+              defines the checks and verification
+              included.
             </p>
           </section>
 
-          {/* SECURE PAYMENT */}
+          {/* ==================================================
+              SECURE PAYMENT
+          ================================================== */}
 
           <section className={styles.secureCard}>
             <div className={styles.secureIcon}>
@@ -330,15 +202,14 @@ export default function SelectPlanPage() {
 
               <span>
                 Your payment information is
-                encrypted and processed
-                securely.
+                encrypted and processed securely.
               </span>
             </div>
           </section>
 
-          {/* =====================================================
-              PRICING PLANS
-              ===================================================== */}
+          {/* ==================================================
+              VERIFICATION PLANS
+          ================================================== */}
 
           <section
             id="verification-plans"
@@ -352,10 +223,6 @@ export default function SelectPlanPage() {
                 <article
                   key={plan.id}
                   className={`${styles.planCard} ${
-                    plan.popular
-                      ? styles.planCardPopular
-                      : ""
-                  } ${
                     isSelected
                       ? styles.planCardSelected
                       : ""
@@ -372,16 +239,12 @@ export default function SelectPlanPage() {
                   )}
 
                   <div
-                    className={
-                      styles.planIcon
-                    }
+                    className={styles.planIcon}
                   >
                     {plan.icon}
                   </div>
 
-                  <h2>
-                    {plan.name}
-                  </h2>
+                  <h2>{plan.name}</h2>
 
                   <p
                     className={
@@ -392,17 +255,13 @@ export default function SelectPlanPage() {
                   </p>
 
                   <div
-                    className={
-                      styles.priceRow
-                    }
+                    className={styles.priceRow}
                   >
                     <strong>
                       {plan.price}
                     </strong>
 
-                    <span>
-                      One-time
-                    </span>
+                    <span>One-time</span>
                   </div>
 
                   <div
@@ -419,9 +278,8 @@ export default function SelectPlanPage() {
                           }
                         >
                           <span>✓</span>
-                          <p>
-                            {feature}
-                          </p>
+
+                          <p>{feature}</p>
                         </div>
                       ),
                     )}
@@ -447,14 +305,12 @@ export default function SelectPlanPage() {
             })}
           </section>
 
-          {/* =====================================================
-              RECOMMENDATION
-              ===================================================== */}
+          {/* ==================================================
+              PLAN DIFFERENTIATION
+          ================================================== */}
 
           <section
-            className={
-              styles.recommendation
-            }
+            className={styles.recommendation}
           >
             <div
               className={
@@ -470,16 +326,17 @@ export default function SelectPlanPage() {
               }
             >
               <strong>
-                Not sure which plan to
-                choose?
+                Not sure which plan to choose?
               </strong>
 
               <span>
-                The Professional Plan is
-                recommended for most property
-                transactions. You can always
-                choose a higher level of due
-                diligence when needed.
+                Essential = document-level AI
+                verification. Professional =
+                documents, title, ownership,
+                survey and government checks.
+                Premium adds planning, building,
+                litigation and physical site
+                verification.
               </span>
             </div>
 
@@ -494,14 +351,64 @@ export default function SelectPlanPage() {
             </button>
           </section>
 
-          {/* =====================================================
-              TRUST FEATURES
-              ===================================================== */}
+          {/* ==================================================
+              LEGAL SUPPORT
+          ================================================== */}
 
           <section
-            className={
-              styles.trustFeatures
-            }
+            className={styles.legalSupport}
+          >
+            <div
+              className={
+                styles.legalSupportIcon
+              }
+            >
+              ⚖
+            </div>
+
+            <div
+              className={
+                styles.legalSupportText
+              }
+            >
+              <strong>
+                Need Legal Review or
+                Transaction Support?
+              </strong>
+
+              <span>
+                PropertySure can connect you
+                with a qualified property lawyer
+                for legal document review, legal
+                advice, transaction support or
+                other legal services.
+              </span>
+
+              <small>
+                Legal services are separate from
+                the verification packages and are
+                available by custom quotation.
+              </small>
+            </div>
+
+            <button
+              type="button"
+              className={
+                styles.legalSupportButton
+              }
+              onClick={requestLegalSupport}
+            >
+              Request Legal Support
+              <span>→</span>
+            </button>
+          </section>
+
+          {/* ==================================================
+              TRUST FEATURES
+          ================================================== */}
+
+          <section
+            className={styles.trustFeatures}
           >
             <div className={styles.trustItem}>
               <div
@@ -588,23 +495,17 @@ export default function SelectPlanPage() {
             </div>
           </section>
 
-          {/* =====================================================
-              BOTTOM ACTIONS
-              ===================================================== */}
+          {/* ==================================================
+              CHECKOUT
+          ================================================== */}
 
           <section
-            className={
-              styles.bottomActions
-            }
+            className={styles.bottomActions}
           >
             <button
               type="button"
-              className={
-                styles.checkoutButton
-              }
-              onClick={
-                continueToCheckout
-              }
+              className={styles.checkoutButton}
+              onClick={continueToCheckout}
               disabled={!selectedPlan}
             >
               Continue to Checkout

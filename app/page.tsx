@@ -75,19 +75,21 @@ export default function Home() {
       ===================================================== */}
       <header className={styles.header}>
         <div className={styles.navbar}>
-          {/* PropertySure AI branding */}
+          {/* =================================================
+              PROPERTYSURE AI BRANDING
+              Same branding used in AppShell
+          ================================================= */}
           <button
             type="button"
             className={styles.brand}
             onClick={() => navigate("/")}
             aria-label="PropertySure AI home"
           >
-            <span className={styles.brandLogo}>
-              <span className={styles.brandDiamond} />
-            </span>
+            <span className={styles.brandDiamond}>◆</span>
 
-            <span className={styles.brandName}>
-              PropertySure <span>AI</span>
+            <span className={styles.brandText}>
+              PropertySure
+              <strong> AI</strong>
             </span>
           </button>
 
@@ -102,14 +104,6 @@ export default function Home() {
               onClick={() => navigate("/")}
             >
               Home
-            </button>
-
-            <button
-              type="button"
-              className={styles.navLink}
-              onClick={() => navigate("/verify")}
-            >
-              Verify
             </button>
 
             <button
@@ -196,14 +190,6 @@ export default function Home() {
                   onClick={() => navigate("/")}
                 >
                   Home
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.mobileNavLink}
-                  onClick={() => navigate("/verify")}
-                >
-                  Verify
                 </button>
 
                 <button
@@ -297,7 +283,7 @@ export default function Home() {
             <button
               type="button"
               className={styles.secondaryButton}
-              onClick={() => navigate("/about")}
+              onClick={() => navigate("/learn-more")}
             >
               Learn More
             </button>

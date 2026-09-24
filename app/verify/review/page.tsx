@@ -9,6 +9,8 @@ import {
 } from "react";
 
 import AppShell from "../../AppShell/AppShell";
+import LoadingScreen from "../../AppShell/LoadingScreen";
+import VerificationNavigation from "../components/VerificationNavigation";
 import { supabase } from "../../lib/supabase";
 
 import styles from "./review.module.css";
@@ -16,11 +18,15 @@ import styles from "./review.module.css";
 /*
  * ============================================================
  * PROPERTY SURE AI
- * VERIFICATION REVIEW — STEP 2
+ * VERIFICATION REVIEW — STEP 4
  * ============================================================
  *
  * Workflow:
  *
+ * /verify/property-details
+ *    ↓
+ * /verify/document-guide
+ *    ↓
  * /verify
  *    ↓
  * /verify/review?id=VERIFICATION_ID
@@ -40,6 +46,8 @@ import styles from "./review.module.css";
  * - AI classification is performed against the actual file
  *   contents retrieved from Supabase Storage.
  * - AppShell is the shared application navigation.
+ * - VerificationNavigation is the shared verification workflow
+ *   navigation used across the verification journey.
  * ============================================================
  */
 
@@ -51,7 +59,8 @@ import styles from "./review.module.css";
 
 const STORAGE_BUCKET = "property-documents";
 
-const MAX_FILE_SIZE = 20 * 1024 * 1024;
+const MAX_FILE_SIZE =
+  20 * 1024 * 1024;
 
 const ALLOWED_TYPES = [
   "application/pdf",
@@ -117,13 +126,14 @@ type UploadedDocument = {
   classificationMessage?: string;
 };
 
-type ReviewDocument = UploadedDocument & {
-  previewUrl?: string;
+type ReviewDocument =
+  UploadedDocument & {
+    previewUrl?: string;
 
-  previewError?: boolean;
+    previewError?: boolean;
 
-  originalIndex: number;
-};
+    originalIndex: number;
+  };
 
 type VerificationFindings = {
   document_package?: UploadedDocument[];
@@ -197,7 +207,8 @@ type ClassificationResponse = {
 
   status?:
     | "identified"
-    | "uncertain";
+    | "uncertain"
+    | "failed";
 
   message?: string;
 
@@ -213,75 +224,71 @@ type ClassificationResponse = {
  */
 
 function formatFileSize(
-  bytes: number,
+  size: number,
 ): string {
-  if (bytes <= 0) {
-    return "Size unavailable";
+  if (size < 1024) {
+    return `${size} B`;
   }
 
-  if (bytes < 1024 * 1024) {
-    return `${Math.round(
-      bytes / 1024,
-    )} KB`;
+  if (size < 1024 * 1024) {
+    return `${(
+      size / 1024
+    ).toFixed(1)} KB`;
   }
 
   return `${(
-    bytes /
+    size /
     (1024 * 1024)
-  ).toFixed(2)} MB`;
+  ).toFixed(1)} MB`;
 }
 
 function getExtension(
-  name: string,
+  fileName: string,
 ): string {
-  return (
-    name
-      .split(".")
-      .pop()
-      ?.toUpperCase() || "FILE"
-  );
+  const parts =
+    fileName.split(".");
+
+  return parts.length > 1
+    ? parts.pop()!.toUpperCase()
+    : "FILE";
 }
 
 function normalizeFileType(
-  name: string,
-  type?: string,
+  fileName: string,
+  type: string,
 ): string {
-  const extension =
-    getExtension(name);
-
-  if (extension !== "FILE") {
-    return extension;
-  }
-
-  const normalized =
-    String(type || "").toLowerCase();
-
   if (
-    normalized ===
+    type ===
     "application/pdf"
   ) {
     return "PDF";
   }
 
   if (
-    normalized ===
+    type ===
       "image/jpeg" ||
-    normalized ===
-      "image/jpg"
+    type === "image/jpg"
   ) {
     return "JPG";
   }
 
   if (
-    normalized ===
+    type ===
     "image/png"
   ) {
     return "PNG";
   }
 
-  return String(
-    type || "FILE",
-  ).toUpperCase();
+  const extension =
+    getExtension(fileName);
+
+  if (
+    extension === "JPEG"
+  ) {
+    return "JPG";
+  }
+
+  return extension;
 }
 
 function getMimeTypeFromDocument(
@@ -569,53 +576,24 @@ export default function ReviewPage() {
 
   /*
    * ============================================================
-   * LOAD PAGE
-   * ============================================================
-   */
-
-  useEffect(() => {
-    if (!verificationId) {
-      setError(
-        "No verification ID was provided.",
-      );
-
-      setLoading(false);
-
-      return;
-    }
-
-    void loadVerification(
-      verificationId,
-    );
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [verificationId]);
-
-  /*
-   * ============================================================
    * SIGNED URL
    * ============================================================
    */
 
   async function getDocumentSignedUrl(
-    documentPath: string,
-    expiresIn = 600,
+    path: string,
   ): Promise<string> {
-    if (!documentPath) {
-      throw new Error(
-        "Document storage path is missing.",
-      );
-    }
-
     const {
       data,
       error: signedUrlError,
     } =
       await supabase.storage
-        .from(STORAGE_BUCKET)
+        .from(
+          STORAGE_BUCKET,
+        )
         .createSignedUrl(
-          documentPath,
-          expiresIn,
+          path,
+          60 * 60,
         );
 
     if (
@@ -624,7 +602,7 @@ export default function ReviewPage() {
     ) {
       throw new Error(
         signedUrlError?.message ||
-          "Unable to create a secure document URL.",
+          "Unable to create a secure document preview.",
       );
     }
 
@@ -633,236 +611,61 @@ export default function ReviewPage() {
 
   /*
    * ============================================================
-   * AI CLASSIFIER
+   * AI CLASSIFICATION
    * ============================================================
    */
 
   async function classifyDocument(
-    documentUrl: string,
-    fileName: string,
-    mimeType: string,
+    document: ReviewDocument,
   ): Promise<ClassificationResponse> {
-    if (!documentUrl) {
-      throw new Error(
-        "A secure document URL is required for AI identification.",
+    const signedUrl =
+      await getDocumentSignedUrl(
+        document.path,
       );
-    }
-
-    const fileResponse =
-      await fetch(documentUrl);
-
-    if (!fileResponse.ok) {
-      throw new Error(
-        `Unable to retrieve the document from storage (${fileResponse.status}).`,
-      );
-    }
-
-    const blob =
-      await fileResponse.blob();
-
-    if (
-      !blob ||
-      blob.size <= 0
-    ) {
-      throw new Error(
-        "The document retrieved from storage is empty.",
-      );
-    }
-
-    const actualMimeType =
-      mimeType ||
-      blob.type ||
-      "application/octet-stream";
-
-    const file =
-      new File(
-        [blob],
-        fileName ||
-          "property-document",
-        {
-          type:
-            actualMimeType,
-        },
-      );
-
-    const formData =
-      new FormData();
-
-    formData.append(
-      "file",
-      file,
-    );
 
     const response =
       await fetch(
         "/api/verify-document/classify-document",
         {
           method: "POST",
-          body: formData,
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            fileUrl: signedUrl,
+
+            fileName:
+              document.name,
+
+            fileType:
+              getMimeTypeFromDocument(
+                document,
+              ),
+          }),
         },
       );
 
-    let data: unknown =
-      null;
-
-    try {
-      data =
-        await response.json();
-    } catch {
-      data = null;
-    }
-
-    const resultData =
-      data &&
-      typeof data === "object"
-        ? (data as {
-            success?: boolean;
-
-            nameDetected?: string;
-
-            documentTitleDetected?: string;
-
-            documentType?: string;
-
-            confidence?: number;
-
-            status?:
-              | "identified"
-              | "uncertain";
-
-            message?: string;
-
-            result?: {
-              documentType?: string;
-
-              documentTypeConfidence?: number;
-
-              documentTitleDetected?: string;
-
-              nameDetected?: string;
-
-              summary?: string;
-            };
-
-            error?: string;
-          })
-        : {};
+    const result =
+      await response.json();
 
     if (!response.ok) {
       throw new Error(
-        resultData.error ||
-          resultData.message ||
-          `Document classification failed (${response.status}).`,
+        result?.error ||
+          "Document identification failed.",
       );
     }
 
-    if (
-      !resultData.result
-    ) {
-      throw new Error(
-        resultData.error ||
-          "The classification API returned no result.",
-      );
-    }
-
-    const raw =
-      resultData.result;
-
-    const confidenceNumber =
-      Number(
-        raw.documentTypeConfidence,
-      );
-
-    const confidence =
-      Number.isFinite(
-        confidenceNumber,
-      )
-        ? confidenceNumber
-        : 0;
-
-    const documentType =
-      isValidDocumentType(
-        raw.documentType,
-      )
-        ? raw.documentType
-        : undefined;
-
-    const status =
-      documentType &&
-      confidence >= 75
-        ? "identified"
-        : "uncertain";
-
-    const nameDetected =
-      typeof raw.nameDetected ===
-      "string"
-        ? raw.nameDetected.trim()
-        : "";
-
-    const documentTitleDetected =
-      typeof raw.documentTitleDetected ===
-      "string"
-        ? raw.documentTitleDetected.trim()
-        : "";
-
-    console.log(
-      "PROPERTY SURE AI CLASSIFICATION RESULT:",
-      {
-        fileName,
-
-        mimeType:
-          actualMimeType,
-
-        documentType,
-
-        confidence,
-
-        status,
-
-        documentTitleDetected,
-
-        nameDetected,
-      },
-    );
-
-    return {
-      documentType,
-
-      confidence,
-
-      documentTitleDetected,
-
-      nameDetected,
-
-      status,
-
-      message:
-        raw.summary ||
-        "",
-    };
+    return result as ClassificationResponse;
   }
-
-  /*
-   * ============================================================
-   * CLASSIFY EXISTING DOCUMENT
-   * ============================================================
-   */
 
   async function classifyExistingDocument(
     document: ReviewDocument,
   ): Promise<ClassificationResponse> {
-    const signedUrl =
-      await getDocumentSignedUrl(
-        document.path,
-        600,
-      );
-
     return classifyDocument(
-      signedUrl,
-      document.name,
-      getMimeTypeFromDocument(
-        document,
-      ),
+      document,
     );
   }
 
@@ -873,122 +676,109 @@ export default function ReviewPage() {
    */
 
   async function saveDocumentPackage(
-    updatedDocuments: ReviewDocument[],
-    recordOverride?:
-      | VerificationRecord
-      | null,
+    currentDocuments: ReviewDocument[],
+    activeVerification: VerificationRecord,
   ): Promise<VerificationRecord> {
-    const activeVerification =
-      recordOverride ||
-      verificationRef.current;
-
-    if (
-      !activeVerification
-    ) {
-      throw new Error(
-        "Verification record is not available.",
-      );
-    }
-
-    const cleanDocuments =
-      updatedDocuments.map(
-        toStoredDocument,
-      );
-
-    const currentFindings =
+    const findings: VerificationFindings =
       activeVerification.findings ||
       {};
 
-    const updatedFindings:
-      VerificationFindings = {
-      ...currentFindings,
+    const updatedFindings: VerificationFindings =
+      {
+        ...findings,
 
-      document_package:
-        cleanDocuments,
+        document_package:
+          currentDocuments.map(
+            toStoredDocument,
+          ),
 
-      document_count:
-        cleanDocuments.length,
+        document_count:
+          currentDocuments.length,
 
-      processing: {
-        ...(currentFindings.processing ||
-          {}),
+        processing: {
+          ...(findings.processing ||
+            {}),
+          stage:
+            "review",
+          progress: 25,
+          message:
+            "Document package ready for verification.",
+        },
 
-        stage: "review",
-
-        progress: 8,
-
-        message:
-          "Your property document package is ready for review.",
-      },
-    };
+        ai_classification: {
+          ...(findings.ai_classification ||
+            {}),
+          documents_classified:
+            currentDocuments.filter(
+              (
+                document,
+              ) =>
+                document.classificationStatus ===
+                "identified",
+            ).length,
+        },
+      };
 
     const firstDocument =
-      cleanDocuments[0];
+      currentDocuments[0];
 
     const {
-      error: updateError,
+      data,
+      error:
+        updateError,
     } =
       await supabase
-        .from("verifications")
+        .from(
+          "verifications",
+        )
         .update({
           doc_name:
             firstDocument?.name ||
-            null,
+            activeVerification.doc_name,
 
           file_url:
             firstDocument?.path ||
-            null,
+            activeVerification.file_url,
 
           doc_type:
             firstDocument?.documentType ||
-            null,
+            activeVerification.doc_type,
+
+          status: "review",
 
           findings:
             updatedFindings,
-
-          status: "review",
         })
         .eq(
           "id",
           activeVerification.id,
-        );
+        )
+        .select(
+          "id, doc_name, file_url, doc_type, status, trust_score, confidence, risk, findings",
+        )
+        .single();
 
-    if (
-      updateError
-    ) {
+    if (updateError) {
       throw new Error(
-        `Could not update document package: ${updateError.message}`,
+        updateError.message,
       );
     }
 
-    const updatedRecord:
-      VerificationRecord = {
-      ...activeVerification,
+    if (!data) {
+      throw new Error(
+        "Unable to save the verification package.",
+      );
+    }
 
-      doc_name:
-        firstDocument?.name ||
-        null,
-
-      file_url:
-        firstDocument?.path ||
-        null,
-
-      doc_type:
-        firstDocument?.documentType ||
-        null,
-
-      findings:
-        updatedFindings,
-
-      status: "review",
-    };
-
-    verificationRef.current =
-      updatedRecord;
+    const updatedRecord =
+      data as VerificationRecord;
 
     setVerification(
       updatedRecord,
     );
+
+    verificationRef.current =
+      updatedRecord;
 
     return updatedRecord;
   }
@@ -999,35 +789,37 @@ export default function ReviewPage() {
    * ============================================================
    */
 
-  async function loadVerification(
-    id: string,
-  ): Promise<void> {
-    setLoading(true);
+  async function loadVerification(): Promise<void> {
+    if (!verificationId) {
+      setError(
+        "Verification ID is missing.",
+      );
 
-    setError("");
+      setLoading(false);
+
+      return;
+    }
 
     try {
       const {
         data: {
           user,
         },
-        error: authError,
+        error:
+          userError,
       } =
         await supabase.auth.getUser();
 
-      if (
-        authError
-      ) {
+      if (userError) {
         throw new Error(
-          authError.message,
+          userError.message,
         );
       }
 
       if (!user) {
-        window.location.href =
-          "/signin";
-
-        return;
+        throw new Error(
+          "Please sign in to continue.",
+        );
       }
 
       const {
@@ -1036,13 +828,19 @@ export default function ReviewPage() {
           verificationError,
       } =
         await supabase
-          .from("verifications")
+          .from(
+            "verifications",
+          )
           .select(
             "id, doc_name, file_url, doc_type, status, trust_score, confidence, risk, findings",
           )
           .eq(
             "id",
-            id,
+            verificationId,
+          )
+          .eq(
+            "user_id",
+            user.id,
           )
           .single();
 
@@ -1050,47 +848,75 @@ export default function ReviewPage() {
         verificationError
       ) {
         throw new Error(
-          `Could not load verification: ${verificationError.message}`,
+          verificationError.message,
         );
       }
 
       if (!data) {
         throw new Error(
-          "Verification record could not be found.",
+          "Verification record not found.",
         );
       }
 
       const record =
-        data as unknown as VerificationRecord;
-
-      verificationRef.current =
-        record;
+        data as VerificationRecord;
 
       setVerification(
         record,
       );
 
-      let packageDocuments =
+      verificationRef.current =
+        record;
+
+      const packageDocuments =
+        record.findings
+          ?.document_package;
+
+      let loadedDocuments: ReviewDocument[] =
         Array.isArray(
-          record.findings
-            ?.document_package,
+          packageDocuments,
         )
-          ? record.findings!
-              .document_package!
+          ? packageDocuments.map(
+              (
+                document,
+                index,
+              ): ReviewDocument => ({
+                ...document,
+
+                type:
+                  normalizeFileType(
+                    document.name,
+                    document.type,
+                  ),
+
+                originalIndex:
+                  index,
+
+                classificationStatus:
+                  document.classificationStatus ||
+                  (document.documentType
+                    ? "identified"
+                    : "idle"),
+
+                classificationSource:
+                  document.classificationSource ||
+                  (document.documentType
+                    ? "existing"
+                    : "unknown"),
+              }),
+            )
           : [];
 
       /*
-       * ========================================================
-       * LEGACY SINGLE-DOCUMENT FALLBACK
-       * ========================================================
+       * Legacy single-document fallback.
        */
 
       if (
-        packageDocuments.length ===
+        loadedDocuments.length ===
           0 &&
         record.file_url
       ) {
-        packageDocuments = [
+        loadedDocuments = [
           {
             name:
               record.doc_name ||
@@ -1103,8 +929,7 @@ export default function ReviewPage() {
               normalizeFileType(
                 record.doc_name ||
                   "",
-                record.doc_type ||
-                  "",
+                "",
               ),
 
             size: 0,
@@ -1123,186 +948,80 @@ export default function ReviewPage() {
                 ? "existing"
                 : "unknown",
 
-            nameDetected:
-              "",
+            originalIndex: 0,
           },
         ];
       }
 
-      const prepared:
-        ReviewDocument[] = [];
+      const preparedDocuments =
+        await Promise.all(
+          loadedDocuments.map(
+            async (
+              document,
+            ): Promise<ReviewDocument> => {
+              try {
+                const previewUrl =
+                  await getDocumentSignedUrl(
+                    document.path,
+                  );
 
-      /*
-       * ========================================================
-       * PREPARE DOCUMENTS
-       * ========================================================
-       */
+                return {
+                  ...document,
 
-      for (
-        let index = 0;
-        index <
-        packageDocuments.length;
-        index += 1
-      ) {
-        const document =
-          packageDocuments[index];
+                  previewUrl,
 
-        if (
-          !document?.path
-        ) {
-          continue;
-        }
-
-        const normalizedType =
-          normalizeFileType(
-            document.name ||
-              `Document ${
-                index + 1
-              }`,
-            document.type,
-          );
-
-        let previewUrl:
-          | string
-          | undefined;
-
-        let previewError =
-          false;
-
-        try {
-          previewUrl =
-            await getDocumentSignedUrl(
-              document.path,
-              3600,
-            );
-        } catch {
-          try {
-            const {
-              data:
-                downloadedFile,
-            } =
-              await supabase.storage
-                .from(
-                  STORAGE_BUCKET,
-                )
-                .download(
-                  document.path,
+                  previewError:
+                    false,
+                };
+              } catch (
+                previewError
+              ) {
+                console.error(
+                  "PREVIEW URL ERROR:",
+                  previewError,
                 );
 
-            if (
-              downloadedFile
-            ) {
-              previewUrl =
-                URL.createObjectURL(
-                  downloadedFile,
-                );
-            } else {
-              previewError =
-                true;
-            }
-          } catch {
-            previewError =
-              true;
-          }
-        }
+                return {
+                  ...document,
 
-        prepared.push({
-          name:
-            document.name ||
-            `Property Document ${
-              index + 1
-            }`,
-
-          path:
-            document.path,
-
-          type:
-            normalizedType,
-
-          size:
-            Number(
-              document.size,
-            ) || 0,
-
-          documentType:
-            document.documentType,
-
-          classificationStatus:
-            document.classificationStatus ||
-            (document.documentType
-              ? "identified"
-              : "idle"),
-
-          classificationConfidence:
-            document.classificationConfidence,
-
-          classificationSource:
-            document.classificationSource ||
-            (document.documentType
-              ? "existing"
-              : "unknown"),
-
-          documentTitleDetected:
-            document.documentTitleDetected,
-
-          nameDetected:
-            document.nameDetected,
-
-          classificationMessage:
-            document.classificationMessage,
-
-          previewUrl,
-
-          previewError,
-
-          originalIndex:
-            index,
-        });
-      }
-
-      documentsRef.current =
-        prepared;
+                  previewError:
+                    true,
+                };
+              }
+            },
+          ),
+        );
 
       setDocuments(
-        prepared,
+        preparedDocuments,
       );
+
+      documentsRef.current =
+        preparedDocuments;
 
       setLoading(false);
 
       /*
-       * ========================================================
-       * IDENTIFY UNKNOWN DOCUMENTS
-       * ========================================================
+       * Identify documents that have not yet been classified.
        */
 
-      const unknownDocuments =
-        prepared.filter(
-          (document) =>
-            !document.documentType ||
-            document.classificationStatus ===
-              "idle",
-        );
-
-      if (
-        unknownDocuments.length >
-        0
-      ) {
-        void classifyUnknownDocuments(
-          unknownDocuments,
-        );
-      }
+      void classifyUnknownDocuments(
+        preparedDocuments,
+        record,
+      );
     } catch (
       loadError
     ) {
       console.error(
-        "REVIEW PAGE ERROR:",
+        "LOAD REVIEW ERROR:",
         loadError,
       );
 
       setError(
-        loadError instanceof Error
+        loadError instanceof
+        Error
           ? loadError.message
-          : "Unable to load your document review.",
+          : "Unable to load the verification review.",
       );
 
       setLoading(false);
@@ -1316,134 +1035,212 @@ export default function ReviewPage() {
    */
 
   async function classifyUnknownDocuments(
-    unknownDocuments: ReviewDocument[],
+    currentDocuments: ReviewDocument[],
+    activeVerification: VerificationRecord,
   ): Promise<void> {
-    for (
-      const originalDocument of
-        unknownDocuments
+    const unknownDocuments =
+      currentDocuments.filter(
+        (document) =>
+          !document.documentType ||
+          document.classificationStatus ===
+            "idle" ||
+          document.classificationStatus ===
+            "failed" ||
+          document.classificationStatus ===
+            "uncertain",
+      );
+
+    if (
+      unknownDocuments.length ===
+      0
     ) {
-      const path =
-        originalDocument.path;
+      return;
+    }
 
-      try {
-        const classifyingDocuments =
-          documentsRef.current.map(
-            (item) =>
-              item.path === path
-                ? {
-                    ...item,
+    setDocuments(
+      (previous): ReviewDocument[] =>
+        previous.map(
+          (
+            document,
+          ): ReviewDocument =>
+            unknownDocuments.some(
+              (unknown) =>
+                unknown.path ===
+                document.path,
+            )
+              ? {
+                  ...document,
 
-                    classificationStatus:
-                      "classifying" as const,
-                  }
-                : item,
-          );
+                  classificationStatus:
+                    "classifying",
 
-        documentsRef.current =
-          classifyingDocuments;
+                  classificationSource:
+                    "ai",
 
-        setDocuments(
-          classifyingDocuments,
-        );
+                  classificationMessage:
+                    "Identifying document from its contents...",
+                }
+              : document,
+        ),
+    );
 
-        const result =
-          await classifyExistingDocument(
-            originalDocument,
-          );
+    try {
+      const classifiedDocuments: ReviewDocument[] =
+        [
+          ...currentDocuments,
+        ];
 
-        const validType =
-          isValidDocumentType(
-            result.documentType,
-          )
-            ? result.documentType
-            : undefined;
-
-        const identified =
-          Boolean(validType) &&
-          result.status ===
-            "identified";
-
-        const updatedDocuments =
-          documentsRef.current.map(
-            (item) =>
-              item.path === path
-                ? {
-                    ...item,
-
-                    documentType:
-                      validType,
-
-                    classificationStatus:
-                      identified
-                        ? ("identified" as const)
-                        : ("uncertain" as const),
-
-                    classificationConfidence:
-                      result.confidence,
-
-                    classificationSource:
-                      identified
-                        ? ("ai" as const)
-                        : ("unknown" as const),
-
-                    documentTitleDetected:
-                      result.documentTitleDetected ||
-                      "",
-
-                    nameDetected:
-                      result.nameDetected ||
-                      "",
-
-                    classificationMessage:
-                      result.message ||
-                      "",
-                  }
-                : item,
-          );
-
-        documentsRef.current =
-          updatedDocuments;
-
-        setDocuments(
-          updatedDocuments,
-        );
-
-        await saveDocumentPackage(
-          updatedDocuments,
-        );
-      } catch (
-        classificationError
+      for (
+        const unknownDocument of unknownDocuments
       ) {
-        console.warn(
-          "DOCUMENT CLASSIFICATION ERROR:",
-          classificationError,
-        );
+        try {
+          const result =
+            await classifyExistingDocument(
+              unknownDocument,
+            );
 
-        const failedDocuments =
-          documentsRef.current.map(
-            (item) =>
-              item.path === path
-                ? {
-                    ...item,
+          const validType =
+            isValidDocumentType(
+              result.documentType,
+            );
 
-                    classificationStatus:
-                      "failed" as const,
+          const identified =
+            Boolean(
+              validType &&
+                typeof result.confidence ===
+                  "number" &&
+                result.confidence >=
+                  75,
+            );
 
-                    classificationSource:
-                      "unknown" as const,
-                  }
-                : item,
+          const index =
+            classifiedDocuments.findIndex(
+              (document) =>
+                document.path ===
+                unknownDocument.path,
+            );
+
+          if (
+            index !==
+            -1
+          ) {
+            const existingDocument =
+              classifiedDocuments[
+                index
+              ];
+
+            classifiedDocuments[
+              index
+            ] = {
+              ...existingDocument,
+
+              documentType:
+                validType
+                  ? result.documentType
+                  : existingDocument.documentType,
+
+              classificationStatus:
+                identified
+                  ? "identified"
+                  : "uncertain",
+
+              classificationConfidence:
+                result.confidence,
+
+              classificationSource:
+                "ai",
+
+              documentTitleDetected:
+                result.documentTitleDetected,
+
+              nameDetected:
+                result.nameDetected,
+
+              classificationMessage:
+                result.message,
+            };
+          }
+        } catch (
+          classificationError
+        ) {
+          console.error(
+            "CLASSIFICATION ERROR:",
+            classificationError,
           );
 
-        documentsRef.current =
-          failedDocuments;
+          const index =
+            classifiedDocuments.findIndex(
+              (document) =>
+                document.path ===
+                unknownDocument.path,
+            );
 
-        setDocuments(
-          failedDocuments,
-        );
+          if (
+            index !==
+            -1
+          ) {
+            const existingDocument =
+              classifiedDocuments[
+                index
+              ];
+
+            classifiedDocuments[
+              index
+            ] = {
+              ...existingDocument,
+
+              classificationStatus:
+                "failed",
+
+              classificationSource:
+                "ai",
+
+              classificationMessage:
+                classificationError instanceof
+                Error
+                  ? classificationError.message
+                  : "Document identification failed.",
+            };
+          }
+        }
+
+        setDocuments([
+          ...classifiedDocuments,
+        ]);
+
+        documentsRef.current =
+          classifiedDocuments;
       }
+
+      await saveDocumentPackage(
+        classifiedDocuments,
+        activeVerification,
+      );
+
+      setSuccessMessage(
+        "Document identification completed.",
+      );
+    } catch (
+      classificationPackageError
+    ) {
+      console.error(
+        "CLASSIFICATION PACKAGE ERROR:",
+        classificationPackageError,
+      );
     }
   }
+
+  /*
+   * ============================================================
+   * INITIAL LOAD
+   * ============================================================
+   */
+
+  useEffect(() => {
+    void loadVerification();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [verificationId]);
 
   /*
    * ============================================================
@@ -1459,19 +1256,9 @@ export default function ReviewPage() {
 
     event.target.value = "";
 
-    const activeVerification =
-      verificationRef.current;
-
-    if (
-      !file ||
-      !activeVerification
-    ) {
+    if (!file) {
       return;
     }
-
-    setError("");
-
-    setSuccessMessage("");
 
     if (
       !ALLOWED_TYPES.includes(
@@ -1480,7 +1267,7 @@ export default function ReviewPage() {
       )
     ) {
       setError(
-        `"${file.name}" is not supported. Please upload PDF, JPG or PNG.`,
+        "Unsupported file type. Please upload PDF, JPG or PNG.",
       );
 
       return;
@@ -1491,23 +1278,35 @@ export default function ReviewPage() {
       MAX_FILE_SIZE
     ) {
       setError(
-        `"${file.name}" exceeds the 20 MB file limit.`,
+        "File is too large. Maximum file size is 20MB.",
       );
 
       return;
     }
 
-    if (
+    const duplicate =
       documentsRef.current.some(
         (document) =>
           document.name ===
             file.name &&
           document.size ===
             file.size,
-      )
-    ) {
+      );
+
+    if (duplicate) {
       setError(
-        `"${file.name}" is already in this verification package.`,
+        "This document has already been added.",
+      );
+
+      return;
+    }
+
+    const activeVerification =
+      verificationRef.current;
+
+    if (!activeVerification) {
+      setError(
+        "Verification record is unavailable.",
       );
 
       return;
@@ -1515,323 +1314,228 @@ export default function ReviewPage() {
 
     setAddingDocument(true);
 
-    setModifyingDocuments(true);
+    setModifyingDocuments(
+      true,
+    );
 
-    let uploadedPath:
-      | string
-      | null = null;
+    setError("");
+
+    setSuccessMessage("");
 
     try {
-      const safeName =
+      const {
+        data: {
+          user,
+        },
+        error:
+          authError,
+      } =
+        await supabase.auth.getUser();
+
+      if (authError) {
+        throw new Error(
+          authError.message,
+        );
+      }
+
+      if (!user) {
+        throw new Error(
+          "Please sign in to continue.",
+        );
+      }
+
+      const documentId =
+        crypto.randomUUID();
+
+      const safeFileName =
         createSafeFileName(
           file.name,
         );
 
-      const uniqueId =
-        typeof crypto !==
-          "undefined" &&
-        typeof crypto.randomUUID ===
-          "function"
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random()
-              .toString(36)
-              .slice(2)}`;
-
-      uploadedPath =
-        `${activeVerification.id}/verification-uploads/${uniqueId}-${safeName}`;
+      const storagePath =
+        `${user.id}/verification-uploads/${documentId}/${safeFileName}`;
 
       const {
-        error: uploadError,
+        error:
+          uploadError,
       } =
         await supabase.storage
           .from(
             STORAGE_BUCKET,
           )
           .upload(
-            uploadedPath,
+            storagePath,
             file,
             {
-              cacheControl:
-                "3600",
-
-              upsert:
-                false,
+              upsert: false,
 
               contentType:
                 file.type,
             },
           );
 
-      if (
-        uploadError
-      ) {
+      if (uploadError) {
         throw new Error(
-          `Could not upload "${file.name}": ${uploadError.message}`,
+          uploadError.message,
         );
       }
 
-      let previewUrl:
-        | string
-        | undefined;
+      const previewUrl =
+        await getDocumentSignedUrl(
+          storagePath,
+        );
 
-      try {
-        previewUrl =
-          await getDocumentSignedUrl(
-            uploadedPath,
-            3600,
-          );
-      } catch {
-        // Preview remains optional.
-      }
-
-      const newDocument:
-        ReviewDocument = {
-        name:
-          file.name,
-
-        path:
-          uploadedPath,
-
-        type:
-          normalizeFileType(
+      const newDocument: ReviewDocument =
+        {
+          name:
             file.name,
-            file.type,
-          ),
 
-        size:
-          file.size,
+          path:
+            storagePath,
 
-        classificationStatus:
-          "classifying",
+          type:
+            normalizeFileType(
+              file.name,
+              file.type,
+            ),
 
-        classificationSource:
-          "unknown",
+          size:
+            file.size,
 
-        documentTitleDetected:
-          "",
+          classificationStatus:
+            "classifying",
 
-        nameDetected:
-          "",
+          classificationSource:
+            "ai",
 
-        classificationMessage:
-          "",
+          classificationMessage:
+            "Identifying document from its contents...",
 
-        previewUrl,
+          previewUrl,
 
-        previewError:
-          !previewUrl,
+          previewError:
+            false,
 
-        originalIndex:
-          documentsRef.current.length,
-      };
+          originalIndex:
+            documentsRef.current
+              .length,
+        };
 
-      const updatedDocuments =
+      const updatedDocuments: ReviewDocument[] =
         [
           ...documentsRef.current,
           newDocument,
         ];
 
-      documentsRef.current =
-        updatedDocuments;
-
       setDocuments(
         updatedDocuments,
       );
 
-      try {
-        await saveDocumentPackage(
-          updatedDocuments,
-          activeVerification,
-        );
-      } catch (
-        databaseError
-      ) {
-        await supabase.storage
-          .from(
-            STORAGE_BUCKET,
-          )
-          .remove([
-            uploadedPath,
-          ]);
+      documentsRef.current =
+        updatedDocuments;
 
-        throw databaseError;
-      }
-
-      try {
-        const classificationUrl =
-          previewUrl ||
-          (await getDocumentSignedUrl(
-            uploadedPath,
-            600,
-          ));
-
-        const result =
-          await classifyDocument(
-            classificationUrl,
-            file.name,
-            file.type,
-          );
-
-        const validType =
-          isValidDocumentType(
-            result.documentType,
-          )
-            ? result.documentType
-            : undefined;
-
-        const identified =
-          Boolean(validType) &&
-          result.status ===
-            "identified";
-
-        const classifiedDocuments =
-          documentsRef.current.map(
-            (item) =>
-              item.path ===
-              uploadedPath
-                ? {
-                    ...item,
-
-                    documentType:
-                      validType,
-
-                    classificationStatus:
-                      identified
-                        ? ("identified" as const)
-                        : ("uncertain" as const),
-
-                    classificationConfidence:
-                      result.confidence,
-
-                    classificationSource:
-                      identified
-                        ? ("ai" as const)
-                        : ("unknown" as const),
-
-                    documentTitleDetected:
-                      result.documentTitleDetected ||
-                      "",
-
-                    nameDetected:
-                      result.nameDetected ||
-                      "",
-
-                    classificationMessage:
-                      result.message ||
-                      "",
-                  }
-                : item,
-          );
-
-        documentsRef.current =
-          classifiedDocuments;
-
-        setDocuments(
-          classifiedDocuments,
+      const classified =
+        await classifyDocument(
+          newDocument,
         );
 
-        await saveDocumentPackage(
-          classifiedDocuments,
+      const validType =
+        isValidDocumentType(
+          classified.documentType,
         );
 
-        if (
-          identified &&
+      const identified =
+        Boolean(
           validType &&
-          result.nameDetected
-        ) {
-          setSuccessMessage(
-            `${validType} identified. Name detected: ${result.nameDetected}.`,
-          );
-        } else if (
-          identified &&
-          validType
-        ) {
-          setSuccessMessage(
-            `${validType} automatically identified from the document contents.`,
-          );
-        } else if (
-          result.nameDetected
-        ) {
-          setSuccessMessage(
-            `AI detected "${result.nameDetected}" in the document, but could not confidently determine the document type.`,
-          );
-        } else if (
-          result.documentTitleDetected
-        ) {
-          setSuccessMessage(
-            `AI detected "${result.documentTitleDetected}" from the document, but could not confidently determine the document type.`,
-          );
-        } else {
-          setSuccessMessage(
-            "Document uploaded. We could not confidently identify its type. You can select its type manually.",
-          );
-        }
-      } catch (
-        classificationError
-      ) {
-        console.warn(
-          "DOCUMENT IDENTIFICATION FAILED:",
-          classificationError,
+            typeof classified.confidence ===
+              "number" &&
+            classified.confidence >=
+              75,
         );
 
-        const failedDocuments =
-          documentsRef.current.map(
-            (item) =>
-              item.path ===
-              uploadedPath
-                ? {
-                    ...item,
+      const finalDocument: ReviewDocument =
+        {
+          ...newDocument,
 
-                    classificationStatus:
-                      "failed" as const,
+          documentType:
+            validType
+              ? classified.documentType
+              : undefined,
 
-                    classificationSource:
-                      "unknown" as const,
-                  }
-                : item,
-          );
+          classificationStatus:
+            identified
+              ? "identified"
+              : "uncertain",
 
-        documentsRef.current =
-          failedDocuments;
+          classificationConfidence:
+            classified.confidence,
 
-        setDocuments(
-          failedDocuments,
+          classificationSource:
+            "ai",
+
+          documentTitleDetected:
+            classified.documentTitleDetected,
+
+          nameDetected:
+            classified.nameDetected,
+
+          classificationMessage:
+            classified.message,
+        };
+
+      const finalDocuments: ReviewDocument[] =
+        updatedDocuments.map(
+          (
+            document,
+          ): ReviewDocument =>
+            document.path ===
+            finalDocument.path
+              ? finalDocument
+              : document,
         );
 
-        setSuccessMessage(
-          "Document uploaded. Automatic identification failed, so please select its type manually.",
-        );
-      }
+      setDocuments(
+        finalDocuments,
+      );
+
+      documentsRef.current =
+        finalDocuments;
+
+      await saveDocumentPackage(
+        finalDocuments,
+        activeVerification,
+      );
+
+      setSuccessMessage(
+        "Document added and identified successfully.",
+      );
     } catch (
-      addError
+      addDocumentError
     ) {
       console.error(
         "ADD DOCUMENT ERROR:",
-        addError,
+        addDocumentError,
       );
-
-      if (
-        uploadedPath
-      ) {
-        await supabase.storage
-          .from(
-            STORAGE_BUCKET,
-          )
-          .remove([
-            uploadedPath,
-          ]);
-      }
 
       setError(
-        addError instanceof Error
-          ? addError.message
-          : "Unable to add this document.",
+        addDocumentError instanceof
+        Error
+          ? addDocumentError.message
+          : "Unable to add the document.",
       );
     } finally {
-      setAddingDocument(false);
+      setAddingDocument(
+        false,
+      );
 
-      setModifyingDocuments(false);
+      setModifyingDocuments(
+        false,
+      );
     }
+  }
+
+  function openAddDocumentPicker(): void {
+    fileInputRef.current?.click();
   }
 
   /*
@@ -1841,52 +1545,59 @@ export default function ReviewPage() {
    */
 
   async function changeDocumentType(
-    documentPath: string,
-    newType: DocumentType,
+    path: string,
+    documentType: DocumentType,
   ): Promise<void> {
-    if (
-      modifyingDocuments ||
-      processing
-    ) {
+    const activeVerification =
+      verificationRef.current;
+
+    if (!activeVerification) {
       return;
     }
 
-    const updatedDocuments =
-      documentsRef.current.map(
-        (document) =>
-          document.path ===
-          documentPath
-            ? {
-                ...document,
-
-                documentType:
-                  newType,
-
-                classificationStatus:
-                  "identified" as const,
-
-                classificationSource:
-                  "manual" as const,
-              }
-            : document,
-      );
-
-    setModifyingDocuments(true);
+    setModifyingDocuments(
+      true,
+    );
 
     setError("");
 
     setSuccessMessage("");
 
     try {
-      await saveDocumentPackage(
+      const updatedDocuments: ReviewDocument[] =
+        documentsRef.current.map(
+          (
+            document,
+          ): ReviewDocument =>
+            document.path ===
+            path
+              ? {
+                  ...document,
+
+                  documentType,
+
+                  classificationStatus:
+                    "identified",
+
+                  classificationSource:
+                    "manual",
+
+                  classificationMessage:
+                    "Document type confirmed manually.",
+                }
+              : document,
+        );
+
+      setDocuments(
         updatedDocuments,
       );
 
       documentsRef.current =
         updatedDocuments;
 
-      setDocuments(
+      await saveDocumentPackage(
         updatedDocuments,
+        activeVerification,
       );
 
       setDocumentTypeOpen(
@@ -1897,20 +1608,23 @@ export default function ReviewPage() {
         "Document type updated.",
       );
     } catch (
-      typeError
+      changeTypeError
     ) {
       console.error(
-        "DOCUMENT TYPE ERROR:",
-        typeError,
+        "CHANGE DOCUMENT TYPE ERROR:",
+        changeTypeError,
       );
 
       setError(
-        typeError instanceof Error
-          ? typeError.message
-          : "Unable to update document type.",
+        changeTypeError instanceof
+        Error
+          ? changeTypeError.message
+          : "Unable to update the document type.",
       );
     } finally {
-      setModifyingDocuments(false);
+      setModifyingDocuments(
+        false,
+      );
     }
   }
 
@@ -1923,33 +1637,21 @@ export default function ReviewPage() {
   async function removeDocument(
     document: ReviewDocument,
   ): Promise<void> {
-    if (
-      processing ||
-      modifyingDocuments
-    ) {
+    const activeVerification =
+      verificationRef.current;
+
+    if (!activeVerification) {
       return;
     }
 
-    const currentDocuments =
-      documentsRef.current;
-
-    /*
-     * IMPORTANT:
-     * A document can be removed even when it is
-     * the only document currently in the package.
-     *
-     * The user can then upload another document.
-     */
-
-    const confirmed =
-      window.confirm(
-        `Remove "${getDisplayTitle(
-          document,
-          document.originalIndex,
-        )}" from this verification package?`,
+    if (
+      documentsRef.current.length <=
+      1
+    ) {
+      setError(
+        "At least one property document is required.",
       );
 
-    if (!confirmed) {
       return;
     }
 
@@ -1957,39 +1659,18 @@ export default function ReviewPage() {
       document.path,
     );
 
-    setModifyingDocuments(true);
+    setModifyingDocuments(
+      true,
+    );
 
     setError("");
 
     setSuccessMessage("");
 
     try {
-      const updatedDocuments =
-        currentDocuments
-          .filter(
-            (item) =>
-              item.path !==
-              document.path,
-          )
-          .map(
-            (
-              item,
-              index,
-            ) => ({
-              ...item,
-
-              originalIndex:
-                index,
-            }),
-          );
-
-      await saveDocumentPackage(
-        updatedDocuments,
-      );
-
       const {
         error:
-          storageDeleteError,
+          removeError,
       } =
         await supabase.storage
           .from(
@@ -2000,62 +1681,70 @@ export default function ReviewPage() {
           ]);
 
       if (
-        storageDeleteError
+        removeError
       ) {
         console.warn(
-          "DOCUMENT STORAGE DELETE WARNING:",
-          storageDeleteError,
+          "STORAGE REMOVE WARNING:",
+          removeError,
         );
       }
 
-      if (
-        document.previewUrl?.startsWith(
-          "blob:",
-        )
-      ) {
-        URL.revokeObjectURL(
-          document.previewUrl,
-        );
-      }
+      const updatedDocuments: ReviewDocument[] =
+        documentsRef.current
+          .filter(
+            (item) =>
+              item.path !==
+              document.path,
+          )
+          .map(
+            (
+              item,
+              index,
+            ): ReviewDocument => ({
+              ...item,
 
-      documentsRef.current =
-        updatedDocuments;
+              originalIndex:
+                index,
+            }),
+          );
 
       setDocuments(
         updatedDocuments,
       );
 
-      if (
-        selectedDocument?.path ===
-        document.path
-      ) {
-        setSelectedDocument(
-          null,
-        );
-      }
+      documentsRef.current =
+        updatedDocuments;
+
+      await saveDocumentPackage(
+        updatedDocuments,
+        activeVerification,
+      );
 
       setSuccessMessage(
         "Document removed from the verification package.",
       );
     } catch (
-      removeError
+      removeDocumentError
     ) {
       console.error(
         "REMOVE DOCUMENT ERROR:",
-        removeError,
+        removeDocumentError,
       );
 
       setError(
-        removeError instanceof Error
-          ? removeError.message
-          : "Unable to remove this document.",
+        removeDocumentError instanceof
+        Error
+          ? removeDocumentError.message
+          : "Unable to remove the document.",
       );
     } finally {
       setDeletingDocumentId(
         null,
       );
 
-      setModifyingDocuments(false);
+      setModifyingDocuments(
+        false,
+      );
     }
   }
 
@@ -2124,7 +1813,8 @@ export default function ReviewPage() {
       setProcessing(false);
 
       setError(
-        planError instanceof Error
+        planError instanceof
+        Error
           ? planError.message
           : "Unable to continue to plan selection.",
       );
@@ -2133,7 +1823,7 @@ export default function ReviewPage() {
 
   /*
    * ============================================================
-   * NAVIGATION
+   * BACK TO VERIFY
    * ============================================================
    */
 
@@ -2147,18 +1837,6 @@ export default function ReviewPage() {
 
     window.location.href =
       "/verify";
-  }
-
-  function openAddDocumentPicker(): void {
-    if (
-      processing ||
-      modifyingDocuments ||
-      addingDocument
-    ) {
-      return;
-    }
-
-    fileInputRef.current?.click();
   }
 
   /*
@@ -2192,31 +1870,7 @@ export default function ReviewPage() {
    */
 
   if (loading) {
-    return (
-      <main className={styles.loadingPage}>
-        <div className={styles.loadingBrand}>
-          <span className={styles.loadingDiamond} />
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </div>
-
-        <div
-          className={styles.loadingIndicator}
-          aria-hidden="true"
-        >
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <p className={styles.loadingText}>
-          Loading...
-        </p>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   /*
@@ -2259,7 +1913,11 @@ export default function ReviewPage() {
       activePath="/verify"
       headerPath="/verify/review"
     >
-      <main className={styles.page}>
+      <main
+        className={
+          styles.page
+        }
+      >
         <input
           ref={fileInputRef}
           type="file"
@@ -2283,174 +1941,15 @@ export default function ReviewPage() {
             styles.content
           }
         >
-          <button
-            type="button"
-            className={
-              styles.backButton
-            }
+          <VerificationNavigation
+            currentStep={4}
+            backLabel="Back to Verify Property"
+            backPath="/verify"
             disabled={
               processing ||
               modifyingDocuments
             }
-            onClick={
-              goBackToVerify
-            }
-          >
-            <span>←</span>
-            Back to Verify Property
-          </button>
-
-          <section
-            className={
-              styles.workflow
-            }
-          >
-            <div
-              className={
-                styles.workflowItem
-              }
-            >
-              <span
-                className={
-                  styles.workflowNumberDone
-                }
-              >
-                ✓
-              </span>
-
-              <div>
-                <strong>
-                  Upload Documents
-                </strong>
-
-                <span>
-                  Add your property
-                  documents
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.workflowLineActive
-              }
-            />
-
-            <div
-              className={`${styles.workflowItem} ${styles.workflowCurrent}`}
-            >
-              <span
-                className={
-                  styles.workflowNumberActive
-                }
-              >
-                2
-              </span>
-
-              <div>
-                <strong>
-                  Review Package
-                </strong>
-
-                <span>
-                  Confirm your
-                  documents
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.workflowLine
-              }
-            />
-
-            <div
-              className={
-                styles.workflowItem
-              }
-            >
-              <span
-                className={
-                  styles.workflowNumber
-                }
-              >
-                3
-              </span>
-
-              <div>
-                <strong>
-                  Select Plan
-                </strong>
-
-                <span>
-                  Choose your
-                  service
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.workflowLine
-              }
-            />
-
-            <div
-              className={
-                styles.workflowItem
-              }
-            >
-              <span
-                className={
-                  styles.workflowNumber
-                }
-              >
-                4
-              </span>
-
-              <div>
-                <strong>
-                  Secure Checkout
-                </strong>
-
-                <span>
-                  Complete payment
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.workflowLine
-              }
-            />
-
-            <div
-              className={
-                styles.workflowItem
-              }
-            >
-              <span
-                className={
-                  styles.workflowNumber
-                }
-              >
-                5
-              </span>
-
-              <div>
-                <strong>
-                  Verification
-                </strong>
-
-                <span>
-                  AI analysis and
-                  results
-                </span>
-              </div>
-            </div>
-          </section>
+          />
 
           <section
             className={
@@ -2596,18 +2095,22 @@ export default function ReviewPage() {
                     document.classificationStatus ===
                     "classifying";
 
+                  const classificationIdentified =
+                    document.classificationStatus ===
+                    "identified";
+
                   const classificationFailed =
                     document.classificationStatus ===
-                      "failed" ||
-                    document.classificationStatus ===
-                      "uncertain";
+                    "failed";
 
                   return (
                     <article
+                      key={
+                        document.path
+                      }
                       className={
                         styles.documentCard
                       }
-                      key={`${document.path}-${index}`}
                     >
                       <button
                         type="button"
@@ -2628,75 +2131,56 @@ export default function ReviewPage() {
                             styles.documentIcon
                           }
                         >
-                          <div
-                            className={
-                              styles.documentIconFallback
-                            }
-                          >
-                            {isImage(
-                              document.type,
-                            )
-                              ? "IMG"
-                              : isPdf(
-                                    document.type,
-                                  )
-                                ? "PDF"
-                                : getExtension(
-                                    document.name,
-                                  )}
-                          </div>
-
                           {document.previewUrl &&
-                            isImage(
+                          isImage(
+                            document.type,
+                          ) ? (
+                            <img
+                              src={
+                                document.previewUrl
+                              }
+                              alt=""
+                              className={
+                                styles.documentThumbnail
+                              }
+                            />
+                          ) : isPdf(
                               document.type,
-                            ) && (
-                              <img
-                                src={
-                                  document.previewUrl
-                                }
-                                alt={`${title} document preview`}
-                                className={
-                                  styles.documentThumbnail
-                                }
-                                onError={(
-                                  event,
-                                ) => {
-                                  event.currentTarget.style.display =
-                                    "none";
-                                }}
-                              />
-                            )}
-
-                          {document.previewUrl &&
-                            isPdf(
-                              document.type,
-                            ) && (
+                            ) ? (
+                            <div
+                              className={
+                                styles.pdfThumbnail
+                              }
+                            >
                               <div
                                 className={
-                                  styles.pdfThumbnail
+                                  styles.pdfThumbnailTop
                                 }
                               >
-                                <div
-                                  className={
-                                    styles.pdfThumbnailTop
-                                  }
-                                >
-                                  PDF
-                                </div>
-
-                                <div
-                                  className={
-                                    styles.pdfThumbnailLines
-                                  }
-                                >
-                                  <span />
-                                  <span />
-                                  <span />
-                                  <span />
-                                  <span />
-                                </div>
+                                PDF
                               </div>
-                            )}
+
+                              <div
+                                className={
+                                  styles.pdfThumbnailLines
+                                }
+                              >
+                                <span />
+                                <span />
+                                <span />
+                              </div>
+                            </div>
+                          ) : (
+                            <div
+                              className={
+                                styles.documentIconFallback
+                              }
+                            >
+                              {
+                                document.type
+                              }
+                            </div>
+                          )}
                         </div>
 
                         <div
@@ -2705,105 +2189,84 @@ export default function ReviewPage() {
                           }
                         >
                           <strong>
-                            {isClassifying
-                              ? "Identifying document..."
-                              : title}
+                            {title}
                           </strong>
 
                           <span>
-                            Document{" "}
-                            {index + 1}
-                            {" • "}
                             {document.type}
-
-                            {document.size >
-                            0
-                              ? ` • ${formatFileSize(
-                                  document.size,
-                                )}`
-                              : ""}
+                            {" • "}
+                            {formatFileSize(
+                              document.size,
+                            )}
                           </span>
 
-                          {detectedTitle &&
-                            !isClassifying && (
-                              <small
-                                className={
-                                  styles.detectedDocumentTitle
-                                }
-                              >
-                                AI detected
-                                title:{" "}
-                                <strong>
-                                  {
-                                    detectedTitle
-                                  }
-                                </strong>
-                              </small>
-                            )}
+                          {detectedTitle && (
+                            <small
+                              className={
+                                styles.detectedDocumentTitle
+                              }
+                            >
+                              <strong>
+                                AI title:
+                              </strong>{" "}
+                              {
+                                detectedTitle
+                              }
+                            </small>
+                          )}
 
-                          {detectedName &&
-                            !isClassifying && (
-                              <small
-                                className={
-                                  styles.detectedPersonName
-                                }
-                              >
-                                Name detected
-                                in document:{" "}
-                                <strong>
-                                  {
-                                    detectedName
-                                  }
-                                </strong>
-                              </small>
-                            )}
+                          {detectedName && (
+                            <small
+                              className={
+                                styles.detectedPersonName
+                              }
+                            >
+                              Name detected:{" "}
+                              {
+                                detectedName
+                              }
+                            </small>
+                          )}
 
-                          <small>
-                            Uploaded file:{" "}
-                            {document.name}
-                          </small>
+                          {document.classificationMessage && (
+                            <small>
+                              {
+                                document.classificationMessage
+                              }
+                            </small>
+                          )}
 
                           {isClassifying && (
                             <small
                               className={
-                                styles.classificationStatus
+                                styles.classificationProcessing
                               }
                             >
-                              <span
-                                className={
-                                  styles.miniSpinner
-                                }
-                              />
-
-                              PropertySure AI
-                              is reading
-                              the actual
+                              Identifying
+                              from
                               document
-                              contents
+                              contents...
                             </small>
                           )}
 
-                          {!isClassifying &&
-                            document.classificationStatus ===
-                              "identified" &&
-                            document.classificationSource ===
-                              "ai" && (
-                              <small
-                                className={
-                                  styles.classificationSuccess
-                                }
-                              >
-                                ✓ Automatically
-                                identified
-                                from document
-                                contents
+                          {classificationIdentified && (
+                            <small
+                              className={
+                                styles.classificationSuccess
+                              }
+                            >
+                              ✓ Automatically
+                              identified
+                              from
+                              document
+                              contents
 
-                                {document.classificationConfidence !==
-                                undefined
-                                  ? ` • ${document.classificationConfidence}% confidence`
-                                  : ""}
-                              </small>
-                            )}
+                              {document.classificationConfidence !==
+                              undefined
+                                ? ` • ${document.classificationConfidence}% confidence`
+                                : ""}
+                            </small>
+                          )}
 
                           {classificationFailed && (
                             <small
@@ -2937,10 +2400,6 @@ export default function ReviewPage() {
                           )}
                         </div>
 
-                        {/* ==================================================
-                            REMOVE DOCUMENT
-                            ================================================== */}
-
                         <button
                           type="button"
                           className={
@@ -3056,46 +2515,61 @@ export default function ReviewPage() {
             </div>
           </section>
 
-          <button
-            type="button"
+          <div
             className={
-              styles.continueButton
+              styles.actions
             }
-            disabled={
-              processing ||
-              modifyingDocuments ||
-              documents.length ===
-                0 ||
-              documents.some(
-                (document) =>
-                  document.classificationStatus ===
-                  "classifying",
-              )
-            }
-            onClick={() => {
-              void continueToPlan();
-            }}
           >
-            <span>
-              {processing
-                ? "Preparing Select Plan..."
-                : "Continue to Select Plan"}
-            </span>
+            <button
+              type="button"
+              className={
+                styles.backActionButton
+              }
+              disabled={
+                processing ||
+                modifyingDocuments
+              }
+              onClick={
+                goBackToVerify
+              }
+            >
+              <span>←</span>
+              Back
+            </button>
 
-            {!processing && (
-              <span
-                className={
-                  styles.buttonArrow
-                }
-              >
-                →
+            <button
+              type="button"
+              className={
+                styles.continueButton
+              }
+              disabled={
+                processing ||
+                modifyingDocuments ||
+                documents.length ===
+                  0 ||
+                documents.some(
+                  (document) =>
+                    document.classificationStatus ===
+                    "classifying",
+                )
+              }
+              onClick={() => {
+                void continueToPlan();
+              }}
+            >
+              <span>
+                {processing
+                  ? "Preparing Select Plan..."
+                  : "Continue to Select Plan"}
               </span>
-            )}
-          </button>
+
+              <b>→</b>
+            </button>
+          </div>
 
           <div
             className={
-              styles.securityNotice
+              styles.securityNote
             }
           >
             <span>🔒</span>
@@ -3275,7 +2749,7 @@ export default function ReviewPage() {
 
 /*
  * ============================================================
- * LOADING / ERROR SCREEN
+ * ERROR SCREEN
  * ============================================================
  */
 
@@ -3294,31 +2768,7 @@ function Screen({
   onBack?: () => void;
 }) {
   if (!error) {
-    return (
-      <main className={styles.loadingPage}>
-        <div className={styles.loadingBrand}>
-          <span className={styles.loadingDiamond} />
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </div>
-
-        <div
-          className={styles.loadingIndicator}
-          aria-hidden="true"
-        >
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <p className={styles.loadingText}>
-          Loading...
-        </p>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   return (

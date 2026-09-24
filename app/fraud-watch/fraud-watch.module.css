@@ -1,276 +1,441 @@
+/* =========================================================
+   PROPERTYSURE AI — FRAUD WATCH
+   Premium responsive dashboard
+   ========================================================= */
+
 .page {
+  width: 100%;
   min-height: 100%;
-  background: #f3f8fd;
-  color: #13294b;
+  background: #f4f8fc;
+  color: #17345e;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .pageInner {
-  width: min(1480px, 100%);
+  width: 100%;
+  max-width: 1540px;
   margin: 0 auto;
-  padding: 28px 28px 48px;
+  padding: 24px 30px 48px;
+  box-sizing: border-box;
 }
 
-.pageHeader {
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.errorBanner {
+  width: 100%;
+  margin-bottom: 18px;
+  padding: 13px 16px;
+  box-sizing: border-box;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   PAGE HEADING
+   ========================================================= */
+
+.pageHeading {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 22px;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
-.eyebrow,
-.sectionEyebrow,
-.heroEyebrow {
-  color: #1681d8;
+.pageHeadingIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  flex: 0 0 auto;
+  border-radius: 14px;
+  background: #ffe8eb;
+  color: #e62d3d;
+  font-size: 27px;
+  font-weight: 800;
+}
+
+.pageHeading h1 {
+  margin: 0 0 3px;
+  color: #172f54;
+  font-size: 27px;
+  font-weight: 750;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+}
+
+.pageHeading p {
+  margin: 0;
+  color: #71839b;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   DESKTOP HERO
+   ========================================================= */
+
+.desktopHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 285px;
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 24px;
+  box-sizing: border-box;
+  border: 1px solid #f3d0d5;
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      120deg,
+      #fff5f6 0%,
+      #fffafb 55%,
+      #f9fcff 100%
+    );
+  box-shadow:
+    0 6px 22px rgba(25, 58, 95, 0.035);
+}
+
+.desktopHeroMain {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.heroIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  flex: 0 0 auto;
+  border-radius: 19px;
+  background: #ffe0e4;
+  color: #e42c3b;
+  font-size: 37px;
+  font-weight: 800;
+}
+
+.heroCopy {
+  min-width: 0;
+}
+
+.alertLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #ffe1e5;
+  color: #c82131;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.18em;
 }
 
-.pageHeader h1 {
-  margin: 5px 0 4px;
-  font-size: clamp(28px, 3vw, 38px);
-  line-height: 1.05;
-  letter-spacing: -0.035em;
+.alertLabel span {
+  font-size: 8px;
 }
 
-.pageHeader p {
+.heroCopy h2 {
+  margin: 0 0 7px;
+  color: #172f54;
+  font-size: 26px;
+  font-weight: 750;
+  line-height: 1.18;
+  letter-spacing: -0.5px;
+}
+
+.heroCopy p {
+  max-width: 700px;
   margin: 0;
-  color: #64748b;
+  color: #607592;
   font-size: 13px;
+  line-height: 1.55;
 }
 
-.refreshButton {
-  border: 1px solid #d5e2ef;
-  border-radius: 10px;
-  background: #fff;
-  color: #24486f;
-  padding: 10px 14px;
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 13px;
+}
+
+.reportButton,
+.learnButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 39px;
+  box-sizing: border-box;
+  padding: 0 17px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 }
 
-.refreshButton:hover {
-  background: #f7fbff;
-}
-
-.errorBanner {
-  margin-bottom: 18px;
-  padding: 12px 14px;
-  border: 1px solid #fecaca;
-  border-radius: 10px;
-  background: #fff5f5;
-  color: #a32929;
-  font-size: 13px;
-}
-
-.hero {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) minmax(245px, 300px);
-  gap: 22px;
-  align-items: center;
-  margin-bottom: 18px;
-  padding: 24px 26px;
-  border: 1px solid #f1d9dc;
-  border-radius: 16px;
-  background: linear-gradient(
-    100deg,
-    #fff7f7 0%,
-    #fff 62%,
-    #f4f9ff 100%
-  );
-  box-shadow: 0 5px 18px rgba(24, 48, 78, 0.035);
-}
-
-.heroIcon {
-  width: 68px;
-  height: 68px;
-  display: grid;
-  place-items: center;
-  border-radius: 17px;
-  background: #fee5e7;
-  color: #dc2626;
-  font-size: 32px;
-  font-weight: 900;
-}
-
-.heroCopy h2 {
-  margin: 5px 0 7px;
-  color: #142d54;
-  font-size: clamp(22px, 2.2vw, 31px);
-  letter-spacing: -0.025em;
-}
-
-.heroCopy p {
-  max-width: 750px;
-  margin: 0 0 15px;
-  color: #60718a;
-  font-size: 13px;
-  line-height: 1.65;
-}
-
 .reportButton {
   border: 0;
-  border-radius: 9px;
-  background: #e52d32;
-  color: #fff;
-  padding: 11px 15px;
-  font-weight: 800;
-  cursor: pointer;
+  background: #eb2938;
+  color: #ffffff;
+  box-shadow:
+    0 7px 16px rgba(235, 41, 56, 0.16);
 }
 
 .reportButton:hover {
-  background: #cc2429;
+  background: #d91f30;
 }
 
-.reportButton span,
-.helpCard button span,
-.detailsButton span {
-  margin-left: 8px;
+.reportButton span {
+  font-size: 17px;
+  font-weight: 400;
 }
 
-.heroSide {
-  min-height: 118px;
+.learnButton {
+  border: 1px solid #cdddeb;
+  background: #ffffff;
+  color: #27476b;
+}
+
+.learnButton:hover {
+  border-color: #a9c6df;
+  background: #f8fbfe;
+}
+
+.learnButton span {
+  font-size: 15px;
+}
+
+.desktopHeroSide {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  padding: 4px 0 4px 20px;
+  border-left: 1px solid #eadce0;
+}
+
+.heroSideIcon {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 17px;
-  border: 1px solid #dbe8f4;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
   border-radius: 12px;
-  background: #f8fbff;
+  background: #e9f4ff;
+  color: #177fdb;
+  font-size: 21px;
 }
 
-.heroSide strong {
-  margin-bottom: 7px;
+.desktopHeroSide strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #203d62;
   font-size: 14px;
+  font-weight: 750;
+  line-height: 1.3;
 }
 
-.heroSide span {
-  color: #64748b;
-  font-size: 12px;
+.desktopHeroSide p {
+  margin: 0;
+  color: #70829a;
+  font-size: 11px;
   line-height: 1.55;
 }
 
+/* =========================================================
+   MOBILE SUMMARY
+   ========================================================= */
+
+.mobileSummary {
+  display: none;
+}
+
+/* =========================================================
+   STATS
+   ========================================================= */
+
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
   gap: 14px;
+  width: 100%;
   margin-bottom: 18px;
 }
 
 .statCard {
   display: flex;
   align-items: center;
-  gap: 14px;
-  min-height: 106px;
+  gap: 13px;
+  min-width: 0;
+  min-height: 102px;
   padding: 17px;
-  border: 1px solid #dce7f1;
-  border-radius: 13px;
-  background: #fbfdff;
-  box-shadow: 0 3px 12px rgba(24, 48, 78, 0.025);
+  box-sizing: border-box;
+  border: 1px solid #d9e5f0;
+  border-radius: 15px;
+  background: #ffffff;
+  box-shadow:
+    0 4px 16px rgba(27, 63, 103, 0.025);
 }
 
 .statIcon {
-  width: 52px;
-  height: 52px;
-  flex: 0 0 52px;
-  display: grid;
-  place-items: center;
-  border-radius: 13px;
-  font-size: 23px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 49px;
+  height: 49px;
+  flex: 0 0 auto;
+  border-radius: 14px;
+  font-size: 22px;
   font-weight: 800;
 }
 
 .statDanger .statIcon {
-  background: #fee8ea;
-  color: #dc3035;
+  background: #ffe7ea;
+  color: #e32e3b;
 }
 
 .statReview .statIcon {
-  background: #fff4d8;
-  color: #a87400;
+  background: #fff2d3;
+  color: #c18408;
 }
 
 .statHigh .statIcon {
-  background: #ffe9e8;
-  color: #d93636;
+  background: #eee5ff;
+  color: #7542d9;
 }
 
 .statLocation .statIcon {
-  background: #e6f7f2;
-  color: #159b7d;
+  background: #e1f1ff;
+  color: #1682df;
+}
+
+.statCard > div:last-child {
+  min-width: 0;
 }
 
 .statCard span {
   display: block;
-  margin-bottom: 4px;
-  color: #1d3557;
-  font-size: 12px;
-  font-weight: 800;
+  overflow: hidden;
+  margin-bottom: 2px;
+  color: #657b96;
+  font-size: 11px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .statCard strong {
   display: block;
-  color: #122b52;
+  margin-bottom: 2px;
+  color: #172f54;
   font-size: 25px;
+  font-weight: 750;
   line-height: 1;
 }
 
 .statCard small {
   display: block;
-  margin-top: 5px;
-  color: #718096;
-  font-size: 10px;
+  color: #8495a9;
+  font-size: 9px;
   line-height: 1.35;
 }
 
+.statCard small b {
+  color: #e12d3c;
+  font-weight: 700;
+}
+
+/* =========================================================
+   MAIN CONTENT GRID
+   ========================================================= */
+
 .contentGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 350px;
-  gap: 16px;
+  grid-template-columns:
+    minmax(0, 1fr)
+    305px;
+  gap: 18px;
   align-items: start;
 }
 
-.alertPanel,
-.insightCard,
-.locationCard,
-.helpCard,
-.bottomBanner {
-  border: 1px solid #dce7f1;
-  border-radius: 14px;
-  background: #fbfdff;
-  box-shadow: 0 3px 13px rgba(24, 48, 78, 0.03);
-}
+/* =========================================================
+   ALERT PANEL
+   ========================================================= */
 
 .alertPanel {
   min-width: 0;
   overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid #d8e4ef;
+  border-radius: 17px;
+  background: #ffffff;
+  box-shadow:
+    0 5px 18px rgba(27, 63, 103, 0.025);
 }
 
 .panelHeader {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
-  padding: 20px 18px 17px;
-  border-bottom: 1px solid #e5edf4;
+  padding: 19px 20px 16px;
+  border-bottom: 1px solid #e8eef4;
 }
 
-.panelHeader h2,
-.insightCard h2,
-.locationCard h2,
-.helpCard h2 {
-  margin: 4px 0 5px;
-  color: #132d55;
-  font-size: 19px;
-  letter-spacing: -0.02em;
+.panelTitleBlock {
+  min-width: 0;
 }
 
-.panelHeader p {
-  max-width: 590px;
+.panelTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panelTitleRow h2 {
   margin: 0;
-  color: #718096;
-  font-size: 12px;
-  line-height: 1.55;
+  color: #18345d;
+  font-size: 19px;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.countBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 25px;
+  height: 20px;
+  padding: 0 7px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #ffe2e6;
+  color: #dc2939;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.panelTitleBlock p {
+  max-width: 560px;
+  margin: 5px 0 0;
+  color: #71849d;
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .controls {
@@ -281,481 +446,1063 @@
 }
 
 .searchBox {
-  width: 230px;
-  height: 40px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 11px;
-  border: 1px solid #d7e4ef;
-  border-radius: 9px;
-  background: #fff;
+  width: 230px;
+  height: 36px;
+  padding: 0 9px;
+  box-sizing: border-box;
+  border: 1px solid #d8e4ee;
+  border-radius: 8px;
+  background: #ffffff;
 }
 
 .searchBox > span {
-  color: #7790a9;
-  font-size: 19px;
+  margin-right: 6px;
+  color: #7890a9;
+  font-size: 16px;
 }
 
 .searchBox input {
   width: 100%;
   min-width: 0;
+  height: 100%;
   border: 0;
   outline: 0;
   background: transparent;
-  color: #19385e;
-  font-size: 11px;
+  color: #294767;
+  font-family: inherit;
+  font-size: 10px;
 }
 
 .searchBox input::placeholder {
-  color: #9aaabd;
+  color: #93a4b8;
+}
+
+.searchBox:focus-within {
+  border-color: #7bb5df;
+  box-shadow:
+    0 0 0 3px rgba(36, 132, 211, 0.07);
 }
 
 .searchBox button {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  padding: 0;
   border: 0;
+  border-radius: 50%;
   background: transparent;
-  color: #8091a6;
-  cursor: pointer;
+  color: #7489a1;
   font-size: 17px;
+  cursor: pointer;
 }
 
 .filterSelect {
-  height: 40px;
-  min-width: 125px;
-  padding: 0 10px;
-  border: 1px solid #d7e4ef;
-  border-radius: 9px;
-  background: #fff;
-  color: #29496d;
-  font-size: 11px;
-  font-weight: 700;
+  width: 110px;
+  height: 36px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  border: 1px solid #d8e4ee;
+  border-radius: 8px;
   outline: 0;
+  background: #ffffff;
+  color: #365778;
+  font-family: inherit;
+  font-size: 10px;
 }
 
+/* =========================================================
+   MOBILE FILTERS
+   ========================================================= */
+
+.mobileFilters {
+  display: none;
+}
+
+/* =========================================================
+   TABLE HEADER
+   ========================================================= */
+
+.tableHeader {
+  display: grid;
+  grid-template-columns:
+    minmax(130px, 1.2fr)
+    minmax(110px, 1fr)
+    minmax(105px, 1fr)
+    95px
+    72px
+    65px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 16px;
+  background: #f8fbfe;
+  border-bottom: 1px solid #e6edf4;
+  color: #8292a7;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* =========================================================
+   ALERT ROW
+   ========================================================= */
+
 .alertList {
-  padding: 6px 12px 12px;
+  width: 100%;
 }
 
 .alertRow {
   display: grid;
-  grid-template-columns: 48px minmax(155px, 1.2fr) 105px minmax(150px, 1fr) 92px 110px;
-  gap: 12px;
+  grid-template-columns:
+    40px
+    minmax(130px, 1.2fr)
+    minmax(105px, 1fr)
+    95px
+    72px
+    65px;
+  gap: 10px;
   align-items: center;
-  min-height: 88px;
-  padding: 11px 7px;
-  border-bottom: 1px solid #e8eff5;
+  min-width: 0;
+  padding: 14px 16px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #edf2f6;
 }
 
 .alertRow:last-child {
   border-bottom: 0;
 }
 
+.alertRow:hover {
+  background: #fbfdff;
+}
+
 .documentIcon {
-  width: 43px;
-  height: 43px;
-  display: grid;
-  place-items: center;
-  border-radius: 11px;
-  font-size: 20px;
-  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .documentIconHigh {
-  background: #fee9ea;
-  color: #db3438;
+  background: #ffe8eb;
+  color: #df2c3b;
 }
 
 .documentIconReview {
-  background: #fff3d7;
-  color: #b27a08;
+  background: #fff1d2;
+  color: #c17d00;
 }
 
 .documentInfo {
   min-width: 0;
 }
 
-.documentInfo strong,
-.documentInfo span,
-.documentInfo small {
+.documentInfo strong {
   display: block;
   overflow: hidden;
+  margin-bottom: 2px;
+  color: #294767;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.documentInfo strong {
-  color: #18365d;
-  font-size: 12px;
-}
-
 .documentInfo span {
-  margin-top: 4px;
-  color: #526b88;
-  font-size: 11px;
+  display: block;
+  overflow: hidden;
+  margin-bottom: 2px;
+  color: #617994;
+  font-size: 9px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .documentInfo small {
-  margin-top: 2px;
-  color: #7b8da2;
-  font-size: 10px;
+  display: block;
+  overflow: hidden;
+  color: #8b9aae;
+  font-size: 8px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reason {
+  min-width: 0;
+}
+
+.reason span {
+  display: block;
+  overflow: hidden;
+  color: #526d89;
+  font-size: 9px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
 }
 
 .riskBadge {
-  width: max-content;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 8px;
-  border-radius: 7px;
-  font-size: 10px;
+  justify-content: center;
+  gap: 5px;
+  width: fit-content;
+  min-height: 24px;
+  padding: 0 7px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  font-size: 8px;
   font-weight: 800;
   white-space: nowrap;
 }
 
 .riskBadge i {
-  width: 6px;
-  height: 6px;
-  display: block;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
 }
 
 .riskHigh {
-  background: #fee6e7;
-  color: #c52c31;
+  background: #ffe7ea;
+  color: #cf2635;
 }
 
 .riskHigh i {
-  background: #dc3035;
+  background: #e12c3b;
 }
 
 .riskMedium {
-  background: #fff2d4;
-  color: #9b7008;
+  background: #fff1d2;
+  color: #aa7100;
 }
 
 .riskMedium i {
-  background: #d69a16;
+  background: #d28b00;
 }
 
-.reason span,
-.detected span {
-  display: block;
-  margin-bottom: 4px;
-  color: #8292a5;
+.detected {
+  color: #617994;
   font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.reason strong,
-.detected strong {
-  display: block;
-  color: #4d6682;
-  font-size: 10px;
-  line-height: 1.45;
+  line-height: 1.35;
 }
 
 .detailsButton {
-  justify-self: end;
-  border: 1px solid #cfe0ee;
-  border-radius: 8px;
-  background: #f4f9fd;
-  color: #1675c9;
-  padding: 9px 10px;
-  font-size: 10px;
-  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid #d3e3f1;
+  border-radius: 7px;
+  background: #f7fbff;
+  color: #167bd0;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 700;
   cursor: pointer;
-  white-space: nowrap;
 }
 
 .detailsButton:hover {
-  background: #eaf4fb;
+  background: #edf7ff;
+  border-color: #afd0e8;
 }
 
-.sideColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.detailsButton b {
+  font-size: 12px;
+  font-weight: 400;
 }
 
-.insightCard,
-.locationCard {
-  padding: 19px;
+.mobileAlertAction {
+  display: none;
 }
 
-.donutLayout {
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+
+.pagination {
   display: flex;
   align-items: center;
-  gap: 18px;
-  margin-top: 18px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid #e9eff4;
+  color: #8292a7;
+  font-size: 9px;
 }
 
-.donut {
-  width: 132px;
-  height: 132px;
-  flex: 0 0 132px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-}
-
-.donutHole {
-  width: 84px;
-  height: 84px;
+.paginationButtons {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.paginationButtons button {
+  display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: #fbfdff;
-}
-
-.donutHole strong {
-  color: #132d55;
-  font-size: 22px;
-  line-height: 1;
-}
-
-.donutHole span {
-  margin-top: 4px;
-  color: #718096;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  border: 1px solid #dce6ef;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #4f6c89;
+  font-family: inherit;
   font-size: 10px;
+  cursor: pointer;
 }
 
-.legend {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.paginationButtons button:hover:not(:disabled) {
+  background: #f3f8fc;
 }
 
-.legend > div {
-  display: grid;
-  grid-template-columns: 9px minmax(0, 1fr) auto;
-  gap: 7px;
-  align-items: center;
+.paginationButtons button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-.legendDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.paginationButtons .paginationActive {
+  border-color: #183b68;
+  background: #183b68;
+  color: #ffffff;
 }
 
-.legend span {
-  color: #506983;
-  font-size: 10px;
-  line-height: 1.3;
-}
-
-.legend strong {
-  color: #29486c;
-  font-size: 10px;
-}
-
-.locationCard {
-  background: linear-gradient(135deg, #fffafa 0%, #fbfdff 100%);
-  border-color: #eedfe0;
-}
-
-.locationList {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 18px;
-}
-
-.locationList > div {
-  display: grid;
-  grid-template-columns: 14px minmax(0, 1fr) auto;
-  gap: 7px;
-  align-items: center;
-}
-
-.locationPin {
-  color: #df3438;
-  font-size: 11px;
-}
-
-.locationList strong {
-  color: #29415f;
-  font-size: 11px;
-}
-
-.locationList small {
-  color: #718096;
-  font-size: 9px;
-  text-align: right;
-}
-
-.helpCard {
-  display: flex;
-  gap: 14px;
-  padding: 18px;
-  border-color: #cfe2f2;
-  background: linear-gradient(135deg, #edf7ff 0%, #f9fcff 100%);
-}
-
-.helpIcon {
-  width: 45px;
-  height: 45px;
-  flex: 0 0 45px;
-  display: grid;
-  place-items: center;
-  border-radius: 11px;
-  background: #dceeff;
-  color: #0879df;
-  font-size: 20px;
-}
-
-.helpCard h2 {
-  font-size: 15px;
-}
-
-.helpCard p {
-  margin: 0 0 13px;
-  color: #657a91;
-  font-size: 11px;
-  line-height: 1.55;
-}
-
-.helpCard button {
-  background: #0879df;
-  padding: 9px 12px;
-  font-size: 10px;
-}
-
-.helpCard button:hover {
-  background: #066bc5;
-}
-
-.noInsight {
-  margin-top: 16px;
-  padding: 14px;
-  border: 1px dashed #d6e3ee;
-  border-radius: 9px;
-  color: #74869b;
-  background: #f8fbfe;
-  font-size: 11px;
-  line-height: 1.5;
-}
+/* =========================================================
+   EMPTY
+   ========================================================= */
 
 .emptyState {
-  min-height: 330px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 35px;
+  min-height: 280px;
+  padding: 35px 20px;
   text-align: center;
 }
 
 .emptyIcon {
-  width: 50px;
-  height: 50px;
-  display: grid;
-  place-items: center;
-  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 55px;
+  height: 55px;
+  margin-bottom: 13px;
   border-radius: 50%;
-  background: #e8f6f0;
-  color: #159b72;
-  font-size: 22px;
-  font-weight: 900;
+  background: #e7f7ec;
+  color: #24924b;
+  font-size: 23px;
+  font-weight: 800;
 }
 
 .emptyState h3 {
   margin: 0 0 6px;
-  color: #294566;
+  color: #294767;
   font-size: 16px;
 }
 
 .emptyState p {
   max-width: 420px;
   margin: 0;
-  color: #7a8b9f;
-  font-size: 11px;
+  color: #7a8da4;
+  font-size: 12px;
   line-height: 1.6;
 }
+
+/* =========================================================
+   SIDE COLUMN
+   ========================================================= */
+
+.sideColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.insightCard,
+.locationCard {
+  min-width: 0;
+  padding: 17px;
+  box-sizing: border-box;
+  border: 1px solid #d8e4ef;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow:
+    0 5px 18px rgba(27, 63, 103, 0.025);
+}
+
+.insightHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.insightIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 37px;
+  height: 37px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  background: #e5f2ff;
+  color: #147ddd;
+  font-size: 17px;
+}
+
+.locationInsightIcon {
+  background: #e4f3ff;
+  color: #1682df;
+}
+
+.locationHeaderContent {
+  min-width: 0;
+  flex: 1;
+}
+
+.insightHeader h2 {
+  margin: 0;
+  color: #1d3b60;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.insightHeader p {
+  margin: 2px 0 0;
+  color: #8495a9;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.locationTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.locationTitleRow h2 {
+  min-width: 0;
+}
+
+.locationViewButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: #147ddd;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.locationViewButton:hover {
+  color: #075fae;
+}
+
+.locationViewButton span {
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* =========================================================
+   LOCATION SUMMARY
+   ========================================================= */
+
+.locationSummary {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px solid #e4edf5;
+  border-radius: 8px;
+  background: #f8fbfe;
+  color: #71859d;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.locationSummary span {
+  display: block;
+}
+
+/* =========================================================
+   DONUT
+   ========================================================= */
+
+.donutLayout {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.donut {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 116px;
+  height: 116px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.donutHole {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.donutHole strong {
+  color: #17345e;
+  font-size: 21px;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.donutHole span {
+  margin-top: 4px;
+  color: #8595a8;
+  font-size: 8px;
+}
+
+/* =========================================================
+   LEGEND
+   ========================================================= */
+
+.legend {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.legend > div {
+  display: grid;
+  grid-template-columns:
+    7px
+    minmax(0, 1fr)
+    auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.legendDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.legend span {
+  overflow: hidden;
+  color: #607691;
+  font-size: 8px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legend strong {
+  color: #294767;
+  font-size: 8px;
+}
+
+.noInsight {
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 9px;
+  background: #f7fafc;
+  color: #8292a7;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   LOCATIONS
+   ========================================================= */
+
+.locationList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 13px;
+  min-width: 0;
+}
+
+.locationGroup {
+  min-width: 0;
+  padding-bottom: 13px;
+  border-bottom: 1px solid #edf2f6;
+}
+
+.locationGroup:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.locationName {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  margin-bottom: 5px;
+}
+
+.locationNameMain {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.locationPin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border-radius: 6px;
+  background: #e8f4ff;
+  color: #1682df;
+  font-size: 10px;
+}
+
+.locationName strong {
+  min-width: 0;
+  color: #294767;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.locationCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #ffe8eb;
+  color: #d52a39;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.locationBarTrack {
+  width: 100%;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e9eff5;
+}
+
+.locationBar {
+  height: 100%;
+  border-radius: inherit;
+  background: #ed4854;
+}
+
+/* =========================================================
+   INDIVIDUAL REPORTS
+
+   Location
+      ↓
+   Individual Report 1
+      ↓
+   Document
+      ↓
+   Issue
+      ↓
+   GPS
+      ↓
+   View
+
+   Location
+      ↓
+   Individual Report 2
+      ↓
+   Document
+      ↓
+   Issue
+      ↓
+   GPS
+      ↓
+   View
+   ========================================================= */
+
+.locationReports {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.locationReportsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #8a9aae;
+  font-size: 7px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.45px;
+}
+
+.locationReportsHeader span:last-child {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #edf4fa;
+  color: #607a95;
+  font-size: 7px;
+}
+
+.locationReport {
+  display: grid;
+  grid-template-columns:
+    27px
+    minmax(0, 1fr)
+    auto;
+  gap: 7px;
+  align-items: start;
+  min-width: 0;
+  padding: 9px;
+  box-sizing: border-box;
+  border: 1px solid #e1eaf2;
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #fbfdff 100%
+    );
+  box-shadow:
+    0 2px 8px rgba(31, 70, 110, 0.025);
+}
+
+.locationReport:hover {
+  border-color: #c5d9e9;
+  background: #f8fbfe;
+}
+
+.locationReportIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 27px;
+  height: 27px;
+  border-radius: 7px;
+  background: #eef4fa;
+  color: #54728f;
+  font-size: 11px;
+}
+
+.locationReportInfo {
+  min-width: 0;
+}
+
+/* =========================================================
+   REPORT META
+   ========================================================= */
+
+.reportMeta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  margin-bottom: 4px;
+}
+
+.reportNumber {
+  display: inline-flex !important;
+  align-items: center;
+  width: fit-content;
+  margin: 0 !important;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #edf5fb;
+  color: #53718e !important;
+  font-size: 6px !important;
+  font-weight: 800;
+  line-height: 1.2 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.25px;
+}
+
+.reportRiskHigh,
+.reportRiskMedium {
+  display: inline-flex !important;
+  align-items: center;
+  width: fit-content;
+  margin: 0 !important;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 6px !important;
+  font-weight: 800;
+  line-height: 1.2 !important;
+  text-transform: uppercase;
+}
+
+.reportRiskHigh {
+  background: #ffe7ea;
+  color: #ce2938 !important;
+}
+
+.reportRiskMedium {
+  background: #fff1d2;
+  color: #a97000 !important;
+}
+
+.locationReportInfo strong {
+  display: block;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: #294767;
+  font-size: 8px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.locationReportInfo > span {
+  display: block;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: #71859c;
+  font-size: 7px;
+  line-height: 1.35;
+}
+
+.locationReportInfo small {
+  display: block;
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: #8797aa;
+  font-size: 6.8px;
+  line-height: 1.4;
+}
+
+.locationCoordinates {
+  color: #4e789d !important;
+  font-weight: 600;
+}
+
+.locationCoordinatesUnavailable {
+  color: #a0adbb !important;
+}
+
+.locationReportButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 25px;
+  padding: 0 6px;
+  flex: 0 0 auto;
+  border: 1px solid #d4e4f1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #147ddd;
+  font-family: inherit;
+  font-size: 7px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.locationReportButton:hover {
+  border-color: #a9cae3;
+  background: #eef8ff;
+}
+
+.locationReportButton b {
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.mobileLocationExpand {
+  display: none;
+}
+
+/* =========================================================
+   HELP CARD
+   ========================================================= */
+
+.helpCard {
+  display: grid;
+  grid-template-columns: 45px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 17px;
+  box-sizing: border-box;
+  border: 1px solid #c9def1;
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      135deg,
+      #f8fcff 0%,
+      #eef7ff 100%
+    );
+}
+
+.helpIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: #dceeff;
+  color: #087bdc;
+  font-size: 19px;
+}
+
+.helpCard h2 {
+  margin: 0 0 5px;
+  color: #18345d;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.helpCard p {
+  margin: 0 0 12px;
+  color: #667e99;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.helpCard button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 31px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 7px;
+  background: #087fe0;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.helpCard button:hover {
+  background: #0671c9;
+}
+
+.helpCard button span {
+  font-size: 13px;
+}
+
+/* =========================================================
+   BOTTOM INFORMATION
+   ========================================================= */
 
 .bottomBanner {
   display: flex;
   align-items: center;
-  gap: 13px;
-  margin-top: 16px;
+  gap: 12px;
+  width: 100%;
+  margin-top: 17px;
   padding: 15px 17px;
-  border-color: #cfe3f3;
-  background: #edf7ff;
+  box-sizing: border-box;
+  border: 1px solid #cfe2f2;
+  border-radius: 13px;
+  background: #f2f9ff;
 }
 
 .bottomIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 35px;
   height: 35px;
-  flex: 0 0 35px;
-  display: grid;
-  place-items: center;
-  border-radius: 9px;
-  background: #dcefff;
-  color: #0879df;
-  font-weight: 900;
-}
-
-.bottomBanner strong,
-.bottomBanner span {
-  display: block;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  background: #dceeff;
+  color: #147ddd;
+  font-size: 16px;
+  font-weight: 800;
 }
 
 .bottomBanner strong {
+  display: block;
   margin-bottom: 3px;
-  color: #24486c;
+  color: #294767;
   font-size: 11px;
+  font-weight: 750;
 }
 
 .bottomBanner span {
-  color: #647991;
-  font-size: 10px;
+  display: block;
+  color: #71849c;
+  font-size: 9px;
   line-height: 1.5;
 }
 
-.page button:focus-visible,
-.page input:focus-visible,
-.page select:focus-visible {
-  outline: 2px solid rgba(8, 121, 223, 0.45);
-  outline-offset: 3px;
-}
+/* =========================================================
+   TABLET
+   ========================================================= */
 
-@media (max-width: 1200px) {
-  .contentGrid {
-    grid-template-columns: minmax(0, 1fr) 310px;
+@media (max-width: 1180px) {
+  .pageInner {
+    padding-left: 22px;
+    padding-right: 22px;
   }
 
-  .alertRow {
-    grid-template-columns:
-      46px
-      minmax(140px, 1.2fr)
-      100px
-      minmax(120px, 1fr)
-      82px
-      102px;
-    gap: 9px;
+  .desktopHero {
+    grid-template-columns: 1fr;
   }
 
-  .searchBox {
-    width: 200px;
-  }
-}
-
-@media (max-width: 1050px) {
-  .hero {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-
-  .heroSide {
-    grid-column: 1 / -1;
+  .desktopHeroSide {
+    padding: 14px 0 0;
+    border-top: 1px solid #eadce0;
+    border-left: 0;
   }
 
   .statsGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
   }
 
   .contentGrid {
@@ -764,7 +1511,8 @@
 
   .sideColumn {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
   }
 
   .helpCard {
@@ -772,15 +1520,11 @@
   }
 }
 
-@media (max-width: 820px) {
-  .pageInner {
-    padding: 22px 18px 40px;
-  }
+/* =========================================================
+   TABLET / SMALL DESKTOP
+   ========================================================= */
 
-  .pageHeader {
-    align-items: flex-start;
-  }
-
+@media (max-width: 900px) {
   .panelHeader {
     flex-direction: column;
   }
@@ -794,103 +1538,952 @@
     width: auto;
   }
 
-  .alertRow {
-    grid-template-columns: 46px minmax(0, 1fr) auto;
-    gap: 10px;
+  .filterSelect {
+    width: 130px;
   }
 
-  .reason,
-  .detected {
+  .tableHeader {
     display: none;
   }
 
-  .detailsButton {
-    justify-self: end;
-  }
-}
-
-@media (max-width: 620px) {
-  .pageInner {
-    padding: 18px 12px 32px;
-  }
-
-  .pageHeader {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .refreshButton {
-    align-self: stretch;
-  }
-
-  .hero {
-    grid-template-columns: 1fr;
-    padding: 19px;
-  }
-
-  .heroSide {
-    grid-column: auto;
-  }
-
-  .heroIcon {
-    width: 56px;
-    height: 56px;
-    font-size: 27px;
-  }
-
-  .statsGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .searchBox,
-  .filterSelect {
-    width: 100%;
-  }
-
-  .sideColumn {
-    display: flex;
-  }
-
-  .donutLayout {
-    align-items: flex-start;
-  }
-
-  .donut {
-    width: 112px;
-    height: 112px;
-    flex-basis: 112px;
-  }
-
-  .donutHole {
-    width: 72px;
-    height: 72px;
-  }
-
   .alertRow {
-    grid-template-columns: 43px minmax(0, 1fr);
-    padding: 12px 4px;
+    grid-template-columns:
+      40px
+      minmax(0, 1fr)
+      auto;
   }
 
-  .riskBadge,
-  .detailsButton {
-    grid-column: 2;
-    justify-self: start;
+  .reason {
+    grid-column: 2 / 4;
   }
 
   .riskBadge {
-    margin-top: -2px;
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .detected {
+    grid-column: 2;
+    grid-row: 2;
   }
 
   .detailsButton {
-    margin-top: -3px;
+    grid-column: 3;
+    grid-row: 2;
   }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 620px) {
+  .page {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .pageInner {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 12px 10px 105px !important;
+    box-sizing: border-box;
+  }
+
+  .errorBanner {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+
+  /* -------------------------------------------------------
+     MOBILE PAGE HEADING
+     ------------------------------------------------------- */
+
+  .pageHeading {
+    display: none;
+  }
+
+  /* -------------------------------------------------------
+     MOBILE SUMMARY
+     ------------------------------------------------------- */
+
+  .desktopHero {
+    display: none;
+  }
+
+  .mobileSummary {
+    display: block;
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 14px;
+    box-sizing: border-box;
+    border: 1px solid #f2d4d8;
+    border-radius: 14px;
+    background:
+      linear-gradient(
+        135deg,
+        #fff7f8 0%,
+        #fffafb 100%
+      );
+  }
+
+  .mobileSummaryTop {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .mobileAlertIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    border-radius: 12px;
+    background: #ffe1e5;
+    color: #df2d3c;
+    font-size: 24px;
+    font-weight: 800;
+  }
+
+  .mobileAlertLabel {
+    display: block;
+    margin-bottom: 3px;
+    color: #d22838;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+
+  .mobileSummary h2 {
+    margin: 0 0 3px;
+    color: #18345d;
+    font-size: 15px;
+    font-weight: 750;
+    line-height: 1.2;
+  }
+
+  .mobileSummary p {
+    margin: 0;
+    color: #71839b;
+    font-size: 9px;
+    line-height: 1.45;
+  }
+
+  .mobileReportButton {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 38px;
+    margin-top: 11px;
+    padding: 0 13px;
+    border: 0;
+    border-radius: 8px;
+    background: #ed2939;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 750;
+    cursor: pointer;
+  }
+
+  .mobileReportButton span {
+    font-size: 17px;
+    font-weight: 400;
+  }
+
+  /* -------------------------------------------------------
+     STATS
+     ------------------------------------------------------- */
+
+  .statsGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .statCard {
+    min-height: 88px;
+    gap: 9px;
+    padding: 11px;
+    border-radius: 12px;
+  }
+
+  .statIcon {
+    width: 37px;
+    height: 37px;
+    border-radius: 10px;
+    font-size: 17px;
+  }
+
+  .statCard span {
+    margin-bottom: 2px;
+    font-size: 8px;
+  }
+
+  .statCard strong {
+    margin-bottom: 2px;
+    font-size: 22px;
+  }
+
+  .statCard small {
+    font-size: 7px;
+    line-height: 1.25;
+  }
+
+  /* -------------------------------------------------------
+     MAIN CONTENT
+     ------------------------------------------------------- */
+
+  .contentGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+  }
+
+  .alertPanel {
+    width: 100%;
+    border-radius: 13px;
+  }
+
+  .panelHeader {
+    display: block;
+    padding: 14px 12px 10px;
+  }
+
+  .panelTitleRow h2 {
+    font-size: 16px;
+  }
+
+  .countBadge {
+    min-width: 23px;
+    height: 18px;
+    font-size: 8px;
+  }
+
+  .panelTitleBlock p {
+    margin-top: 4px;
+    font-size: 8px;
+  }
+
+  .controls {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .searchBox {
+    width: 100%;
+    height: 36px;
+  }
+
+  .searchBox input {
+    font-size: 9px;
+  }
+
+  .filterSelect {
+    display: none;
+  }
+
+  /* -------------------------------------------------------
+     MOBILE FILTER PILLS
+     ------------------------------------------------------- */
+
+  .mobileFilters {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    overflow-x: auto;
+    padding: 0 12px 10px;
+    box-sizing: border-box;
+    scrollbar-width: none;
+  }
+
+  .mobileFilters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobileFilter,
+  .mobileFilterActive {
+    flex: 0 0 auto;
+    min-height: 29px;
+    padding: 0 9px;
+    border: 1px solid #dce6ef;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #536d89;
+    font-family: inherit;
+    font-size: 8px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .mobileFilterActive {
+    border-color: #183b68;
+    background: #183b68;
+    color: #ffffff;
+  }
+
+  /* -------------------------------------------------------
+     MOBILE ALERT LIST
+     ------------------------------------------------------- */
+
+  .alertList {
+    width: 100%;
+  }
+
+  .alertRow {
+    position: relative;
+    display: grid;
+    grid-template-columns:
+      37px
+      minmax(0, 1fr)
+      auto;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .documentIcon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    font-size: 14px;
+  }
+
+  .documentInfo {
+    grid-column: 2;
+    grid-row: 1;
+    padding-right: 4px;
+  }
+
+  .documentInfo strong {
+    margin-bottom: 2px;
+    font-size: 10px;
+  }
+
+  .documentInfo span {
+    margin-bottom: 1px;
+    font-size: 8px;
+  }
+
+  .documentInfo small {
+    font-size: 7px;
+  }
+
+  .riskBadge {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: start;
+    min-height: 21px;
+    padding: 0 6px;
+    font-size: 7px;
+  }
+
+  .reason {
+    grid-column: 2 / 4;
+    grid-row: 2;
+    padding-right: 24px;
+  }
+
+  .reason span {
+    font-size: 8px;
+    line-height: 1.35;
+  }
+
+  .detected {
+    grid-column: 2;
+    grid-row: 3;
+    margin-top: 2px;
+    color: #8797aa;
+    font-size: 7px;
+  }
+
+  .detailsButton {
+    display: none;
+  }
+
+  .mobileAlertAction {
+    position: absolute;
+    right: 11px;
+    bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 25px;
+    height: 25px;
+    padding: 0;
+    border: 1px solid #d6e4ef;
+    border-radius: 7px;
+    background: #f8fbfe;
+    color: #147ddd;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  /* -------------------------------------------------------
+     PAGINATION
+     ------------------------------------------------------- */
+
+  .pagination {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 12px;
+    gap: 8px;
+    font-size: 8px;
+  }
+
+  .paginationButtons {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .paginationButtons button {
+    width: 25px;
+    height: 25px;
+    font-size: 9px;
+  }
+
+  /* -------------------------------------------------------
+     EMPTY
+     ------------------------------------------------------- */
+
+  .emptyState {
+    min-height: 220px;
+    padding: 28px 16px;
+  }
+
+  .emptyIcon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 11px;
+    font-size: 20px;
+  }
+
+  .emptyState h3 {
+    font-size: 14px;
+  }
+
+  .emptyState p {
+    font-size: 10px;
+  }
+
+  /* -------------------------------------------------------
+     SIDE CONTENT
+     ------------------------------------------------------- */
+
+  .sideColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .insightCard,
+  .locationCard {
+    width: 100%;
+    padding: 13px;
+    border-radius: 13px;
+  }
+
+  .insightHeader {
+    gap: 9px;
+  }
+
+  .insightIcon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    font-size: 15px;
+  }
+
+  .insightHeader h2 {
+    font-size: 13px;
+  }
+
+  .insightHeader p {
+    font-size: 8px;
+  }
+
+  /* -------------------------------------------------------
+     DONUT
+     ------------------------------------------------------- */
+
+  .donutLayout {
+    gap: 15px;
+    margin-top: 14px;
+  }
+
+  .donut {
+    width: 105px;
+    height: 105px;
+  }
+
+  .donutHole {
+    width: 68px;
+    height: 68px;
+  }
+
+  .donutHole strong {
+    font-size: 20px;
+  }
+
+  .donutHole span {
+    font-size: 7px;
+  }
+
+  .legend {
+    gap: 7px;
+  }
+
+  .legend span {
+    font-size: 8px;
+  }
+
+  .legend strong {
+    font-size: 8px;
+  }
+
+  /* -------------------------------------------------------
+     LOCATIONS
+     ------------------------------------------------------- */
+
+  .locationSummary {
+    margin-top: 10px;
+    padding: 8px;
+    font-size: 7px;
+  }
+
+  .locationList {
+    margin-top: 11px;
+    gap: 12px;
+  }
+
+  .locationGroup {
+    padding-bottom: 11px;
+  }
+
+  .locationName {
+    gap: 7px;
+  }
+
+  .locationNameMain {
+    gap: 5px;
+  }
+
+  .locationPin {
+    width: 17px;
+    height: 17px;
+    font-size: 9px;
+  }
+
+  .locationName strong {
+    font-size: 9px;
+    line-height: 1.4;
+  }
+
+  .locationCount {
+    min-width: 19px;
+    height: 19px;
+    font-size: 7px;
+  }
+
+  .locationBarTrack {
+    height: 5px;
+  }
+
+  .locationReports {
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .locationReportsHeader {
+    font-size: 6.5px;
+  }
+
+  .locationReport {
+    grid-template-columns:
+      25px
+      minmax(0, 1fr)
+      auto;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 8px;
+  }
+
+  .locationReportIcon {
+    width: 25px;
+    height: 25px;
+    border-radius: 6px;
+    font-size: 10px;
+  }
+
+  .reportMeta {
+    margin-bottom: 3px;
+  }
+
+  .reportNumber,
+  .reportRiskHigh,
+  .reportRiskMedium {
+    padding: 2px 4px;
+    font-size: 5.5px !important;
+  }
+
+  .locationReportInfo strong {
+    font-size: 7.5px;
+  }
+
+  .locationReportInfo > span {
+    font-size: 6.5px;
+  }
+
+  .locationReportInfo small {
+    font-size: 6.2px;
+  }
+
+  .locationReportButton {
+    min-height: 24px;
+    padding: 0 6px;
+    font-size: 6.5px;
+  }
+
+  .locationReportButton b {
+    font-size: 9px;
+  }
+
+  .locationViewButton {
+    font-size: 8px;
+  }
+
+  .mobileLocationExpand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 34px;
+    margin-top: 11px;
+    padding: 0 10px;
+    box-sizing: border-box;
+    border: 1px solid #d6e6f2;
+    border-radius: 8px;
+    background: #f7fbfe;
+    color: #147ddd;
+    font-family: inherit;
+    font-size: 8px;
+    font-weight: 750;
+    cursor: pointer;
+  }
+
+  .mobileLocationExpand span {
+    font-size: 13px;
+  }
+
+  /* -------------------------------------------------------
+     REPORT CARD
+     ------------------------------------------------------- */
+
+  .helpCard {
+    grid-template-columns:
+      40px
+      minmax(0, 1fr);
+    gap: 10px;
+    padding: 14px;
+    border-radius: 13px;
+  }
+
+  .helpIcon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    font-size: 17px;
+  }
+
+  .helpCard h2 {
+    font-size: 13px;
+  }
+
+  .helpCard p {
+    margin-bottom: 10px;
+    font-size: 8px;
+  }
+
+  .helpCard button {
+    min-height: 29px;
+    padding: 0 11px;
+    font-size: 8px;
+  }
+
+  /* -------------------------------------------------------
+     BOTTOM INFO
+     ------------------------------------------------------- */
 
   .bottomBanner {
     align-items: flex-start;
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .bottomIcon {
+    width: 31px;
+    height: 31px;
+    border-radius: 9px;
+    font-size: 14px;
+  }
+
+  .bottomBanner strong {
+    font-size: 9px;
+  }
+
+  .bottomBanner span {
+    font-size: 7px;
+    line-height: 1.5;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 390px) {
+  .pageInner {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .mobileSummary {
+    padding: 12px;
+  }
+
+  .mobileAlertIcon {
+    width: 39px;
+    height: 39px;
+  }
+
+  .mobileSummary h2 {
+    font-size: 14px;
+  }
+
+  .statsGrid {
+    gap: 7px;
+  }
+
+  .statCard {
+    gap: 7px;
+    padding: 9px;
+  }
+
+  .statIcon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .statCard strong {
+    font-size: 20px;
+  }
+
+  .statCard span {
+    font-size: 7px;
+  }
+
+  .statCard small {
+    font-size: 6px;
+  }
+
+  .panelHeader {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .mobileFilters {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .alertRow {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .donut {
+    width: 94px;
+    height: 94px;
+  }
+
+  .donutHole {
+    width: 61px;
+    height: 61px;
+  }
+
+  .donutHole strong {
+    font-size: 18px;
+  }
+
+  .locationReport {
+    grid-template-columns:
+      24px
+      minmax(0, 1fr)
+      auto;
+  }
+
+  .locationReportButton span {
+    display: none;
+  }
+
+  .locationReportButton {
+    width: 24px;
+    padding: 0;
+  }
+
+  .reportMeta {
+    flex-wrap: wrap;
+  }
+}
+
+/* =========================================================
+   VERY SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 340px) {
+  .mobileSummary h2 {
+    font-size: 13px;
+  }
+
+  .mobileSummary p {
+    font-size: 8px;
+  }
+
+  .statCard {
+    min-height: 82px;
+  }
+
+  .statIcon {
+    width: 31px;
+    height: 31px;
+    font-size: 15px;
+  }
+
+  .statCard strong {
+    font-size: 18px;
+  }
+
+  .statCard span {
+    font-size: 6.5px;
+  }
+
+  .statCard small {
+    display: none;
+  }
+
+  .panelTitleRow h2 {
+    font-size: 14px;
+  }
+
+  .documentInfo strong {
+    font-size: 9px;
+  }
+
+  .documentInfo span {
+    font-size: 7px;
+  }
+
+  .documentInfo small {
+    font-size: 6px;
+  }
+
+  .reason span {
+    font-size: 7px;
+  }
+
+  .donutLayout {
+    gap: 11px;
+  }
+
+  .donut {
+    width: 86px;
+    height: 86px;
+  }
+
+  .donutHole {
+    width: 56px;
+    height: 56px;
+  }
+
+  .donutHole strong {
+    font-size: 17px;
+  }
+
+  .legend span,
+  .legend strong {
+    font-size: 7px;
+  }
+
+  .locationReportInfo strong {
+    font-size: 7px;
+  }
+
+  .locationReportInfo > span {
+    font-size: 6px;
+  }
+
+  .locationReportInfo small {
+    font-size: 5.8px;
+  }
+
+  .reportNumber,
+  .reportRiskHigh,
+  .reportRiskMedium {
+    font-size: 5px !important;
+  }
+}
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+.reportButton:focus-visible,
+.learnButton:focus-visible,
+.mobileReportButton:focus-visible,
+.detailsButton:focus-visible,
+.mobileAlertAction:focus-visible,
+.helpCard button:focus-visible,
+.searchBox button:focus-visible,
+.filterSelect:focus-visible,
+.mobileFilter:focus-visible,
+.mobileFilterActive:focus-visible,
+.paginationButtons button:focus-visible,
+.locationViewButton:focus-visible,
+.locationReportButton:focus-visible,
+.mobileLocationExpand:focus-visible {
+  outline: 3px solid rgba(20, 125, 221, 0.24);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reportButton,
+  .learnButton,
+  .detailsButton,
+  .mobileReportButton,
+  .helpCard button,
+  .locationViewButton,
+  .locationReportButton,
+  .mobileLocationExpand {
+    transition: none;
   }
 }

@@ -1,11 +1,13 @@
 /* ============================================================
    PROPERTY SURE AI
-   VERIFICATION REVIEW — STEP 2
+   VERIFICATION REVIEW — STEP 4
    ============================================================ */
 
 .page {
   min-height: 100%;
+
   background: #f7faff;
+
   color: #0b1d33;
 
   font-family:
@@ -20,234 +22,27 @@
 
 .content {
   width: 100%;
+
   max-width: 1120px;
 
   margin: 0 auto;
 
   padding:
-    34px 28px 54px;
+    18px 28px 54px;
 }
 
 /* ============================================================
-   TOP BACK BUTTON
+   VERIFICATION NAVIGATION
    ============================================================ */
 
-.backButton {
-  appearance: none;
-  -webkit-appearance: none;
-
-  display: inline-flex;
-
-  align-items: center;
-
-  gap: 8px;
-
-  margin:
-    0 0 34px;
-
-  padding: 0;
-
-  border: 0;
-
-  background: transparent;
-
-  color: #168eff !important;
-
-  -webkit-text-fill-color: #168eff;
-
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
-  font-size: 14px;
-
-  font-weight: 600;
-
-  line-height: 1.3;
-
-  cursor: pointer;
-
-  -webkit-tap-highlight-color: transparent;
-
-  transition:
-    color 0.18s ease,
-    transform 0.18s ease;
-}
-
-.backButton span {
-  color: inherit !important;
-
-  -webkit-text-fill-color: inherit;
-
-  font-size: 19px;
-
-  line-height: 1;
-}
-
-.backButton:hover {
-  color: #0879f9 !important;
-
-  -webkit-text-fill-color: #0879f9;
-
-  transform:
-    translateX(-2px);
-}
-
-.backButton:disabled {
-  opacity: 0.45;
-
-  cursor: not-allowed;
-
-  transform: none;
-}
-
-/* ============================================================
-   WORKFLOW
-   ============================================================ */
-
-.workflow {
-  display: grid;
-
-  grid-template-columns:
-    minmax(0, 1fr)
-    55px
-    minmax(0, 1fr)
-    55px
-    minmax(0, 1fr)
-    55px
-    minmax(0, 1fr)
-    55px
-    minmax(0, 1fr);
-
-  align-items: center;
-
-  padding:
-    18px 20px;
-
-  border:
-    1px solid
-    #e2eaf3;
-
-  border-radius: 15px;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 8px 28px
-    rgba(20, 55, 90, 0.05);
-}
-
-.workflowItem {
-  display: flex;
-
-  align-items: center;
-
-  gap: 11px;
-
-  min-width: 0;
-}
-
-.workflowItem > div {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 4px;
-
-  min-width: 0;
-}
-
-.workflowItem strong {
-  color: #172b43;
-
-  font-size: 12px;
-
-  font-weight: 800;
-}
-
-.workflowItem span:last-child {
-  color: #8191a5;
-
-  font-size: 10px;
-
-  line-height: 1.4;
-}
-
-.workflowCurrent strong {
-  color: #168eff;
-}
-
-.workflowNumber,
-.workflowNumberDone,
-.workflowNumberActive {
-  width: 32px;
-  height: 32px;
-
-  flex-shrink: 0;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  font-size: 11px;
-
-  font-weight: 800;
-}
-
-.workflowNumber {
-  border:
-    1px solid
-    #d8e2ed;
-
-  background: #f5f8fb;
-
-  color: #8b9bad;
-}
-
-.workflowNumberDone {
-  border:
-    1px solid
-    rgba(32, 190, 119, 0.2);
-
-  background:
-    rgba(32, 190, 119, 0.1);
-
-  color: #16a86b;
-}
-
-.workflowNumberActive {
-  background: #168eff;
-
-  color: #ffffff;
-
-  box-shadow:
-    0 5px 14px
-    rgba(22, 142, 255, 0.22);
-}
-
-.workflowLine,
-.workflowLineActive {
-  height: 1px;
-
-  width: 100%;
-}
-
-.workflowLine {
-  background: #e1e8f0;
-}
-
-.workflowLineActive {
-  background:
-    linear-gradient(
-      90deg,
-      #1cb879,
-      #168eff
-    );
-}
+/*
+ * The Back link and 7-step verification workflow are rendered
+ * by the shared VerificationNavigation component.
+ *
+ * The Review page does not create a separate Back button or
+ * separate workflow so that every verification page remains
+ * visually uniform.
+ */
 
 /* ============================================================
    INTRO
@@ -259,7 +54,7 @@
   margin: 0 auto;
 
   padding:
-    42px 0 30px;
+    28px 0 30px;
 
   text-align: center;
 }
@@ -787,95 +582,45 @@
 }
 
 .detectedDocumentTitle strong {
-  color: #273e58;
+  color: #526a82;
 }
 
 .detectedPersonName {
-  color: #149463 !important;
+  color: #138a5d !important;
 
   white-space: normal !important;
 
   overflow: visible !important;
 }
 
-.detectedPersonName strong {
-  color: #0f7f54;
-}
-
-/* ============================================================
-   CLASSIFICATION
-   ============================================================ */
-
-.classificationStatus {
-  display: flex;
-
-  align-items: center;
-
-  gap: 6px;
-
+.classificationProcessing {
   color: #168eff !important;
-}
 
-.miniSpinner {
-  width: 10px;
-  height: 10px;
-
-  flex-shrink: 0;
-
-  border:
-    1.5px solid
-    rgba(22, 142, 255, 0.18);
-
-  border-top-color:
-    #168eff;
-
-  border-radius: 50%;
-
-  animation:
-    miniSpin
-    0.7s
-    linear
-    infinite;
+  font-weight: 700;
 }
 
 .classificationSuccess {
-  color: #159b67 !important;
+  color: #138a5d !important;
 
   white-space: normal !important;
 }
 
 .classificationWarning {
-  color: #c28a08 !important;
+  color: #c5791a !important;
 
   white-space: normal !important;
 }
 
-/* ============================================================
-   ARROW
-   ============================================================ */
-
 .documentArrow {
-  flex-shrink: 0;
-
   align-self: center;
 
-  color: #9aaabc;
+  flex-shrink: 0;
+
+  color: #a7b6c6;
 
   font-size: 25px;
 
-  font-weight: 300;
-
-  transition:
-    color 0.18s ease,
-    transform 0.18s ease;
-}
-
-.documentMainButton:hover
-.documentArrow {
-  color: #168eff;
-
-  transform:
-    translateX(2px);
+  line-height: 1;
 }
 
 /* ============================================================
@@ -889,14 +634,22 @@
 
   align-items: center;
 
-  gap: 9px;
+  justify-content: space-between;
+
+  gap: 10px;
 
   padding:
-    9px 12px 12px;
+    8px 10px 10px;
 
   border-top:
     1px solid
     #edf2f7;
+
+  background:
+    rgba(247, 250, 253, 0.72);
+
+  border-radius:
+    0 0 14px 14px;
 }
 
 .typeControlWrap {
@@ -910,58 +663,42 @@
 .typeButton {
   width: 100%;
 
-  min-height: 38px;
+  min-height: 39px;
 
   display: flex;
 
   align-items: center;
 
-  gap: 7px;
+  gap: 8px;
 
   padding:
     7px 10px;
 
   border:
     1px solid
-    #dfe7ef;
+    #d9e4ee;
 
   border-radius: 9px;
 
-  background: #f9fbfd;
+  background: #ffffff;
 
-  color: #7c8da1;
+  color: #607287;
 
   text-align: left;
 
   cursor: pointer;
 }
 
-.typeButton.identified {
-  border-color:
-    rgba(22, 168, 107, 0.22);
-
-  background:
-    rgba(22, 168, 107, 0.025);
-}
-
-.typeButton.needsType {
-  border-color:
-    rgba(225, 162, 24, 0.3);
-
-  background:
-    rgba(225, 162, 24, 0.025);
-}
-
-.typeButton:disabled {
-  opacity: 0.5;
-
-  cursor: not-allowed;
-}
-
 .typeButton > span:first-child {
-  color: #91a0b1;
+  color: #98a6b5;
 
   font-size: 8px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.4px;
 }
 
 .typeButton strong {
@@ -971,28 +708,42 @@
 
   overflow: hidden;
 
-  color: #30465d;
+  color: #4b6076;
 
   font-size: 9px;
+
+  font-weight: 700;
 
   white-space: nowrap;
 
   text-overflow: ellipsis;
 }
 
+.typeButton.identified {
+  border-color:
+    rgba(32, 170, 114, 0.25);
+}
+
+.typeButton.identified strong {
+  color: #19865d;
+}
+
+.typeButton.needsType {
+  border-color:
+    rgba(22, 142, 255, 0.22);
+}
+
 .typeButton.needsType strong {
-  color: #bd8504;
+  color: #168eff;
 }
 
 .typeChevron {
-  color: #168eff;
+  flex-shrink: 0;
+
+  color: #8ea0b3;
 
   font-size: 13px;
 }
-
-/* ============================================================
-   TYPE MENU
-   ============================================================ */
 
 .typeMenu {
   position: absolute;
@@ -1000,8 +751,7 @@
   left: 0;
   right: 0;
 
-  top:
-    calc(100% + 6px);
+  bottom: calc(100% + 7px);
 
   z-index: 50;
 
@@ -1176,34 +926,25 @@
     border-color 0.18s ease;
 }
 
-.addDocumentButton:hover {
-  border-color: #8ec5f4;
+.addDocumentButton:hover:not(:disabled) {
+  border-color: #8fc4f4;
 
   background:
-    rgba(22, 142, 255, 0.055);
+    rgba(22, 142, 255, 0.06);
 }
 
 .addDocumentButton:disabled {
-  opacity: 0.45;
+  opacity: 0.55;
 
   cursor: not-allowed;
 }
 
 .addDocumentPlus {
-  width: 22px;
-  height: 22px;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background:
-    rgba(22, 142, 255, 0.08);
-
   font-size: 17px;
+
+  line-height: 1;
+
+  font-weight: 400;
 }
 
 /* ============================================================
@@ -1216,64 +957,51 @@
 
   align-items: flex-start;
 
-  gap: 9px;
+  gap: 8px;
 
   margin-top: 12px;
 
   padding:
-    11px 13px;
+    10px 12px;
 
   border-radius: 10px;
 
-  font-size: 10px;
+  font-size: 9px;
 
   line-height: 1.5;
 }
 
 .successMessage {
-  align-items: center;
-
   border:
     1px solid
-    rgba(22, 168, 107, 0.18);
+    rgba(32, 170, 114, 0.18);
 
   background:
-    rgba(22, 168, 107, 0.045);
+    rgba(32, 170, 114, 0.055);
 
-  color: #16865b;
+  color: #16855d;
 }
 
 .successMessage span {
-  width: 21px;
-  height: 21px;
+  color: #16a86b;
 
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
-
-  border-radius: 50%;
-
-  background:
-    rgba(22, 168, 107, 0.1);
+  font-weight: 800;
 }
 
 .inlineError {
   border:
     1px solid
-    rgba(214, 76, 76, 0.2);
+    rgba(220, 71, 71, 0.18);
 
   background:
-    rgba(214, 76, 76, 0.045);
+    rgba(220, 71, 71, 0.055);
 
-  color: #bd4d4d;
+  color: #bd3e3e;
 }
 
 .inlineError > span {
-  width: 22px;
-  height: 22px;
+  width: 16px;
+  height: 16px;
 
   flex-shrink: 0;
 
@@ -1285,34 +1013,43 @@
   border-radius: 50%;
 
   background:
-    rgba(214, 76, 76, 0.09);
+    rgba(220, 71, 71, 0.12);
 
-  color: #cf5050;
+  color: #d33f3f;
+
+  font-size: 9px;
 
   font-weight: 800;
 }
 
 /* ============================================================
-   WHAT HAPPENS NEXT
+   NEXT CARD
    ============================================================ */
 
 .nextCard {
   display: flex;
 
-  gap: 13px;
+  align-items: flex-start;
 
-  margin-top: 17px;
+  gap: 12px;
 
-  padding: 16px;
+  margin-top: 20px;
+
+  padding:
+    15px;
 
   border:
     1px solid
-    rgba(123, 89, 190, 0.16);
+    #dfe8f2;
 
   border-radius: 13px;
 
   background:
-    rgba(123, 89, 190, 0.035);
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #f9fbfd 100%
+    );
 }
 
 .nextIcon {
@@ -1326,68 +1063,124 @@
   align-items: center;
   justify-content: center;
 
+  border:
+    1px solid
+    rgba(22, 142, 255, 0.15);
+
   border-radius: 10px;
 
   background:
-    rgba(123, 89, 190, 0.08);
+    rgba(22, 142, 255, 0.06);
 
-  color: #8664c4;
+  color: #168eff;
 
   font-size: 18px;
 }
 
 .nextCard strong {
-  color: #293c53;
+  display: block;
+
+  color: #20364f;
 
   font-size: 11px;
+
+  font-weight: 800;
 }
 
 .nextCard p {
   margin:
     5px 0 0;
 
-  color: #77889c;
+  color: #8090a4;
 
   font-size: 9px;
 
-  line-height: 1.65;
+  line-height: 1.6;
 }
 
 /* ============================================================
-   CONTINUE
+   BOTTOM ACTIONS
    ============================================================ */
 
+.actions {
+  display: grid;
+
+  grid-template-columns:
+    115px minmax(0, 1fr);
+
+  gap: 12px;
+
+  margin-top: 13px;
+}
+
+.backActionButton,
 .continueButton {
-  width: 100%;
+  height: 52px;
 
-  height: 56px;
+  display: flex;
 
-  position: relative;
+  align-items: center;
+  justify-content: center;
 
-  margin-top: 14px;
+  border-radius: 8px;
 
-  border: 0;
-
-  border-radius: 11px;
-
-  background:
-    linear-gradient(
-      90deg,
-      #168eff,
-      #0875df
-    );
-
-  color: #ffffff;
-
-  font-size: 13px;
+  font-size: 11px;
 
   font-weight: 800;
 
   cursor: pointer;
+}
+
+.backActionButton {
+  gap: 8px;
+
+  border:
+    1px solid
+    #d6e0eb;
+
+  background: #ffffff;
+
+  color: #1e3046;
+}
+
+.backActionButton span {
+  font-size: 17px;
+
+  font-weight: 400;
+}
+
+.backActionButton:hover:not(:disabled) {
+  border-color: #b9c9da;
+
+  background: #f9fbfd;
+}
+
+.backActionButton:disabled {
+  opacity: 0.65;
+
+  cursor: not-allowed;
+}
+
+.continueButton {
+  position: relative;
+
+  padding:
+    0 55px 0 20px;
+
+  border: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      #08a968,
+      #07995f
+    );
+
+  color: #ffffff;
 
   box-shadow:
     0 9px 24px
-    rgba(22, 142, 255, 0.17);
+    rgba(12, 163, 99, 0.2);
 
   transition:
     transform 0.18s ease,
@@ -1400,47 +1193,49 @@
 
   box-shadow:
     0 12px 28px
-    rgba(22, 142, 255, 0.23);
+    rgba(12, 163, 99, 0.26);
 }
 
 .continueButton:disabled {
-  opacity: 0.55;
+  opacity: 0.65;
 
   cursor: not-allowed;
 
   box-shadow: none;
 }
 
-.buttonArrow {
+.continueButton b {
   position: absolute;
 
   right: 20px;
 
-  font-size: 22px;
+  font-size: 21px;
+
+  font-weight: 400;
 }
 
-/* ============================================================
-   SECURITY
-   ============================================================ */
-
-.securityNotice {
+.securityNote {
   display: flex;
 
   align-items: center;
 
   justify-content: center;
 
-  gap: 7px;
+  gap: 5px;
 
-  margin-top: 18px;
+  margin-top: 10px;
 
-  color: #8b9bad;
+  color: #8b98a8;
 
-  text-align: center;
-
-  font-size: 9px;
+  font-size: 7px;
 
   line-height: 1.5;
+
+  text-align: center;
+}
+
+.securityNote span {
+  font-size: 8px;
 }
 
 /* ============================================================
@@ -1612,62 +1407,47 @@
 
   appearance: none;
 
-  -webkit-tap-highlight-color: transparent;
-
-  position: relative;
-
-  z-index: 5;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .previewHeader button:hover {
-  color: #168eff;
-
-  border-color: #c4ddf3;
-
-  background:
-    rgba(22, 142, 255, 0.05);
-}
-
-.previewBody {
-  flex: 1;
-
-  min-height: 0;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  padding: 10px;
-
-  overflow: auto;
-
-  -webkit-overflow-scrolling: touch;
+  border-color: #cdd9e5;
 
   background: #edf3f8;
 }
 
-.previewBody img {
-  max-width: 100%;
+.previewBody {
+  min-height: 0;
 
-  max-height: 100%;
+  flex: 1;
+
+  overflow: auto;
+
+  background: #eef3f7;
+
+  -webkit-overflow-scrolling:
+    touch;
+}
+
+.previewBody img {
+  width: 100%;
+
+  min-height: 100%;
+
+  display: block;
 
   object-fit: contain;
 
-  border-radius: 5px;
-
-  box-shadow:
-    0 8px 25px
-    rgba(0, 30, 60, 0.12);
+  background: #ffffff;
 }
 
 .previewBody iframe {
   width: 100%;
-
   height: 100%;
 
-  min-height: 0;
+  display: block;
 
   border: 0;
 
@@ -1675,20 +1455,28 @@
 }
 
 .previewUnavailable {
-  max-width: 320px;
+  min-height: 100%;
 
-  padding: 25px;
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 30px;
 
   text-align: center;
 }
 
-.previewUnavailable div {
+.previewUnavailable > div {
   font-size: 42px;
 }
 
 .previewUnavailable p {
   margin:
-    10px 0 5px;
+    13px 0 5px;
 
   color: #20364f;
 
@@ -1698,20 +1486,22 @@
 }
 
 .previewUnavailable span {
-  color: #7d8fa3;
+  max-width: 430px;
+
+  color: #7e90a4;
 
   font-size: 10px;
 
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .previewUnavailable button {
-  margin-top: 18px;
-
-  border: 0;
+  margin-top: 17px;
 
   padding:
-    9px 18px;
+    9px 16px;
+
+  border: 0;
 
   border-radius: 8px;
 
@@ -1724,143 +1514,6 @@
   font-weight: 800;
 
   cursor: pointer;
-}
-
-/* ============================================================
-   LOADING SCREEN
-   ============================================================ */
-
-.loadingPage {
-  min-height: 100vh;
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  justify-content: center;
-
-  background:
-    radial-gradient(
-      circle at 50% 42%,
-      rgba(22, 142, 255, 0.10),
-      transparent 30%
-    ),
-    linear-gradient(
-      180deg,
-      #061b38 0%,
-      #031229 100%
-    );
-
-  color: #ffffff;
-
-  text-align: center;
-}
-
-.loadingBrand {
-  display: flex;
-
-  align-items: center;
-
-  gap: 10px;
-
-  color: #ffffff;
-
-  font-size: 24px;
-
-  line-height: 1;
-
-  font-weight: 800;
-
-  letter-spacing: -0.025em;
-}
-
-.loadingBrand strong {
-  color: #168eff;
-}
-
-.loadingDiamond {
-  width: 15px;
-  height: 15px;
-
-  display: inline-block;
-
-  flex: 0 0 15px;
-
-  background: #168eff;
-
-  transform: rotate(45deg);
-
-  border-radius: 2px;
-
-  box-shadow:
-    0 0 18px
-    rgba(22, 142, 255, 0.35);
-
-  animation:
-    loadingDiamondPulse
-    1.6s
-    ease-in-out
-    infinite;
-}
-
-.loadingIndicator {
-  display: flex;
-
-  align-items: center;
-
-  gap: 5px;
-
-  margin-top: 22px;
-
-  height: 14px;
-}
-
-.loadingIndicator span {
-  width: 6px;
-  height: 6px;
-
-  display: block;
-
-  border-radius: 50%;
-
-  background: #168eff;
-
-  box-shadow:
-    0 0 8px
-    rgba(22, 142, 255, 0.45);
-
-  animation:
-    loadingDot
-    1.2s
-    ease-in-out
-    infinite;
-}
-
-.loadingIndicator span:nth-child(2) {
-  animation-delay:
-    0.15s;
-}
-
-.loadingIndicator span:nth-child(3) {
-  animation-delay:
-    0.3s;
-}
-
-.loadingText {
-  margin:
-    10px 0 0;
-
-  color: #91a7c3;
-
-  font-size: 12px;
-
-  line-height: 1.3;
-
-  font-weight: 500;
-
-  letter-spacing: 0.01em;
 }
 
 /* ============================================================
@@ -1877,6 +1530,8 @@
   align-items: center;
 
   justify-content: center;
+
+  padding: 25px;
 
   background:
     radial-gradient(
@@ -1907,7 +1562,6 @@
   display: flex;
 
   align-items: center;
-
   justify-content: center;
 
   margin-bottom: 18px;
@@ -1974,43 +1628,6 @@
   }
 }
 
-@keyframes loadingDot {
-  0%,
-  60%,
-  100% {
-    opacity: 0.3;
-
-    transform:
-      translateY(0);
-  }
-
-  30% {
-    opacity: 1;
-
-    transform:
-      translateY(-4px);
-  }
-}
-
-@keyframes loadingDiamondPulse {
-  0%,
-  100% {
-    opacity: 0.75;
-
-    transform:
-      rotate(45deg)
-      scale(1);
-  }
-
-  50% {
-    opacity: 1;
-
-    transform:
-      rotate(45deg)
-      scale(1.08);
-  }
-}
-
 /* ============================================================
    TABLET
    ============================================================ */
@@ -2018,42 +1635,7 @@
 @media (max-width: 850px) {
   .content {
     padding:
-      27px 20px 45px;
-  }
-
-  .workflow {
-    grid-template-columns:
-      minmax(0, 1fr)
-      35px
-      minmax(0, 1fr)
-      35px
-      minmax(0, 1fr)
-      35px
-      minmax(0, 1fr)
-      35px
-      minmax(0, 1fr);
-
-    padding:
-      15px;
-  }
-
-  .workflowItem {
-    gap: 8px;
-  }
-
-  .workflowItem strong {
-    font-size: 10px;
-  }
-
-  .workflowItem span:last-child {
-    font-size: 8px;
-  }
-
-  .workflowNumber,
-  .workflowNumberDone,
-  .workflowNumberActive {
-    width: 29px;
-    height: 29px;
+      18px 20px 45px;
   }
 }
 
@@ -2064,104 +1646,8 @@
 @media (max-width: 600px) {
   .content {
     padding:
-      20px 14px 36px;
+      16px 14px 36px;
   }
-
-  /* ----------------------------------------------------------
-     TOP BACK BUTTON
-     ---------------------------------------------------------- */
-
-  .backButton {
-    margin:
-      0 0 28px;
-
-    font-size: 13px;
-
-    color: #168eff !important;
-
-    -webkit-text-fill-color: #168eff;
-  }
-
-  .backButton span {
-    font-size: 18px;
-  }
-
-  /* ----------------------------------------------------------
-     WORKFLOW
-     ---------------------------------------------------------- */
-
-  .workflow {
-    display: grid;
-
-    grid-template-columns:
-      repeat(5, minmax(0, 1fr));
-
-    align-items: stretch;
-
-    padding:
-      13px 10px;
-
-    gap: 18px 8px;
-  }
-
-  .workflowItem {
-    flex: 1;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    justify-content: flex-start;
-
-    text-align: center;
-
-    gap: 6px;
-  }
-
-  .workflowItem > div {
-    align-items: center;
-
-    justify-content: flex-start;
-
-    gap: 3px;
-  }
-
-  .workflowItem strong {
-    font-size: 8px;
-
-    line-height: 1.25;
-  }
-
-  .workflowItem span:last-child {
-    display: block;
-
-    max-width: 82px;
-
-    color: #8191a5;
-
-    font-size: 7px;
-
-    line-height: 1.3;
-  }
-
-  .workflowCurrent strong {
-    color: #168eff;
-  }
-
-  .workflowNumber,
-  .workflowNumberDone,
-  .workflowNumberActive {
-    width: 28px;
-    height: 28px;
-
-    font-size: 9px;
-  }
-
-  .workflowLine,
-  .workflowLineActive {
-    display: none;
-  }
-
 
   /* ----------------------------------------------------------
      INTRO
@@ -2169,7 +1655,7 @@
 
   .intro {
     padding:
-      29px 0 23px;
+      20px 0 23px;
   }
 
   .reviewBadge {
@@ -2392,23 +1878,52 @@
   }
 
   /* ----------------------------------------------------------
-     CONTINUE
+     BOTTOM ACTIONS
      ---------------------------------------------------------- */
 
+  .actions {
+    grid-template-columns:
+      88px minmax(0, 1fr);
+
+    gap: 8px;
+
+    margin-top: 9px;
+  }
+
+  .backActionButton,
   .continueButton {
-    height: 54px;
+    height: 51px;
 
-    font-size: 12px;
-  }
-
-  .buttonArrow {
-    right: 16px;
-
-    font-size: 20px;
-  }
-
-  .securityNotice {
     font-size: 8px;
+  }
+
+  .backActionButton {
+    gap: 5px;
+  }
+
+  .backActionButton span {
+    font-size: 14px;
+  }
+
+  .continueButton {
+    padding:
+      0 34px 0 10px;
+  }
+
+  .continueButton b {
+    right: 11px;
+
+    font-size: 17px;
+  }
+
+  .securityNote {
+    margin-top: 8px;
+
+    font-size: 6px;
+  }
+
+  .securityNote span {
+    font-size: 7px;
   }
 
   /* ----------------------------------------------------------
@@ -2516,29 +2031,6 @@
       touch;
   }
 
-  /* ----------------------------------------------------------
-     LOADING
-     ---------------------------------------------------------- */
-
-  .loadingBrand {
-    font-size: 20px;
-  }
-
-  .loadingDiamond {
-    width: 15px;
-    height: 15px;
-
-    flex-basis: 15px;
-  }
-
-  .loadingIndicator {
-    margin-top: 20px;
-  }
-
-  .loadingText {
-    font-size: 11px;
-  }
-
   .screen h2 {
     font-size: 18px;
   }
@@ -2561,24 +2053,9 @@
       11px;
   }
 
-  .workflow {
-    padding:
-      11px 7px;
-  }
-
-  .workflowLine,
-  .workflowLineActive {
-    display: none;
-  }
-
-  .workflowItem strong {
-    font-size: 7px;
-  }
-
-  .workflowItem span:last-child {
-    max-width: 67px;
-
-    font-size: 6.5px;
+  .actions {
+    grid-template-columns:
+      82px minmax(0, 1fr);
   }
 
   .intro h1 {
@@ -2606,16 +2083,5 @@
     opacity: 1;
 
     visibility: visible;
-  }
-
-  .loadingBrand {
-    font-size: 19px;
-  }
-
-  .loadingDiamond {
-    width: 15px;
-    height: 15px;
-
-    flex-basis: 15px;
   }
 }

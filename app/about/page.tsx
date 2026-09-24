@@ -1,1126 +1,523 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import styles from "./about.module.css";
+
 export default function AboutPage() {
   const router = useRouter();
 
+  const navigate = (path: string) => {
+    router.push(path);
+  };
+
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "#050B18",
-        color: "white",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      {/* HERO SECTION */}
-
-     <section
-  style={{
-    position: "relative",
-    padding: "120px 30px",
-    backgroundImage:
-      "linear-gradient(rgba(5,11,24,0.78), rgba(5,11,24,0.78)), url('/about-hero.jpg')",
-    backgroundSize: "cover",
-    backgroundPosition: "center center",
-    backgroundRepeat: "no-repeat",
-    overflow: "hidden",
-  }}
->
-        <div
-          style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "60px",
-          }}
-        >
-          {/* LEFT */}
-
-          <div
-            style={{
-              flex: "1",
-              minWidth: "320px",
-            }}
+    <main className={styles.page}>
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+      <header className={styles.header}>
+        <div className={styles.headerInner}>
+          <button
+            type="button"
+            className={styles.brand}
+            onClick={() => navigate("/")}
+            aria-label="PropertySure AI home"
           >
-            <p
-              style={{
-                color: "#2EA8FF",
-                fontWeight: "700",
-                letterSpacing: "4px",
-                marginBottom: "18px",
-              }}
-            >
+            <span className={styles.brandDiamond}>◆</span>
+
+            <span className={styles.brandText}>
+              PropertySure <strong>AI</strong>
+            </span>
+          </button>
+        </div>
+      </header>
+
+      {/* =====================================================
+          BACK TO HOME
+      ===================================================== */}
+      <div className={styles.backRow}>
+        <div className={styles.backRowInner}>
+          <button
+            type="button"
+            className={styles.backButton}
+            onClick={() => navigate("/")}
+            aria-label="Back to PropertySure AI home"
+          >
+            <span className={styles.backArrow}>←</span>
+            <span>Back to Home</span>
+          </button>
+        </div>
+      </div>
+
+      {/* =====================================================
+          HERO
+      ===================================================== */}
+      <section className={styles.hero}>
+        <div className={styles.heroInner}>
+          <div className={styles.heroCopy}>
+            <p className={styles.eyebrow}>
               ABOUT PROPERTYSURE AI
             </p>
 
-            <h1
-              style={{
-                fontSize: "58px",
-                lineHeight: "1.1",
-                marginBottom: "28px",
-                fontWeight: "800",
-              }}
-            >
-              Building Trust in Nigerian Real Estate.
+            <h1>
+              Making property
+              <br />
+              decisions <span>clearer.</span>
             </h1>
 
-            <p
-              style={{
-                color: "#B6C2D2",
-                fontSize: "20px",
-                lineHeight: "1.8",
-                maxWidth: "620px",
-                marginBottom: "40px",
-              }}
-            >
-              PropertySure AI helps property buyers, investors, and real estate
-              professionals verify land and property documents before making any
-              payment using Artificial Intelligence and secure verification
-              technology.
+            <p className={styles.heroDescription}>
+              PropertySure AI is a technology platform built to
+              help people understand property documents,
+              property information, location signals and
+              potential risks before they make a real estate
+              decision.
             </p>
 
-            <button
-              onClick={() => router.push("/verify")}
-              style={{
-                background: "#2EA8FF",
-                color: "white",
-                border: "none",
-                padding: "18px 40px",
-                borderRadius: "12px",
-                fontSize: "18px",
-                cursor: "pointer",
-                fontWeight: "700",
-              }}
-            >
-              Verify Property
-            </button>
+            <div className={styles.heroMeta}>
+              <span>AI</span>
+              <i />
+              <span>PROPERTY VERIFICATION</span>
+              <i />
+              <span>DUE DILIGENCE</span>
+            </div>
           </div>
 
-          {/* RIGHT */}
+          <div className={styles.heroVisual}>
+            <div className={styles.visualGlow} />
 
-          <div
-            style={{
-              flex: "1",
-              minWidth: "320px",
-              textAlign: "center",
-            }}
-          >
-            <img
-  src="/about-office.jpg"
-  alt="PropertySure AI"
-  style={{
-    width: "100%",
-    maxWidth: "520px",
-    borderRadius: "20px",
-    boxShadow: "0 30px 80px rgba(0,0,0,0.45)",
-  }}
-/>
+            <div className={styles.identityCard}>
+              <div className={styles.identityTop}>
+                <span>PROPERTYSURE AI</span>
+
+                <span className={styles.identityStatus}>
+                  ● SYSTEM
+                </span>
+              </div>
+
+              <div className={styles.identityCore}>
+                <span className={styles.identityDiamond}>
+                  ◆
+                </span>
+
+                <strong>
+                  PropertySure <em>AI</em>
+                </strong>
+
+                <p>
+                  Property intelligence
+                  <br />
+                  before commitment.
+                </p>
+              </div>
+
+              <div className={styles.identityBottom}>
+                <span>DOCUMENTS</span>
+                <span>PROPERTY</span>
+                <span>LOCATION</span>
+                <span>RISK</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
-     <section
-  style={{
-    padding: "100px 30px",
-    backgroundImage:
-      "linear-gradient(rgba(7,16,31,0.86), rgba(7,16,31,0.86)), url('/our-purpose.jpg')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-  }}
->
-  <div
-    style={{
-      maxWidth: "1200px",
-      margin: "0 auto",
-      textAlign: "center",
-    }}
-  >
-    <p
-      style={{
-        color: "#2EA8FF",
-        fontWeight: "700",
-        letterSpacing: "4px",
-        marginBottom: "18px",
-      }}
-    >
-      OUR PURPOSE
-    </p>
 
-    <h2
-      style={{
-        fontSize: "48px",
-        fontWeight: "800",
-        marginBottom: "24px",
-      }}
-    >
-      Building Trust Through Technology
-    </h2>
+      {/* =====================================================
+          OUR PURPOSE
+      ===================================================== */}
+      <section className={styles.purposeSection}>
+        <div className={styles.sectionLabel}>
+          <span>01</span>
+          OUR PURPOSE
+        </div>
 
-    <p
-      style={{
-        maxWidth: "760px",
-        margin: "0 auto 70px",
-        color: "#B6C2D2",
-        fontSize: "20px",
-        lineHeight: "1.8",
-      }}
-    >
-      PropertySure AI combines Artificial Intelligence, document analysis,
-      and secure verification technology to help property buyers make informed
-      decisions before making any payment.
-    </p>
-
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-        gap: "30px",
-      }}
-    >
-      <div
-        style={{
-          background: "#0B162A",
-          padding: "40px 30px",
-          borderRadius: "20px",
-          border: "1px solid rgba(255,255,255,0.08)",
-        }}
-      >
-        <h3
-          style={{
-            color: "#2EA8FF",
-            marginBottom: "18px",
-            fontSize: "28px",
-          }}
-        >
-          Our Mission
-        </h3>
-
-        <p
-          style={{
-            color: "#B6C2D2",
-            lineHeight: "1.8",
-          }}
-        >
-          Protect property buyers by verifying land and property documents
-          before payment using Artificial Intelligence and secure verification
-          technology.
-        </p>
-      </div>
-
-      <div
-        style={{
-          background: "#0B162A",
-          padding: "40px 30px",
-          borderRadius: "20px",
-          border: "1px solid rgba(255,255,255,0.08)",
-        }}
-      >
-        <h3
-          style={{
-            color: "#2EA8FF",
-            marginBottom: "18px",
-            fontSize: "28px",
-          }}
-        >
-          Our Vision
-        </h3>
-
-        <p
-          style={{
-            color: "#B6C2D2",
-            lineHeight: "1.8",
-          }}
-        >
-          To become Africa's most trusted AI-powered property verification
-          platform, reducing fraud and increasing confidence in real estate
-          transactions.
-        </p>
-      </div>
-
-      <div
-        style={{
-          background: "#0B162A",
-          padding: "40px 30px",
-          borderRadius: "20px",
-          border: "1px solid rgba(255,255,255,0.08)",
-        }}
-      >
-        <h3
-          style={{
-            color: "#2EA8FF",
-            marginBottom: "18px",
-            fontSize: "28px",
-          }}
-        >
-          Why PropertySure AI
-        </h3>
-
-        <p
-          style={{
-            color: "#B6C2D2",
-            lineHeight: "1.8",
-          }}
-        >
-          AI-powered verification, secure document analysis, blockchain-backed
-          verification reports, and fast results that help buyers make informed
-          decisions.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-{/* HOW IT WORKS SECTION */}
-
-<section
-  style={{
-    padding: "100px 30px",
-    backgroundImage:
-      "linear-gradient(rgba(7,18,36,0.88), rgba(7,18,36,0.88)), url('/how-it-works.jpg')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-  }}
->
-  <div
-    style={{
-      maxWidth: "1200px",
-      margin: "0 auto",
-      textAlign: "center",
-    }}
-  >
-    <p
-      style={{
-        color: "#2EA8FF",
-        fontWeight: "700",
-        letterSpacing: "4px",
-        marginBottom: "18px",
-      }}
-    >
-      HOW IT WORKS
-    </p>
-
-    <h2
-      style={{
-        fontSize: "46px",
-        marginBottom: "20px",
-      }}
-    >
-      Verify Property Documents in Four Simple Steps
-    </h2>
-
-    <p
-      style={{
-        color: "#B6C2D2",
-        maxWidth: "760px",
-        margin: "0 auto 70px",
-        lineHeight: "1.8",
-        fontSize: "18px",
-      }}
-    >
-      PropertySure AI combines Artificial Intelligence and secure verification
-      technology to help buyers verify documents before making any payment.
-    </p>
-
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(240px,1fr))",
-        gap: "28px",
-      }}
-    >
-      <div
-        style={{
-          background: "#0D1B33",
-          padding: "35px",
-          borderRadius: "18px",
-          border: "1px solid rgba(46,168,255,0.18)",
-        }}
-      >
-        <div style={{ fontSize: "52px", marginBottom: "20px" }}>📄</div>
-
-        <h3 style={{ color: "#2EA8FF", marginBottom: "15px" }}>
-          Upload Documents
-        </h3>
-
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          Upload your Certificate of Occupancy, Survey Plan, Deed of Assignment,
-          Building Approval and other property documents.
-        </p>
-      </div>
-
-      <div
-        style={{
-          background: "#0D1B33",
-          padding: "35px",
-          borderRadius: "18px",
-          border: "1px solid rgba(46,168,255,0.18)",
-        }}
-      >
-        <div style={{ fontSize: "52px", marginBottom: "20px" }}>🤖</div>
-
-        <h3 style={{ color: "#2EA8FF", marginBottom: "15px" }}>
-          AI Verification
-        </h3>
-
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          Artificial Intelligence analyzes documents for inconsistencies,
-          forgery indicators and authenticity.
-        </p>
-      </div>
-
-      <div
-        style={{
-          background: "#0D1B33",
-          padding: "35px",
-          borderRadius: "18px",
-          border: "1px solid rgba(46,168,255,0.18)",
-        }}
-      >
-        <div style={{ fontSize: "52px", marginBottom: "20px" }}>🏛️</div>
-
-        <h3 style={{ color: "#2EA8FF", marginBottom: "15px" }}>
-          Cross-check Records
-        </h3>
-
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          PropertySure AI compares available information with trusted property
-          records and verification sources.
-        </p>
-      </div>
-
-      <div
-        style={{
-          background: "#0D1B33",
-          padding: "35px",
-          borderRadius: "18px",
-          border: "1px solid rgba(46,168,255,0.18)",
-        }}
-      >
-        <div style={{ fontSize: "52px", marginBottom: "20px" }}>✅</div>
-
-        <h3 style={{ color: "#2EA8FF", marginBottom: "15px" }}>
-          Receive Report
-        </h3>
-
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          Get a detailed verification report so you can make informed property
-          decisions with confidence.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-{/* SUPPORTED DOCUMENTS */}
-
-<section
-  style={{
-    padding: "100px 30px",
-    backgroundImage:
-      "linear-gradient(rgba(5,11,24,0.90), rgba(5,11,24,0.90)), url('/supported-documents.jpg')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-  }}
->
-  <div
-    style={{
-      maxWidth: "1200px",
-      margin: "0 auto",
-      textAlign: "center",
-    }}
-  >
-    <p
-      style={{
-        color: "#2EA8FF",
-        fontWeight: "700",
-        letterSpacing: "4px",
-        marginBottom: "18px",
-      }}
-    >
-      SUPPORTED DOCUMENTS
-    </p>
-
-    <h2
-      style={{
-        fontSize: "46px",
-        marginBottom: "20px",
-      }}
-    >
-      Documents PropertySure AI Can Verify
-    </h2>
-
-    <p
-      style={{
-        color: "#B6C2D2",
-        maxWidth: "760px",
-        margin: "0 auto 70px",
-        lineHeight: "1.8",
-        fontSize: "18px",
-      }}
-    >
-      Verify the authenticity and integrity of important property documents
-      before making any real estate transaction.
-    </p>
-
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(260px,1fr))",
-        gap: "25px",
-      }}
-    >
-      <div
-        style={{
-          background: "#0D1B33",
-          borderRadius: "18px",
-          padding: "30px",
-          border: "1px solid rgba(46,168,255,0.15)",
-        }}
-      >
-        <div style={{ fontSize: "46px", marginBottom: "18px" }}>📜</div>
-        <h3 style={{ color: "#2EA8FF" }}>Certificate of Occupancy</h3>
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          Verify ownership, issuance details and authenticity.
-        </p>
-      </div>
-
-      <div
-        style={{
-          background: "#0D1B33",
-          borderRadius: "18px",
-          padding: "30px",
-          border: "1px solid rgba(46,168,255,0.15)",
-        }}
-      >
-        <div style={{ fontSize: "46px", marginBottom: "18px" }}>📄</div>
-        <h3 style={{ color: "#2EA8FF" }}>Deed of Assignment</h3>
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          Confirm legal ownership transfer documents.
-        </p>
-      </div>
-
-      <div
-        style={{
-          background: "#0D1B33",
-          borderRadius: "18px",
-          padding: "30px",
-          border: "1px solid rgba(46,168,255,0.15)",
-        }}
-      >
-        <div style={{ fontSize: "46px", marginBottom: "18px" }}>🗺️</div>
-        <h3 style={{ color: "#2EA8FF" }}>Survey Plan</h3>
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          Validate land boundaries and survey information.
-        </p>
-      </div>
-
-      <div
-        style={{
-          background: "#0D1B33",
-          borderRadius: "18px",
-          padding: "30px",
-          border: "1px solid rgba(46,168,255,0.15)",
-        }}
-      >
-        <div style={{ fontSize: "46px", marginBottom: "18px" }}>🏗️</div>
-        <h3 style={{ color: "#2EA8FF" }}>Building Approval</h3>
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          Check planning permits and building approvals.
-        </p>
-      </div>
-
-      <div
-        style={{
-          background: "#0D1B33",
-          borderRadius: "18px",
-          padding: "30px",
-          border: "1px solid rgba(46,168,255,0.15)",
-        }}
-      >
-        <div style={{ fontSize: "46px", marginBottom: "18px" }}>📋</div>
-        <h3 style={{ color: "#2EA8FF" }}>Registered Survey</h3>
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          Verify registered survey records and coordinates.
-        </p>
-      </div>
-
-      <div
-        style={{
-          background: "#0D1B33",
-          borderRadius: "18px",
-          padding: "30px",
-          border: "1px solid rgba(46,168,255,0.15)",
-        }}
-      >
-        <div style={{ fontSize: "46px", marginBottom: "18px" }}>📑</div>
-        <h3 style={{ color: "#2EA8FF" }}>Governor's Consent</h3>
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          Confirm legal approval and ownership documentation.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-{/* WHY TRUST PROPERTYSURE AI */}
-
-     <section
-  style={{
-    padding: "120px 30px",
-    backgroundImage:
-      "linear-gradient(rgba(7,17,34,0.90), rgba(7,17,34,0.90)), url('/why-trust.jpg')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-  }}
->
-        <div
-          style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            textAlign: "center",
-          }}
-        >
-          <p
-            style={{
-              color: "#2EA8FF",
-              fontWeight: "700",
-              letterSpacing: "4px",
-              marginBottom: "20px",
-            }}
-          >
-            WHY TRUST PROPERTYSURE AI
-          </p>
-
-          <h2
-            style={{
-              fontSize: "48px",
-              marginBottom: "25px",
-              fontWeight: "800",
-            }}
-          >
-            Trusted by Property Buyers Across Nigeria
+        <div className={styles.purposeContent}>
+          <h2>
+            Real estate decisions
+            <br />
+            should begin with
+            <span> clarity.</span>
           </h2>
 
-          <p
-            style={{
-              color: "#B6C2D2",
-              fontSize: "20px",
-              lineHeight: "1.8",
-              maxWidth: "760px",
-              margin: "0 auto 70px",
-            }}
-          >
-            PropertySure AI combines Artificial Intelligence, secure document
-            verification, blockchain technology, and trusted verification
-            processes to help buyers make confident property decisions.
+          <p>
+            Property transactions can involve large amounts of
+            money, complex documentation and information spread
+            across different sources. PropertySure AI is being
+            built to bring that information into a clearer
+            verification experience.
           </p>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
-              gap: "25px",
-            }}
-           >
-            <div
-  style={{
-    background: "#0D1B33",
-    border: "1px solid rgba(46,168,255,0.15)",
-    borderRadius: "18px",
-    padding: "35px",
-  }}
->
-  <div style={{ fontSize: "48px", marginBottom: "18px" }}>🤖</div>
+          <p>
+            Instead of treating a property transaction as a
+            simple document upload, PropertySure AI approaches
+            verification as a broader due-diligence process.
+            Documents, property information, location signals
+            and identified risks can be considered together.
+          </p>
+        </div>
+      </section>
 
-  <h3
-    style={{
-      color: "#2EA8FF",
-      marginBottom: "15px",
-    }}
-  >
-    AI Verification
-  </h3>
+      {/* =====================================================
+          WHAT WE DO
+      ===================================================== */}
+      <section className={styles.whatSection}>
+        <div className={styles.sectionIntro}>
+          <p className={styles.eyebrow}>WHAT WE DO</p>
 
-  <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-    Advanced AI analyzes property documents for authenticity and potential
-    fraud.
-  </p>
-</div>
+          <h2>
+            One verification
+            <br />
+            experience. Multiple signals.
+          </h2>
 
-<div
-  style={{
-    background: "#0D1B33",
-    border: "1px solid rgba(46,168,255,0.15)",
-    borderRadius: "18px",
-    padding: "35px",
-  }}
->
-  <div style={{ fontSize: "48px", marginBottom: "18px" }}>🔒</div>
+          <p>
+            PropertySure AI is designed around the idea that
+            property verification should not depend on a single
+            document or a single signal.
+          </p>
+        </div>
 
-  <h3
-    style={{
-      color: "#2EA8FF",
-      marginBottom: "15px",
-    }}
-  >
-    Blockchain Security
-  </h3>
+        <div className={styles.signalGrid}>
+          <article className={styles.signalCard}>
+            <span className={styles.cardNumber}>01</span>
 
-  <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-    Every verification report is protected with secure blockchain-backed
-    records.
-  </p>
-</div>
+            <div className={styles.cardIcon}>▣</div>
 
-<div
-  style={{
-    background: "#0D1B33",
-    border: "1px solid rgba(46,168,255,0.15)",
-    borderRadius: "18px",
-    padding: "35px",
-  }}
->
-  <div style={{ fontSize: "48px", marginBottom: "18px" }}>⚡</div>
+            <h3>Documents</h3>
 
-  <h3
-    style={{
-      color: "#2EA8FF",
-      marginBottom: "15px",
-    }}
-  >
-    Fast Results
-  </h3>
+            <p>
+              Analyze property documentation and surface
+              information that may require further attention.
+            </p>
+          </article>
 
-  <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-    Receive your verification report in minutes instead of days.
-  </p>
-</div>
+          <article className={styles.signalCard}>
+            <span className={styles.cardNumber}>02</span>
 
-<div
-  style={{
-    background: "#0D1B33",
-    border: "1px solid rgba(46,168,255,0.15)",
-    borderRadius: "18px",
-    padding: "35px",
-  }}
->
-  <div style={{ fontSize: "48px", marginBottom: "18px" }}>🛡️</div>
+            <div className={styles.cardIcon}>⌂</div>
 
-  <h3
-    style={{
-      color: "#2EA8FF",
-      marginBottom: "15px",
-    }}
-  >
-    Fraud Protection
-  </h3>
+            <h3>Property</h3>
 
-  <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-    Reduce the risk of fake documents and fraudulent property transactions.
-  </p>
-</div>
+            <p>
+              Organize property identity and transaction
+              information into a clearer verification context.
+            </p>
+          </article>
 
-<div
-  style={{
-    background: "#0D1B33",
-    border: "1px solid rgba(46,168,255,0.15)",
-    borderRadius: "18px",
-    padding: "35px",
-  }}
->
-  <div style={{ fontSize: "48px", marginBottom: "18px" }}>🇳🇬</div>
+          <article className={styles.signalCard}>
+            <span className={styles.cardNumber}>03</span>
 
-  <h3
-    style={{
-      color: "#2EA8FF",
-      marginBottom: "15px",
-    }}
-  >
-    Built for Nigeria
-  </h3>
+            <div className={styles.cardIcon}>⌖</div>
 
-  <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-    Designed specifically around Nigerian land and property verification
-    processes.
-  </p>
-</div>
+            <h3>Location</h3>
 
-<div
-  style={{
-    background: "#0D1B33",
-    border: "1px solid rgba(46,168,255,0.15)",
-    borderRadius: "18px",
-    padding: "35px",
-  }}
->
-  <div style={{ fontSize: "48px", marginBottom: "18px" }}>✅</div>
+            <p>
+              Incorporate property location and GPS-related
+              signals into the broader verification process.
+            </p>
+          </article>
 
-  <h3
-    style={{
-      color: "#2EA8FF",
-      marginBottom: "15px",
-    }}
-  >
-    Trusted Process
-  </h3>
+          <article className={styles.signalCard}>
+            <span className={styles.cardNumber}>04</span>
 
-  <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-    A transparent verification process that gives buyers confidence before
-    making payment.
-  </p>
-</div>
+            <div className={styles.cardIcon}>◈</div>
 
-</div>
+            <h3>Risk</h3>
 
-<button
-  onClick={() => router.push("/verify")}
-  style={{
-    marginTop: "70px",
-    background: "#2EA8FF",
-    color: "white",
-    border: "none",
-    padding: "20px 50px",
-    borderRadius: "14px",
-    fontSize: "20px",
-    fontWeight: "700",
-    cursor: "pointer",
-  }}
->
-  Verify Your Property Now
-</button>
+            <p>
+              Bring potential inconsistencies, concerns and
+              verification signals together for review.
+            </p>
+          </article>
+        </div>
+      </section>
 
-</div>
-</section>
-{/* FAQ SECTION */}
+      {/* =====================================================
+          HOW WE THINK
+      ===================================================== */}
+      <section className={styles.principlesSection}>
+        <div className={styles.principlesInner}>
+          <div className={styles.principlesVisual}>
+            <div className={styles.principlesFrame}>
+              <div className={styles.frameHeader}>
+                <span>VERIFICATION MODEL</span>
+                <span>01 — 04</span>
+              </div>
 
-<section
-  style={{
-    padding: "120px 30px",
-    backgroundImage:
-      "linear-gradient(rgba(5,11,24,0.88), rgba(5,11,24,0.88)), url('/faq-section-bg.jpg')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-  }}
->
-  <div
-    style={{
-      maxWidth: "1000px",
-      margin: "0 auto",
-      textAlign: "center",
-    }}
-  >
-    <p
-      style={{
-        color: "#2EA8FF",
-        fontWeight: "700",
-        letterSpacing: "4px",
-        marginBottom: "20px",
-      }}
-    >
-      FREQUENTLY ASKED QUESTIONS
-    </p>
+              <div className={styles.frameBody}>
+                <div className={styles.frameNode}>
+                  <span>01</span>
+                  <strong>Documents</strong>
+                </div>
 
-    <h2
-      style={{
-        fontSize: "48px",
-        fontWeight: "800",
-        marginBottom: "25px",
-      }}
-    >
-      Got Questions?
-    </h2>
+                <div className={styles.frameConnector} />
 
-    <p
-      style={{
-        color: "#B6C2D2",
-        fontSize: "20px",
-        lineHeight: "1.8",
-        maxWidth: "760px",
-        margin: "0 auto 70px",
-      }}
-    >
-      Here are answers to some of the most common questions about
-      PropertySure AI.
-    </p>
-    <div
-  style={{
-    margin: "60px auto",
-    maxWidth: "1000px",
-    borderRadius: "24px",
-    overflow: "hidden",
-    boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
-  }}
->
-  <img
-    src="/faq-help.jpg"
-    alt="Frequently Asked Questions"
-    style={{
-      width: "100%",
-      display: "block",
-      borderRadius: "24px",
-    }}
-  />
-</div>
+                <div className={styles.frameNode}>
+                  <span>02</span>
+                  <strong>Property</strong>
+                </div>
 
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "22px",
-      }}
-    >
-      <div
-        style={{
-          background: "#0D1B33",
-          padding: "30px",
-          borderRadius: "18px",
-          border: "1px solid rgba(46,168,255,0.15)",
-          textAlign: "left",
-        }}
-      >
-        <h3 style={{ color: "#2EA8FF", marginBottom: "15px" }}>
-          What documents can PropertySure AI verify?
-        </h3>
+                <div className={styles.frameConnector} />
 
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          We verify documents such as Certificates of Occupancy,
-          Survey Plans, Deeds of Assignment, Governor's Consent,
-          Building Approval documents and other property-related records.
-        </p>
-      </div>
+                <div className={styles.frameNode}>
+                  <span>03</span>
+                  <strong>Location</strong>
+                </div>
 
-      <div
-        style={{
-          background: "#0D1B33",
-          padding: "30px",
-          borderRadius: "18px",
-          border: "1px solid rgba(46,168,255,0.15)",
-          textAlign: "left",
-        }}
-      >
-        <h3 style={{ color: "#2EA8FF", marginBottom: "15px" }}>
-          How long does verification take?
-        </h3>
+                <div className={styles.frameConnector} />
 
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          Verification time depends on the document type and available
-          records. Our goal is to provide results as quickly as possible.
-        </p>
-      </div>
+                <div className={styles.frameNode}>
+                  <span>04</span>
+                  <strong>Risk</strong>
+                </div>
+              </div>
 
-      <div
-        style={{
-          background: "#0D1B33",
-          padding: "30px",
-          borderRadius: "18px",
-          border: "1px solid rgba(46,168,255,0.15)",
-          textAlign: "left",
-        }}
-      >
-        <h3 style={{ color: "#2EA8FF", marginBottom: "15px" }}>
-          Is my document secure?
-        </h3>
+              <div className={styles.frameFooter}>
+                <span>AI-ASSISTED ANALYSIS</span>
+                <span>PROPERTY DUE DILIGENCE</span>
+              </div>
+            </div>
+          </div>
 
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          Yes. Documents are handled using secure verification processes
-          and protected throughout the verification workflow.
-        </p>
-      </div>
+          <div className={styles.principlesCopy}>
+            <p className={styles.eyebrow}>HOW WE THINK</p>
 
-      <div
-        style={{
-          background: "#0D1B33",
-          padding: "30px",
-          borderRadius: "18px",
-          border: "1px solid rgba(46,168,255,0.15)",
-          textAlign: "left",
-        }}
-      >
-        <h3 style={{ color: "#2EA8FF", marginBottom: "15px" }}>
-          Does PropertySure AI guarantee ownership?
-        </h3>
+            <h2>
+              Verification is
+              <br />
+              more than a
+              <span> document.</span>
+            </h2>
 
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          No. PropertySure AI provides document verification and analysis
-          to help buyers make informed decisions. Users should still carry
-          out all necessary legal and professional due diligence before
-          completing any property transaction.
-        </p>
-      </div>
+            <p>
+              A property can have several documents, different
+              sources of information and location-specific
+              considerations. Our approach is designed to help
+              bring these signals together rather than treating
+              them independently.
+            </p>
 
-      <div
-        style={{
-          background: "#0D1B33",
-          padding: "30px",
-          borderRadius: "18px",
-          border: "1px solid rgba(46,168,255,0.15)",
-          textAlign: "left",
-        }}
-      >
-        <h3 style={{ color: "#2EA8FF", marginBottom: "15px" }}>
-          How do I receive my verification report?
-        </h3>
+            <p>
+              PropertySure AI is designed to assist due diligence,
+              not replace professional judgment. When deeper
+              investigation is necessary, the platform can
+              provide a clearer starting point for the people
+              responsible for making the final decision.
+            </p>
+          </div>
+        </div>
+      </section>
 
-        <p style={{ color: "#B6C2D2", lineHeight: "1.8" }}>
-          After verification is completed, your report will be made
-          available through your PropertySure AI account for review and
-          download.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-{/* FOOTER */}
+      {/* =====================================================
+          WHO IT IS FOR
+      ===================================================== */}
+      <section className={styles.peopleSection}>
+        <div className={styles.peopleHeader}>
+          <p className={styles.eyebrow}>BUILT FOR REAL PEOPLE</p>
 
-<footer
-  style={{
-    backgroundImage:
-      "linear-gradient(rgba(5,11,24,0.92), rgba(5,11,24,0.92)), url('/footer-contact-bg.jpg')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-    padding: "80px 30px 40px",
-    borderTop: "1px solid rgba(46,168,255,0.15)",
-  }}
->
-  <div
-    style={{
-      maxWidth: "1200px",
-      margin: "0 auto",
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(220px,1fr))",
-      gap: "40px",
-    }}
-  >
-    <div>
-      <h2
-        style={{
-          color: "#2EA8FF",
-          marginBottom: "20px",
-        }}
-      >
-        PropertySure AI
-      </h2>
+          <h2>
+            Designed around
+            <br />
+            real property decisions.
+          </h2>
+        </div>
 
-      <p
-        style={{
-          color: "#B6C2D2",
-          lineHeight: "1.8",
-        }}
-      >
-        AI-powered property document verification platform helping buyers,
-        investors and real estate professionals make informed decisions.
-      </p>
-    </div>
+        <div className={styles.peopleGrid}>
+          <article>
+            <span>01</span>
 
-    <div>
-      <h3 style={{ marginBottom: "20px" }}>Quick Links</h3>
+            <h3>Home Buyers</h3>
 
-      <Link
-  href="/"
-  style={{
-    display: "block",
-    color: "#B6C2D2",
-    marginBottom: "12px",
-    textDecoration: "none",
-  }}
->
-  Home
-</Link>
+            <p>
+              Understand property information more clearly
+              before committing significant funds.
+            </p>
+          </article>
 
-<Link
-  href="/about"
-  style={{
-    display: "block",
-    color: "#B6C2D2",
-    marginBottom: "12px",
-    textDecoration: "none",
-  }}
->
-  About
-</Link>
+          <article>
+            <span>02</span>
 
-<Link
-  href="/pricing"
-  style={{
-    display: "block",
-    color: "#B6C2D2",
-    marginBottom: "12px",
-    textDecoration: "none",
-  }}
->
-  Pricing
-</Link>
+            <h3>Investors</h3>
 
-<Link
-  href="/contact"
-  style={{
-    display: "block",
-    color: "#B6C2D2",
-    textDecoration: "none",
-  }}
->
-  Contact
-</Link>
-    </div>
+            <p>
+              Add a structured verification layer to property
+              investment research and decision-making.
+            </p>
+          </article>
 
-    <div>
-      <h3 style={{ marginBottom: "20px" }}>Services</h3>
+          <article>
+            <span>03</span>
 
-      <p style={{ color: "#B6C2D2", marginBottom: "12px" }}>
-        Document Verification
-      </p>
+            <h3>Diaspora Buyers</h3>
 
-      <p style={{ color: "#B6C2D2", marginBottom: "12px" }}>
-        AI Analysis
-      </p>
+            <p>
+              Gain a clearer way to begin property due diligence
+              when investing from outside the country.
+            </p>
+          </article>
 
-      <p style={{ color: "#B6C2D2", marginBottom: "12px" }}>
-        Verification Reports
-      </p>
+          <article>
+            <span>04</span>
 
-      <p style={{ color: "#B6C2D2" }}>
-        Property Due Diligence
-      </p>
-    </div>
+            <h3>Professionals</h3>
 
-    <div>
-      <h3 style={{ marginBottom: "20px" }}>Contact</h3>
+            <p>
+              Support property verification workflows with
+              organized information and AI-assisted analysis.
+            </p>
+          </article>
+        </div>
+      </section>
 
-      <p style={{ color: "#B6C2D2", marginBottom: "12px" }}>
-        support@propertysure.ai
-      </p>
+      {/* =====================================================
+          RESPONSIBLE TECHNOLOGY
+      ===================================================== */}
+      <section className={styles.responsibilitySection}>
+        <div className={styles.responsibilityInner}>
+          <div>
+            <p className={styles.eyebrow}>
+              RESPONSIBLE TECHNOLOGY
+            </p>
 
-      <p style={{ color: "#B6C2D2", marginBottom: "12px" }}>
-        Nigeria
-      </p>
+            <h2>
+              AI should help
+              <br />
+              people see
+              <span> clearly.</span>
+            </h2>
+          </div>
 
-      <p style={{ color: "#B6C2D2" }}>
-        Available 24/7
-      </p>
-    </div>
-  </div>
+          <div className={styles.responsibilityCopy}>
+            <p>
+              PropertySure AI is designed as a decision-support
+              technology. Its role is to analyze information,
+              identify signals and organize findings so that
+              users can investigate them more effectively.
+            </p>
 
-  <div
-    style={{
-      marginTop: "60px",
-      paddingTop: "25px",
-      borderTop: "1px solid rgba(255,255,255,0.08)",
-      textAlign: "center",
-      color: "#8FA2BC",
-      fontSize: "15px",
-    }}
-  >
-    © {new Date().getFullYear()} PropertySure AI. All rights reserved.
-  </div>
-</footer>
+            <p>
+              A verification result should therefore be treated
+              as part of due diligence rather than as a substitute
+              for legal, surveying, engineering or government
+              verification where those are required.
+            </p>
+          </div>
+        </div>
+      </section>
 
-</main>
-);
+      {/* =====================================================
+          VISION
+      ===================================================== */}
+      <section className={styles.visionSection}>
+        <div className={styles.visionInner}>
+          <div className={styles.visionCopy}>
+            <p className={styles.eyebrow}>
+              THE LONG-TERM VISION
+            </p>
+
+            <h2>
+              Building a more
+              <br />
+              trusted property
+              <span> ecosystem.</span>
+            </h2>
+
+            <p>
+              PropertySure AI begins with property verification,
+              but the larger vision is to build technology that
+              makes important property information more
+              transparent, structured and easier to understand.
+            </p>
+
+            <p>
+              As the platform evolves, AI, location intelligence,
+              blockchain-based verification and verifiable
+              credentials can work together to create a stronger
+              foundation for digital property due diligence.
+            </p>
+          </div>
+
+          <div className={styles.visionCard}>
+            <div className={styles.visionCardTop}>
+              <span>PROPERTYSURE AI</span>
+              <span>LONG-TERM ARCHITECTURE</span>
+            </div>
+
+            <div className={styles.visionLayers}>
+              <div>
+                <span>01</span>
+                <strong>AI ANALYSIS</strong>
+              </div>
+
+              <div>
+                <span>02</span>
+                <strong>LOCATION INTELLIGENCE</strong>
+              </div>
+
+              <div>
+                <span>03</span>
+                <strong>VERIFIABLE RECORDS</strong>
+              </div>
+
+              <div>
+                <span>04</span>
+                <strong>TRUST INFRASTRUCTURE</strong>
+              </div>
+            </div>
+
+            <div className={styles.visionCardBottom}>
+              INFORMATION → VERIFICATION → CONFIDENCE
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <button
+            type="button"
+            className={styles.footerBrand}
+            onClick={() => navigate("/")}
+          >
+            <span className={styles.footerDiamond}>◆</span>
+
+            <span className={styles.footerBrandText}>
+              PropertySure <strong>AI</strong>
+            </span>
+          </button>
+
+          <nav
+            className={styles.footerLinks}
+            aria-label="Footer navigation"
+          >
+            <button onClick={() => navigate("/")}>
+              Home
+            </button>
+
+            <button onClick={() => navigate("/verify")}>
+              Verify
+            </button>
+
+            <button onClick={() => navigate("/pricing")}>
+              Pricing
+            </button>
+
+            <button onClick={() => navigate("/about")}>
+              About
+            </button>
+
+            <button onClick={() => navigate("/contact")}>
+              Contact
+            </button>
+          </nav>
+
+          <span className={styles.footerCopy}>
+            © {new Date().getFullYear()} PropertySure AI
+          </span>
+        </div>
+      </footer>
+    </main>
+  );
 }

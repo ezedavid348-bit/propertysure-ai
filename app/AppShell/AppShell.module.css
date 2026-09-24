@@ -1055,3 +1055,178 @@
     padding-right: 15px;
   }
 }
+
+/* ============================================================
+   SHARED LOADING SCREEN
+   Used by Dashboard, Fraud Watch, Report Suspicious,
+   and other AppShell pages.
+============================================================ */
+
+.loadingPage {
+  min-height: 100vh;
+  width: 100%;
+
+  background: #061b38;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 32px;
+
+  color: #ffffff;
+
+  box-sizing: border-box;
+}
+
+.loadingBrand {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  color: #ffffff;
+
+  font-size: 22px;
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: -0.025em;
+}
+
+.loadingBrand strong {
+  color: #168eff;
+}
+
+.loadingDiamond {
+  width: 16px;
+  height: 16px;
+
+  flex: 0 0 16px;
+
+  display: inline-block;
+
+  background: #168eff;
+
+  transform: rotate(45deg);
+
+  border-radius: 2px;
+
+  box-shadow:
+    0 0 18px rgba(
+      22,
+      142,
+      255,
+      0.42
+    );
+}
+
+.loadingIndicator {
+  margin-top: 26px;
+
+  display: flex;
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 6px;
+}
+
+.loadingIndicator span {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: #168eff;
+
+  animation:
+    loadingPulse
+    1.2s
+    ease-in-out
+    infinite;
+}
+
+.loadingIndicator span:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.loadingIndicator span:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+.loadingText {
+  margin: 13px 0 0;
+
+  color: #8ea4c3;
+
+  font-size: 10px;
+  line-height: 1.3;
+
+  font-weight: 600;
+
+  letter-spacing: 0.04em;
+}
+
+@keyframes loadingPulse {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0) scale(0.85);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1);
+  }
+}
+
+/* ============================================================
+   LOADING SCREEN — MOBILE
+============================================================ */
+
+@media (max-width: 700px) {
+  .loadingPage {
+    min-height: 100svh;
+
+    padding: 24px;
+  }
+
+  .loadingBrand {
+    font-size: 20px;
+
+    gap: 9px;
+  }
+
+  .loadingDiamond {
+    width: 14px;
+    height: 14px;
+
+    flex-basis: 14px;
+  }
+
+  .loadingIndicator {
+    margin-top: 24px;
+  }
+
+  .loadingText {
+    margin-top: 12px;
+
+    font-size: 9px;
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION
+============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .loadingIndicator span {
+    animation: none;
+
+    opacity: 0.7;
+  }
+}
