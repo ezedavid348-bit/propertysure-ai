@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
+import LoadingScreen from "../../AppShell/LoadingScreen";
 
 type DocumentType =
   | "nin"
@@ -133,22 +134,74 @@ function Icon({
 export default function IdentityVerificationPage() {
   const router = useRouter();
 
+  /*
+  ============================================================
+  PAGE LOADING
+  ============================================================
+  */
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setLoading(false);
+    }, 800);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, []);
+
   const [selectedDocument, setSelectedDocument] =
     useState<DocumentType | null>(null);
 
   const [menuOpen, setMenuOpen] =
     useState(false);
 
+  /*
+  ============================================================
+  GENERAL NAVIGATION
+  ============================================================
+  */
+
   const navigateTo = (path: string) => {
     setMenuOpen(false);
     router.push(path);
   };
+
+  /*
+  ============================================================
+  ACCOUNT NAVIGATION
+  ============================================================
+
+  Always perform a fresh navigation when returning to Account.
+  This prevents an older cached Account page from being shown
+  after leaving the KYC flow.
+  ============================================================
+  */
+
+  const navigateToAccount = () => {
+    setMenuOpen(false);
+    window.location.href = "/account";
+  };
+
+  /*
+  ============================================================
+  DOCUMENT SELECTION
+  ============================================================
+  */
 
   const handleDocumentSelect = (
     documentType: DocumentType
   ) => {
     setSelectedDocument(documentType);
   };
+
+  /*
+  ============================================================
+  CONTINUE
+  ============================================================
+  */
 
   const handleContinue = () => {
     if (!selectedDocument) {
@@ -166,6 +219,16 @@ export default function IdentityVerificationPage() {
       "/account/identity-verification/upload"
     );
   };
+
+  /*
+  ============================================================
+  SHARED LOADING SCREEN
+  ============================================================
+  */
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <main className={styles.page}>
@@ -321,8 +384,8 @@ export default function IdentityVerificationPage() {
             className={
               styles.mobileNavItem
             }
-            onClick={() =>
-              navigateTo("/account")
+            onClick={
+              navigateToAccount
             }
           >
             <span
@@ -389,8 +452,8 @@ export default function IdentityVerificationPage() {
             <button
               type="button"
               className={styles.backLink}
-              onClick={() =>
-                router.push("/account")
+              onClick={
+                navigateToAccount
               }
             >
               <Icon
@@ -777,8 +840,8 @@ export default function IdentityVerificationPage() {
 
         <button
           type="button"
-          onClick={() =>
-            navigateTo("/account")
+          onClick={
+            navigateToAccount
           }
         >
           <Icon

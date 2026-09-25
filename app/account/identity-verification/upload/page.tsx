@@ -4,10 +4,12 @@ import {
   ChangeEvent,
   DragEvent,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
+import LoadingScreen from "../../../AppShell/LoadingScreen";
 
 type DocumentType =
   | "nin"
@@ -47,6 +49,9 @@ const ALLOWED_FILE_TYPES = [
   "image/png",
   "application/pdf",
 ];
+
+const INITIAL_LOADING_TIME = 700;
+const NAVIGATION_LOADING_TIME = 700;
 
 function Icon({
   name,
@@ -123,6 +128,12 @@ const navItems = [
 export default function DocumentUploadPage() {
   const router = useRouter();
 
+  const loadingTimeoutRef =
+    useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const navigationTimeoutRef =
+    useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [menuOpen, setMenuOpen] = useState(false);
 
   const [selectedDocument, setSelectedDocument] =
@@ -137,31 +148,86 @@ export default function DocumentUploadPage() {
 
   const [uploading, setUploading] = useState(false);
 
+  /*
+    The page starts in loading state.
+
+    This guarantees that the shared LoadingScreen is rendered
+    immediately on the first client render.
+  */
+  const [loading, setLoading] = useState(true);
+
   /* ============================================================
-     LOAD SELECTED DOCUMENT FROM STEP 1
+     INITIALIZE PAGE
   ============================================================ */
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
+    let mounted = true;
+
+    try {
+      const storedDocument =
+        sessionStorage.getItem(
+          "propertysure_kyc_document_type",
+        );
+
+      if (
+        storedDocument === "nin" ||
+        storedDocument === "national-id" ||
+        storedDocument === "drivers-license" ||
+        storedDocument === "passport"
+      ) {
+        setSelectedDocument(
+          storedDocument as DocumentType,
+        );
+      }
+    } catch {
+      /*
+        If sessionStorage is unavailable, the page simply
+        continues with the default NIN document.
+      */
     }
 
-    const storedDocument =
-      sessionStorage.getItem(
-        "propertysure_kyc_document_type"
-      );
+    /*
+      Keep the shared loading screen visible long enough
+      for the user to actually see it.
 
-    if (
-      storedDocument === "nin" ||
-      storedDocument === "national-id" ||
-      storedDocument === "drivers-license" ||
-      storedDocument === "passport"
-    ) {
-      setSelectedDocument(
-        storedDocument as DocumentType
-      );
-    }
+      This is intentionally the same shared LoadingScreen
+      used throughout PropertySure AI.
+    */
+    loadingTimeoutRef.current =
+      setTimeout(() => {
+        if (mounted) {
+          setLoading(false);
+        }
+      }, INITIAL_LOADING_TIME);
+
+    return () => {
+      mounted = false;
+
+      if (loadingTimeoutRef.current) {
+        clearTimeout(
+          loadingTimeoutRef.current,
+        );
+
+        loadingTimeoutRef.current = null;
+      }
+
+      if (navigationTimeoutRef.current) {
+        clearTimeout(
+          navigationTimeoutRef.current,
+        );
+
+        navigationTimeoutRef.current = null;
+      }
+    };
   }, []);
+
+  /* ============================================================
+     SHARED LOADING SCREEN
+  ============================================================ */
+
+  if (loading || uploading) {
+    return <LoadingScreen />;
+  }
 
   /* ============================================================
      NAVIGATION
@@ -184,7 +250,7 @@ export default function DocumentUploadPage() {
 
     if (!validType) {
       setError(
-        "Please upload a JPG, PNG or PDF file."
+        "Please upload a JPG, PNG or PDF file.",
       );
 
       return false;
@@ -192,7 +258,7 @@ export default function DocumentUploadPage() {
 
     if (file.size > MAX_FILE_SIZE) {
       setError(
-        "File size must not exceed 5MB."
+        "File size must not exceed 5MB.",
       );
 
       return false;
@@ -219,7 +285,7 @@ export default function DocumentUploadPage() {
   ============================================================ */
 
   const handleFileChange = (
-    event: ChangeEvent<HTMLInputElement>
+    event: ChangeEvent<HTMLInputElement>,
   ) => {
     const file =
       event.target.files?.[0];
@@ -236,7 +302,7 @@ export default function DocumentUploadPage() {
   ============================================================ */
 
   const handleDragOver = (
-    event: DragEvent<HTMLDivElement>
+    event: DragEvent<HTMLDivElement>,
   ) => {
     event.preventDefault();
     event.stopPropagation();
@@ -245,7 +311,7 @@ export default function DocumentUploadPage() {
   };
 
   const handleDragLeave = (
-    event: DragEvent<HTMLDivElement>
+    event: DragEvent<HTMLDivElement>,
   ) => {
     event.preventDefault();
     event.stopPropagation();
@@ -254,7 +320,7 @@ export default function DocumentUploadPage() {
   };
 
   const handleDrop = (
-    event: DragEvent<HTMLDivElement>
+    event: DragEvent<HTMLDivElement>,
   ) => {
     event.preventDefault();
     event.stopPropagation();
@@ -273,45 +339,57 @@ export default function DocumentUploadPage() {
 
   /* ============================================================
      CONTINUE
-
-     IMPORTANT:
-     The actual folder is:
-
-     /account/identity-verification/information-confirmation
-
-     NOT:
-
-     /account/identity-verification/information
+     
+     Step 2 → Step 3
   ============================================================ */
 
   const handleContinue = () => {
     if (!selectedFile) {
       setError(
-        "Please select your identity document before continuing."
+        "Please select your identity document before continuing.",
       );
 
       return;
     }
 
-    if (
-      typeof window !== "undefined"
-    ) {
+    if (typeof window !== "undefined") {
       sessionStorage.setItem(
         "propertysure_kyc_file_name",
-        selectedFile.name
+        selectedFile.name,
       );
 
       sessionStorage.setItem(
         "propertysure_kyc_file_type",
-        selectedFile.type
+        selectedFile.type,
       );
     }
 
+    /*
+      Clear any previous navigation timer.
+    */
+    if (navigationTimeoutRef.current) {
+      clearTimeout(
+        navigationTimeoutRef.current,
+      );
+    }
+
+    /*
+      Turn on the shared LoadingScreen first.
+    */
     setUploading(true);
 
-    router.push(
-      "/account/identity-verification/information-confirmation"
-    );
+    /*
+      Give React time to paint the LoadingScreen.
+
+      The user will see the same PropertySure AI loading
+      screen before Step 3 opens.
+    */
+    navigationTimeoutRef.current =
+      setTimeout(() => {
+        router.push(
+          "/account/identity-verification/information-confirmation",
+        );
+      }, NAVIGATION_LOADING_TIME);
   };
 
   /* ============================================================
@@ -333,7 +411,6 @@ export default function DocumentUploadPage() {
 
   return (
     <main className={styles.page}>
-
       {/* ======================================================
           HEADER
       ====================================================== */}
@@ -341,7 +418,6 @@ export default function DocumentUploadPage() {
       <header
         className={styles.mobileHeader}
       >
-
         <button
           type="button"
           className={styles.menuButton}
@@ -389,7 +465,7 @@ export default function DocumentUploadPage() {
           className={styles.mobileBell}
           onClick={() =>
             navigateTo(
-              "/account/notifications"
+              "/account/notifications",
             )
           }
           aria-label="Notifications"
@@ -405,7 +481,6 @@ export default function DocumentUploadPage() {
             }
           />
         </button>
-
       </header>
 
       {/* ======================================================
@@ -418,13 +493,11 @@ export default function DocumentUploadPage() {
             styles.mobileMenu
           }
         >
-
           <div
             className={
               styles.mobileMenuHeader
             }
           >
-
             <button
               type="button"
               className={
@@ -458,7 +531,6 @@ export default function DocumentUploadPage() {
             >
               ×
             </button>
-
           </div>
 
           <div
@@ -475,7 +547,6 @@ export default function DocumentUploadPage() {
               styles.mobileMenuNav
             }
           >
-
             {navItems.map(
               (item) => (
                 <button
@@ -486,11 +557,10 @@ export default function DocumentUploadPage() {
                   }
                   onClick={() =>
                     navigateTo(
-                      item.href
+                      item.href,
                     )
                   }
                 >
-
                   <span
                     className={
                       styles.navIcon
@@ -507,11 +577,9 @@ export default function DocumentUploadPage() {
                   <span>
                     {item.label}
                   </span>
-
                 </button>
-              )
+              ),
             )}
-
           </nav>
 
           <div
@@ -529,11 +597,10 @@ export default function DocumentUploadPage() {
             }
             onClick={() =>
               navigateTo(
-                "/account"
+                "/account",
               )
             }
           >
-
             <span
               className={
                 styles.navIcon
@@ -548,7 +615,6 @@ export default function DocumentUploadPage() {
             <span>
               Account
             </span>
-
           </button>
 
           <button
@@ -558,11 +624,10 @@ export default function DocumentUploadPage() {
             }
             onClick={() =>
               navigateTo(
-                "/settings"
+                "/settings",
               )
             }
           >
-
             <span
               className={
                 styles.navIcon
@@ -577,9 +642,7 @@ export default function DocumentUploadPage() {
             <span>
               Settings
             </span>
-
           </button>
-
         </div>
       )}
 
@@ -590,11 +653,9 @@ export default function DocumentUploadPage() {
       <section
         className={styles.main}
       >
-
         <div
           className={styles.content}
         >
-
           {/* ==================================================
               PAGE INTRO
           ================================================== */}
@@ -604,7 +665,6 @@ export default function DocumentUploadPage() {
               styles.pageIntro
             }
           >
-
             <h1>
               Identity Verification
             </h1>
@@ -621,20 +681,18 @@ export default function DocumentUploadPage() {
               }
               onClick={() =>
                 router.push(
-                  "/account"
+                  "/account/identity-verification",
                 )
               }
             >
-
               <Icon
                 name="arrow"
                 size={18}
               />
 
               <span>
-                Back to Account
+                Back to Identity Document
               </span>
-
             </button>
 
             <div
@@ -642,7 +700,6 @@ export default function DocumentUploadPage() {
                 styles.statusBadge
               }
             >
-
               <span
                 className={
                   styles.statusDiamond
@@ -654,9 +711,7 @@ export default function DocumentUploadPage() {
               <span>
                 Not Verified
               </span>
-
             </div>
-
           </div>
 
           {/* ==================================================
@@ -666,9 +721,7 @@ export default function DocumentUploadPage() {
           <div
             className={styles.steps}
           >
-
             <StepItem>
-
               <Step
                 number={1}
                 label={
@@ -684,11 +737,9 @@ export default function DocumentUploadPage() {
               <StepLine
                 active
               />
-
             </StepItem>
 
             <StepItem>
-
               <Step
                 number={2}
                 label={
@@ -704,11 +755,9 @@ export default function DocumentUploadPage() {
               <StepLine
                 active
               />
-
             </StepItem>
 
             <StepItem>
-
               <Step
                 number={3}
                 label={
@@ -721,11 +770,9 @@ export default function DocumentUploadPage() {
               />
 
               <StepLine />
-
             </StepItem>
 
             <StepItem>
-
               <Step
                 number={4}
                 label={
@@ -738,11 +785,9 @@ export default function DocumentUploadPage() {
               />
 
               <StepLine />
-
             </StepItem>
 
             <StepItem last>
-
               <Step
                 number={5}
                 label={
@@ -753,9 +798,7 @@ export default function DocumentUploadPage() {
                   </>
                 }
               />
-
             </StepItem>
-
           </div>
 
           {/* ==================================================
@@ -767,13 +810,11 @@ export default function DocumentUploadPage() {
               styles.verificationCard
             }
           >
-
             <div
               className={
                 styles.cardHeader
               }
             >
-
               <div
                 className={
                   styles.cardHeaderIcon
@@ -787,7 +828,6 @@ export default function DocumentUploadPage() {
                   styles.cardHeaderText
                 }
               >
-
                 <h2>
                   Step 2: Document Upload
                 </h2>
@@ -796,9 +836,7 @@ export default function DocumentUploadPage() {
                   Upload a clear photo of your selected
                   identity document.
                 </p>
-
               </div>
-
             </div>
 
             <div
@@ -816,7 +854,6 @@ export default function DocumentUploadPage() {
                 styles.requirementsBox
               }
             >
-
               <div
                 className={
                   styles.infoIcon
@@ -830,7 +867,6 @@ export default function DocumentUploadPage() {
                   styles.requirementsContent
                 }
               >
-
                 <h3>
                   Make sure your document is:
                 </h3>
@@ -840,7 +876,6 @@ export default function DocumentUploadPage() {
                     styles.requirementsGrid
                   }
                 >
-
                   <Requirement>
                     Clear and in focus
                   </Requirement>
@@ -856,11 +891,8 @@ export default function DocumentUploadPage() {
                   <Requirement>
                     Not expired
                   </Requirement>
-
                 </div>
-
               </div>
-
             </div>
 
             {/* =================================================
@@ -880,7 +912,6 @@ export default function DocumentUploadPage() {
                 styles.selectedDocument
               }
             >
-
               <div
                 className={
                   styles.ninBadge
@@ -904,13 +935,12 @@ export default function DocumentUploadPage() {
                 }
                 onClick={() =>
                   router.push(
-                    "/account/identity-verification"
+                    "/account/identity-verification",
                   )
                 }
               >
                 Change
               </button>
-
             </div>
 
             {/* =================================================
@@ -945,7 +975,6 @@ export default function DocumentUploadPage() {
                 handleDrop
               }
             >
-
               <div
                 className={
                   styles.uploadIconCircle
@@ -1002,7 +1031,6 @@ export default function DocumentUploadPage() {
                   styles.chooseFileButton
                 }
               >
-
                 <UploadSmallIcon />
 
                 <span>
@@ -1019,7 +1047,6 @@ export default function DocumentUploadPage() {
                   }
                   hidden
                 />
-
               </label>
 
               <div
@@ -1028,12 +1055,13 @@ export default function DocumentUploadPage() {
                 }
               >
                 JPG, PNG or PDF
+
                 <span>
                   •
                 </span>
+
                 Max size 5MB
               </div>
-
             </div>
 
             {/* =================================================
@@ -1059,7 +1087,6 @@ export default function DocumentUploadPage() {
                 styles.securityBox
               }
             >
-
               <div
                 className={
                   styles.securityLock
@@ -1073,7 +1100,6 @@ export default function DocumentUploadPage() {
                 stored. We never share your data with third
                 parties.
               </p>
-
             </div>
 
             {/* =================================================
@@ -1085,7 +1111,6 @@ export default function DocumentUploadPage() {
                 styles.continueRow
               }
             >
-
               <button
                 type="button"
                 className={
@@ -1099,11 +1124,8 @@ export default function DocumentUploadPage() {
                   uploading
                 }
               >
-
                 <span>
-                  {uploading
-                    ? "Processing..."
-                    : "Continue"}
+                  Continue
                 </span>
 
                 <span
@@ -1113,15 +1135,10 @@ export default function DocumentUploadPage() {
                 >
                   →
                 </span>
-
               </button>
-
             </div>
-
           </section>
-
         </div>
-
       </section>
 
       {/* ======================================================
@@ -1133,12 +1150,11 @@ export default function DocumentUploadPage() {
           styles.mobileBottomNav
         }
       >
-
         <button
           type="button"
           onClick={() =>
             navigateTo(
-              "/dashboard"
+              "/dashboard",
             )
           }
         >
@@ -1159,7 +1175,7 @@ export default function DocumentUploadPage() {
           }
           onClick={() =>
             navigateTo(
-              "/verify"
+              "/verify",
             )
           }
         >
@@ -1177,7 +1193,7 @@ export default function DocumentUploadPage() {
           type="button"
           onClick={() =>
             navigateTo(
-              "/my-properties"
+              "/my-properties",
             )
           }
         >
@@ -1195,7 +1211,7 @@ export default function DocumentUploadPage() {
           type="button"
           onClick={() =>
             navigateTo(
-              "/reports"
+              "/reports",
             )
           }
         >
@@ -1213,7 +1229,7 @@ export default function DocumentUploadPage() {
           type="button"
           onClick={() =>
             navigateTo(
-              "/account"
+              "/account",
             )
           }
         >
@@ -1226,9 +1242,7 @@ export default function DocumentUploadPage() {
             Account
           </span>
         </button>
-
       </nav>
-
     </main>
   );
 }
@@ -1280,7 +1294,6 @@ function Step({
           : ""
       }`}
     >
-
       <div
         className={`${styles.stepCircle} ${
           active
@@ -1308,7 +1321,6 @@ function Step({
       >
         {label}
       </div>
-
     </div>
   );
 }
@@ -1348,7 +1360,6 @@ function Requirement({
         styles.requirement
       }
     >
-
       <span
         className={
           styles.requirementCheck
@@ -1360,7 +1371,6 @@ function Requirement({
       <span>
         {children}
       </span>
-
     </div>
   );
 }
@@ -1485,7 +1495,6 @@ function LockIcon() {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-
       <rect
         x="5"
         y="10"
@@ -1497,7 +1506,6 @@ function LockIcon() {
       <path
         d="M8 10V7a4 4 0 018 0v3"
       />
-
     </svg>
   );
 }

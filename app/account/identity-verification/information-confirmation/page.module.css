@@ -266,7 +266,7 @@
 }
 
 /* ============================================================
-   LOCKED STANDARD BACK TO ACCOUNT BUTTON
+   BACK TO DOCUMENT UPLOAD
 
    Arrow:      18px
    Text:       13px
@@ -778,6 +778,16 @@
   text-decoration: underline;
 }
 
+.viewButton:disabled {
+  opacity: 0.45;
+
+  cursor: not-allowed;
+}
+
+.viewButton:disabled:hover {
+  text-decoration: none;
+}
+
 /* ============================================================
    CONFIRMATION
 ============================================================ */
@@ -951,6 +961,282 @@
 }
 
 /* ============================================================
+   DOCUMENT VIEWER
+============================================================ */
+
+.documentViewerOverlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1000;
+
+  padding: 24px;
+
+  background:
+    rgba(3, 18, 41, 0.78);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  backdrop-filter:
+    blur(5px);
+}
+
+.documentViewer {
+  width: min(
+    920px,
+    100%
+  );
+
+  height: min(
+    820px,
+    calc(100vh - 48px)
+  );
+
+  display: flex;
+
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 24px 70px
+    rgba(0, 0, 0, 0.3);
+}
+
+.documentViewerHeader {
+  min-height: 64px;
+
+  padding:
+    0 18px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 16px;
+
+  background: #061b38;
+
+  color: #ffffff;
+
+  flex-shrink: 0;
+}
+
+.documentViewerTitle {
+  min-width: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+}
+
+.documentViewerIcon {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  background:
+    rgba(22, 142, 255, 0.14);
+
+  color: #168eff;
+}
+
+.documentViewerTitle > div {
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.documentViewerTitle strong {
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+.documentViewerTitle span {
+  max-width: 650px;
+
+  color: #a9bad0;
+
+  font-size: 11px;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+.documentViewerClose {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  background:
+    rgba(255, 255, 255, 0.08);
+
+  color: #ffffff;
+
+  font-size: 27px;
+
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.documentViewerClose:hover {
+  background:
+    rgba(255, 255, 255, 0.16);
+}
+
+.documentViewerBody {
+  min-height: 0;
+
+  flex: 1;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  overflow: auto;
+
+  padding: 20px;
+
+  background: #edf1f5;
+}
+
+.documentImage {
+  display: block;
+
+  max-width: 100%;
+
+  max-height: 100%;
+
+  width: auto;
+
+  height: auto;
+
+  object-fit: contain;
+
+  border-radius: 5px;
+
+  box-shadow:
+    0 8px 25px
+    rgba(15, 36, 64, 0.18);
+
+  background: #ffffff;
+}
+
+.documentFrame {
+  width: 100%;
+
+  height: 100%;
+
+  min-height: 500px;
+
+  border: 0;
+
+  border-radius: 5px;
+
+  background: #ffffff;
+}
+
+.documentViewerFooter {
+  min-height: 58px;
+
+  padding:
+    0 18px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 16px;
+
+  border-top:
+    1px solid
+    #e4e9ef;
+
+  background: #ffffff;
+
+  flex-shrink: 0;
+}
+
+.documentViewerFooter > span {
+  color: #64748b;
+
+  font-size: 11px;
+
+  line-height: 1.4;
+}
+
+.documentViewerDone {
+  min-width: 84px;
+
+  height: 36px;
+
+  padding:
+    0 16px;
+
+  border: 0;
+
+  border-radius: 6px;
+
+  background: #126ff1;
+
+  color: #ffffff;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.documentViewerDone:hover {
+  background: #0c62dc;
+}
+
+/* ============================================================
    TABLET
 ============================================================ */
 
@@ -987,6 +1273,16 @@
 
   .continueButton {
     min-width: 350px;
+  }
+
+  .documentViewerOverlay {
+    padding:
+      18px;
+  }
+
+  .documentViewer {
+    height:
+      calc(100vh - 36px);
   }
 }
 
@@ -1062,20 +1358,13 @@
     margin-top: 9px;
   }
 
-  /*
-   * BACK BUTTON IS LOCKED.
-   *
-   * NO MOBILE OVERRIDE.
-   *
-   * It remains:
-   * Arrow 18px
-   * Text 13px
-   * Gap 7px
-   * Height 22px
-   * Padding 0
-   * Top margin 20px
-   * Blue #168eff
-   */
+  /* ========================================================
+     BACK TO DOCUMENT UPLOAD
+
+     Returns to KYC Step 2.
+
+     No mobile override.
+  ======================================================== */
 
   .statusBadge {
     margin-top: 17px;
@@ -1596,6 +1885,103 @@
 
     font-weight: 700;
   }
+
+  /* ========================================================
+     DOCUMENT VIEWER
+  ======================================================== */
+
+  .documentViewerOverlay {
+    padding:
+      10px;
+
+    align-items: center;
+  }
+
+  .documentViewer {
+    width: 100%;
+
+    height:
+      calc(100vh - 20px);
+
+    max-height:
+      calc(100vh - 20px);
+
+    border-radius: 10px;
+  }
+
+  .documentViewerHeader {
+    min-height: 58px;
+
+    padding:
+      0 12px;
+
+    gap: 10px;
+  }
+
+  .documentViewerIcon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .documentViewerTitle strong {
+    font-size: 12px;
+  }
+
+  .documentViewerTitle span {
+    max-width: 190px;
+
+    font-size: 9px;
+  }
+
+  .documentViewerClose {
+    width: 34px;
+    height: 34px;
+
+    font-size: 24px;
+  }
+
+  .documentViewerBody {
+    padding:
+      10px;
+  }
+
+  .documentImage {
+    max-width: 100%;
+
+    max-height: 100%;
+
+    object-fit: contain;
+  }
+
+  .documentFrame {
+    min-height: 0;
+
+    height: 100%;
+  }
+
+  .documentViewerFooter {
+    min-height: 52px;
+
+    padding:
+      0 12px;
+
+    gap: 10px;
+  }
+
+  .documentViewerFooter > span {
+    font-size: 9px;
+  }
+
+  .documentViewerDone {
+    min-width: 68px;
+
+    height: 32px;
+
+    padding:
+      0 12px;
+
+    font-size: 10px;
+  }
 }
 
 /* ============================================================
@@ -1630,7 +2016,7 @@
   }
 
   /* ========================================================
-     BACK BUTTON REMAINS LOCKED
+     BACK TO DOCUMENT UPLOAD
   ======================================================== */
 
   .backLink {
@@ -1735,5 +2121,84 @@
 
   .mobileBottomNav {
     height: 66px;
+  }
+
+  /* ========================================================
+     SMALL PHONE DOCUMENT VIEWER
+  ======================================================== */
+
+  .documentViewerOverlay {
+    padding:
+      6px;
+  }
+
+  .documentViewer {
+    height:
+      calc(100vh - 12px);
+
+    max-height:
+      calc(100vh - 12px);
+
+    border-radius: 8px;
+  }
+
+  .documentViewerHeader {
+    min-height: 54px;
+
+    padding:
+      0 10px;
+  }
+
+  .documentViewerTitle {
+    gap: 8px;
+  }
+
+  .documentViewerIcon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .documentViewerTitle strong {
+    font-size: 11px;
+  }
+
+  .documentViewerTitle span {
+    max-width: 155px;
+
+    font-size: 8px;
+  }
+
+  .documentViewerClose {
+    width: 32px;
+    height: 32px;
+
+    font-size: 22px;
+  }
+
+  .documentViewerBody {
+    padding:
+      7px;
+  }
+
+  .documentViewerFooter {
+    min-height: 48px;
+
+    padding:
+      0 9px;
+  }
+
+  .documentViewerFooter > span {
+    font-size: 8px;
+  }
+
+  .documentViewerDone {
+    min-width: 60px;
+
+    height: 30px;
+
+    padding:
+      0 9px;
+
+    font-size: 9px;
   }
 }

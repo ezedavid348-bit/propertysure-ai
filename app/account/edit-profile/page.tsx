@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import styles from "./profile.module.css";
 import { supabase } from "../../lib/supabase";
+import LoadingScreen from "../../AppShell/LoadingScreen";
 
 /*
 ============================================================
@@ -127,7 +128,14 @@ COUNTRIES
 ============================================================
 */
 
-const countries = [
+type CountryOption = {
+  code: string;
+  name: string;
+  dialCode: string;
+  flag: string;
+};
+
+const countries: CountryOption[] = [
   {
     code: "NG",
     name: "Nigeria",
@@ -176,7 +184,1050 @@ const countries = [
     dialCode: "+971",
     flag: "🇦🇪",
   },
+  {
+    code: "AU",
+    name: "Australia",
+    dialCode: "+61",
+    flag: "🇦🇺",
+  },
+  {
+    code: "DE",
+    name: "Germany",
+    dialCode: "+49",
+    flag: "🇩🇪",
+  },
+  {
+    code: "FR",
+    name: "France",
+    dialCode: "+33",
+    flag: "🇫🇷",
+  },
+  {
+    code: "IT",
+    name: "Italy",
+    dialCode: "+39",
+    flag: "🇮🇹",
+  },
+  {
+    code: "ES",
+    name: "Spain",
+    dialCode: "+34",
+    flag: "🇪🇸",
+  },
+  {
+    code: "NL",
+    name: "Netherlands",
+    dialCode: "+31",
+    flag: "🇳🇱",
+  },
+  {
+    code: "CH",
+    name: "Switzerland",
+    dialCode: "+41",
+    flag: "🇨🇭",
+  },
+  {
+    code: "IE",
+    name: "Ireland",
+    dialCode: "+353",
+    flag: "🇮🇪",
+  },
+  {
+    code: "PT",
+    name: "Portugal",
+    dialCode: "+351",
+    flag: "🇵🇹",
+  },
+  {
+    code: "IN",
+    name: "India",
+    dialCode: "+91",
+    flag: "🇮🇳",
+  },
+  {
+    code: "CN",
+    name: "China",
+    dialCode: "+86",
+    flag: "🇨🇳",
+  },
+  {
+    code: "JP",
+    name: "Japan",
+    dialCode: "+81",
+    flag: "🇯🇵",
+  },
+  {
+    code: "KR",
+    name: "South Korea",
+    dialCode: "+82",
+    flag: "🇰🇷",
+  },
+  {
+    code: "SG",
+    name: "Singapore",
+    dialCode: "+65",
+    flag: "🇸🇬",
+  },
+  {
+    code: "MY",
+    name: "Malaysia",
+    dialCode: "+60",
+    flag: "🇲🇾",
+  },
+  {
+    code: "BR",
+    name: "Brazil",
+    dialCode: "+55",
+    flag: "🇧🇷",
+  },
+  {
+    code: "MX",
+    name: "Mexico",
+    dialCode: "+52",
+    flag: "🇲🇽",
+  },
 ];
+
+/*
+============================================================
+NIGERIAN STATES
+============================================================
+*/
+
+const nigerianStates = [
+  "Abia",
+  "Adamawa",
+  "Akwa Ibom",
+  "Anambra",
+  "Bauchi",
+  "Bayelsa",
+  "Benue",
+  "Borno",
+  "Cross River",
+  "Delta",
+  "Ebonyi",
+  "Edo",
+  "Ekiti",
+  "Enugu",
+  "Federal Capital Territory",
+  "Gombe",
+  "Imo",
+  "Jigawa",
+  "Kaduna",
+  "Kano",
+  "Katsina",
+  "Kebbi",
+  "Kogi",
+  "Kwara",
+  "Lagos",
+  "Nasarawa",
+  "Niger",
+  "Ogun",
+  "Ondo",
+  "Osun",
+  "Oyo",
+  "Plateau",
+  "Rivers",
+  "Sokoto",
+  "Taraba",
+  "Yobe",
+  "Zamfara",
+];
+
+/*
+============================================================
+NIGERIAN LOCAL GOVERNMENT AREAS
+============================================================
+*/
+
+const nigerianLgas: Record<string, string[]> = {
+  Abia: [
+    "Aba North",
+    "Aba South",
+    "Arochukwu",
+    "Bende",
+    "Ikwuano",
+    "Isiala Ngwa North",
+    "Isiala Ngwa South",
+    "Isuikwuato",
+    "Obi Ngwa",
+    "Ohafia",
+    "Osisioma Ngwa",
+    "Ugwunagbo",
+    "Ukwa East",
+    "Ukwa West",
+    "Umuahia North",
+    "Umuahia South",
+    "Umu Nneochi",
+  ],
+
+  Adamawa: [
+    "Demsa",
+    "Fufore",
+    "Ganye",
+    "Girei",
+    "Gombi",
+    "Guyuk",
+    "Hong",
+    "Jada",
+    "Lamurde",
+    "Madagali",
+    "Maiha",
+    "Mayo-Belwa",
+    "Michika",
+    "Mubi North",
+    "Mubi South",
+    "Numan",
+    "Shelleng",
+    "Song",
+    "Toungo",
+    "Yola North",
+    "Yola South",
+  ],
+
+  "Akwa Ibom": [
+    "Abak",
+    "Eastern Obolo",
+    "Eket",
+    "Esit Eket",
+    "Essien Udim",
+    "Etim Ekpo",
+    "Etinan",
+    "Ibeno",
+    "Ibesikpo Asutan",
+    "Ibiono Ibom",
+    "Ika",
+    "Ikono",
+    "Ikot Abasi",
+    "Ikot Ekpene",
+    "Ini",
+    "Itu",
+    "Mbo",
+    "Mkpat Enin",
+    "Nsit Atai",
+    "Nsit Ibom",
+    "Nsit Ubium",
+    "Obot Akara",
+    "Okobo",
+    "Onna",
+    "Oron",
+    "Oruk Anam",
+    "Udung Uko",
+    "Ukanafun",
+    "Uruan",
+    "Urue-Offong/Oruko",
+    "Uyo",
+  ],
+
+  Anambra: [
+    "Aguata",
+    "Anambra East",
+    "Anambra West",
+    "Anaocha",
+    "Awka North",
+    "Awka South",
+    "Ayamelum",
+    "Dunukofia",
+    "Ekwusigo",
+    "Idemili North",
+    "Idemili South",
+    "Ihiala",
+    "Njikoka",
+    "Nnewi North",
+    "Nnewi South",
+    "Ogbaru",
+    "Onitsha North",
+    "Onitsha South",
+    "Orumba North",
+    "Orumba South",
+    "Oyi",
+  ],
+
+  Bauchi: [
+    "Alkaleri",
+    "Bauchi",
+    "Bogoro",
+    "Damban",
+    "Darazo",
+    "Dass",
+    "Gamawa",
+    "Ganjuwa",
+    "Giade",
+    "Itas/Gadau",
+    "Jama'are",
+    "Katagum",
+    "Kirfi",
+    "Misau",
+    "Ningi",
+    "Shira",
+    "Tafawa Balewa",
+    "Toro",
+    "Warji",
+    "Zaki",
+  ],
+
+  Bayelsa: [
+    "Brass",
+    "Ekeremor",
+    "Kolokuma/Opokuma",
+    "Nembe",
+    "Ogbia",
+    "Sagbama",
+    "Southern Ijaw",
+    "Yenagoa",
+  ],
+
+  Benue: [
+    "Ado",
+    "Agatu",
+    "Apa",
+    "Buruku",
+    "Gboko",
+    "Guma",
+    "Gwer East",
+    "Gwer West",
+    "Katsina-Ala",
+    "Konshisha",
+    "Kwande",
+    "Logo",
+    "Makurdi",
+    "Obi",
+    "Ogbadibo",
+    "Ohimini",
+    "Oju",
+    "Okpokwu",
+    "Otukpo",
+    "Tarka",
+    "Ukum",
+    "Ushongo",
+    "Vandeikya",
+  ],
+
+  Borno: [
+    "Abadam",
+    "Askira/Uba",
+    "Bama",
+    "Bayo",
+    "Biu",
+    "Chibok",
+    "Damboa",
+    "Dikwa",
+    "Gubio",
+    "Guzamala",
+    "Gwoza",
+    "Hawul",
+    "Jere",
+    "Kaga",
+    "Kala/Balge",
+    "Konduga",
+    "Kukawa",
+    "Kwaya Kusar",
+    "Mafa",
+    "Magumeri",
+    "Maiduguri",
+    "Marte",
+    "Mobbar",
+    "Monguno",
+    "Ngala",
+    "Nganzai",
+    "Shani",
+  ],
+
+  "Cross River": [
+    "Abi",
+    "Akamkpa",
+    "Akpabuyo",
+    "Bakassi",
+    "Bekwarra",
+    "Biase",
+    "Boki",
+    "Calabar Municipal",
+    "Calabar South",
+    "Etung",
+    "Ikom",
+    "Obanliku",
+    "Obubra",
+    "Obudu",
+    "Odukpani",
+    "Ogoja",
+    "Yakurr",
+    "Yala",
+  ],
+
+  Delta: [
+    "Aniocha North",
+    "Aniocha South",
+    "Bomadi",
+    "Burutu",
+    "Ethiope East",
+    "Ethiope West",
+    "Ika North East",
+    "Ika South",
+    "Isoko North",
+    "Isoko South",
+    "Ndokwa East",
+    "Ndokwa West",
+    "Okpe",
+    "Oshimili North",
+    "Oshimili South",
+    "Patani",
+    "Sapele",
+    "Udu",
+    "Ughelli North",
+    "Ughelli South",
+    "Ukwuani",
+    "Uvwie",
+    "Warri North",
+    "Warri South",
+    "Warri South West",
+  ],
+
+  Ebonyi: [
+    "Abakaliki",
+    "Afikpo North",
+    "Afikpo South",
+    "Ebonyi",
+    "Ezza North",
+    "Ezza South",
+    "Ikwo",
+    "Ishielu",
+    "Ivo",
+    "Izzi",
+    "Ohaukwu",
+    "Ohaozara",
+    "Onicha",
+  ],
+
+  Edo: [
+    "Akoko-Edo",
+    "Egor",
+    "Esan Central",
+    "Esan North-East",
+    "Esan South-East",
+    "Esan West",
+    "Etsako Central",
+    "Etsako East",
+    "Etsako West",
+    "Igueben",
+    "Ikpoba-Okha",
+    "Oredo",
+    "Orhionmwon",
+    "Ovia North-East",
+    "Ovia South-West",
+    "Owan East",
+    "Owan West",
+    "Uhunmwonde",
+  ],
+
+  Ekiti: [
+    "Ado Ekiti",
+    "Efon",
+    "Ekiti East",
+    "Ekiti South-West",
+    "Ekiti West",
+    "Emure",
+    "Gbonyin",
+    "Ido Osi",
+    "Ijero",
+    "Ikere",
+    "Ikole",
+    "Ilejemeje",
+    "Irepodun/Ifelodun",
+    "Ise/Orun",
+    "Moba",
+    "Oye",
+  ],
+
+  Enugu: [
+    "Aninri",
+    "Awgu",
+    "Enugu East",
+    "Enugu North",
+    "Enugu South",
+    "Ezeagu",
+    "Igbo Etiti",
+    "Igbo Eze North",
+    "Igbo Eze South",
+    "Isi-Uzo",
+    "Nkanu East",
+    "Nkanu West",
+    "Nsukka",
+    "Oji River",
+    "Udenu",
+    "Udi",
+    "Uzo-Uwani",
+  ],
+
+  "Federal Capital Territory": [
+    "Abaji",
+    "Bwari",
+    "Gwagwalada",
+    "Kuje",
+    "Kwali",
+    "Municipal Area Council",
+  ],
+
+  Gombe: [
+    "Akko",
+    "Balanga",
+    "Billiri",
+    "Dukku",
+    "Funakaye",
+    "Gombe",
+    "Kaltungo",
+    "Kwami",
+    "Nafada",
+    "Shongom",
+    "Yamaltu/Deba",
+  ],
+
+  Imo: [
+    "Ahiazu Mbaise",
+    "Ehime Mbano",
+    "Ezinihitte",
+    "Ideato North",
+    "Ideato South",
+    "Ihitte/Uboma",
+    "Ikeduru",
+    "Isiala Mbano",
+    "Isu",
+    "Mbaitoli",
+    "Ngor Okpala",
+    "Njaba",
+    "Nkwerre",
+    "Nwangele",
+    "Obowo",
+    "Oguta",
+    "Ohaji/Egbema",
+    "Okigwe",
+    "Orlu",
+    "Orsu",
+    "Oru East",
+    "Oru West",
+    "Owerri Municipal",
+    "Owerri North",
+    "Owerri West",
+    "Unuimo",
+    "Onuimo",
+  ],
+
+  Jigawa: [
+    "Auyo",
+    "Babura",
+    "Biriniwa",
+    "Birnin Kudu",
+    "Buji",
+    "Dutse",
+    "Gagarawa",
+    "Garki",
+    "Gumel",
+    "Guri",
+    "Gwaram",
+    "Gwiwa",
+    "Hadejia",
+    "Jahun",
+    "Kafin Hausa",
+    "Kaugama",
+    "Kazaure",
+    "Kiri Kasama",
+    "Kiyawa",
+    "Maigatari",
+    "Malam Madori",
+    "Miga",
+    "Ringim",
+    "Roni",
+    "Sule Tankarkar",
+    "Taura",
+    "Yankwashi",
+  ],
+
+  Kaduna: [
+    "Birnin Gwari",
+    "Chikun",
+    "Giwa",
+    "Igabi",
+    "Ikara",
+    "Jaba",
+    "Jema'a",
+    "Kachia",
+    "Kaduna North",
+    "Kaduna South",
+    "Kagarko",
+    "Kajuru",
+    "Kaura",
+    "Kauru",
+    "Kubau",
+    "Kudan",
+    "Lere",
+    "Makarfi",
+    "Sabon Gari",
+    "Sanga",
+    "Soba",
+    "Zangon Kataf",
+    "Zaria",
+  ],
+
+  Kano: [
+    "Ajingi",
+    "Albasu",
+    "Bagwai",
+    "Bebeji",
+    "Bichi",
+    "Bunkure",
+    "Dala",
+    "Dambatta",
+    "Dawakin Kudu",
+    "Dawakin Tofa",
+    "Doguwa",
+    "Fagge",
+    "Gabasawa",
+    "Garko",
+    "Garun Mallam",
+    "Gaya",
+    "Gezawa",
+    "Gwale",
+    "Gwarzo",
+    "Kabo",
+    "Kano Municipal",
+    "Karaye",
+    "Kibiya",
+    "Kiru",
+    "Kumbotso",
+    "Kunchi",
+    "Kura",
+    "Madobi",
+    "Makoda",
+    "Minjibir",
+    "Nasarawa",
+    "Rano",
+    "Rimin Gado",
+    "Rogo",
+    "Shanono",
+    "Sumaila",
+    "Takai",
+    "Tarauni",
+    "Tofa",
+    "Tsanyawa",
+    "Tudun Wada",
+    "Ungogo",
+    "Warawa",
+    "Wudil",
+  ],
+
+  Katsina: [
+    "Bakori",
+    "Batagarawa",
+    "Batsari",
+    "Baure",
+    "Bindawa",
+    "Charanchi",
+    "Dan Musa",
+    "Dandume",
+    "Danja",
+    "Daura",
+    "Dutsi",
+    "Dutsin Ma",
+    "Faskari",
+    "Funtua",
+    "Ingawa",
+    "Jibia",
+    "Kafur",
+    "Kaita",
+    "Kankara",
+    "Kankia",
+    "Katsina",
+    "Kurfi",
+    "Kusada",
+    "Mai'Adua",
+    "Malumfashi",
+    "Mani",
+    "Mashi",
+    "Matazu",
+    "Musawa",
+    "Rimi",
+    "Sabuwa",
+    "Safana",
+    "Sandamu",
+    "Zango",
+  ],
+
+  Kebbi: [
+    "Aleiro",
+    "Arewa Dandi",
+    "Argungu",
+    "Augie",
+    "Bagudo",
+    "Birnin Kebbi",
+    "Bunza",
+    "Dandi",
+    "Fakai",
+    "Gwandu",
+    "Jega",
+    "Kalgo",
+    "Koko/Besse",
+    "Maiyama",
+    "Ngaski",
+    "Sakaba",
+    "Shanga",
+    "Suru",
+    "Wasagu/Danko",
+    "Yauri",
+    "Zuru",
+  ],
+
+  Kogi: [
+    "Adavi",
+    "Ajaokuta",
+    "Ankpa",
+    "Bassa",
+    "Dekina",
+    "Ibaji",
+    "Idah",
+    "Igalamela-Odolu",
+    "Ijumu",
+    "Kabba/Bunu",
+    "Kogi",
+    "Kogi/Koton Karfe",
+    "Lokoja",
+    "Mopa-Muro",
+    "Ofu",
+    "Ogori/Magongo",
+    "Okehi",
+    "Okene",
+    "Olamaboro",
+    "Omala",
+    "Yagba East",
+    "Yagba West",
+    "Bassa Komu",
+  ],
+
+  Kwara: [
+    "Asa",
+    "Baruten",
+    "Edu",
+    "Ekiti",
+    "Ifelodun",
+    "Ilorin East",
+    "Ilorin South",
+    "Ilorin West",
+    "Irepodun",
+    "Isin",
+    "Kaiama",
+    "Moro",
+    "Offa",
+    "Oke Ero",
+    "Oyun",
+    "Pategi",
+  ],
+
+  Lagos: [
+    "Agege",
+    "Ajeromi-Ifelodun",
+    "Alimosho",
+    "Amuwo-Odofin",
+    "Apapa",
+    "Badagry",
+    "Epe",
+    "Eti-Osa",
+    "Ibeju-Lekki",
+    "Ifako-Ijaiye",
+    "Ikeja",
+    "Ikorodu",
+    "Kosofe",
+    "Lagos Island",
+    "Lagos Mainland",
+    "Mushin",
+    "Ojo",
+    "Oshodi-Isolo",
+    "Shomolu",
+    "Surulere",
+  ],
+
+  Nasarawa: [
+    "Akwanga",
+    "Awe",
+    "Doma",
+    "Karu",
+    "Keana",
+    "Keffi",
+    "Kokona",
+    "Lafia",
+    "Nasarawa",
+    "Nasarawa Eggon",
+    "Obi",
+    "Toto",
+    "Wamba",
+  ],
+
+  Niger: [
+    "Agaie",
+    "Agwara",
+    "Bida",
+    "Borgu",
+    "Bosso",
+    "Chanchaga",
+    "Edati",
+    "Gbako",
+    "Gurara",
+    "Katcha",
+    "Kontagora",
+    "Lapai",
+    "Lavun",
+    "Magama",
+    "Mariga",
+    "Mashegu",
+    "Mokwa",
+    "Munya",
+    "Paikoro",
+    "Rafi",
+    "Rijau",
+    "Shiroro",
+    "Suleja",
+    "Tafa",
+    "Wushishi",
+  ],
+
+  Ogun: [
+    "Abeokuta North",
+    "Abeokuta South",
+    "Ado-Odo/Ota",
+    "Ewekoro",
+    "Ifo",
+    "Ijebu East",
+    "Ijebu North",
+    "Ijebu North East",
+    "Ijebu Ode",
+    "Ikenne",
+    "Imeko Afon",
+    "Ipokia",
+    "Obafemi Owode",
+    "Odeda",
+    "Odogbolu",
+    "Ogun Waterside",
+    "Remo North",
+    "Sagamu",
+    "Yewa North",
+    "Yewa South",
+  ],
+
+  Ondo: [
+    "Akoko North-East",
+    "Akoko North-West",
+    "Akoko South-East",
+    "Akoko South-West",
+    "Akure North",
+    "Akure South",
+    "Ese Odo",
+    "Idanre",
+    "Ifedore",
+    "Ilaje",
+    "Ile Oluji/Okeigbo",
+    "Irele",
+    "Odigbo",
+    "Okitipupa",
+    "Ondo East",
+    "Ondo West",
+    "Ose",
+    "Owo",
+  ],
+
+  Osun: [
+    "Atakunmosa East",
+    "Atakunmosa West",
+    "Aiyedaade",
+    "Aiyedire",
+    "Boluwaduro",
+    "Boripe",
+    "Ede North",
+    "Ede South",
+    "Egbedore",
+    "Ejigbo",
+    "Ife Central",
+    "Ife East",
+    "Ife North",
+    "Ife South",
+    "Ifedayo",
+    "Ifelodun",
+    "Ila",
+    "Ilesa East",
+    "Ilesa West",
+    "Irepodun",
+    "Irewole",
+    "Isokan",
+    "Iwo",
+    "Obokun",
+    "Odo Otin",
+    "Ola Oluwa",
+    "Olorunda",
+    "Oriade",
+    "Orolu",
+    "Osogbo",
+  ],
+
+  Oyo: [
+    "Afijio",
+    "Akinyele",
+    "Atiba",
+    "Atisbo",
+    "Egbeda",
+    "Ibadan North",
+    "Ibadan North-East",
+    "Ibadan North-West",
+    "Ibadan South-East",
+    "Ibadan South-West",
+    "Ibarapa Central",
+    "Ibarapa East",
+    "Ibarapa North",
+    "Ido",
+    "Irepo",
+    "Iseyin",
+    "Itesiwaju",
+    "Iwajowa",
+    "Kajola",
+    "Lagelu",
+    "Ogbomoso North",
+    "Ogbomoso South",
+    "Ogo Oluwa",
+    "Olorunsogo",
+    "Oluyole",
+    "Ona Ara",
+    "Orelope",
+    "Oriire",
+    "Oyo East",
+    "Oyo West",
+    "Saki East",
+    "Saki West",
+    "Surulere",
+  ],
+
+  Plateau: [
+    "Barkin Ladi",
+    "Bassa",
+    "Bokkos",
+    "Jos East",
+    "Jos North",
+    "Jos South",
+    "Kanam",
+    "Kanke",
+    "Langtang North",
+    "Langtang South",
+    "Mangu",
+    "Mikang",
+    "Pankshin",
+    "Qua'an Pan",
+    "Riyom",
+    "Shendam",
+    "Wase",
+  ],
+
+  Rivers: [
+    "Abua/Odual",
+    "Ahoada East",
+    "Ahoada West",
+    "Akuku-Toru",
+    "Andoni",
+    "Asari-Toru",
+    "Bonny",
+    "Degema",
+    "Eleme",
+    "Emohua",
+    "Etche",
+    "Gokana",
+    "Ikwerre",
+    "Khana",
+    "Obio/Akpor",
+    "Ogba/Egbema/Ndoni",
+    "Ogu/Bolo",
+    "Okrika",
+    "Omuma",
+    "Opobo/Nkoro",
+    "Oyigbo",
+    "Port Harcourt",
+    "Tai",
+  ],
+
+  Sokoto: [
+    "Binji",
+    "Bodinga",
+    "Dange Shuni",
+    "Gada",
+    "Goronyo",
+    "Gudu",
+    "Gwadabawa",
+    "Illela",
+    "Isa",
+    "Kebbe",
+    "Kware",
+    "Rabah",
+    "Sabon Birni",
+    "Shagari",
+    "Silame",
+    "Sokoto North",
+    "Sokoto South",
+    "Tambuwal",
+    "Tangaza",
+    "Tureta",
+    "Wamakko",
+    "Wurno",
+    "Yabo",
+  ],
+
+  Taraba: [
+    "Ardo-Kola",
+    "Bali",
+    "Donga",
+    "Gashaka",
+    "Gassol",
+    "Ibi",
+    "Jalingo",
+    "Karim Lamido",
+    "Kumi",
+    "Lau",
+    "Sardauna",
+    "Takum",
+    "Ussa",
+    "Wukari",
+    "Yorro",
+    "Zing",
+  ],
+
+  Yobe: [
+    "Bade",
+    "Bursari",
+    "Damaturu",
+    "Fika",
+    "Fune",
+    "Geidam",
+    "Gujba",
+    "Gulani",
+    "Jakusko",
+    "Karasuwa",
+    "Machina",
+    "Nangere",
+    "Nguru",
+    "Potiskum",
+    "Tarmuwa",
+    "Yunusari",
+    "Yusufari",
+  ],
+
+  Zamfara: [
+    "Anka",
+    "Bakura",
+    "Birnin Magaji/Kiyaw",
+    "Bukkuyum",
+    "Bungudu",
+    "Chafe",
+    "Gummi",
+    "Gusau",
+    "Isa",
+    "Kaura Namoda",
+    "Maradun",
+    "Maru",
+    "Shinkafi",
+    "Talata Mafara",
+  ],
+};
 
 /*
 ============================================================
@@ -191,46 +1242,12 @@ type ProfileForm = {
   dateOfBirth: string;
   residentialAddress: string;
   city: string;
+  localGovernment: string;
   state: string;
   country: string;
   occupation: string;
   company: string;
 };
-
-/*
-============================================================
-KYC
-============================================================
-*/
-
-type KycStatus =
-  | "Not Verified"
-  | "Pending"
-  | "Verified"
-  | "Rejected";
-
-const kycSteps = [
-  {
-    title: "Personal Information",
-    description: "Provide your basic information",
-  },
-  {
-    title: "Identity Document",
-    description: "Select the type of ID to verify",
-  },
-  {
-    title: "Document Upload",
-    description: "Upload clear photos of your document",
-  },
-  {
-    title: "Selfie Verification",
-    description: "Take a selfie for face verification",
-  },
-  {
-    title: "Review & Submit",
-    description: "We'll review and verify your identity",
-  },
-];
 
 /*
 ============================================================
@@ -257,37 +1274,24 @@ function getInitials(name: string) {
   ).toUpperCase();
 }
 
-function formatPhoneForDisplay(phone: string) {
-  if (!phone) {
-    return "";
-  }
-
-  const normalized = phone.replace(/\s+/g, "");
-
-  if (normalized.startsWith("+234")) {
-    const local = normalized.slice(4);
-
-    if (local.length === 10) {
-      return `${local.slice(0, 3)} ${local.slice(
-        3,
-        6
-      )} ${local.slice(6)}`;
-    }
-  }
-
-  return normalized;
-}
-
 function normalizeCountryCode(value: string) {
   const lowerValue = value.toLowerCase();
 
   const match = countries.find(
     (country) =>
       lowerValue.includes(country.name.toLowerCase()) ||
-      lowerValue.includes(country.code.toLowerCase())
+      lowerValue === country.code.toLowerCase()
   );
 
   return match?.code || "NG";
+}
+
+function getCountryByCode(code: string) {
+  return (
+    countries.find(
+      (country) => country.code === code
+    ) || countries[0]
+  );
 }
 
 function formatDateForInput(value: unknown) {
@@ -308,6 +1312,32 @@ function formatDateForInput(value: unknown) {
   }
 
   return parsed.toISOString().slice(0, 10);
+}
+
+function extractPhoneNumber(
+  phone: string,
+  dialCode: string
+) {
+  if (!phone) {
+    return "";
+  }
+
+  let normalized = phone.replace(/[^\d+]/g, "");
+
+  if (normalized.startsWith(dialCode)) {
+    normalized = normalized.slice(
+      dialCode.length
+    );
+  }
+
+  if (
+    dialCode === "+234" &&
+    normalized.startsWith("0")
+  ) {
+    normalized = normalized.slice(1);
+  }
+
+  return normalized.replace(/\D/g, "");
 }
 
 /*
@@ -341,11 +1371,6 @@ export default function EditProfilePage() {
 
   const [avatarUrl, setAvatarUrl] = useState("");
 
-  const [kycStatus, setKycStatus] =
-    useState<KycStatus>("Not Verified");
-
-  const [kycStep, setKycStep] = useState(1);
-
   const [form, setForm] = useState<ProfileForm>({
     fullName: "",
     email: "",
@@ -353,6 +1378,7 @@ export default function EditProfilePage() {
     dateOfBirth: "",
     residentialAddress: "",
     city: "",
+    localGovernment: "",
     state: "",
     country: "Nigeria",
     occupation: "",
@@ -391,7 +1417,8 @@ export default function EditProfilePage() {
           return;
         }
 
-        const metadata = authUser.user_metadata || {};
+        const metadata =
+          authUser.user_metadata || {};
 
         const email = authUser.email || "";
 
@@ -425,36 +1452,37 @@ export default function EditProfilePage() {
           metadata.country ||
           "Nigeria";
 
-        const kycMetadataStatus =
-          metadata.kyc_status;
+        const normalizedCountry =
+          normalizeCountryCode(
+            String(country)
+          );
 
-        const validKycStatuses: KycStatus[] = [
-          "Not Verified",
-          "Pending",
-          "Verified",
-          "Rejected",
-        ];
+        const selected =
+          getCountryByCode(
+            normalizedCountry
+          );
 
-        const resolvedKycStatus =
-          validKycStatuses.includes(
-            kycMetadataStatus
-          )
-            ? kycMetadataStatus
-            : "Not Verified";
-
-        const metadataKycStep = Number(
-          metadata.kyc_step || 1
+        const state = String(
+          metadata.state || ""
         );
 
-        const safeKycStep = Math.min(
-          Math.max(
-            Number.isFinite(metadataKycStep)
-              ? metadataKycStep
-              : 1,
-            1
-          ),
-          5
+        const existingLocalGovernment =
+          String(
+            metadata.local_government ||
+              metadata.local_government_area ||
+              metadata.lga ||
+              ""
+          );
+
+        const city = String(
+          metadata.city || ""
         );
+
+        const localGovernment =
+          existingLocalGovernment ||
+          (normalizedCountry === "NG"
+            ? city
+            : "");
 
         setUserId(authUser.id);
 
@@ -475,14 +1503,13 @@ export default function EditProfilePage() {
           )
         );
 
-        setKycStatus(resolvedKycStatus);
-
-        setKycStep(safeKycStep);
-
         setForm({
           fullName,
           email,
-          phone,
+          phone: extractPhoneNumber(
+            String(phone),
+            selected.dialCode
+          ),
           dateOfBirth: formatDateForInput(
             metadata.date_of_birth ||
               metadata.dob
@@ -492,9 +1519,13 @@ export default function EditProfilePage() {
               metadata.address ||
               ""
           ),
-          city: String(metadata.city || ""),
-          state: String(metadata.state || ""),
-          country: String(country),
+          city:
+            normalizedCountry === "NG"
+              ? ""
+              : city,
+          localGovernment,
+          state,
+          country: selected.name,
           occupation: String(
             metadata.occupation || ""
           ),
@@ -563,17 +1594,18 @@ export default function EditProfilePage() {
   */
 
   const selectedCountry = useMemo(() => {
-    const code = normalizeCountryCode(
-      form.country
-    );
-
-    return (
-      countries.find(
-        (country) =>
-          country.code === code
-      ) || countries[0]
+    return getCountryByCode(
+      normalizeCountryCode(form.country)
     );
   }, [form.country]);
+
+  const isNigeria =
+    selectedCountry.code === "NG";
+
+  const availableLgas =
+    isNigeria && form.state
+      ? nigerianLgas[form.state] || []
+      : [];
 
   /*
   ============================================================
@@ -598,6 +1630,70 @@ export default function EditProfilePage() {
 
   /*
   ============================================================
+  COUNTRY CHANGE
+  ============================================================
+  */
+
+  const handleCountryChange = (
+    countryCode: string
+  ) => {
+    const selected =
+      getCountryByCode(countryCode);
+
+    setForm((current) => ({
+      ...current,
+      country: selected.name,
+      state: "",
+      localGovernment: "",
+      city: "",
+    }));
+
+    setError("");
+    setMessage("");
+  };
+
+  /*
+  ============================================================
+  STATE CHANGE
+  ============================================================
+  */
+
+  const handleStateChange = (
+    state: string
+  ) => {
+    setForm((current) => ({
+      ...current,
+      state,
+      localGovernment: "",
+    }));
+
+    setError("");
+    setMessage("");
+  };
+
+  /*
+  ============================================================
+  PHONE CHANGE
+  ============================================================
+  */
+
+  const handlePhoneChange = (
+    value: string
+  ) => {
+    const digits = value
+      .replace(/\D/g, "")
+      .slice(
+        0,
+        selectedCountry.code === "NG"
+          ? 10
+          : 15
+      );
+
+    updateField("phone", digits);
+  };
+
+  /*
+  ============================================================
   SAVE PROFILE
   ============================================================
   */
@@ -609,6 +1705,17 @@ export default function EditProfilePage() {
     if (!form.fullName.trim()) {
       setError(
         "Please enter your full name."
+      );
+      return;
+    }
+
+    if (
+      isNigeria &&
+      form.phone &&
+      form.phone.length !== 10
+    ) {
+      setError(
+        "Please enter a valid Nigerian phone number."
       );
       return;
     }
@@ -633,6 +1740,11 @@ export default function EditProfilePage() {
       const existingMetadata =
         currentUser.user_metadata || {};
 
+      const internationalPhone =
+        form.phone.trim()
+          ? `${selectedCountry.dialCode}${form.phone.trim()}`
+          : "";
+
       const updatedMetadata = {
         ...existingMetadata,
 
@@ -646,7 +1758,19 @@ export default function EditProfilePage() {
           form.residentialAddress.trim(),
 
         city:
-          form.city.trim(),
+          isNigeria
+            ? ""
+            : form.city.trim(),
+
+        local_government:
+          isNigeria
+            ? form.localGovernment.trim()
+            : "",
+
+        local_government_area:
+          isNigeria
+            ? form.localGovernment.trim()
+            : "",
 
         state:
           form.state.trim(),
@@ -659,6 +1783,9 @@ export default function EditProfilePage() {
 
         company:
           form.company.trim(),
+
+        phone:
+          internationalPhone,
       };
 
       const emailChanged =
@@ -853,48 +1980,12 @@ export default function EditProfilePage() {
 
   /*
   ============================================================
-  KYC STATUS UI
-  ============================================================
-  */
-
-  const kycStatusClass =
-    kycStatus === "Verified"
-      ? styles.kycVerified
-      : kycStatus === "Pending"
-      ? styles.kycPending
-      : kycStatus === "Rejected"
-      ? styles.kycRejected
-      : styles.kycNotVerified;
-
-  /*
-  ============================================================
-  LOADING
+  SHARED LOADING SCREEN
   ============================================================
   */
 
   if (loading) {
-    return (
-      <main className={styles.loadingPage}>
-        <div className={styles.loadingGlow} />
-
-        <div className={styles.loadingBrand}>
-          <span
-            className={styles.loadingLogo}
-          >
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </div>
-
-        <p>
-          Loading your profile...
-        </p>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   /*
@@ -1480,6 +2571,10 @@ export default function EditProfilePage() {
               styles.profileCard
             }
           >
+            {/* =================================================
+                DESKTOP PHOTO SECTION
+            ================================================= */}
+
             <div
               className={
                 styles.photoSection
@@ -1589,6 +2684,10 @@ export default function EditProfilePage() {
               />
             </div>
 
+            {/* =================================================
+                PERSONAL INFORMATION
+            ================================================= */}
+
             <div
               className={
                 styles.personalSection
@@ -1603,6 +2702,8 @@ export default function EditProfilePage() {
                   styles.formGrid
                 }
               >
+                {/* FULL NAME */}
+
                 <div
                   className={
                     styles.field
@@ -1621,13 +2722,14 @@ export default function EditProfilePage() {
                     onChange={(event) =>
                       updateField(
                         "fullName",
-                        event.target
-                          .value
+                        event.target.value
                       )
                     }
                     autoComplete="name"
                   />
                 </div>
+
+                {/* EMAIL */}
 
                 <div
                   className={
@@ -1647,13 +2749,14 @@ export default function EditProfilePage() {
                     onChange={(event) =>
                       updateField(
                         "email",
-                        event.target
-                          .value
+                        event.target.value
                       )
                     }
                     autoComplete="email"
                   />
                 </div>
+
+                {/* PHONE */}
 
                 <div
                   className={
@@ -1664,47 +2767,84 @@ export default function EditProfilePage() {
                     Phone Number
                   </label>
 
-                  <button
-                    type="button"
+                  <div
                     className={
-                      styles.phoneField
-                    }
-                    onClick={() =>
-                      navigateTo(
-                        "/account/phone-number"
-                      )
+                      styles.phoneInput
                     }
                   >
-                    <span
+                    <div
                       className={
-                        styles.phoneFlag
+                        styles.phonePrefix
                       }
                     >
-                      {
-                        selectedCountry.flag
-                      }
-                    </span>
+                      <span
+                        className={
+                          styles.phoneFlag
+                        }
+                      >
+                        {
+                          selectedCountry.flag
+                        }
+                      </span>
+
+                      <span
+                        className={
+                          styles.phoneCountryCode
+                        }
+                      >
+                        {
+                          selectedCountry.dialCode
+                        }
+                      </span>
+                    </div>
 
                     <span
                       className={
-                        styles.phoneValue
+                        styles.phoneDivider
                       }
-                    >
-                      {formatPhoneForDisplay(
+                    />
+
+                    <input
+                      id="phone"
+                      type="tel"
+                      inputMode="numeric"
+                      value={
                         form.phone
-                      ) ||
-                        "Add phone number"}
-                    </span>
+                      }
+                      onChange={(event) =>
+                        handlePhoneChange(
+                          event.target.value
+                        )
+                      }
+                      placeholder={
+                        isNigeria
+                          ? "803 123 4567"
+                          : "Phone number"
+                      }
+                      autoComplete="tel-national"
+                      maxLength={
+                        isNigeria
+                          ? 10
+                          : 15
+                      }
+                    />
+                  </div>
 
-                    <span
+                  {isNigeria && (
+                    <p
                       className={
-                        styles.phoneArrow
+                        styles.fieldHint
                       }
                     >
-                      ›
-                    </span>
-                  </button>
+                      Enter your 10-digit
+                      Nigerian mobile
+                      number without the
+                      leading 0.
+                    </p>
+                  )}
                 </div>
+
+                {/* DATE OF BIRTH */}
 
                 <div
                   className={
@@ -1717,7 +2857,7 @@ export default function EditProfilePage() {
 
                   <div
                     className={
-                      styles.inputWithIcon
+                      styles.dateField
                     }
                   >
                     <input
@@ -1726,21 +2866,33 @@ export default function EditProfilePage() {
                       value={
                         form.dateOfBirth
                       }
+                      max={
+                        new Date()
+                          .toISOString()
+                          .split("T")[0]
+                      }
                       onChange={(event) =>
                         updateField(
                           "dateOfBirth",
-                          event.target
-                            .value
+                          event.target.value
                         )
                       }
                     />
 
-                    <Icon
-                      name="calendar"
-                      size={17}
-                    />
+                    <span
+                      className={
+                        styles.dateIcon
+                      }
+                    >
+                      <Icon
+                        name="calendar"
+                        size={17}
+                      />
+                    </span>
                   </div>
                 </div>
+
+                {/* ADDRESS */}
 
                 <div
                   className={`${styles.field} ${styles.fullWidth}`}
@@ -1758,39 +2910,99 @@ export default function EditProfilePage() {
                     onChange={(event) =>
                       updateField(
                         "residentialAddress",
-                        event.target
-                          .value
+                        event.target.value
                       )
                     }
                     autoComplete="street-address"
+                    placeholder="Enter your residential address"
                   />
                 </div>
 
-                <div
-                  className={
-                    styles.field
-                  }
-                >
-                  <label htmlFor="city">
-                    City
-                  </label>
+                {/* NIGERIA LGA */}
 
-                  <input
-                    id="city"
-                    type="text"
-                    value={
-                      form.city
+                {isNigeria ? (
+                  <div
+                    className={
+                      styles.field
                     }
-                    onChange={(event) =>
-                      updateField(
-                        "city",
-                        event.target
-                          .value
-                      )
+                  >
+                    <label htmlFor="localGovernment">
+                      Local Government Area
+                    </label>
+
+                    <div
+                      className={
+                        styles.selectField
+                      }
+                    >
+                      <select
+                        id="localGovernment"
+                        value={
+                          form.localGovernment
+                        }
+                        onChange={(event) =>
+                          updateField(
+                            "localGovernment",
+                            event.target.value
+                          )
+                        }
+                        disabled={
+                          !form.state
+                        }
+                      >
+                        <option value="">
+                          {form.state
+                            ? "Select Local Government Area"
+                            : "Select State first"}
+                        </option>
+
+                        {availableLgas.map(
+                          (lga) => (
+                            <option
+                              key={lga}
+                              value={lga}
+                            >
+                              {lga}
+                            </option>
+                          )
+                        )}
+                      </select>
+
+                      <Icon
+                        name="chevron"
+                        size={17}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={
+                      styles.field
                     }
-                    autoComplete="address-level2"
-                  />
-                </div>
+                  >
+                    <label htmlFor="city">
+                      City
+                    </label>
+
+                    <input
+                      id="city"
+                      type="text"
+                      value={
+                        form.city
+                      }
+                      onChange={(event) =>
+                        updateField(
+                          "city",
+                          event.target.value
+                        )
+                      }
+                      autoComplete="address-level2"
+                      placeholder="Enter your city"
+                    />
+                  </div>
+                )}
+
+                {/* STATE */}
 
                 <div
                   className={
@@ -1798,14 +3010,50 @@ export default function EditProfilePage() {
                   }
                 >
                   <label htmlFor="state">
-                    State
+                    {isNigeria
+                      ? "State"
+                      : "State / Province / Region"}
                   </label>
 
-                  <div
-                    className={
-                      styles.selectField
-                    }
-                  >
+                  {isNigeria ? (
+                    <div
+                      className={
+                        styles.selectField
+                      }
+                    >
+                      <select
+                        id="state"
+                        value={
+                          form.state
+                        }
+                        onChange={(event) =>
+                          handleStateChange(
+                            event.target.value
+                          )
+                        }
+                      >
+                        <option value="">
+                          Select State
+                        </option>
+
+                        {nigerianStates.map(
+                          (state) => (
+                            <option
+                              key={state}
+                              value={state}
+                            >
+                              {state}
+                            </option>
+                          )
+                        )}
+                      </select>
+
+                      <Icon
+                        name="chevron"
+                        size={17}
+                      />
+                    </div>
+                  ) : (
                     <input
                       id="state"
                       type="text"
@@ -1815,19 +3063,16 @@ export default function EditProfilePage() {
                       onChange={(event) =>
                         updateField(
                           "state",
-                          event.target
-                            .value
+                          event.target.value
                         )
                       }
                       autoComplete="address-level1"
+                      placeholder="State, province or region"
                     />
-
-                    <Icon
-                      name="chevron"
-                      size={17}
-                    />
-                  </div>
+                  )}
                 </div>
+
+                {/* COUNTRY */}
 
                 <div
                   className={
@@ -1850,34 +3095,26 @@ export default function EditProfilePage() {
                           form.country
                         )
                       }
-                      onChange={(event) => {
-                        const selected =
-                          countries.find(
-                            (item) =>
-                              item.code ===
-                              event
-                                .target
-                                .value
-                          );
-
-                        updateField(
-                          "country",
-                          selected?.name ||
-                            "Nigeria"
-                        );
-                      }}
+                      onChange={(event) =>
+                        handleCountryChange(
+                          event.target.value
+                        )
+                      }
                     >
                       {countries.map(
-                        (item) => (
+                        (country) => (
                           <option
                             key={
-                              item.code
+                              country.code
                             }
                             value={
-                              item.code
+                              country.code
                             }
                           >
-                            {item.name}
+                            {
+                              country.flag
+                            }{" "}
+                            {country.name}
                           </option>
                         )
                       )}
@@ -1889,6 +3126,8 @@ export default function EditProfilePage() {
                     />
                   </div>
                 </div>
+
+                {/* OCCUPATION */}
 
                 <div
                   className={
@@ -1908,12 +3147,14 @@ export default function EditProfilePage() {
                     onChange={(event) =>
                       updateField(
                         "occupation",
-                        event.target
-                          .value
+                        event.target.value
                       )
                     }
+                    placeholder="Enter your occupation"
                   />
                 </div>
+
+                {/* COMPANY */}
 
                 <div
                   className={
@@ -1936,13 +3177,15 @@ export default function EditProfilePage() {
                     onChange={(event) =>
                       updateField(
                         "company",
-                        event.target
-                          .value
+                        event.target.value
                       )
                     }
+                    placeholder="Enter your company"
                   />
                 </div>
               </div>
+
+              {/* FORM ACTIONS */}
 
               <div
                 className={
@@ -2009,203 +3252,6 @@ export default function EditProfilePage() {
               {message}
             </div>
           )}
-
-          <section
-            className={
-              styles.kycCard
-            }
-          >
-            <div
-              className={
-                styles.kycHeader
-              }
-            >
-              <div>
-                <h2>
-                  Identity Verification
-                  (KYC)
-                </h2>
-
-                <p>
-                  Verify your identity to
-                  secure your account and
-                  increase trust when using
-                  PropertySure AI.
-                </p>
-              </div>
-
-              <span
-                className={`${styles.kycStatus} ${kycStatusClass}`}
-              >
-                <Icon
-                  name="shield"
-                  size={15}
-                />
-
-                {kycStatus}
-              </span>
-            </div>
-
-            <div
-              className={
-                styles.kycSteps
-              }
-            >
-              {kycSteps.map(
-                (step, index) => {
-                  const stepNumber =
-                    index + 1;
-
-                  const completed =
-                    stepNumber <
-                    kycStep;
-
-                  const active =
-                    stepNumber ===
-                    kycStep;
-
-                  return (
-                    <div
-                      key={
-                        step.title
-                      }
-                      className={
-                        styles.kycStep
-                      }
-                    >
-                      <div
-                        className={
-                          styles.stepTop
-                        }
-                      >
-                        <div
-                          className={`${styles.stepCircle} ${
-                            completed
-                              ? styles.stepCompleted
-                              : active
-                              ? styles.stepActive
-                              : ""
-                          }`}
-                        >
-                          {completed ? (
-                            <Icon
-                              name="check"
-                              size={14}
-                            />
-                          ) : (
-                            stepNumber
-                          )}
-                        </div>
-
-                        {index <
-                          kycSteps.length -
-                            1 && (
-                          <div
-                            className={`${styles.stepLine} ${
-                              completed
-                                ? styles.stepLineCompleted
-                                : ""
-                            }`}
-                          />
-                        )}
-                      </div>
-
-                      <h3>
-                        {
-                          step.title
-                        }
-                      </h3>
-
-                      <p>
-                        {
-                          step.description
-                        }
-                      </p>
-                    </div>
-                  );
-                }
-              )}
-            </div>
-
-            <div
-              className={
-                styles.kycInfoBox
-              }
-            >
-              <div
-                className={
-                  styles.kycInfoIcon
-                }
-              >
-                <Icon
-                  name="shield"
-                  size={25}
-                />
-              </div>
-
-              <div
-                className={
-                  styles.kycInfoText
-                }
-              >
-                <h3>
-                  Why verify your
-                  identity?
-                </h3>
-
-                <p>
-                  Identity verification
-                  helps us protect your
-                  account, prevent fraud,
-                  and build trust in the
-                  PropertySure AI platform.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                className={
-                  styles.startVerification
-                }
-                onClick={() =>
-                  navigateTo(
-                    "/account/identity-verification"
-                  )
-                }
-              >
-                <Icon
-                  name="shield"
-                  size={17}
-                />
-
-                <span>
-                  {kycStatus ===
-                  "Verified"
-                    ? "View Verification"
-                    : "Start Verification"}
-                </span>
-              </button>
-            </div>
-
-            <div
-              className={
-                styles.kycPrivacy
-              }
-            >
-              <Icon
-                name="lock"
-                size={17}
-              />
-
-              <span>
-                Your information is
-                encrypted and securely
-                stored. We never share
-                your data with third
-                parties.
-              </span>
-            </div>
-          </section>
 
           <div
             className={

@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import AppShell from "../AppShell/AppShell";
+import LoadingScreen from "../AppShell/LoadingScreen";
 import { supabase } from "../lib/supabase";
 
 import styles from "./account.module.css";
@@ -57,7 +58,9 @@ HELPERS
 ============================================================
 */
 
-function getUserName(user: AccountUser | null): string {
+function getUserName(
+  user: AccountUser | null
+): string {
   if (!user) {
     return "User";
   }
@@ -70,24 +73,34 @@ function getUserName(user: AccountUser | null): string {
     metadata.display_name ||
     metadata.username;
 
-  if (typeof name === "string" && name.trim()) {
+  if (
+    typeof name === "string" &&
+    name.trim()
+  ) {
     return name.trim();
   }
 
   if (user.email) {
-    const emailName = user.email.split("@")[0];
+    const emailName =
+      user.email.split("@")[0];
 
     if (emailName) {
       return emailName
         .replace(/[._-]+/g, " ")
-        .replace(/\b\w/g, (letter) => letter.toUpperCase());
+        .replace(
+          /\b\w/g,
+          (letter) =>
+            letter.toUpperCase()
+        );
     }
   }
 
   return "User";
 }
 
-function getInitials(name: string): string {
+function getInitials(
+  name: string
+): string {
   const parts = name
     .trim()
     .split(/\s+/)
@@ -98,7 +111,9 @@ function getInitials(name: string): string {
   }
 
   if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
+    return parts[0]
+      .slice(0, 2)
+      .toUpperCase();
   }
 
   return `${parts[0][0]}${
@@ -106,87 +121,25 @@ function getInitials(name: string): string {
   }`.toUpperCase();
 }
 
-function getAvatarUrl(user: AccountUser | null): string | null {
+function getAvatarUrl(
+  user: AccountUser | null
+): string | null {
   if (!user) {
     return null;
   }
 
-  const metadata = user.user_metadata || {};
+  const metadata =
+    user.user_metadata || {};
 
   const avatar =
     metadata.avatar_url ||
     metadata.picture ||
     metadata.avatar;
 
-  return typeof avatar === "string" && avatar.trim()
+  return typeof avatar === "string" &&
+    avatar.trim()
     ? avatar
     : null;
-}
-
-function getPhone(user: AccountUser | null): string {
-  if (!user) {
-    return "Not provided";
-  }
-
-  const metadata = user.user_metadata || {};
-
-  return (
-    user.phone ||
-    metadata.phone ||
-    metadata.phone_number ||
-    "Not provided"
-  );
-}
-
-function getLocation(user: AccountUser | null): string {
-  if (!user) {
-    return "Not provided";
-  }
-
-  const metadata = user.user_metadata || {};
-
-  const city =
-    metadata.city ||
-    metadata.location ||
-    metadata.address_city;
-
-  const country =
-    metadata.country ||
-    metadata.address_country;
-
-  if (city && country) {
-    return `${city}, ${country}`;
-  }
-
-  if (city) {
-    return String(city);
-  }
-
-  if (country) {
-    return String(country);
-  }
-
-  return "Not provided";
-}
-
-function getPlanName(user: AccountUser | null): string {
-  if (!user) {
-    return "Free Plan";
-  }
-
-  const metadata = user.user_metadata || {};
-
-  const plan =
-    metadata.plan ||
-    metadata.plan_name ||
-    metadata.subscription_plan ||
-    metadata.account_plan;
-
-  if (typeof plan === "string" && plan.trim()) {
-    return plan.trim();
-  }
-
-  return "Free Plan";
 }
 
 function formatDate(
@@ -196,17 +149,22 @@ function formatDate(
     return "Not available";
   }
 
-  const date = new Date(dateString);
+  const date = new Date(
+    dateString
+  );
 
   if (Number.isNaN(date.getTime())) {
     return "Not available";
   }
 
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return date.toLocaleDateString(
+    "en-US",
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }
+  );
 }
 
 function formatTime(
@@ -216,16 +174,21 @@ function formatTime(
     return "";
   }
 
-  const date = new Date(dateString);
+  const date = new Date(
+    dateString
+  );
 
   if (Number.isNaN(date.getTime())) {
     return "";
   }
 
-  return date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return date.toLocaleTimeString(
+    "en-US",
+    {
+      hour: "2-digit",
+      minute: "2-digit",
+    }
+  );
 }
 
 /*
@@ -243,7 +206,8 @@ function getKycStatus(
     return false;
   }
 
-  const metadata = user.user_metadata || {};
+  const metadata =
+    user.user_metadata || {};
 
   const explicitBooleanValues = [
     metadata.kyc_verified,
@@ -274,7 +238,9 @@ function getKycStatus(
         "approved",
         "complete",
         "completed",
-      ].includes(value.toLowerCase())
+      ].includes(
+        value.toLowerCase()
+      )
   );
 }
 
@@ -297,8 +263,10 @@ export default function AccountPage() {
   const [pageError, setPageError] =
     useState("");
 
-  const [isUploadingAvatar, setIsUploadingAvatar] =
-    useState(false);
+  const [
+    isUploadingAvatar,
+    setIsUploadingAvatar,
+  ] = useState(false);
 
   /*
   ============================================================
@@ -317,14 +285,16 @@ export default function AccountPage() {
         const {
           data,
           error,
-        } = await supabase.auth.getUser();
+        } =
+          await supabase.auth.getUser();
 
         if (error) {
           throw error;
         }
 
         if (!data.user) {
-          window.location.href = "/signin";
+          window.location.href =
+            "/signin";
           return;
         }
 
@@ -332,7 +302,8 @@ export default function AccountPage() {
           data.user as AccountUser;
 
         if (currentUser.is_anonymous) {
-          window.location.href = "/signin";
+          window.location.href =
+            "/signin";
           return;
         }
 
@@ -378,10 +349,12 @@ export default function AccountPage() {
           }
 
           if (
-            event === "SIGNED_OUT" ||
+            event ===
+              "SIGNED_OUT" ||
             !session?.user
           ) {
-            window.location.href = "/signin";
+            window.location.href =
+              "/signin";
             return;
           }
 
@@ -419,18 +392,6 @@ export default function AccountPage() {
   const avatarUrl =
     getAvatarUrl(user);
 
-  const phone =
-    getPhone(user);
-
-  const location =
-    getLocation(user);
-
-  const planName =
-    getPlanName(user);
-
-  const memberSince =
-    formatDate(user?.created_at);
-
   const isKycVerified =
     getKycStatus(user);
 
@@ -443,7 +404,8 @@ export default function AccountPage() {
   const activities =
     useMemo<ActivityItem[]>(
       () => {
-        const items: ActivityItem[] = [];
+        const items: ActivityItem[] =
+          [];
 
         if (user?.last_sign_in_at) {
           items.push({
@@ -523,14 +485,19 @@ export default function AccountPage() {
 
     setPageError("");
 
-    if (!file.type.startsWith("image/")) {
+    if (
+      !file.type.startsWith("image/")
+    ) {
       setPageError(
         "Please select an image file."
       );
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
+    if (
+      file.size >
+      5 * 1024 * 1024
+    ) {
       setPageError(
         "Profile photos must be 5 MB or smaller."
       );
@@ -544,7 +511,8 @@ export default function AccountPage() {
         file.name
           .split(".")
           .pop()
-          ?.toLowerCase() || "jpg";
+          ?.toLowerCase() ||
+        "jpg";
 
       const filePath =
         `${user.id}/avatar.${extension}`;
@@ -573,7 +541,9 @@ export default function AccountPage() {
       } =
         supabase.storage
           .from(AVATAR_BUCKET)
-          .getPublicUrl(filePath);
+          .getPublicUrl(
+            filePath
+          );
 
       const newAvatarUrl =
         `${publicUrlData.publicUrl}?t=${Date.now()}`;
@@ -582,17 +552,22 @@ export default function AccountPage() {
         data: updatedUserData,
         error: updateError,
       } =
-        await supabase.auth.updateUser({
-          data: {
-            avatar_url: newAvatarUrl,
-          },
-        });
+        await supabase.auth.updateUser(
+          {
+            data: {
+              avatar_url:
+                newAvatarUrl,
+            },
+          }
+        );
 
       if (updateError) {
         throw updateError;
       }
 
-      if (updatedUserData.user) {
+      if (
+        updatedUserData.user
+      ) {
         setUser(
           updatedUserData.user as AccountUser
         );
@@ -625,7 +600,8 @@ export default function AccountPage() {
     return Boolean(
       user?.identities?.some(
         (identity) =>
-          identity.provider === provider
+          identity.provider ===
+          provider
       )
     );
   }
@@ -639,13 +615,15 @@ export default function AccountPage() {
       const {
         error,
       } =
-        await supabase.auth.signInWithOAuth({
-          provider,
-          options: {
-            redirectTo:
-              `${window.location.origin}/account`,
-          },
-        });
+        await supabase.auth.signInWithOAuth(
+          {
+            provider,
+            options: {
+              redirectTo:
+                `${window.location.origin}/account`,
+            },
+          }
+        );
 
       if (error) {
         throw error;
@@ -666,56 +644,12 @@ export default function AccountPage() {
 
   /*
   ============================================================
-  SIGN OUT
-  ============================================================
-  */
-
-  async function handleSignOut() {
-    try {
-      await supabase.auth.signOut();
-
-      window.location.href =
-        "/signin";
-    } catch (error) {
-      console.error(
-        "SIGN OUT ERROR:",
-        error
-      );
-    }
-  }
-
-  /*
-  ============================================================
-  GLOBAL LOADING
+  SHARED LOADING SCREEN
   ============================================================
   */
 
   if (loading) {
-    return (
-      <main className={styles.loadingPage}>
-        <div className={styles.loadingBrand}>
-          <span className={styles.loadingDiamond} />
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </div>
-
-        <div
-          className={styles.loadingIndicator}
-          aria-hidden="true"
-        >
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <p className={styles.loadingText}>
-          Loading...
-        </p>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   /*
@@ -730,45 +664,35 @@ export default function AccountPage() {
       headerPath="/account"
     >
       <main className={styles.page}>
-        <div className={styles.container}>
+        <div
+          className={styles.container}
+        >
 
           {/* ==================================================
-              PAGE HEADER
+              DESKTOP PAGE HEADER
+
+              Hidden on mobile so the profile card
+              becomes the first Account content.
           ================================================== */}
 
-          <header className={styles.pageHeader}>
+          <header
+            className={styles.pageHeader}
+          >
             <div>
-              <div className={styles.eyebrow}>
+              <div
+                className={
+                  styles.eyebrow
+                }
+              >
                 PROPERTYSURE AI
               </div>
 
               <h1>Account</h1>
 
               <p>
-                Manage your account, profile and preferences.
+                Manage your account,
+                profile and preferences.
               </p>
-            </div>
-
-            <div className={styles.memberMeta}>
-              <span>
-                Member since {memberSince}
-              </span>
-
-              <div
-                className={
-                  isKycVerified
-                    ? styles.memberBadgeVerified
-                    : styles.memberBadgePending
-                }
-              >
-                <span>
-                  {isKycVerified ? "✓" : "!"}
-                </span>
-
-                {isKycVerified
-                  ? "Verified Member"
-                  : "Identity Not Verified"}
-              </div>
             </div>
           </header>
 
@@ -777,18 +701,32 @@ export default function AccountPage() {
           ================================================== */}
 
           {pageError && (
-            <div className={styles.pageError}>
-              <span className={styles.errorIcon}>
+            <div
+              className={
+                styles.pageError
+              }
+            >
+              <span
+                className={
+                  styles.errorIcon
+                }
+              >
                 !
               </span>
 
-              <div className={styles.errorMessage}>
+              <div
+                className={
+                  styles.errorMessage
+                }
+              >
                 {pageError}
               </div>
 
               <button
                 type="button"
-                className={styles.errorClose}
+                className={
+                  styles.errorClose
+                }
                 onClick={() =>
                   setPageError("")
                 }
@@ -800,30 +738,53 @@ export default function AccountPage() {
           )}
 
           {/* ==================================================
-              PROFILE HERO
+              PROFILE
           ================================================== */}
 
-          <section className={styles.profileCard}>
-            <div className={styles.profileIdentity}>
-
-              <div className={styles.profileAvatarWrap}>
+          <section
+            className={
+              styles.profileCard
+            }
+          >
+            <div
+              className={
+                styles.profileIdentity
+              }
+            >
+              <div
+                className={
+                  styles.profileAvatarWrap
+                }
+              >
                 {avatarUrl ? (
                   <img
                     src={avatarUrl}
                     alt={`${fullName} profile`}
-                    className={styles.profileAvatar}
+                    className={
+                      styles.profileAvatar
+                    }
                   />
                 ) : (
-                  <div className={styles.profileAvatar}>
+                  <div
+                    className={
+                      styles.profileAvatar
+                    }
+                  >
                     {initials}
                   </div>
                 )}
 
                 <button
                   type="button"
-                  className={styles.avatarCamera}
-                  onClick={openAvatarPicker}
-                  disabled={isUploadingAvatar}
+                  className={
+                    styles.avatarCamera
+                  }
+                  onClick={
+                    openAvatarPicker
+                  }
+                  disabled={
+                    isUploadingAvatar
+                  }
                   aria-label={
                     avatarUrl
                       ? "Change profile photo"
@@ -836,7 +797,9 @@ export default function AccountPage() {
                 </button>
 
                 <input
-                  ref={avatarInputRef}
+                  ref={
+                    avatarInputRef
+                  }
                   type="file"
                   accept="image/*"
                   hidden
@@ -846,41 +809,31 @@ export default function AccountPage() {
                 />
               </div>
 
-              <div className={styles.profileInfo}>
-                <h2>{fullName}</h2>
+              <div
+                className={
+                  styles.profileInfo
+                }
+              >
+                <h2>
+                  {fullName}
+                </h2>
 
-                <p>{email}</p>
-
-                <div className={styles.identityRow}>
-                  <span
-                    className={
-                      isKycVerified
-                        ? styles.identityVerified
-                        : styles.identityPending
-                    }
-                  >
-                    <span>
-                      {isKycVerified
-                        ? "✓"
-                        : "!"}
-                    </span>
-
-                    {isKycVerified
-                      ? "Identity Verified"
-                      : "Identity Not Verified"}
-                  </span>
-
-                  <span className={styles.identityDescription}>
-                    {isKycVerified
-                      ? "Your identity has been verified."
-                      : "Complete identity verification to become verified."}
-                  </span>
-                </div>
+                <p>
+                  {email}
+                </p>
               </div>
             </div>
 
-            <div className={styles.profileActions}>
-              <span className={styles.photoHint}>
+            <div
+              className={
+                styles.profileActions
+              }
+            >
+              <span
+                className={
+                  styles.photoHint
+                }
+              >
                 {isUploadingAvatar
                   ? "Uploading photo..."
                   : "Profile photo"}
@@ -888,9 +841,15 @@ export default function AccountPage() {
 
               <button
                 type="button"
-                className={styles.primaryOutlineButton}
-                onClick={openAvatarPicker}
-                disabled={isUploadingAvatar}
+                className={
+                  styles.primaryOutlineButton
+                }
+                onClick={
+                  openAvatarPicker
+                }
+                disabled={
+                  isUploadingAvatar
+                }
               >
                 <span>⌾</span>
 
@@ -901,9 +860,13 @@ export default function AccountPage() {
 
               <button
                 type="button"
-                className={styles.secondaryTextButton}
+                className={
+                  styles.secondaryTextButton
+                }
                 onClick={() =>
-                  navigate("/account/profile")
+                  navigate(
+                    "/account/profile"
+                  )
                 }
               >
                 Edit Profile
@@ -912,146 +875,97 @@ export default function AccountPage() {
           </section>
 
           {/* ==================================================
-              PLAN INFORMATION
+              IDENTITY VERIFICATION
           ================================================== */}
 
-          <section className={styles.planCard}>
-            <div className={styles.cardHeader}>
-              <div className={styles.cardTitleGroup}>
-                <div className={styles.planIcon}>
-                  ♕
-                </div>
-
-                <div>
-                  <h2>Plan Information</h2>
-
-                  <p>
-                    Your current PropertySure plan
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className={styles.planOutlineButton}
-                onClick={() =>
-                  navigate("/account/plan")
+          <section
+            className={
+              styles.card
+            }
+          >
+            <div
+              className={
+                styles.cardHeader
+              }
+            >
+              <div
+                className={
+                  styles.cardTitleGroup
                 }
               >
-                Manage Plan
-              </button>
-            </div>
-
-            <div className={styles.planContent}>
-              <div>
-                <div className={styles.planLabel}>
-                  CURRENT PLAN
-                </div>
-
-                <h3>{planName}</h3>
-
-                <div className={styles.featureList}>
-                  <div>
-                    <span>✓</span>
-                    Property verification access
-                  </div>
-
-                  <div>
-                    <span>✓</span>
-                    AI-powered document analysis
-                  </div>
-
-                  <div>
-                    <span>✓</span>
-                    Verification reports
-                  </div>
-
-                  <div>
-                    <span>✓</span>
-                    Property risk insights
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.planAction}>
-                <div>
-                  Get more with Professional or Premium
-                </div>
-
-                <button
-                  type="button"
-                  className={styles.planPrimaryButton}
-                  onClick={() =>
-                    navigate("/account/plan")
-                  }
-                >
-                  Upgrade Plan
-                  <span>→</span>
-                </button>
-              </div>
-            </div>
-
-            <div className={styles.planDecoration}>
-              <span />
-              <span />
-              <span />
-            </div>
-          </section>
-
-          {/* ==================================================
-              PERSONAL INFORMATION
-          ================================================== */}
-
-          <section className={styles.card}>
-            <div className={styles.cardHeader}>
-              <div className={styles.cardTitleGroup}>
                 <div
                   className={`${styles.cardIcon} ${styles.blueIcon}`}
                 >
-                  ♙
+                  ✓
                 </div>
 
                 <div>
-                  <h2>Personal Information</h2>
+                  <h2>
+                    Identity Verification
+                  </h2>
 
                   <p>
-                    Your personal details
+                    Verify your identity and secure your account
                   </p>
                 </div>
               </div>
 
-              <button
-                type="button"
-                className={styles.outlineButton}
-                onClick={() =>
-                  navigate("/account/profile")
+              <span
+                className={
+                  isKycVerified
+                    ? styles.kycVerified
+                    : styles.kycPending
                 }
               >
-                <span>✎</span>
-                Edit Information
-              </button>
+                <span>
+                  {isKycVerified
+                    ? "✓"
+                    : "!"}
+                </span>
+
+                {isKycVerified
+                  ? "Verified"
+                  : "Not Verified"}
+              </span>
             </div>
 
-            <div className={styles.personalGrid}>
-              <div className={styles.personalItem}>
-                <span>Full Name</span>
-                <strong>{fullName}</strong>
+            <div
+              className={
+                styles.kycContent
+              }
+            >
+              <div>
+                <strong>
+                  Identity Verification (KYC)
+                </strong>
+
+                <p>
+                  Complete identity
+                  verification to help
+                  protect your account,
+                  prevent fraud, and
+                  build trust when using
+                  PropertySure AI.
+                </p>
               </div>
 
-              <div className={styles.personalItem}>
-                <span>Email Address</span>
-                <strong>{email}</strong>
-              </div>
+              <button
+                type="button"
+                className={
+                  styles.kycButton
+                }
+                onClick={() =>
+                  navigate(
+                    "/account/identity-verification"
+                  )
+                }
+              >
+                {isKycVerified
+                  ? "View Verification"
+                  : "Start Verification"}
 
-              <div className={styles.personalItem}>
-                <span>Phone Number</span>
-                <strong>{phone}</strong>
-              </div>
-
-              <div className={styles.personalItem}>
-                <span>Location</span>
-                <strong>{location}</strong>
-              </div>
+                <span>→</span>
+              </button>
             </div>
           </section>
 
@@ -1059,9 +973,21 @@ export default function AccountPage() {
               CONNECTED ACCOUNTS
           ================================================== */}
 
-          <section className={styles.card}>
-            <div className={styles.cardHeader}>
-              <div className={styles.cardTitleGroup}>
+          <section
+            className={
+              styles.card
+            }
+          >
+            <div
+              className={
+                styles.cardHeader
+              }
+            >
+              <div
+                className={
+                  styles.cardTitleGroup
+                }
+              >
                 <div
                   className={`${styles.cardIcon} ${styles.blueIcon}`}
                 >
@@ -1069,7 +995,9 @@ export default function AccountPage() {
                 </div>
 
                 <div>
-                  <h2>Connected Accounts</h2>
+                  <h2>
+                    Connected Accounts
+                  </h2>
 
                   <p>
                     Manage external sign-in providers
@@ -1078,12 +1006,23 @@ export default function AccountPage() {
               </div>
             </div>
 
-            <div className={styles.connectedList}>
-
+            <div
+              className={
+                styles.connectedList
+              }
+            >
               {/* GOOGLE */}
 
-              <div className={styles.connectedRow}>
-                <div className={styles.providerLeft}>
+              <div
+                className={
+                  styles.connectedRow
+                }
+              >
+                <div
+                  className={
+                    styles.providerLeft
+                  }
+                >
                   <div
                     className={`${styles.providerIcon} ${styles.googleIcon}`}
                   >
@@ -1091,7 +1030,9 @@ export default function AccountPage() {
                   </div>
 
                   <div>
-                    <strong>Google</strong>
+                    <strong>
+                      Google
+                    </strong>
 
                     <span>
                       Sign in with Google
@@ -1099,17 +1040,30 @@ export default function AccountPage() {
                   </div>
                 </div>
 
-                {isProviderConnected("google") ? (
-                  <span className={styles.connectedStatus}>
-                    <span>✓</span>
+                {isProviderConnected(
+                  "google"
+                ) ? (
+                  <span
+                    className={
+                      styles.connectedStatus
+                    }
+                  >
+                    <span>
+                      ✓
+                    </span>
+
                     Connected
                   </span>
                 ) : (
                   <button
                     type="button"
-                    className={styles.connectButton}
+                    className={
+                      styles.connectButton
+                    }
                     onClick={() =>
-                      connectProvider("google")
+                      connectProvider(
+                        "google"
+                      )
                     }
                   >
                     Connect
@@ -1119,8 +1073,16 @@ export default function AccountPage() {
 
               {/* MICROSOFT */}
 
-              <div className={styles.connectedRow}>
-                <div className={styles.providerLeft}>
+              <div
+                className={
+                  styles.connectedRow
+                }
+              >
+                <div
+                  className={
+                    styles.providerLeft
+                  }
+                >
                   <div
                     className={`${styles.providerIcon} ${styles.microsoftIcon}`}
                   >
@@ -1128,7 +1090,9 @@ export default function AccountPage() {
                   </div>
 
                   <div>
-                    <strong>Microsoft</strong>
+                    <strong>
+                      Microsoft
+                    </strong>
 
                     <span>
                       Sign in with Microsoft
@@ -1136,17 +1100,30 @@ export default function AccountPage() {
                   </div>
                 </div>
 
-                {isProviderConnected("azure") ? (
-                  <span className={styles.connectedStatus}>
-                    <span>✓</span>
+                {isProviderConnected(
+                  "azure"
+                ) ? (
+                  <span
+                    className={
+                      styles.connectedStatus
+                    }
+                  >
+                    <span>
+                      ✓
+                    </span>
+
                     Connected
                   </span>
                 ) : (
                   <button
                     type="button"
-                    className={styles.connectButton}
+                    className={
+                      styles.connectButton
+                    }
                     onClick={() =>
-                      connectProvider("azure")
+                      connectProvider(
+                        "azure"
+                      )
                     }
                   >
                     Connect
@@ -1160,9 +1137,21 @@ export default function AccountPage() {
               RECENT ACTIVITY
           ================================================== */}
 
-          <section className={styles.card}>
-            <div className={styles.cardHeader}>
-              <div className={styles.cardTitleGroup}>
+          <section
+            className={
+              styles.card
+            }
+          >
+            <div
+              className={
+                styles.cardHeader
+              }
+            >
+              <div
+                className={
+                  styles.cardTitleGroup
+                }
+              >
                 <div
                   className={`${styles.cardIcon} ${styles.blueIcon}`}
                 >
@@ -1170,36 +1159,39 @@ export default function AccountPage() {
                 </div>
 
                 <div>
-                  <h2>Recent Account Activity</h2>
+                  <h2>
+                    Recent Account Activity
+                  </h2>
 
                   <p>
                     Recent activity on your account
                   </p>
                 </div>
               </div>
-
-              <button
-                type="button"
-                className={styles.outlineButton}
-                onClick={() =>
-                  navigate("/verification-history")
-                }
-              >
-                View All
-              </button>
             </div>
 
-            {activities.length > 0 ? (
-              <div className={styles.activityList}>
+            {activities.length >
+            0 ? (
+              <div
+                className={
+                  styles.activityList
+                }
+              >
                 {activities.map(
-                  (activity, index) => (
+                  (
+                    activity,
+                    index
+                  ) => (
                     <div
-                      className={styles.activityRow}
+                      className={
+                        styles.activityRow
+                      }
                       key={`${activity.title}-${index}`}
                     >
                       <div
                         className={
-                          activity.type === "success"
+                          activity.type ===
+                          "success"
                             ? styles.activityIconSuccess
                             : styles.activityIconInfo
                         }
@@ -1207,23 +1199,39 @@ export default function AccountPage() {
                         {activity.icon}
                       </div>
 
-                      <div className={styles.activityInfo}>
+                      <div
+                        className={
+                          styles.activityInfo
+                        }
+                      >
                         <strong>
-                          {activity.title}
+                          {
+                            activity.title
+                          }
                         </strong>
 
                         <span>
-                          {activity.description}
+                          {
+                            activity.description
+                          }
                         </span>
                       </div>
 
-                      <div className={styles.activityTime}>
+                      <div
+                        className={
+                          styles.activityTime
+                        }
+                      >
                         <strong>
-                          {activity.date}
+                          {
+                            activity.date
+                          }
                         </strong>
 
                         <span>
-                          {activity.time}
+                          {
+                            activity.time
+                          }
                         </span>
                       </div>
                     </div>
@@ -1231,7 +1239,11 @@ export default function AccountPage() {
                 )}
               </div>
             ) : (
-              <div className={styles.emptyActivity}>
+              <div
+                className={
+                  styles.emptyActivity
+                }
+              >
                 No recent account activity.
               </div>
             )}
@@ -1241,9 +1253,15 @@ export default function AccountPage() {
               ACCOUNT FOOTER
           ================================================== */}
 
-          <footer className={styles.accountFooter}>
+          <footer
+            className={
+              styles.accountFooter
+            }
+          >
             <div>
-              <strong>PropertySure AI</strong>
+              <strong>
+                PropertySure AI
+              </strong>
 
               <span>
                 Secure Properties.
@@ -1252,7 +1270,11 @@ export default function AccountPage() {
               </span>
             </div>
 
-            <div className={styles.footerLinks}>
+            <div
+              className={
+                styles.footerLinks
+              }
+            >
               <button type="button">
                 Privacy Policy
               </button>
@@ -1266,7 +1288,7 @@ export default function AccountPage() {
               </button>
 
               <span>
-                © 2026 PropertySure AI.
+                ©️ 2026 PropertySure AI.
                 All rights reserved.
               </span>
             </div>

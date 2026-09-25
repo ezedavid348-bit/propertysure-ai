@@ -104,22 +104,32 @@ function CheckoutPageContent() {
       async () => {
         try {
           /*
-           * The verification ID remains in the URL.
+           * Keep the shared PropertySure AI
+           * LoadingScreen visible while Checkout
+           * initializes.
            *
-           * The payment API uses this ID to retrieve
-           * and validate the actual verification record
-           * and document package.
+           * This applies to both desktop and mobile.
            */
+          await new Promise<void>(
+            (resolve) => {
+              window.setTimeout(
+                resolve,
+                700,
+              );
+            },
+          );
 
-          if (mounted) {
-            /*
-             * Document count will be loaded from the
-             * verification record as the checkout data
-             * layer is expanded.
-             */
-            setDocumentCount(null);
-            setLoading(false);
+          if (!mounted) {
+            return;
           }
+
+          /*
+           * Document count will be loaded from the
+           * verification record as the checkout data
+           * layer is expanded.
+           */
+          setDocumentCount(null);
+          setLoading(false);
         } catch {
           if (mounted) {
             setError(
@@ -262,6 +272,12 @@ function CheckoutPageContent() {
     }
   };
 
+  /*
+   * Shared PropertySure AI LoadingScreen.
+   *
+   * This is used before Checkout renders on
+   * both desktop and mobile.
+   */
   if (loading) {
     return <LoadingScreen />;
   }
@@ -300,9 +316,15 @@ function CheckoutPageContent() {
           ===================================================== */}
 
           <div className={styles.header}>
-            <div>
+            <div
+              className={
+                styles.headerText
+              }
+            >
               <div
-                className={styles.eyebrow}
+                className={
+                  styles.eyebrow
+                }
               >
                 PROPERTY VERIFICATION
               </div>

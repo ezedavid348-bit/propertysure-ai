@@ -780,38 +780,77 @@
 
 /* ============================================================
    BOTTOM ACTIONS
+   SAME STRUCTURE AS REVIEW PACKAGE
    ============================================================ */
 
-.bottomActions {
-  display: flex;
+.actions {
+  display: grid;
 
-  align-items: center;
-  justify-content: flex-end;
+  grid-template-columns:
+    115px minmax(0, 1fr);
 
-  gap: 20px;
+  gap: 12px;
 
-  margin-top: 28px;
-}
-
-.checkoutButton {
-  position: relative;
+  margin-top: 13px;
 
   width: 100%;
+}
 
+.backButton,
+.continueButton {
   height: 52px;
 
   display: flex;
 
   align-items: center;
-
   justify-content: center;
+
+  border-radius: 8px;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.backButton {
+  gap: 8px;
+
+  border:
+    1px solid
+    #d6e0eb;
+
+  background: #ffffff;
+
+  color: #1e3046;
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.backButton span {
+  font-size: 17px;
+
+  font-weight: 400;
+}
+
+.backButton:hover {
+  border-color: #b9c9da;
+
+  background: #f9fbfd;
+}
+
+.continueButton {
+  position: relative;
+
+  width: 100%;
 
   padding:
     0 55px 0 20px;
 
   border: 0;
-
-  border-radius: 8px;
 
   background:
     linear-gradient(
@@ -822,22 +861,16 @@
 
   color: #ffffff;
 
-  font-size: 11px;
-
-  font-weight: 800;
-
-  cursor: pointer;
-
   box-shadow:
     0 9px 24px
     rgba(12, 163, 99, 0.2);
 
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
-.checkoutButton span {
+.continueButton b {
   position: absolute;
 
   right: 20px;
@@ -849,7 +882,7 @@
   line-height: 1;
 }
 
-.checkoutButton:hover:not(:disabled) {
+.continueButton:hover:not(:disabled) {
   transform:
     translateY(-1px);
 
@@ -858,7 +891,7 @@
     rgba(12, 163, 99, 0.26);
 }
 
-.checkoutButton:disabled {
+.continueButton:disabled {
   opacity: 0.65;
 
   cursor: not-allowed;
@@ -955,6 +988,8 @@
   }
 
   .planBadge {
+    display: inline-block;
+
     margin-bottom: 9px;
 
     font-size: 9px;
@@ -962,16 +997,17 @@
     letter-spacing: 1.7px;
   }
 
+  /*
+   * MOBILE ONLY:
+   * Hide "Select a Verification Plan".
+   * CHOOSE YOUR PLAN remains visible.
+   */
   .intro h1 {
-    font-size: 31px;
-
-    line-height: 1.12;
+    display: none;
   }
 
   .intro p {
-    font-size: 13px;
-
-    line-height: 1.6;
+    display: none;
   }
 
   .secureCard {
@@ -1122,20 +1158,44 @@
     gap: 11px;
   }
 
-  .bottomActions {
-    flex-direction: column;
+  /*
+   * Keep the existing mobile bottom action layout.
+   */
+  .actions {
+    display: grid;
 
-    align-items: stretch;
+    grid-template-columns:
+      88px minmax(0, 1fr);
 
-    margin-top: 22px;
+    gap: 8px;
+
+    margin-top: 9px;
   }
 
-  .checkoutButton {
-    width: 100%;
-
-    min-width: 0;
-
+  .backButton,
+  .continueButton {
     height: 51px;
+
+    font-size: 8px;
+  }
+
+  .backButton {
+    gap: 5px;
+  }
+
+  .backButton span {
+    font-size: 14px;
+  }
+
+  .continueButton {
+    padding:
+      0 34px 0 10px;
+  }
+
+  .continueButton b {
+    right: 11px;
+
+    font-size: 17px;
   }
 }
 
@@ -1150,10 +1210,15 @@
   }
 
   .intro h1 {
-    font-size: 28px;
+    display: none;
   }
 
   .priceRow strong {
     font-size: 26px;
+  }
+
+  .actions {
+    grid-template-columns:
+      82px minmax(0, 1fr);
   }
 }

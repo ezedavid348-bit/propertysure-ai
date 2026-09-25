@@ -87,7 +87,10 @@ export default function SelectPlanPage() {
   const router = useRouter();
 
   const verificationId = useMemo(() => {
-    if (typeof window === "undefined") {
+    if (
+      typeof window ===
+      "undefined"
+    ) {
       return null;
     }
 
@@ -97,10 +100,16 @@ export default function SelectPlanPage() {
   }, []);
 
   const [selectedPlan, setSelectedPlan] =
-    useState<PlanId>("professional");
+    useState<PlanId>(
+      "professional",
+    );
 
-  function selectPlan(planId: PlanId): void {
-    setSelectedPlan(planId);
+  function selectPlan(
+    planId: PlanId,
+  ): void {
+    setSelectedPlan(
+      planId,
+    );
   }
 
   function continueToCheckout(): void {
@@ -108,24 +117,50 @@ export default function SelectPlanPage() {
       return;
     }
 
-    const params = new URLSearchParams();
+    const params =
+      new URLSearchParams();
 
     if (verificationId) {
-      params.set("id", verificationId);
+      params.set(
+        "id",
+        verificationId,
+      );
     }
 
-    params.set("plan", selectedPlan);
+    params.set(
+      "plan",
+      selectedPlan,
+    );
 
     router.push(
       `/verify/checkout?${params.toString()}`,
     );
   }
 
+  function goBackToReview(): void {
+    if (verificationId) {
+      router.push(
+        `/verify/review?id=${encodeURIComponent(
+          verificationId,
+        )}`,
+      );
+
+      return;
+    }
+
+    router.push(
+      "/verify/review",
+    );
+  }
+
   function comparePlans(): void {
     document
-      .getElementById("verification-plans")
+      .getElementById(
+        "verification-plans",
+      )
       ?.scrollIntoView({
-        behavior: "smooth",
+        behavior:
+          "smooth",
         block: "start",
       });
   }
@@ -141,8 +176,16 @@ export default function SelectPlanPage() {
       activePath="/verify"
       headerPath="/verify/select-plan"
     >
-      <main className={styles.page}>
-        <div className={styles.content}>
+      <main
+        className={
+          styles.page
+        }
+      >
+        <div
+          className={
+            styles.content
+          }
+        >
           {/* ==================================================
               SHARED VERIFICATION WORKFLOW
               STEP 5 — SELECT PLAN
@@ -167,21 +210,33 @@ export default function SelectPlanPage() {
               INTRO
           ================================================== */}
 
-          <section className={styles.intro}>
-            <div className={styles.planBadge}>
+          <section
+            className={
+              styles.intro
+            }
+          >
+            <div
+              className={
+                styles.planBadge
+              }
+            >
               CHOOSE YOUR PLAN
             </div>
 
             <h1>
               Select a{" "}
-              <span>Verification Plan</span>
+              <span>
+                Verification Plan
+              </span>
             </h1>
 
             <p>
-              Choose the level of property
-              verification that matches your
-              transaction. Each plan clearly
-              defines the checks and verification
+              Choose the level of
+              property verification
+              that matches your
+              transaction. Each plan
+              clearly defines the
+              checks and verification
               included.
             </p>
           </section>
@@ -190,8 +245,16 @@ export default function SelectPlanPage() {
               SECURE PAYMENT
           ================================================== */}
 
-          <section className={styles.secureCard}>
-            <div className={styles.secureIcon}>
+          <section
+            className={
+              styles.secureCard
+            }
+          >
+            <div
+              className={
+                styles.secureIcon
+              }
+            >
               🛡
             </div>
 
@@ -201,8 +264,9 @@ export default function SelectPlanPage() {
               </strong>
 
               <span>
-                Your payment information is
-                encrypted and processed securely.
+                Your payment information
+                is encrypted and processed
+                securely.
               </span>
             </div>
           </section>
@@ -213,96 +277,131 @@ export default function SelectPlanPage() {
 
           <section
             id="verification-plans"
-            className={styles.plans}
+            className={
+              styles.plans
+            }
           >
-            {PLANS.map((plan) => {
-              const isSelected =
-                selectedPlan === plan.id;
+            {PLANS.map(
+              (plan) => {
+                const isSelected =
+                  selectedPlan ===
+                  plan.id;
 
-              return (
-                <article
-                  key={plan.id}
-                  className={`${styles.planCard} ${
-                    isSelected
-                      ? styles.planCardSelected
-                      : ""
-                  }`}
-                >
-                  {plan.popular && (
+                return (
+                  <article
+                    key={
+                      plan.id
+                    }
+                    className={`${styles.planCard} ${
+                      isSelected
+                        ? styles.planCardSelected
+                        : ""
+                    }`}
+                  >
+                    {plan.popular && (
+                      <div
+                        className={
+                          styles.popularBadge
+                        }
+                      >
+                        MOST POPULAR
+                      </div>
+                    )}
+
                     <div
                       className={
-                        styles.popularBadge
+                        styles.planIcon
                       }
                     >
-                      MOST POPULAR
+                      {
+                        plan.icon
+                      }
                     </div>
-                  )}
 
-                  <div
-                    className={styles.planIcon}
-                  >
-                    {plan.icon}
-                  </div>
+                    <h2>
+                      {
+                        plan.name
+                      }
+                    </h2>
 
-                  <h2>{plan.name}</h2>
+                    <p
+                      className={
+                        styles.planDescription
+                      }
+                    >
+                      {
+                        plan.description
+                      }
+                    </p>
 
-                  <p
-                    className={
-                      styles.planDescription
-                    }
-                  >
-                    {plan.description}
-                  </p>
+                    <div
+                      className={
+                        styles.priceRow
+                      }
+                    >
+                      <strong>
+                        {
+                          plan.price
+                        }
+                      </strong>
 
-                  <div
-                    className={styles.priceRow}
-                  >
-                    <strong>
-                      {plan.price}
-                    </strong>
+                      <span>
+                        One-time
+                      </span>
+                    </div>
 
-                    <span>One-time</span>
-                  </div>
+                    <div
+                      className={
+                        styles.featureList
+                      }
+                    >
+                      {plan.features.map(
+                        (
+                          feature,
+                        ) => (
+                          <div
+                            key={
+                              feature
+                            }
+                            className={
+                              styles.feature
+                            }
+                          >
+                            <span>
+                              ✓
+                            </span>
 
-                  <div
-                    className={
-                      styles.featureList
-                    }
-                  >
-                    {plan.features.map(
-                      (feature) => (
-                        <div
-                          key={feature}
-                          className={
-                            styles.feature
-                          }
-                        >
-                          <span>✓</span>
+                            <p>
+                              {
+                                feature
+                              }
+                            </p>
+                          </div>
+                        ),
+                      )}
+                    </div>
 
-                          <p>{feature}</p>
-                        </div>
-                      ),
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    className={
-                      isSelected
-                        ? styles.selectButtonActive
-                        : styles.selectButton
-                    }
-                    onClick={() =>
-                      selectPlan(plan.id)
-                    }
-                  >
-                    {isSelected
-                      ? `Selected ${plan.name}`
-                      : `Select ${plan.name}`}
-                  </button>
-                </article>
-              );
-            })}
+                    <button
+                      type="button"
+                      className={
+                        isSelected
+                          ? styles.selectButtonActive
+                          : styles.selectButton
+                      }
+                      onClick={() =>
+                        selectPlan(
+                          plan.id,
+                        )
+                      }
+                    >
+                      {isSelected
+                        ? `Selected ${plan.name}`
+                        : `Select ${plan.name}`}
+                    </button>
+                  </article>
+                );
+              },
+            )}
           </section>
 
           {/* ==================================================
@@ -310,7 +409,9 @@ export default function SelectPlanPage() {
           ================================================== */}
 
           <section
-            className={styles.recommendation}
+            className={
+              styles.recommendation
+            }
           >
             <div
               className={
@@ -326,16 +427,22 @@ export default function SelectPlanPage() {
               }
             >
               <strong>
-                Not sure which plan to choose?
+                Not sure which plan
+                to choose?
               </strong>
 
               <span>
-                Essential = document-level AI
-                verification. Professional =
-                documents, title, ownership,
-                survey and government checks.
-                Premium adds planning, building,
-                litigation and physical site
+                Essential =
+                document-level AI
+                verification.
+                Professional =
+                documents, title,
+                ownership, survey
+                and government
+                checks. Premium adds
+                planning, building,
+                litigation and
+                physical site
                 verification.
               </span>
             </div>
@@ -345,7 +452,9 @@ export default function SelectPlanPage() {
               className={
                 styles.compareButton
               }
-              onClick={comparePlans}
+              onClick={
+                comparePlans
+              }
             >
               Compare Plans
             </button>
@@ -356,7 +465,9 @@ export default function SelectPlanPage() {
           ================================================== */}
 
           <section
-            className={styles.legalSupport}
+            className={
+              styles.legalSupport
+            }
           >
             <div
               className={
@@ -377,17 +488,20 @@ export default function SelectPlanPage() {
               </strong>
 
               <span>
-                PropertySure can connect you
-                with a qualified property lawyer
-                for legal document review, legal
-                advice, transaction support or
-                other legal services.
+                PropertySure can connect
+                you with a qualified
+                property lawyer for legal
+                document review, legal
+                advice, transaction support
+                or other legal services.
               </span>
 
               <small>
-                Legal services are separate from
-                the verification packages and are
-                available by custom quotation.
+                Legal services are
+                separate from the
+                verification packages and
+                are available by custom
+                quotation.
               </small>
             </div>
 
@@ -396,10 +510,15 @@ export default function SelectPlanPage() {
               className={
                 styles.legalSupportButton
               }
-              onClick={requestLegalSupport}
+              onClick={
+                requestLegalSupport
+              }
             >
               Request Legal Support
-              <span>→</span>
+
+              <span>
+                →
+              </span>
             </button>
           </section>
 
@@ -408,9 +527,15 @@ export default function SelectPlanPage() {
           ================================================== */}
 
           <section
-            className={styles.trustFeatures}
+            className={
+              styles.trustFeatures
+            }
           >
-            <div className={styles.trustItem}>
+            <div
+              className={
+                styles.trustItem
+              }
+            >
               <div
                 className={
                   styles.trustIcon
@@ -431,7 +556,11 @@ export default function SelectPlanPage() {
               </div>
             </div>
 
-            <div className={styles.trustItem}>
+            <div
+              className={
+                styles.trustItem
+              }
+            >
               <div
                 className={
                   styles.trustIconYellow
@@ -452,7 +581,11 @@ export default function SelectPlanPage() {
               </div>
             </div>
 
-            <div className={styles.trustItem}>
+            <div
+              className={
+                styles.trustItem
+              }
+            >
               <div
                 className={
                   styles.trustIconBlue
@@ -467,13 +600,17 @@ export default function SelectPlanPage() {
                 </strong>
 
                 <span>
-                  Professional verification
-                  reports
+                  Professional
+                  verification reports
                 </span>
               </div>
             </div>
 
-            <div className={styles.trustItem}>
+            <div
+              className={
+                styles.trustItem
+              }
+            >
               <div
                 className={
                   styles.trustIconPurple
@@ -488,28 +625,56 @@ export default function SelectPlanPage() {
                 </strong>
 
                 <span>
-                  Our team is here to help
-                  you succeed
+                  Our team is here to
+                  help you succeed
                 </span>
               </div>
             </div>
           </section>
 
           {/* ==================================================
-              CHECKOUT
+              BOTTOM ACTIONS
+              SAME STRUCTURE AS REVIEW PACKAGE
           ================================================== */}
 
           <section
-            className={styles.bottomActions}
+            className={
+              styles.actions
+            }
           >
             <button
               type="button"
-              className={styles.checkoutButton}
-              onClick={continueToCheckout}
-              disabled={!selectedPlan}
+              className={
+                styles.backButton
+              }
+              onClick={
+                goBackToReview
+              }
             >
-              Continue to Checkout
-              <span>→</span>
+              <span>
+                ←
+              </span>
+
+              Back
+            </button>
+
+            <button
+              type="button"
+              className={
+                styles.continueButton
+              }
+              onClick={
+                continueToCheckout
+              }
+              disabled={
+                !selectedPlan
+              }
+            >
+              Continue to Secure Checkout
+
+              <b>
+                →
+              </b>
             </button>
           </section>
         </div>

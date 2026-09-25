@@ -1009,37 +1009,7 @@
      ======================================================== */
 
   .introSection {
-    margin-top: 18px;
-  }
-
-  .introBadge {
-    padding:
-      6px 10px;
-
-    font-size: 7px;
-  }
-
-  .introBadge span {
-    width: 14px;
-    height: 14px;
-
-    font-size: 8px;
-  }
-
-  .introSection h1 {
-    margin-top: 13px;
-
-    font-size: 27px;
-
-    letter-spacing: -0.7px;
-  }
-
-  .introSection p {
-    margin-top: 10px;
-
-    font-size: 9px;
-
-    line-height: 1.55;
+    display: none;
   }
 
   /* ========================================================
@@ -1047,9 +1017,9 @@
      ======================================================== */
 
   .infoNotice {
-    gap: 9px;
+    margin-top: 10px;
 
-    margin-top: 14px;
+    gap: 9px;
 
     padding:
       11px 12px;
@@ -1282,10 +1252,6 @@
 
   .workflowStep span {
     font-size: 4.5px;
-  }
-
-  .introSection h1 {
-    font-size: 24px;
   }
 
   .categoryTitleRow h2 {

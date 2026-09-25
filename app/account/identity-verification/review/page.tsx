@@ -7,16 +7,11 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
+import LoadingScreen from "../../../AppShell/LoadingScreen";
 
 /* ============================================================
    TYPES
 ============================================================ */
-
-type DocumentType =
-  | "nin"
-  | "national-id"
-  | "drivers-license"
-  | "passport";
 
 type IconName =
   | "dashboard"
@@ -35,9 +30,13 @@ type IconName =
   | "document"
   | "id"
   | "lock"
-  | "check"
-  | "edit"
-  | "eye";
+  | "check";
+
+type DocumentType =
+  | "nin"
+  | "national-id"
+  | "drivers-license"
+  | "passport";
 
 type ExtractedKycData = {
   fullName?: string;
@@ -52,6 +51,13 @@ type ExtractedKycData = {
   fileName?: string;
 };
 
+type StepItemProps = {
+  number: number;
+  label: ReactNode;
+  active?: boolean;
+  completed?: boolean;
+};
+
 /* ============================================================
    DOCUMENT NAMES
 ============================================================ */
@@ -62,33 +68,6 @@ const DOCUMENT_NAMES: Record<DocumentType, string> = {
   "drivers-license": "Driver’s Licence",
   passport: "International Passport",
 };
-
-/* ============================================================
-   NAVIGATION
-============================================================ */
-
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: "dashboard" as IconName,
-  },
-  {
-    label: "Verify Property",
-    href: "/verify",
-    icon: "verify" as IconName,
-  },
-  {
-    label: "My Properties",
-    href: "/my-properties",
-    icon: "properties" as IconName,
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-    icon: "reports" as IconName,
-  },
-];
 
 /* ============================================================
    ICON
@@ -119,8 +98,6 @@ function Icon({
     id: "▣",
     lock: "♧",
     check: "✓",
-    edit: "✎",
-    eye: "◉",
   };
 
   return (
@@ -137,7 +114,34 @@ function Icon({
 }
 
 /* ============================================================
-   SAFE DISPLAY VALUE
+   NAVIGATION
+============================================================ */
+
+const navItems = [
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: "dashboard" as IconName,
+  },
+  {
+    label: "Verify Property",
+    href: "/verify",
+    icon: "verify" as IconName,
+  },
+  {
+    label: "My Properties",
+    href: "/my-properties",
+    icon: "properties" as IconName,
+  },
+  {
+    label: "Reports",
+    href: "/reports",
+    icon: "reports" as IconName,
+  },
+];
+
+/* ============================================================
+   HELPERS
 ============================================================ */
 
 function displayValue(
@@ -149,10 +153,6 @@ function displayValue(
 
   return value.trim();
 }
-
-/* ============================================================
-   NORMALIZE DOCUMENT TYPE
-============================================================ */
 
 function normalizeDocumentType(
   value: string | undefined
@@ -184,7 +184,8 @@ function normalizeDocumentType(
   }
 
   if (
-    normalized === "drivers-license" ||
+    normalized ===
+      "drivers-license" ||
     normalized.includes("driver") ||
     normalized.includes(
       "driving licence"
@@ -205,10 +206,6 @@ function normalizeDocumentType(
 
   return "nin";
 }
-
-/* ============================================================
-   DOCUMENT BADGE
-============================================================ */
 
 function getDocumentBadge(
   documentType: DocumentType
@@ -235,19 +232,36 @@ function getDocumentBadge(
    MAIN PAGE
 ============================================================ */
 
-export default function ReviewSubmitPage() {
+export default function ReviewAndSubmitPage() {
   const router = useRouter();
 
-  /* ----------------------------------------------------------
-     NAVIGATION
-  ---------------------------------------------------------- */
+  /* ==========================================================
+     SHARED PAGE LOADING
+  ========================================================== */
+
+  const [loading, setLoading] =
+    useState(true);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setLoading(false);
+    }, 800);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, []);
+
+  /* ==========================================================
+     MENU
+  ========================================================== */
 
   const [menuOpen, setMenuOpen] =
     useState(false);
 
-  /* ----------------------------------------------------------
+  /* ==========================================================
      KYC DATA
-  ---------------------------------------------------------- */
+  ========================================================== */
 
   const [documentType, setDocumentType] =
     useState<DocumentType>("nin");
@@ -261,12 +275,8 @@ export default function ReviewSubmitPage() {
   const [kycData, setKycData] =
     useState<ExtractedKycData>({});
 
-  const [selfie, setSelfie] =
+  const [selfieData, setSelfieData] =
     useState<string | null>(null);
-
-  /* ----------------------------------------------------------
-     CONFIRMATION
-  ---------------------------------------------------------- */
 
   const [confirmed, setConfirmed] =
     useState(false);
@@ -274,14 +284,11 @@ export default function ReviewSubmitPage() {
   const [submitted, setSubmitted] =
     useState(false);
 
+  const [loadingData, setLoadingData] =
+    useState(true);
+
   /* ==========================================================
-     LOAD EXISTING VERIFICATION DATA
-
-     IMPORTANT:
-     This page does not perform document extraction.
-
-     It reads the exact information already collected by
-     Steps 1–4.
+     LOAD KYC DATA
   ========================================================== */
 
   useEffect(() => {
@@ -301,13 +308,15 @@ export default function ReviewSubmitPage() {
           "propertysure_kyc_document_type"
         );
 
-      if (storedDocument) {
-        setDocumentType(
-          normalizeDocumentType(
-            storedDocument
-          )
+      const normalizedDocument =
+        normalizeDocumentType(
+          storedDocument ||
+            undefined
         );
-      }
+
+      setDocumentType(
+        normalizedDocument
+      );
 
       /* ------------------------------------------------------
          FILE NAME
@@ -378,7 +387,7 @@ export default function ReviewSubmitPage() {
           }
         } catch {
           console.warn(
-            "PropertySure AI: Unable to parse stored KYC data."
+            "PropertySure AI: Unable to parse extracted KYC data."
           );
         }
       }
@@ -393,29 +402,12 @@ export default function ReviewSubmitPage() {
         );
 
       if (storedSelfie) {
-        setSelfie(
+        setSelfieData(
           storedSelfie
         );
       }
-
-      /* ------------------------------------------------------
-         PREVIOUS SUBMISSION STATE
-      ------------------------------------------------------ */
-
-      const storedStatus =
-        sessionStorage.getItem(
-          "propertysure_kyc_verification_status"
-        );
-
-      if (
-        storedStatus === "Pending"
-      ) {
-        setSubmitted(true);
-      }
-    } catch {
-      /*
-       * Ignore sessionStorage errors.
-       */
+    } finally {
+      setLoadingData(false);
     }
   }, []);
 
@@ -431,15 +423,27 @@ export default function ReviewSubmitPage() {
   };
 
   /* ==========================================================
-     DYNAMIC VALUES
+     BACK TO SELFIE VERIFICATION
+  ========================================================== */
+
+  const navigateBackToSelfie =
+    () => {
+      setMenuOpen(false);
+
+      router.push(
+        "/account/identity-verification/selfie"
+      );
+    };
+
+  /* ==========================================================
+     DOCUMENT INFORMATION
   ========================================================== */
 
   const documentName =
-    kycData.documentType
-      ? kycData.documentType
-      : DOCUMENT_NAMES[
-          documentType
-        ];
+    kycData.documentType ||
+    DOCUMENT_NAMES[
+      documentType
+    ];
 
   const documentBadge =
     getDocumentBadge(
@@ -477,71 +481,22 @@ export default function ReviewSubmitPage() {
     );
 
   /* ==========================================================
-     VIEW DOCUMENT
-  ========================================================== */
-
-  const handleViewDocument = () => {
-    if (!filePreview) {
-      return;
-    }
-
-    window.open(
-      filePreview,
-      "_blank",
-      "noopener,noreferrer"
-    );
-  };
-
-  /* ==========================================================
-     EDIT SECTIONS
-  ========================================================== */
-
-  const handleEditDocument =
-    () => {
-      router.push(
-        "/account/identity-verification"
-      );
-    };
-
-  const handleEditUpload =
-    () => {
-      router.push(
-        "/account/identity-verification/upload"
-      );
-    };
-
-  const handleEditInformation =
-    () => {
-      router.push(
-        "/account/identity-verification/confirmation"
-      );
-    };
-
-  const handleEditSelfie =
-    () => {
-      router.push(
-        "/account/identity-verification/selfie"
-      );
-    };
-
-  /* ==========================================================
      SUBMIT
   ========================================================== */
 
   const handleSubmit = () => {
     if (
       !confirmed ||
-      !selfie
+      submitted
     ) {
       return;
     }
 
+    /*
+     * Mark the KYC review as submitted locally.
+     * The backend submission can be connected here later.
+     */
     try {
-      sessionStorage.setItem(
-        "propertysure_kyc_verification_status",
-        "Pending"
-      );
-
       sessionStorage.setItem(
         "propertysure_kyc_submitted",
         "true"
@@ -553,9 +508,20 @@ export default function ReviewSubmitPage() {
     setSubmitted(true);
   };
 
-  return (
-    <main className={styles.page}>
+  /* ==========================================================
+     SHARED LOADING SCREEN
+  ========================================================== */
 
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <main
+      className={
+        styles.page
+      }
+    >
       {/* ======================================================
           MOBILE HEADER
       ====================================================== */}
@@ -607,7 +573,9 @@ export default function ReviewSubmitPage() {
             }
           >
             PropertySure
-            <strong> AI</strong>
+            <strong>
+              {" "}AI
+            </strong>
           </span>
         </button>
 
@@ -668,7 +636,9 @@ export default function ReviewSubmitPage() {
 
               <div>
                 PropertySure
-                <strong> AI</strong>
+                <strong>
+                  {" "}AI
+                </strong>
               </div>
             </button>
 
@@ -817,7 +787,6 @@ export default function ReviewSubmitPage() {
             styles.content
           }
         >
-
           {/* ==================================================
               INTRO
           ================================================== */}
@@ -836,15 +805,17 @@ export default function ReviewSubmitPage() {
               identity and secure your account.
             </p>
 
+            {/* =================================================
+                BACK TO SELFIE VERIFICATION
+            ================================================= */}
+
             <button
               type="button"
               className={
                 styles.backLink
               }
-              onClick={() =>
-                router.push(
-                  "/account"
-                )
+              onClick={
+                navigateBackToSelfie
               }
             >
               <Icon
@@ -853,11 +824,11 @@ export default function ReviewSubmitPage() {
               />
 
               <span>
-                Back to Account
+                Back to Selfie Verification
               </span>
             </button>
 
-            {/* STATUS IS DIRECTLY BELOW BACK TO ACCOUNT */}
+            {/* STATUS */}
 
             <div
               className={
@@ -873,9 +844,7 @@ export default function ReviewSubmitPage() {
               </span>
 
               <span>
-                {submitted
-                  ? "Pending Verification"
-                  : "Not Verified"}
+                Not Verified
               </span>
             </div>
           </div>
@@ -889,9 +858,9 @@ export default function ReviewSubmitPage() {
               styles.steps
             }
           >
-            <Step
-              completed
+            <StepItem
               number={1}
+              completed
               label={
                 <>
                   Identity
@@ -905,9 +874,9 @@ export default function ReviewSubmitPage() {
               active
             />
 
-            <Step
-              completed
+            <StepItem
               number={2}
+              completed
               label={
                 <>
                   Document
@@ -921,9 +890,9 @@ export default function ReviewSubmitPage() {
               active
             />
 
-            <Step
-              completed
+            <StepItem
               number={3}
+              completed
               label={
                 <>
                   Information
@@ -937,9 +906,9 @@ export default function ReviewSubmitPage() {
               active
             />
 
-            <Step
-              completed
+            <StepItem
               number={4}
+              completed
               label={
                 <>
                   Selfie
@@ -949,13 +918,11 @@ export default function ReviewSubmitPage() {
               }
             />
 
-            <StepLine
-              active
-            />
+            <StepLine />
 
-            <Step
-              active
+            <StepItem
               number={5}
+              active
               label={
                 <>
                   Review &
@@ -975,7 +942,6 @@ export default function ReviewSubmitPage() {
               styles.verificationCard
             }
           >
-
             {/* CARD HEADER */}
 
             <div
@@ -988,7 +954,7 @@ export default function ReviewSubmitPage() {
                   styles.cardHeaderIcon
                 }
               >
-                <ReviewIcon />
+                <ReviewHeaderIcon />
               </div>
 
               <div
@@ -1001,8 +967,8 @@ export default function ReviewSubmitPage() {
                 </h2>
 
                 <p>
-                  Please review all the information below
-                  before submitting your verification.
+                  Review your identity verification information
+                  before submitting.
                 </p>
               </div>
             </div>
@@ -1017,13 +983,21 @@ export default function ReviewSubmitPage() {
                 PERSONAL INFORMATION
             ================================================= */}
 
-            <ReviewSection
-              number="1."
-              title="Personal Information"
-              onEdit={
-                handleEditInformation
+            <section
+              className={
+                styles.reviewSection
               }
             >
+              <div
+                className={
+                  styles.reviewSectionHeader
+                }
+              >
+                <h3>
+                  Personal Information
+                </h3>
+              </div>
+
               <div
                 className={
                   styles.personalBox
@@ -1033,7 +1007,9 @@ export default function ReviewSubmitPage() {
                   icon="user"
                   label="Full Name"
                   value={
-                    fullName
+                    loadingData
+                      ? "Loading..."
+                      : fullName
                   }
                 />
 
@@ -1041,7 +1017,9 @@ export default function ReviewSubmitPage() {
                   icon="calendar"
                   label="Date of Birth"
                   value={
-                    dateOfBirth
+                    loadingData
+                      ? "Loading..."
+                      : dateOfBirth
                   }
                 />
 
@@ -1049,7 +1027,9 @@ export default function ReviewSubmitPage() {
                   icon="gender"
                   label="Gender"
                   value={
-                    gender
+                    loadingData
+                      ? "Loading..."
+                      : gender
                   }
                 />
 
@@ -1057,35 +1037,47 @@ export default function ReviewSubmitPage() {
                   icon="nationality"
                   label="Nationality"
                   value={
-                    nationality
+                    loadingData
+                      ? "Loading..."
+                      : nationality
                   }
                 />
               </div>
-            </ReviewSection>
+            </section>
 
             {/* =================================================
                 DOCUMENT INFORMATION
             ================================================= */}
 
-            <ReviewSection
-              number="2."
-              title="Document Information"
-              onEdit={
-                handleEditDocument
+            <section
+              className={
+                styles.reviewSection
               }
             >
+              <div
+                className={
+                  styles.reviewSectionHeader
+                }
+              >
+                <h3>
+                  Document Information
+                </h3>
+              </div>
+
               <div
                 className={
                   styles.documentBox
                 }
               >
                 <ReviewRow
-                  badge={
+                  documentBadge={
                     documentBadge
                   }
                   label="Document Type"
                   value={
-                    documentName
+                    loadingData
+                      ? "Loading..."
+                      : documentName
                   }
                 />
 
@@ -1093,7 +1085,9 @@ export default function ReviewSubmitPage() {
                   icon="id"
                   label="Document Number"
                   value={
-                    documentNumber
+                    loadingData
+                      ? "Loading..."
+                      : documentNumber
                   }
                 />
 
@@ -1101,23 +1095,33 @@ export default function ReviewSubmitPage() {
                   icon="calendar"
                   label="Date of Issue"
                   value={
-                    dateOfIssue
+                    loadingData
+                      ? "Loading..."
+                      : dateOfIssue
                   }
                 />
               </div>
-            </ReviewSection>
+            </section>
 
             {/* =================================================
                 UPLOADED DOCUMENT
             ================================================= */}
 
-            <ReviewSection
-              number="3."
-              title="Uploaded Document"
-              onEdit={
-                handleEditUpload
+            <section
+              className={
+                styles.reviewSection
               }
             >
+              <div
+                className={
+                  styles.reviewSectionHeader
+                }
+              >
+                <h3>
+                  Uploaded Document
+                </h3>
+              </div>
+
               <div
                 className={
                   styles.uploadedBox
@@ -1130,7 +1134,7 @@ export default function ReviewSubmitPage() {
                 >
                   <Icon
                     name="document"
-                    size={19}
+                    size={18}
                   />
                 </div>
 
@@ -1144,45 +1148,33 @@ export default function ReviewSubmitPage() {
                   </span>
 
                   <strong>
-                    {fileName}
+                    {loadingData
+                      ? "Loading..."
+                      : fileName}
                   </strong>
                 </div>
-
-                <button
-                  type="button"
-                  className={
-                    styles.viewDocumentButton
-                  }
-                  onClick={
-                    handleViewDocument
-                  }
-                  disabled={
-                    !filePreview
-                  }
-                >
-                  <Icon
-                    name="eye"
-                    size={17}
-                  />
-
-                  <span>
-                    View Document
-                  </span>
-                </button>
               </div>
-            </ReviewSection>
+            </section>
 
             {/* =================================================
                 SELFIE
             ================================================= */}
 
-            <ReviewSection
-              number="4."
-              title="Selfie Verification"
-              onEdit={
-                handleEditSelfie
+            <section
+              className={
+                styles.reviewSection
               }
             >
+              <div
+                className={
+                  styles.reviewSectionHeader
+                }
+              >
+                <h3>
+                  Selfie Verification
+                </h3>
+              </div>
+
               <div
                 className={
                   styles.selfieBox
@@ -1193,9 +1185,11 @@ export default function ReviewSubmitPage() {
                     styles.selfieThumbnail
                   }
                 >
-                  {selfie ? (
+                  {selfieData ? (
                     <img
-                      src={selfie}
+                      src={
+                        selfieData
+                      }
                       alt="Captured selfie"
                     />
                   ) : (
@@ -1206,7 +1200,7 @@ export default function ReviewSubmitPage() {
                     >
                       <Icon
                         name="user"
-                        size={26}
+                        size={24}
                       />
                     </div>
                   )}
@@ -1218,107 +1212,139 @@ export default function ReviewSubmitPage() {
                   }
                 >
                   <strong>
-                    Selfie Captured
+                    Identity Selfie
                   </strong>
 
                   <span>
-                    {selfie
-                      ? "Identity selfie successfully captured"
-                      : "Selfie not available"}
+                    {selfieData
+                      ? "Selfie captured successfully."
+                      : "No selfie has been captured yet."}
                   </span>
                 </div>
 
-                <div
-                  className={
-                    selfie
-                      ? styles.capturedBadge
-                      : styles.missingBadge
-                  }
-                >
-                  <span>
-                    {selfie
-                      ? "✓"
-                      : "!"}
-                  </span>
+                {selfieData ? (
+                  <div
+                    className={
+                      styles.capturedBadge
+                    }
+                  >
+                    <Icon
+                      name="check"
+                      size={12}
+                    />
 
-                  <span>
-                    {selfie
-                      ? "Captured"
-                      : "Missing"}
-                  </span>
-                </div>
+                    <span>
+                      Captured
+                    </span>
+                  </div>
+                ) : (
+                  <div
+                    className={
+                      styles.missingBadge
+                    }
+                  >
+                    Required
+                  </div>
+                )}
               </div>
-            </ReviewSection>
+            </section>
 
             {/* =================================================
                 CONFIRMATION
             ================================================= */}
 
-            {!submitted && (
-              <label
+            <label
+              className={
+                styles.confirmationBox
+              }
+            >
+              <input
+                type="checkbox"
+                checked={
+                  confirmed
+                }
+                onChange={(
+                  event
+                ) =>
+                  setConfirmed(
+                    event.target.checked
+                  )
+                }
+              />
+
+              <span
                 className={
-                  styles.confirmationBox
+                  styles.customCheckbox
                 }
               >
-                <input
-                  type="checkbox"
-                  checked={
-                    confirmed
+                {confirmed &&
+                  "✓"}
+              </span>
+
+              <span
+                className={
+                  styles.confirmationContent
+                }
+              >
+                <span
+                  className={
+                    styles.confirmationLock
                   }
-                  onChange={(
-                    event
-                  ) =>
-                    setConfirmed(
-                      event.target
-                        .checked
-                    )
-                  }
-                />
+                >
+                  <Icon
+                    name="lock"
+                    size={15}
+                  />
+                </span>
+
+                <span>
+                  I confirm that the information above is
+                  correct and that the identity document and
+                  selfie belong to me.
+                </span>
+              </span>
+            </label>
+
+            {/* =================================================
+                SUBMIT
+            ================================================= */}
+
+            {!submitted && (
+              <button
+                type="button"
+                className={`${styles.submitButton} ${
+                  !confirmed ||
+                  !selfieData
+                    ? styles.submitDisabled
+                    : ""
+                }`}
+                onClick={
+                  handleSubmit
+                }
+                disabled={
+                  !confirmed ||
+                  !selfieData
+                }
+              >
+                <span>
+                  Submit Verification
+                </span>
 
                 <span
                   className={
-                    styles.customCheckbox
+                    styles.submitDiamond
                   }
                 >
-                  {confirmed &&
-                    "✓"}
+                  ◆
                 </span>
-
-                <div
-                  className={
-                    styles.confirmationContent
-                  }
-                >
-                  <div
-                    className={
-                      styles.confirmationLock
-                    }
-                  >
-                    <LockIcon />
-                  </div>
-
-                  <span>
-                    By submitting, you confirm that all
-                    the information provided is correct
-                    and belongs to you.
-                  </span>
-                </div>
-
-                <span
-                  className={
-                    styles.confirmationShort
-                  }
-                >
-                  I confirm
-                </span>
-              </label>
+              </button>
             )}
 
             {/* =================================================
-                SUBMITTED STATE
+                SUBMITTED
             ================================================= */}
 
-            {submitted ? (
+            {submitted && (
               <div
                 className={
                   styles.submittedBox
@@ -1339,43 +1365,10 @@ export default function ReviewSubmitPage() {
 
                   <p>
                     Your identity verification has been
-                    submitted and is now pending review.
+                    submitted successfully for review.
                   </p>
                 </div>
               </div>
-            ) : (
-              /* =================================================
-                 SUBMIT BUTTON
-              ================================================= */
-
-              <button
-                type="button"
-                className={`${styles.submitButton} ${
-                  !confirmed ||
-                  !selfie
-                    ? styles.submitDisabled
-                    : ""
-                }`}
-                onClick={
-                  handleSubmit
-                }
-                disabled={
-                  !confirmed ||
-                  !selfie
-                }
-              >
-                <span
-                  className={
-                    styles.submitDiamond
-                  }
-                >
-                  ◇
-                </span>
-
-                <span>
-                  Submit for Verification
-                </span>
-              </button>
             )}
 
             {/* =================================================
@@ -1387,15 +1380,16 @@ export default function ReviewSubmitPage() {
                 styles.privacyBox
               }
             >
-              <LockIcon />
+              <Icon
+                name="lock"
+                size={17}
+              />
 
               <p>
-                Your information is encrypted and securely
-                stored. We never share your data with third
-                parties.
+                Your identity information and verification
+                data are securely processed and protected.
               </p>
             </div>
-
           </section>
         </div>
       </section>
@@ -1507,20 +1501,15 @@ export default function ReviewSubmitPage() {
 }
 
 /* ============================================================
-   STEP
+   STEP ITEM
 ============================================================ */
 
-function Step({
+function StepItem({
   number,
   label,
   active = false,
   completed = false,
-}: {
-  number: number;
-  label: ReactNode;
-  active?: boolean;
-  completed?: boolean;
-}) {
+}: StepItemProps) {
   return (
     <div
       className={`${styles.step} ${
@@ -1541,9 +1530,7 @@ function Step({
         }`}
       >
         {completed ? (
-          <span>
-            ✓
-          </span>
+          "✓"
         ) : (
           number
         )}
@@ -1581,75 +1568,17 @@ function StepLine({
 }
 
 /* ============================================================
-   REVIEW SECTION
-============================================================ */
-
-function ReviewSection({
-  number,
-  title,
-  children,
-  onEdit,
-}: {
-  number: string;
-  title: string;
-  children: ReactNode;
-  onEdit: () => void;
-}) {
-  return (
-    <section
-      className={
-        styles.reviewSection
-      }
-    >
-      <div
-        className={
-          styles.reviewSectionHeader
-        }
-      >
-        <h3>
-          <span>
-            {number}
-          </span>{" "}
-          {title}
-        </h3>
-
-        <button
-          type="button"
-          className={
-            styles.editButton
-          }
-          onClick={
-            onEdit
-          }
-        >
-          <span>
-            Edit
-          </span>
-
-          <Icon
-            name="edit"
-            size={16}
-          />
-        </button>
-      </div>
-
-      {children}
-    </section>
-  );
-}
-
-/* ============================================================
    REVIEW ROW
 ============================================================ */
 
 function ReviewRow({
   icon,
-  badge,
+  documentBadge,
   label,
   value,
 }: {
   icon?: IconName;
-  badge?: string;
+  documentBadge?: string;
   label: string;
   value: string;
 }) {
@@ -1659,13 +1588,13 @@ function ReviewRow({
         styles.reviewRow
       }
     >
-      {badge ? (
+      {documentBadge ? (
         <div
           className={
             styles.documentBadge
           }
         >
-          {badge}
+          {documentBadge}
         </div>
       ) : (
         <div
@@ -1676,7 +1605,7 @@ function ReviewRow({
           {icon && (
             <Icon
               name={icon}
-              size={16}
+              size={15}
             />
           )}
         </div>
@@ -1705,11 +1634,11 @@ function ReviewRow({
    REVIEW HEADER ICON
 ============================================================ */
 
-function ReviewIcon() {
+function ReviewHeaderIcon() {
   return (
     <svg
-      width="35"
-      height="35"
+      width="36"
+      height="36"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -1718,51 +1647,27 @@ function ReviewIcon() {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <rect
-        x="5"
-        y="3"
-        width="14"
-        height="18"
-        rx="2"
+      <circle
+        cx="9"
+        cy="7"
+        r="3"
       />
 
-      <path d="M9 3.5h6" />
-
-      <path d="M9 9h6" />
-
-      <path d="M9 13h3" />
-
-      <path d="M9 17l1.5 1.5L14 15" />
-    </svg>
-  );
-}
-
-/* ============================================================
-   LOCK ICON
-============================================================ */
-
-function LockIcon() {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect
-        x="5"
-        y="10"
-        width="14"
-        height="10"
-        rx="2"
+      <path
+        d="M3 20v-1a6 6 0 016-6h1"
       />
 
-      <path d="M8 10V7a4 4 0 018 0v3" />
+      <path
+        d="M14 5h6v6"
+      />
+
+      <path
+        d="m14 11 6-6"
+      />
+
+      <path
+        d="m14 16 2 2 4-4"
+      />
     </svg>
   );
 }

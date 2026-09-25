@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import AppShell from "../../AppShell/AppShell";
+import LoadingScreen from "../../AppShell/LoadingScreen";
 
 import styles from "./document-guide.module.css";
 
@@ -251,6 +252,22 @@ export default function DocumentGuidePage() {
     setIsContinuing,
   ] = useState(false);
 
+  const [
+    loadingPage,
+    setLoadingPage,
+  ] = useState(true);
+
+  useEffect(() => {
+    const timer =
+      window.setTimeout(() => {
+        setLoadingPage(false);
+      }, 350);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, []);
+
   useEffect(() => {
     try {
       const saved =
@@ -348,6 +365,10 @@ export default function DocumentGuidePage() {
 
       setIsContinuing(false);
     }
+  }
+
+  if (loadingPage) {
+    return <LoadingScreen />;
   }
 
   return (
@@ -605,6 +626,7 @@ export default function DocumentGuidePage() {
 
           {/* ==================================================
               PAGE INTRO
+              DESKTOP ONLY — PRESERVED
           ================================================== */}
 
           <section

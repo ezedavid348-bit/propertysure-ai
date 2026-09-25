@@ -47,7 +47,6 @@ function Icon({
     language: "◎",
     privacy: "▤",
     support: "?",
-
     chevron: "⌄",
   };
 
@@ -282,36 +281,13 @@ export default function SettingsPage() {
         >
 
           {/* ==================================================
-              MOBILE PAGE INTRODUCTION
-              AppShell supplies the desktop header.
-          ================================================== */}
-
-          <div
-            className={
-              styles.mobilePageHeader
-            }
-          >
-            <div
-              className={
-                styles.mobileEyebrow
-              }
-            >
-              PROPERTYSURE AI
-            </div>
-
-            <h1>
-              Settings
-            </h1>
-
-            <p>
-              Manage your preferences,
-              security, and application
-              settings.
-            </p>
-          </div>
-
-          {/* ==================================================
               SETTINGS CARD
+              
+              On desktop, the AppShell/header area remains
+              available as before.
+
+              On mobile, the page starts directly with the
+              settings categories.
           ================================================== */}
 
           <section

@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
+import LoadingScreen from "../../../AppShell/LoadingScreen";
 
 /* ============================================================
    TYPES
@@ -109,29 +110,57 @@ export default function SelfieVerificationPage() {
   const router = useRouter();
 
   /* ----------------------------------------------------------
+     SHARED PAGE LOADING
+  ---------------------------------------------------------- */
+
+  const [loading, setLoading] =
+    useState(true);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setLoading(false);
+    }, 800);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, []);
+
+  /* ----------------------------------------------------------
      NAVIGATION
   ---------------------------------------------------------- */
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] =
+    useState(false);
 
   /* ----------------------------------------------------------
      CAMERA REFERENCES
   ---------------------------------------------------------- */
 
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const videoRef =
+    useRef<HTMLVideoElement | null>(null);
+
+  const canvasRef =
+    useRef<HTMLCanvasElement | null>(null);
+
+  const streamRef =
+    useRef<MediaStream | null>(null);
 
   /* ----------------------------------------------------------
      CAMERA STATE
   ---------------------------------------------------------- */
 
-  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraActive, setCameraActive] =
+    useState(false);
+
   const [capturedSelfie, setCapturedSelfie] =
     useState<string | null>(null);
 
-  const [cameraError, setCameraError] = useState("");
-  const [startingCamera, setStartingCamera] = useState(false);
+  const [cameraError, setCameraError] =
+    useState("");
+
+  const [startingCamera, setStartingCamera] =
+    useState(false);
 
   /* ----------------------------------------------------------
      LOAD PREVIOUSLY CAPTURED SELFIE
@@ -143,12 +172,15 @@ export default function SelfieVerificationPage() {
     }
 
     try {
-      const storedSelfie = sessionStorage.getItem(
-        "propertysure_kyc_selfie_data"
-      );
+      const storedSelfie =
+        sessionStorage.getItem(
+          "propertysure_kyc_selfie_data"
+        );
 
       if (storedSelfie) {
-        setCapturedSelfie(storedSelfie);
+        setCapturedSelfie(
+          storedSelfie
+        );
       }
     } catch {
       // Ignore sessionStorage errors.
@@ -160,17 +192,21 @@ export default function SelfieVerificationPage() {
   ---------------------------------------------------------- */
 
   const stopCamera = () => {
-    const stream = streamRef.current;
+    const stream =
+      streamRef.current;
 
     if (stream) {
-      stream.getTracks().forEach((track) => {
-        track.stop();
-      });
+      stream.getTracks().forEach(
+        (track) => {
+          track.stop();
+        }
+      );
 
       streamRef.current = null;
     }
 
-    const video = videoRef.current;
+    const video =
+      videoRef.current;
 
     if (video) {
       video.pause();
@@ -186,17 +222,21 @@ export default function SelfieVerificationPage() {
 
   useEffect(() => {
     return () => {
-      const stream = streamRef.current;
+      const stream =
+        streamRef.current;
 
       if (stream) {
-        stream.getTracks().forEach((track) => {
-          track.stop();
-        });
+        stream.getTracks().forEach(
+          (track) => {
+            track.stop();
+          }
+        );
       }
 
       streamRef.current = null;
 
-      const video = videoRef.current;
+      const video =
+        videoRef.current;
 
       if (video) {
         video.pause();
@@ -209,18 +249,20 @@ export default function SelfieVerificationPage() {
      NAVIGATION
   ---------------------------------------------------------- */
 
-  const navigateTo = (path: string) => {
+  const navigateTo = (
+    path: string
+  ) => {
     setMenuOpen(false);
     router.push(path);
   };
 
   /* ----------------------------------------------------------
      START CAMERA
-     
+
      IMPORTANT:
      The camera is only started after the user presses the
      "Take Selfie" button.
-     
+
      This is safer for iPhone/Safari and prevents the camera
      from unexpectedly taking over the page.
   ---------------------------------------------------------- */
@@ -238,23 +280,31 @@ export default function SelfieVerificationPage() {
         typeof window === "undefined" ||
         typeof navigator === "undefined"
       ) {
-        throw new Error("BROWSER_UNAVAILABLE");
+        throw new Error(
+          "BROWSER_UNAVAILABLE"
+        );
       }
 
       if (
         !navigator.mediaDevices ||
-        typeof navigator.mediaDevices.getUserMedia !== "function"
+        typeof navigator.mediaDevices
+          .getUserMedia !== "function"
       ) {
-        throw new Error("CAMERA_UNSUPPORTED");
+        throw new Error(
+          "CAMERA_UNSUPPORTED"
+        );
       }
 
       /*
        * Make absolutely sure an old stream is not still active.
        */
+
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => {
-          track.stop();
-        });
+        streamRef.current
+          .getTracks()
+          .forEach((track) => {
+            track.stop();
+          });
 
         streamRef.current = null;
       }
@@ -266,76 +316,98 @@ export default function SelfieVerificationPage() {
        * resolution because some iPhone/Safari combinations
        * behave badly when an exact resolution is requested.
        */
+
       const stream =
-        await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: {
-            facingMode: {
-              ideal: "user",
+        await navigator.mediaDevices.getUserMedia(
+          {
+            audio: false,
+            video: {
+              facingMode: {
+                ideal: "user",
+              },
+              width: {
+                ideal: 640,
+              },
+              height: {
+                ideal: 640,
+              },
             },
-            width: {
-              ideal: 640,
-            },
-            height: {
-              ideal: 640,
-            },
-          },
-        });
+          }
+        );
 
-      streamRef.current = stream;
+      streamRef.current =
+        stream;
 
-      const video = videoRef.current;
+      const video =
+        videoRef.current;
 
       if (!video) {
-        stream.getTracks().forEach((track) => {
-          track.stop();
-        });
+        stream
+          .getTracks()
+          .forEach((track) => {
+            track.stop();
+          });
 
         streamRef.current = null;
 
-        throw new Error("VIDEO_ELEMENT_UNAVAILABLE");
+        throw new Error(
+          "VIDEO_ELEMENT_UNAVAILABLE"
+        );
       }
 
       /*
        * iPhone/Safari compatibility.
        */
-      video.setAttribute("playsinline", "true");
-      video.setAttribute("webkit-playsinline", "true");
+
+      video.setAttribute(
+        "playsinline",
+        "true"
+      );
+
+      video.setAttribute(
+        "webkit-playsinline",
+        "true"
+      );
 
       video.autoplay = true;
       video.muted = true;
       video.playsInline = true;
 
-      video.srcObject = stream;
+      video.srcObject =
+        stream;
 
       /*
        * Wait until Safari knows the dimensions of the camera
        * stream before showing the camera state.
        */
-      await new Promise<void>((resolve) => {
-        if (
-          video.readyState >= 2 &&
-          video.videoWidth > 0 &&
-          video.videoHeight > 0
-        ) {
-          resolve();
-          return;
-        }
 
-        const handleLoadedMetadata = () => {
-          video.removeEventListener(
+      await new Promise<void>(
+        (resolve) => {
+          if (
+            video.readyState >= 2 &&
+            video.videoWidth > 0 &&
+            video.videoHeight > 0
+          ) {
+            resolve();
+            return;
+          }
+
+          const handleLoadedMetadata =
+            () => {
+              video.removeEventListener(
+                "loadedmetadata",
+                handleLoadedMetadata
+              );
+
+              resolve();
+            };
+
+          video.addEventListener(
             "loadedmetadata",
             handleLoadedMetadata
           );
-
-          resolve();
-        };
-
-        video.addEventListener(
-          "loadedmetadata",
-          handleLoadedMetadata
-        );
-      });
+        }
+      );
 
       try {
         await video.play();
@@ -344,12 +416,16 @@ export default function SelfieVerificationPage() {
          * If Safari refuses the first play attempt, try once
          * again after the stream has been attached.
          */
+
         try {
           video.muted = true;
           video.playsInline = true;
+
           await video.play();
         } catch {
-          throw new Error("VIDEO_PLAY_FAILED");
+          throw new Error(
+            "VIDEO_PLAY_FAILED"
+          );
         }
       }
 
@@ -359,17 +435,21 @@ export default function SelfieVerificationPage() {
       /*
        * Make sure no partially-created camera stream remains.
        */
+
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => {
-          track.stop();
-        });
+        streamRef.current
+          .getTracks()
+          .forEach((track) => {
+            track.stop();
+          });
 
         streamRef.current = null;
       }
 
       if (videoRef.current) {
         videoRef.current.pause();
-        videoRef.current.srcObject = null;
+        videoRef.current.srcObject =
+          null;
       }
 
       setCameraActive(false);
@@ -379,18 +459,23 @@ export default function SelfieVerificationPage() {
           ? error.message
           : "";
 
-      if (errorCode === "CAMERA_UNSUPPORTED") {
+      if (
+        errorCode ===
+        "CAMERA_UNSUPPORTED"
+      ) {
         setCameraError(
           "Camera access is not supported on this device or browser."
         );
       } else if (
-        errorCode === "VIDEO_ELEMENT_UNAVAILABLE"
+        errorCode ===
+        "VIDEO_ELEMENT_UNAVAILABLE"
       ) {
         setCameraError(
           "The camera could not be opened. Please refresh the page and try again."
         );
       } else if (
-        errorCode === "VIDEO_PLAY_FAILED"
+        errorCode ===
+        "VIDEO_PLAY_FAILED"
       ) {
         setCameraError(
           "The camera could not start. Please tap Take Selfie again."
@@ -410,8 +495,11 @@ export default function SelfieVerificationPage() {
   ---------------------------------------------------------- */
 
   const captureSelfie = () => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
+    const video =
+      videoRef.current;
+
+    const canvas =
+      canvasRef.current;
 
     if (!video || !canvas) {
       setCameraError(
@@ -440,7 +528,8 @@ export default function SelfieVerificationPage() {
     canvas.width = size;
     canvas.height = size;
 
-    const context = canvas.getContext("2d");
+    const context =
+      canvas.getContext("2d");
 
     if (!context) {
       setCameraError(
@@ -451,10 +540,12 @@ export default function SelfieVerificationPage() {
     }
 
     const sourceX =
-      (video.videoWidth - size) / 2;
+      (video.videoWidth - size) /
+      2;
 
     const sourceY =
-      (video.videoHeight - size) / 2;
+      (video.videoHeight - size) /
+      2;
 
     context.clearRect(
       0,
@@ -469,8 +560,16 @@ export default function SelfieVerificationPage() {
      * Mirror the selfie so the captured image behaves
      * naturally like the front-facing camera preview.
      */
-    context.translate(size, 0);
-    context.scale(-1, 1);
+
+    context.translate(
+      size,
+      0
+    );
+
+    context.scale(
+      -1,
+      1
+    );
 
     context.drawImage(
       video,
@@ -486,16 +585,20 @@ export default function SelfieVerificationPage() {
 
     context.restore();
 
-    const imageData = canvas.toDataURL(
-      "image/jpeg",
-      0.88
-    );
+    const imageData =
+      canvas.toDataURL(
+        "image/jpeg",
+        0.88
+      );
 
-    setCapturedSelfie(imageData);
+    setCapturedSelfie(
+      imageData
+    );
 
     /*
      * Store the selfie for the next verification step.
      */
+
     try {
       sessionStorage.setItem(
         "propertysure_kyc_selfie_data",
@@ -532,6 +635,7 @@ export default function SelfieVerificationPage() {
      * Start the camera again after the previous stream has
      * been completely stopped.
      */
+
     await startCamera();
   };
 
@@ -549,27 +653,54 @@ export default function SelfieVerificationPage() {
     );
   };
 
+  /* ==========================================================
+     SHARED LOADING SCREEN
+  ========================================================== */
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
   return (
-    <main className={styles.page}>
+    <main
+      className={
+        styles.page
+      }
+    >
       {/* ======================================================
           MOBILE HEADER
       ====================================================== */}
 
-      <header className={styles.mobileHeader}>
+      <header
+        className={
+          styles.mobileHeader
+        }
+      >
         <button
           type="button"
-          className={styles.menuButton}
-          onClick={() => setMenuOpen(true)}
+          className={
+            styles.menuButton
+          }
+          onClick={() =>
+            setMenuOpen(true)
+          }
           aria-label="Open navigation"
         >
-          <Icon name="menu" size={23} />
+          <Icon
+            name="menu"
+            size={23}
+          />
         </button>
 
         <button
           type="button"
-          className={styles.mobileLogoButton}
+          className={
+            styles.mobileLogoButton
+          }
           onClick={() =>
-            navigateTo("/dashboard")
+            navigateTo(
+              "/dashboard"
+            )
           }
           aria-label="PropertySure AI Dashboard"
         >
@@ -587,13 +718,17 @@ export default function SelfieVerificationPage() {
             }
           >
             PropertySure
-            <strong> AI</strong>
+            <strong>
+              {" "}AI
+            </strong>
           </span>
         </button>
 
         <button
           type="button"
-          className={styles.mobileBell}
+          className={
+            styles.mobileBell
+          }
           onClick={() =>
             navigateTo(
               "/account/notifications"
@@ -601,7 +736,10 @@ export default function SelfieVerificationPage() {
           }
           aria-label="Notifications"
         >
-          <Icon name="bell" size={17} />
+          <Icon
+            name="bell"
+            size={17}
+          />
 
           <span
             className={
@@ -616,7 +754,11 @@ export default function SelfieVerificationPage() {
       ====================================================== */}
 
       {menuOpen && (
-        <div className={styles.mobileMenu}>
+        <div
+          className={
+            styles.mobileMenu
+          }
+        >
           <div
             className={
               styles.mobileMenuHeader
@@ -633,11 +775,15 @@ export default function SelfieVerificationPage() {
                 )
               }
             >
-              <span>◆</span>
+              <span>
+                ◆
+              </span>
 
               <div>
                 PropertySure
-                <strong> AI</strong>
+                <strong>
+                  {" "}AI
+                </strong>
               </div>
             </button>
 
@@ -669,35 +815,43 @@ export default function SelfieVerificationPage() {
               styles.mobileMenuNav
             }
           >
-            {navItems.map((item) => (
-              <button
-                key={item.href}
-                type="button"
-                className={
-                  styles.mobileNavItem
-                }
-                onClick={() =>
-                  navigateTo(
+            {navItems.map(
+              (item) => (
+                <button
+                  key={
                     item.href
-                  )
-                }
-              >
-                <span
+                  }
+                  type="button"
                   className={
-                    styles.navIcon
+                    styles.mobileNavItem
+                  }
+                  onClick={() =>
+                    navigateTo(
+                      item.href
+                    )
                   }
                 >
-                  <Icon
-                    name={item.icon}
-                    size={18}
-                  />
-                </span>
+                  <span
+                    className={
+                      styles.navIcon
+                    }
+                  >
+                    <Icon
+                      name={
+                        item.icon
+                      }
+                      size={18}
+                    />
+                  </span>
 
-                <span>
-                  {item.label}
-                </span>
-              </button>
-            ))}
+                  <span>
+                    {
+                      item.label
+                    }
+                  </span>
+                </button>
+              )
+            )}
           </nav>
 
           <div
@@ -714,7 +868,9 @@ export default function SelfieVerificationPage() {
               styles.mobileNavItem
             }
             onClick={() =>
-              navigateTo("/account")
+              navigateTo(
+                "/account"
+              )
             }
           >
             <span
@@ -728,7 +884,9 @@ export default function SelfieVerificationPage() {
               />
             </span>
 
-            <span>Account</span>
+            <span>
+              Account
+            </span>
           </button>
 
           <button
@@ -737,7 +895,9 @@ export default function SelfieVerificationPage() {
               styles.mobileNavItem
             }
             onClick={() =>
-              navigateTo("/settings")
+              navigateTo(
+                "/settings"
+              )
             }
           >
             <span
@@ -751,7 +911,9 @@ export default function SelfieVerificationPage() {
               />
             </span>
 
-            <span>Settings</span>
+            <span>
+              Settings
+            </span>
           </button>
         </div>
       )}
@@ -760,14 +922,28 @@ export default function SelfieVerificationPage() {
           MAIN
       ====================================================== */}
 
-      <section className={styles.main}>
-        <div className={styles.content}>
+      <section
+        className={
+          styles.main
+        }
+      >
+        <div
+          className={
+            styles.content
+          }
+        >
           {/* ==================================================
               INTRO
           ================================================== */}
 
-          <div className={styles.pageIntro}>
-            <h1>Identity Verification</h1>
+          <div
+            className={
+              styles.pageIntro
+            }
+          >
+            <h1>
+              Identity Verification
+            </h1>
 
             <p>
               Complete the steps below to verify your
@@ -776,9 +952,13 @@ export default function SelfieVerificationPage() {
 
             <button
               type="button"
-              className={styles.backLink}
+              className={
+                styles.backLink
+              }
               onClick={() =>
-                router.push("/account")
+                router.push(
+                  "/account/identity-verification/information-confirmation"
+                )
               }
             >
               <Icon
@@ -787,7 +967,7 @@ export default function SelfieVerificationPage() {
               />
 
               <span>
-                Back to Account
+                Back to Information Confirmation
               </span>
             </button>
 
@@ -814,7 +994,11 @@ export default function SelfieVerificationPage() {
               FIVE STEP PROGRESS
           ================================================== */}
 
-          <div className={styles.steps}>
+          <div
+            className={
+              styles.steps
+            }
+          >
             <StepItem>
               <Step
                 completed
@@ -948,7 +1132,9 @@ export default function SelfieVerificationPage() {
                 styles.requirementsBox
               }
             >
-              <h3>Make sure:</h3>
+              <h3>
+                Make sure:
+              </h3>
 
               <div
                 className={
@@ -1033,7 +1219,9 @@ export default function SelfieVerificationPage() {
                 />
               ) : capturedSelfie ? (
                 <img
-                  src={capturedSelfie}
+                  src={
+                    capturedSelfie
+                  }
                   alt="Captured selfie"
                   className={
                     styles.selfiePreview
@@ -1221,7 +1409,9 @@ export default function SelfieVerificationPage() {
         <button
           type="button"
           onClick={() =>
-            navigateTo("/dashboard")
+            navigateTo(
+              "/dashboard"
+            )
           }
         >
           <Icon
@@ -1229,7 +1419,9 @@ export default function SelfieVerificationPage() {
             size={20}
           />
 
-          <span>Dashboard</span>
+          <span>
+            Dashboard
+          </span>
         </button>
 
         <button
@@ -1238,7 +1430,9 @@ export default function SelfieVerificationPage() {
             styles.activeBottom
           }
           onClick={() =>
-            navigateTo("/verify")
+            navigateTo(
+              "/verify"
+            )
           }
         >
           <Icon
@@ -1246,7 +1440,9 @@ export default function SelfieVerificationPage() {
             size={20}
           />
 
-          <span>Verify</span>
+          <span>
+            Verify
+          </span>
         </button>
 
         <button
@@ -1262,13 +1458,17 @@ export default function SelfieVerificationPage() {
             size={20}
           />
 
-          <span>Properties</span>
+          <span>
+            Properties
+          </span>
         </button>
 
         <button
           type="button"
           onClick={() =>
-            navigateTo("/reports")
+            navigateTo(
+              "/reports"
+            )
           }
         >
           <Icon
@@ -1276,13 +1476,17 @@ export default function SelfieVerificationPage() {
             size={20}
           />
 
-          <span>Reports</span>
+          <span>
+            Reports
+          </span>
         </button>
 
         <button
           type="button"
           onClick={() =>
-            navigateTo("/account")
+            navigateTo(
+              "/account"
+            )
           }
         >
           <Icon
@@ -1290,7 +1494,9 @@ export default function SelfieVerificationPage() {
             size={20}
           />
 
-          <span>Account</span>
+          <span>
+            Account
+          </span>
         </button>
       </nav>
     </main>
@@ -1356,7 +1562,9 @@ function Step({
         }`}
       >
         {completed ? (
-          <span>✓</span>
+          <span>
+            ✓
+          </span>
         ) : (
           number
         )}

@@ -7,6 +7,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
+import LoadingScreen from "../../../AppShell/LoadingScreen";
 
 /* ============================================================
    TYPES
@@ -250,6 +251,25 @@ function getDocumentBadge(
 export default function InformationConfirmationPage() {
   const router = useRouter();
 
+  /*
+  ============================================================
+  SHARED PAGE LOADING
+  ============================================================
+  */
+
+  const [loading, setLoading] =
+    useState(true);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setLoading(false);
+    }, 800);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, []);
+
   const [menuOpen, setMenuOpen] =
     useState(false);
 
@@ -258,9 +278,6 @@ export default function InformationConfirmationPage() {
 
   const [fileName, setFileName] =
     useState("Document");
-
-  const [filePreview, setFilePreview] =
-    useState<string | null>(null);
 
   const [kycData, setKycData] =
     useState<ExtractedKycData>({});
@@ -273,7 +290,7 @@ export default function InformationConfirmationPage() {
 
   /* ==========================================================
      LOAD KYC DATA
-     
+
      This page does NOT extract the information itself.
 
      It reads the information that the previous verification
@@ -319,21 +336,6 @@ export default function InformationConfirmationPage() {
       if (storedFileName) {
         setFileName(
           storedFileName
-        );
-      }
-
-      /* ------------------------------------------------------
-         FILE PREVIEW
-      ------------------------------------------------------ */
-
-      const storedPreview =
-        sessionStorage.getItem(
-          "propertysure_kyc_file_preview"
-        );
-
-      if (storedPreview) {
-        setFilePreview(
-          storedPreview
         );
       }
 
@@ -406,6 +408,19 @@ export default function InformationConfirmationPage() {
   };
 
   /* ==========================================================
+     BACK TO PREVIOUS KYC STEP
+  ========================================================== */
+
+  const navigateBackToDocumentUpload =
+    () => {
+      setMenuOpen(false);
+
+      router.push(
+        "/account/identity-verification/upload"
+      );
+    };
+
+  /* ==========================================================
      DYNAMIC DOCUMENT INFORMATION
   ========================================================== */
 
@@ -474,20 +489,12 @@ export default function InformationConfirmationPage() {
   };
 
   /* ==========================================================
-     VIEW UPLOADED DOCUMENT
+     SHARED LOADING SCREEN
   ========================================================== */
 
-  const handleViewDocument = () => {
-    if (!filePreview) {
-      return;
-    }
-
-    window.open(
-      filePreview,
-      "_blank",
-      "noopener,noreferrer"
-    );
-  };
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <main
@@ -552,6 +559,7 @@ export default function InformationConfirmationPage() {
               {" "}AI
             </strong>
           </span>
+
         </button>
 
         <button
@@ -576,6 +584,7 @@ export default function InformationConfirmationPage() {
               styles.mobileNotificationDot
             }
           />
+
         </button>
 
       </header>
@@ -618,6 +627,7 @@ export default function InformationConfirmationPage() {
                   {" "}AI
                 </strong>
               </div>
+
             </button>
 
             <button
@@ -797,18 +807,7 @@ export default function InformationConfirmationPage() {
             </p>
 
             {/* =================================================
-                LOCKED STANDARD BACK BUTTON
-
-                Arrow: 18px
-                Text: 13px
-                Gap: 7px
-                Height: 22px
-                Padding: 0
-                Width: fit-content
-                Blue: #168eff
-                Weight: 500
-                Top spacing: 20px
-                Alignment: left
+                BACK TO DOCUMENT UPLOAD
             ================================================= */}
 
             <button
@@ -816,10 +815,8 @@ export default function InformationConfirmationPage() {
               className={
                 styles.backLink
               }
-              onClick={() =>
-                router.push(
-                  "/account"
-                )
+              onClick={
+                navigateBackToDocumentUpload
               }
             >
 
@@ -829,7 +826,7 @@ export default function InformationConfirmationPage() {
               />
 
               <span>
-                Back to Account
+                Back to Document Upload
               </span>
 
             </button>
@@ -1125,21 +1122,6 @@ export default function InformationConfirmationPage() {
                     ? "Loading..."
                     : fileName}
                 </div>
-
-                <button
-                  type="button"
-                  className={
-                    styles.viewButton
-                  }
-                  onClick={
-                    handleViewDocument
-                  }
-                  disabled={
-                    !filePreview
-                  }
-                >
-                  View
-                </button>
 
               </div>
 

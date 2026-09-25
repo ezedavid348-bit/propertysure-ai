@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import AppShell from "../../AppShell/AppShell";
+import LoadingScreen from "../../AppShell/LoadingScreen";
 
 import styles from "./property-details.module.css";
 
@@ -107,9 +108,9 @@ function getSubtypes(
 
   if (
     propertyType ===
-    "Commercial Property" ||
+      "Commercial Property" ||
     propertyType ===
-    "Commercial Land"
+      "Commercial Land"
   ) {
     return commercialSubtypes;
   }
@@ -123,9 +124,9 @@ function getSubtypes(
 
   if (
     propertyType ===
-    "Industrial Property" ||
+      "Industrial Property" ||
     propertyType ===
-    "Industrial Land"
+      "Industrial Land"
   ) {
     return industrialSubtypes;
   }
@@ -141,6 +142,9 @@ function getSubtypes(
 }
 
 export default function PropertyDetailsPage() {
+  const [loading, setLoading] =
+    useState(true);
+
   const [
     propertyType,
     setPropertyType,
@@ -199,6 +203,17 @@ export default function PropertyDetailsPage() {
 
   const subtypes =
     getSubtypes(propertyType);
+
+  useEffect(() => {
+    const timer =
+      window.setTimeout(() => {
+        setLoading(false);
+      }, 350);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -343,6 +358,10 @@ export default function PropertyDetailsPage() {
 
       setIsSaving(false);
     }
+  }
+
+  if (loading) {
+    return <LoadingScreen />;
   }
 
   return (

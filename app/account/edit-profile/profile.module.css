@@ -268,12 +268,6 @@
   gap: 17px;
 }
 
-/*
-============================================================
-PROFESSIONAL NOTIFICATION BELL
-============================================================
-*/
-
 .topNotification {
   width: 40px;
   height: 40px;
@@ -320,10 +314,6 @@ PROFESSIONAL NOTIFICATION BELL
   top: 5px;
   right: 3px;
 }
-
-/* ============================================================
-   TOP USER
-   ============================================================ */
 
 .topUser {
   border: 0;
@@ -431,8 +421,7 @@ PROFESSIONAL NOTIFICATION BELL
 }
 
 .photoSection h2,
-.personalSection h2,
-.kycHeader h2 {
+.personalSection h2 {
   margin: 0;
   color: #152137;
   font-size: 17px;
@@ -543,9 +532,12 @@ PROFESSIONAL NOTIFICATION BELL
 .formGrid {
   margin-top: 19px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(
+    2,
+    minmax(0, 1fr)
+  );
   column-gap: 22px;
-  row-gap: 17px;
+  row-gap: 18px;
 }
 
 .field {
@@ -572,22 +564,28 @@ PROFESSIONAL NOTIFICATION BELL
 .field input,
 .field select {
   width: 100%;
-  height: 43px;
-  border: 1px solid #d9e0e8;
-  border-radius: 7px;
+  height: 44px;
+  border: 1px solid #d8e0e9;
+  border-radius: 8px;
   background: #ffffff;
   color: #1b273d;
-  padding: 0 12px;
+  padding: 0 13px;
   font-size: 12px;
   outline: none;
   transition:
     border-color 0.18s ease,
     box-shadow 0.18s ease,
-    background 0.18s ease;
+    background 0.18s ease,
+    transform 0.18s ease;
 }
 
 .field input::placeholder {
   color: #9aa7b9;
+}
+
+.field input:hover,
+.field select:hover {
+  border-color: #c5d1df;
 }
 
 .field input:focus,
@@ -598,35 +596,32 @@ PROFESSIONAL NOTIFICATION BELL
     rgba(25, 117, 245, 0.08);
 }
 
-.field input:disabled {
+.field input:disabled,
+.field select:disabled {
   background: #f5f7fa;
   color: #657287;
   cursor: not-allowed;
 }
 
 .inputWithIcon,
-.selectField {
+.selectField,
+.dateField {
   position: relative;
 }
 
-.inputWithIcon input,
 .selectField select {
-  padding-right: 38px;
+  padding-right: 42px;
+  appearance: none;
+  cursor: pointer;
 }
 
-.inputWithIcon > .icon,
 .selectField > .icon {
   position: absolute;
-  right: 12px;
+  right: 13px;
   top: 50%;
   transform: translateY(-50%);
   color: #637086;
   pointer-events: none;
-}
-
-.selectField select {
-  appearance: none;
-  cursor: pointer;
 }
 
 .fieldHint {
@@ -636,102 +631,117 @@ PROFESSIONAL NOTIFICATION BELL
   line-height: 1.45;
 }
 
-.lockedField input {
-  border-color: #dfe4ea;
+/* ============================================================
+   PREMIUM DATE FIELD
+   ============================================================ */
+
+.dateField {
+  position: relative;
 }
 
-.lockedField .icon {
-  color: #7b8798;
+.dateField input {
+  padding-right: 44px;
+  color: #1b273d;
+  letter-spacing: 0.1px;
+}
+
+.dateField input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.dateIcon {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  transform: translateY(-50%);
+  border-radius: 7px;
+  background: #f1f6ff;
+  color: #146df5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.dateField input:focus + .dateIcon {
+  background: #eaf3ff;
+  color: #0f62df;
 }
 
 /* ============================================================
    PROFESSIONAL PHONE FIELD
    ============================================================ */
 
-.phoneField {
+.phoneInput {
   width: 100%;
-  min-height: 43px;
-  border: 1px solid #d9e0e8;
-  border-radius: 7px;
+  min-height: 44px;
+  height: 44px;
+  border: 1px solid #d8e0e9;
+  border-radius: 8px;
   background: #ffffff;
-  color: #1b273d;
   display: flex;
   align-items: center;
-  gap: 9px;
   padding: 0 12px;
-  cursor: pointer;
-  text-align: left;
   transition:
     border-color 0.18s ease,
     box-shadow 0.18s ease,
     background 0.18s ease;
 }
 
-.phoneField:hover {
-  border-color: #b7c6d8;
-  background: #fbfcfe;
+.phoneInput:hover {
+  border-color: #c5d1df;
 }
 
-.phoneField:focus-visible {
-  outline: none;
+.phoneInput:focus-within {
   border-color: #1975f5;
   box-shadow:
     0 0 0 3px
     rgba(25, 117, 245, 0.08);
 }
 
-.phoneFlag {
-  font-size: 17px;
-  line-height: 1;
+.phonePrefix {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
 }
 
+.phoneFlag {
+  font-size: 18px;
+  line-height: 1;
+}
+
 .phoneCountryCode {
-  color: #17243a;
+  color: #16243a;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 750;
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .phoneDivider {
   width: 1px;
-  height: 20px;
-  background: #dfe4eb;
+  height: 22px;
+  margin: 0 11px;
+  background: #dce3eb;
   flex-shrink: 0;
 }
 
-.phoneValue {
-  font-size: 12px;
-  font-weight: 500;
-  flex: 1;
+.phoneInput input {
+  height: 100%;
   min-width: 0;
-  color: #1b273d;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.phoneValue:empty {
-  display: none;
-}
-
-.phoneVerified {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: #228b57;
-  font-size: 9px;
-  font-weight: 650;
-  flex-shrink: 0;
-}
-
-.phoneArrow {
-  color: #146df5;
-  font-size: 22px;
-  line-height: 1;
-  flex-shrink: 0;
-  margin-left: auto;
+  flex: 1;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  background: transparent !important;
 }
 
 /* ============================================================
@@ -739,7 +749,7 @@ PROFESSIONAL NOTIFICATION BELL
    ============================================================ */
 
 .formActions {
-  margin-top: 20px;
+  margin-top: 22px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -810,214 +820,6 @@ PROFESSIONAL NOTIFICATION BELL
 }
 
 /* ============================================================
-   KYC
-   ============================================================ */
-
-.kycCard {
-  margin-top: 20px;
-  border: 1px solid #e0e6ee;
-  border-radius: 9px;
-  background: #ffffff;
-  padding: 21px;
-  box-shadow: 0 2px 8px rgba(15, 36, 64, 0.03);
-}
-
-.kycHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.kycHeader p {
-  margin: 8px 0 0;
-  color: #667389;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.kycStatus {
-  flex-shrink: 0;
-  border-radius: 6px;
-  padding: 8px 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 650;
-}
-
-.kycNotVerified {
-  background: #fff7e8;
-  color: #dc8b00;
-}
-
-.kycPending {
-  background: #eef6ff;
-  color: #1671df;
-}
-
-.kycVerified {
-  background: #eaf9ef;
-  color: #269450;
-}
-
-.kycRejected {
-  background: #fff0f0;
-  color: #c8323d;
-}
-
-.kycSteps {
-  margin-top: 27px;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-}
-
-.kycStep {
-  min-width: 0;
-  text-align: center;
-}
-
-.stepTop {
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.stepCircle {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  border: 1px solid #d8dfe8;
-  background: white;
-  color: #526178;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-  font-size: 13px;
-  font-weight: 650;
-  z-index: 2;
-}
-
-.stepActive {
-  background: #146df5;
-  color: white;
-  border-color: #146df5;
-}
-
-.stepCompleted {
-  background: #eaf4ff;
-  color: #146df5;
-  border-color: #146df5;
-}
-
-.stepLine {
-  height: 1px;
-  background: #dce2e9;
-  flex: 1;
-  margin-left: -1px;
-}
-
-.stepLineCompleted {
-  background: #146df5;
-}
-
-.kycStep h3 {
-  margin: 10px 5px 0;
-  color: #18243a;
-  font-size: 11px;
-  font-weight: 750;
-}
-
-.kycStep p {
-  margin: 6px 8px 0;
-  color: #6b788d;
-  font-size: 10px;
-  line-height: 1.45;
-}
-
-.kycInfoBox {
-  margin-top: 26px;
-  border: 1px solid #cfe0f8;
-  background: #f7fbff;
-  border-radius: 7px;
-  padding: 15px 16px;
-  display: flex;
-  align-items: center;
-  gap: 13px;
-}
-
-.kycInfoIcon {
-  width: 43px;
-  height: 43px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: #ffffff;
-  color: #146df5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.kycInfoText {
-  flex: 1;
-  min-width: 0;
-}
-
-.kycInfoText h3 {
-  margin: 0;
-  color: #18243a;
-  font-size: 12px;
-}
-
-.kycInfoText p {
-  margin: 5px 0 0;
-  color: #657389;
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-.startVerification {
-  flex-shrink: 0;
-  height: 42px;
-  padding: 0 18px;
-  border: 0;
-  border-radius: 7px;
-  background: #146df5;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.startVerification:hover {
-  background: #0f62df;
-}
-
-.kycPrivacy {
-  margin-top: 13px;
-  min-height: 38px;
-  padding: 0 13px;
-  border: 1px solid #e2e8f0;
-  background: #fbfcfe;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: #66748a;
-  font-size: 10px;
-}
-
-.kycPrivacy .icon {
-  color: #146df5;
-}
-
-/* ============================================================
    FOOTER
    ============================================================ */
 
@@ -1038,74 +840,7 @@ PROFESSIONAL NOTIFICATION BELL
 }
 
 /* ============================================================
-   LOADING
-   ============================================================ */
-
-.loadingPage {
-  position: relative;
-  min-height: 100vh;
-  overflow: hidden;
-  background:
-    radial-gradient(
-      circle at 70% 0%,
-      rgba(0, 123, 255, 0.18),
-      transparent 30%
-    ),
-    #06152f;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-}
-
-.loadingGlow {
-  position: absolute;
-  width: 360px;
-  height: 360px;
-  border-radius: 50%;
-  background:
-    radial-gradient(
-      circle,
-      rgba(22, 142, 255, 0.08),
-      transparent 68%
-    );
-  top: -180px;
-  right: -120px;
-  pointer-events: none;
-}
-
-.loadingBrand {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.25px;
-}
-
-.loadingBrand strong {
-  color: #168eff;
-}
-
-.loadingLogo {
-  color: #168eff;
-  font-size: 42px;
-  line-height: 1;
-}
-
-.loadingPage p {
-  position: relative;
-  z-index: 1;
-  margin-top: 10px;
-  color: #8ea4c3;
-  font-size: 13px;
-}
-
-/* ============================================================
-   DESKTOP MOBILE ELEMENTS
+   DESKTOP / MOBILE ELEMENTS
    ============================================================ */
 
 .mobileHeader,
@@ -1408,7 +1143,7 @@ PROFESSIONAL NOTIFICATION BELL
   }
 
   /* ========================================================
-     MOBILE PROFILE CARD
+     MOBILE PROFILE
      ======================================================== */
 
   .profileCard {
@@ -1420,68 +1155,30 @@ PROFESSIONAL NOTIFICATION BELL
     border-radius: 10px;
   }
 
+  /*
+  The photo section is intentionally hidden on mobile.
+  Personal Information becomes the first section.
+  */
+
   .photoSection {
-    width: 100%;
-    border-right: 0;
-    border-bottom: 1px solid #edf0f4;
-    padding: 0 0 22px;
-    text-align: left;
-  }
-
-  .photoSection h2,
-  .personalSection h2 {
-    font-size: 18px;
-  }
-
-  .photoDescription {
-    margin-top: 8px;
-    font-size: 12px;
-  }
-
-  .avatarButton {
-    width: 132px;
-    height: 132px;
-    margin: 20px auto 18px;
-  }
-
-  .avatarLarge,
-  .profileImage {
-    width: 132px;
-    height: 132px;
-  }
-
-  .avatarLarge {
-    font-size: 42px;
-  }
-
-  .cameraButton {
-    width: 34px;
-    height: 34px;
-    right: 0;
-    bottom: 2px;
-  }
-
-  .changePhotoButton {
-    width: 100%;
-    max-width: 280px;
-    margin: 0 auto;
-  }
-
-  .photoHint {
-    font-size: 10px;
+    display: none !important;
   }
 
   .personalSection {
     width: 100%;
-    padding-top: 22px;
+    padding-top: 0 !important;
+  }
+
+  .personalSection h2 {
+    font-size: 18px;
   }
 
   .formGrid {
     width: 100%;
     grid-template-columns: 1fr !important;
     column-gap: 0;
-    row-gap: 16px;
-    margin-top: 18px;
+    row-gap: 17px;
+    margin-top: 19px;
   }
 
   .fullWidth {
@@ -1490,9 +1187,9 @@ PROFESSIONAL NOTIFICATION BELL
 
   .field input,
   .field select,
-  .phoneField {
-    min-height: 44px;
-    height: 44px;
+  .phoneInput {
+    min-height: 46px;
+    height: 46px;
   }
 
   .field label {
@@ -1504,149 +1201,44 @@ PROFESSIONAL NOTIFICATION BELL
     font-size: 9px;
   }
 
-  .phoneField {
-    gap: 8px;
+  .phoneInput {
+    padding: 0 12px;
   }
 
   .phoneFlag {
-    font-size: 16px;
+    font-size: 17px;
   }
 
   .phoneCountryCode {
     font-size: 12px;
   }
 
-  .phoneValue {
+  .phoneDivider {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .phoneInput input {
     font-size: 12px;
   }
 
-  .phoneVerified {
-    font-size: 8px;
-  }
-
-  .phoneArrow {
-    font-size: 21px;
+  .dateIcon {
+    width: 29px;
+    height: 29px;
   }
 
   .formActions {
     width: 100%;
     flex-direction: column-reverse;
     gap: 9px;
-    margin-top: 22px;
+    margin-top: 23px;
   }
 
   .cancelButton,
   .saveButton {
     width: 100%;
-    min-height: 44px;
+    min-height: 46px;
     justify-content: center;
-  }
-
-  /* ========================================================
-     MOBILE KYC
-     ======================================================== */
-
-  .kycCard {
-    width: 100%;
-    margin-top: 18px;
-    padding: 16px;
-  }
-
-  .kycHeader {
-    flex-direction: column;
-    gap: 13px;
-  }
-
-  .kycHeader h2 {
-    font-size: 18px;
-  }
-
-  .kycHeader p {
-    font-size: 11px;
-    line-height: 1.5;
-  }
-
-  .kycStatus {
-    align-self: flex-start;
-  }
-
-  .kycSteps {
-    margin-top: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .kycStep {
-    text-align: left;
-    display: grid;
-    grid-template-columns:
-      38px minmax(0, 1fr);
-    column-gap: 10px;
-  }
-
-  .stepTop {
-    grid-row: 1 / span 2;
-    align-items: flex-start;
-    width: 38px;
-  }
-
-  .stepCircle {
-    width: 34px;
-    height: 34px;
-    margin: 0;
-  }
-
-  .stepLine {
-    display: none;
-  }
-
-  .kycStep h3 {
-    margin: 1px 0 0;
-    font-size: 11px;
-  }
-
-  .kycStep p {
-    margin: 4px 0 0;
-    font-size: 9px;
-  }
-
-  .kycInfoBox {
-    margin-top: 22px;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    padding: 14px;
-  }
-
-  .kycInfoIcon {
-    width: 40px;
-    height: 40px;
-  }
-
-  .kycInfoText {
-    width: calc(100% - 53px);
-  }
-
-  .kycInfoText h3 {
-    font-size: 11px;
-  }
-
-  .kycInfoText p {
-    font-size: 10px;
-  }
-
-  .startVerification {
-    width: 100%;
-    justify-content: center;
-    margin-top: 4px;
-  }
-
-  .kycPrivacy {
-    min-height: auto;
-    padding: 10px 12px;
-    align-items: flex-start;
-    font-size: 9px;
-    line-height: 1.45;
   }
 
   .pageFooter {
@@ -1702,14 +1294,6 @@ PROFESSIONAL NOTIFICATION BELL
     color: #168eff;
     font-weight: 700;
   }
-
-  /* ========================================================
-     PAGE EDGE BRAND CONTINUITY
-     ======================================================== */
-
-  .main {
-    background: #ffffff;
-  }
 }
 
 /* ============================================================
@@ -1730,28 +1314,12 @@ PROFESSIONAL NOTIFICATION BELL
     padding-right: 13px !important;
   }
 
-  .profileCard,
-  .kycCard {
+  .profileCard {
     padding: 14px !important;
   }
 
-  .avatarButton,
-  .avatarLarge,
-  .profileImage {
-    width: 120px;
-    height: 120px;
-  }
-
-  .avatarButton {
-    margin-top: 18px;
-  }
-
-  .phoneVerified span {
-    display: none;
-  }
-
-  .phoneField {
-    gap: 7px;
+  .phoneInput {
+    gap: 0;
     padding-left: 10px;
     padding-right: 10px;
   }
@@ -1760,7 +1328,7 @@ PROFESSIONAL NOTIFICATION BELL
     font-size: 11px;
   }
 
-  .phoneValue {
+  .phoneInput input {
     font-size: 11px;
   }
 

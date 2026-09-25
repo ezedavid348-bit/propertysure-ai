@@ -554,7 +554,6 @@
 ========================================================= */
 
 @media (max-width: 1050px) {
-
   .content {
     padding:
       25px 24px 45px;
@@ -573,9 +572,16 @@
 ========================================================= */
 
 @media (max-width: 700px) {
+  /*
+     IMPORTANT:
+     The mobile page should end naturally after the
+     Settings card. Do not force a full viewport-height
+     white area underneath the card.
+  */
 
   .page {
-    min-height: 100vh;
+    min-height: auto;
+    height: auto;
 
     padding-bottom: 0;
 
@@ -590,7 +596,7 @@
     width: 100%;
 
     padding:
-      28px 15px 28px;
+      18px 15px 0;
 
     background: #ffffff;
   }
@@ -697,7 +703,6 @@
     .settingsRow,
   .settingsList
     .signOutRow {
-
     min-height: 73px;
 
     padding:
@@ -710,7 +715,6 @@
     .settingsRowIcon,
   .settingsList
     .signOutIcon {
-
     width: 36px;
     height: 36px;
 
@@ -723,14 +727,12 @@
   .settingsList
     .settingsRowText
     strong {
-
     font-size: 12px;
   }
 
   .settingsList
     .settingsRowText
     small {
-
     margin-top: 3px;
 
     font-size: 9px;
@@ -738,7 +740,6 @@
 
   .settingsList
     .settingsRowArrow {
-
     width: 22px;
     height: 22px;
 
@@ -749,7 +750,6 @@
   .settingsList
     .settingsRowArrow
     .icon {
-
     font-size: 20px !important;
   }
 }
@@ -759,10 +759,10 @@
 ========================================================= */
 
 @media (max-width: 380px) {
-
   .content {
     padding-left: 12px;
     padding-right: 12px;
+    padding-bottom: 0;
   }
 
   .mobilePageHeader {
@@ -777,7 +777,6 @@
     .settingsRow,
   .settingsList
     .signOutRow {
-
     min-height: 70px;
 
     padding-left: 11px;

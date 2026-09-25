@@ -41,6 +41,7 @@
 
 /* =========================================================
    PAGE HEADER
+   DESKTOP ONLY
 ========================================================= */
 
 .pageHeader {
@@ -74,48 +75,6 @@
   color: #667b98;
   font-size: 14px;
   line-height: 1.5;
-}
-
-.memberMeta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 9px;
-  padding-top: 8px;
-}
-
-.memberMeta > span {
-  color: #71849e;
-  font-size: 12px;
-}
-
-.memberBadgeVerified,
-.memberBadgePending {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 30px;
-  padding: 0 12px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.memberBadgeVerified {
-  background: #e4f8ed;
-  color: #15804c;
-}
-
-.memberBadgePending {
-  background: #fff2cf;
-  color: #8a5a00;
-}
-
-.memberBadgeVerified span,
-.memberBadgePending span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* =========================================================
@@ -315,52 +274,11 @@
 }
 
 .profileInfo p {
-  margin: 6px 0 12px;
+  margin: 6px 0 0;
 
   color: #617795;
 
   font-size: 13px;
-}
-
-.identityRow {
-  display: flex;
-  align-items: center;
-
-  flex-wrap: wrap;
-
-  gap: 9px;
-}
-
-.identityVerified,
-.identityPending {
-  display: inline-flex;
-  align-items: center;
-
-  gap: 6px;
-
-  min-height: 27px;
-
-  padding: 0 10px;
-
-  border-radius: 7px;
-
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.identityVerified {
-  background: #e7f8ef;
-  color: #16824e;
-}
-
-.identityPending {
-  background: #fff1ca;
-  color: #8a5a00;
-}
-
-.identityDescription {
-  color: #70839d;
-  font-size: 11px;
 }
 
 .profileActions {
@@ -505,230 +423,77 @@
   font-size: 12px;
 }
 
-.outlineButton {
-  min-height: 39px;
-
-  padding: 0 15px;
-
-  border: 1px solid #bdd8f7;
-  border-radius: 8px;
-
-  background: #ffffff;
-
-  color: #086bd0;
-
-  font-size: 12px;
-  font-weight: 700;
-
-  cursor: pointer;
-
-  white-space: nowrap;
-}
-
-.outlineButton:hover {
-  border-color: #168eff;
-  background: #f7fbff;
-}
-
-.outlineButton span {
-  margin-right: 5px;
-}
-
 /* =========================================================
-   ACCOUNT PLAN
-   EXACT DASHBOARD GOLD SYSTEM
+   IDENTITY VERIFICATION
 ========================================================= */
 
-.planCard {
-  position: relative;
-
-  margin-bottom: 18px;
-
-  padding: 24px 26px;
-
-  overflow: hidden;
-
-  border: 1px solid #ead59a;
-  border-radius: 15px;
-
-  background:
-    radial-gradient(
-      circle at 100% 0%,
-      rgba(255, 255, 255, 0.78),
-      transparent 38%
-    ),
-    linear-gradient(
-      135deg,
-      #fffdf4 0%,
-      #fff8dc 48%,
-      #fff0bd 100%
-    );
-
-  box-shadow:
-    0 9px 28px rgba(184, 143, 42, 0.10);
-
-  color: #3b2d0b;
-}
-
-.planIcon {
-  width: 50px;
-  height: 50px;
-
-  display: flex;
+.kycVerified,
+.kycPending {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
 
-  flex: 0 0 50px;
+  min-height: 30px;
 
-  border-radius: 13px;
+  padding: 0 11px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #fff3bf,
-      #ffe49a
-    );
-
-  color: #a87508;
-
-  font-size: 20px;
-  font-weight: 700;
-
-  box-shadow:
-    inset 0 0 0 1px rgba(168, 117, 8, 0.08);
-}
-
-.planCard .cardHeader {
-  position: relative;
-  z-index: 2;
-}
-
-.planCard .cardTitleGroup h2 {
-  color: #3b2d0b;
-}
-
-.planCard .cardTitleGroup p {
-  color: #786a4b;
-}
-
-.planOutlineButton {
-  min-height: 39px;
-
-  padding: 0 15px;
-
-  border: 1px solid #d2a943;
-  border-radius: 8px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #ffffff,
-      #fffaf0
-    );
-
-  color: #8b6407;
-
-  font-size: 12px;
-  font-weight: 700;
-
-  cursor: pointer;
-
-  white-space: nowrap;
-
-  box-shadow:
-    0 4px 12px rgba(154, 110, 12, 0.08);
-}
-
-.planOutlineButton:hover {
-  background: #ffffff;
-  border-color: #b98a20;
-}
-
-.planContent {
-  position: relative;
-  z-index: 2;
-
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-
-  gap: 40px;
-
-  padding: 2px 0 1px 63px;
-}
-
-.planLabel {
-  margin-bottom: 5px;
-
-  color: #9b6e08;
-
-  font-size: 9px;
-
-  font-weight: 800;
-
-  letter-spacing: 1.2px;
-}
-
-.planContent h3 {
-  margin: 0 0 15px;
-
-  color: #3b2d0b;
-
-  font-size: 25px;
-
-  font-weight: 750;
-
-  letter-spacing: -0.025em;
-}
-
-.featureList {
-  display: grid;
-
-  grid-template-columns:
-    repeat(2, minmax(230px, 1fr));
-
-  gap: 9px 35px;
-}
-
-.featureList div {
-  display: flex;
-  align-items: center;
-
-  gap: 9px;
-
-  color: #786a4b;
-
-  font-size: 12px;
-}
-
-.featureList span {
-  color: #17a05b;
-
-  font-size: 14px;
-
-  font-weight: 800;
-}
-
-.planAction {
-  min-width: 245px;
-
-  text-align: right;
-}
-
-.planAction > div {
-  margin-bottom: 9px;
-
-  color: #786a4b;
+  border-radius: 999px;
 
   font-size: 11px;
+  font-weight: 700;
+
+  white-space: nowrap;
 }
 
-.planPrimaryButton {
-  width: 100%;
+.kycVerified {
+  background: #e5f8ee;
+  color: #15804c;
+}
 
-  min-height: 43px;
+.kycPending {
+  background: #fff2cf;
+  color: #8a5a00;
+}
 
-  padding: 0 16px;
+.kycContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  padding: 19px 20px;
+
+  border: 1px solid #e4edf6;
+  border-radius: 12px;
+
+  background: #f8fbff;
+}
+
+.kycContent strong {
+  display: block;
+
+  color: #152b47;
+
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.kycContent p {
+  max-width: 700px;
+
+  margin: 6px 0 0;
+
+  color: #74869f;
+
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.kycButton {
+  min-height: 42px;
+
+  padding: 0 17px;
 
   display: inline-flex;
   align-items: center;
@@ -736,136 +501,31 @@
 
   gap: 10px;
 
-  border: 1px solid #d2a943;
+  flex: 0 0 auto;
+
+  border: 1px solid #168eff;
   border-radius: 9px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #ffffff,
-      #fffaf0
-    );
+  background: #168eff;
 
-  color: #8b6407;
+  color: #ffffff;
 
   font-size: 12px;
-
   font-weight: 750;
 
   cursor: pointer;
 
   box-shadow:
-    0 7px 18px rgba(154, 110, 12, 0.10);
+    0 6px 16px rgba(22, 142, 255, 0.18);
 }
 
-.planPrimaryButton:hover {
-  border-color: #b98a20;
-
-  background: #ffffff;
-
-  transform: translateY(-1px);
+.kycButton:hover {
+  background: #0879e5;
+  border-color: #0879e5;
 }
 
-.planPrimaryButton span {
+.kycButton span {
   font-size: 16px;
-}
-
-.planDecoration {
-  position: absolute;
-
-  right: -15px;
-  bottom: -22px;
-
-  width: 125px;
-  height: 90px;
-
-  opacity: 0.5;
-
-  pointer-events: none;
-}
-
-.planDecoration span {
-  position: absolute;
-
-  width: 48px;
-  height: 48px;
-
-  border-radius: 10px;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(214, 168, 46, 0.26),
-      rgba(214, 168, 46, 0.05)
-    );
-
-  transform: rotate(45deg);
-}
-
-.planDecoration span:nth-child(1) {
-  right: 55px;
-  bottom: 7px;
-}
-
-.planDecoration span:nth-child(2) {
-  right: 19px;
-  bottom: -7px;
-}
-
-.planDecoration span:nth-child(3) {
-  right: 1px;
-  bottom: 29px;
-}
-
-/* =========================================================
-   PERSONAL INFORMATION
-========================================================= */
-
-.personalGrid {
-  display: grid;
-
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-
-  border-top: 1px solid #e7edf4;
-}
-
-.personalItem {
-  min-height: 65px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 25px;
-
-  padding: 0 10px 0 2px;
-
-  border-bottom: 1px solid #e7edf4;
-}
-
-.personalItem:nth-child(odd) {
-  border-right: 1px solid #e7edf4;
-  padding-right: 28px;
-}
-
-.personalItem:nth-child(even) {
-  padding-left: 28px;
-}
-
-.personalItem span {
-  color: #71849d;
-  font-size: 12px;
-}
-
-.personalItem strong {
-  color: #1a2f4b;
-  font-size: 12px;
-  font-weight: 650;
-
-  text-align: right;
-
-  word-break: break-word;
 }
 
 /* =========================================================
@@ -1159,159 +819,6 @@
 }
 
 /* =========================================================
-   GLOBAL LOADING
-   EXACT PROPERTYSURE AI STANDARD
-========================================================= */
-
-.loadingPage {
-  min-height: 100vh;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  background:
-    radial-gradient(
-      circle at 50% 42%,
-      rgba(22, 142, 255, 0.10),
-      transparent 30%
-    ),
-    linear-gradient(
-      180deg,
-      #061b38 0%,
-      #031229 100%
-    );
-
-  color: #ffffff;
-
-  text-align: center;
-}
-
-.loadingBrand {
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
-
-  color: #ffffff;
-
-  font-size: 24px;
-  line-height: 1;
-
-  font-weight: 800;
-
-  letter-spacing: -0.025em;
-}
-
-.loadingBrand strong {
-  color: #168eff;
-}
-
-.loadingDiamond {
-  width: 15px;
-  height: 15px;
-
-  display: inline-block;
-
-  flex: 0 0 15px;
-
-  background: #168eff;
-
-  transform: rotate(45deg);
-
-  border-radius: 2px;
-
-  box-shadow:
-    0 0 18px rgba(22, 142, 255, 0.35);
-
-  animation:
-    loadingDiamondPulse
-    1.6s
-    ease-in-out
-    infinite;
-}
-
-.loadingIndicator {
-  display: flex;
-  align-items: center;
-
-  gap: 5px;
-
-  margin-top: 22px;
-
-  height: 14px;
-}
-
-.loadingIndicator span {
-  width: 6px;
-  height: 6px;
-
-  display: block;
-
-  border-radius: 50%;
-
-  background: #168eff;
-
-  box-shadow:
-    0 0 8px rgba(22, 142, 255, 0.45);
-
-  animation:
-    loadingDot
-    1.2s
-    ease-in-out
-    infinite;
-}
-
-.loadingIndicator span:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.loadingIndicator span:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-.loadingText {
-  margin: 10px 0 0;
-
-  color: #91a7c3;
-
-  font-size: 12px;
-  line-height: 1.3;
-
-  font-weight: 500;
-
-  letter-spacing: 0.01em;
-}
-
-@keyframes loadingDot {
-  0%,
-  60%,
-  100% {
-    opacity: 0.3;
-    transform: translateY(0);
-  }
-
-  30% {
-    opacity: 1;
-    transform: translateY(-4px);
-  }
-}
-
-@keyframes loadingDiamondPulse {
-  0%,
-  100% {
-    opacity: 0.75;
-    transform: rotate(45deg) scale(1);
-  }
-
-  50% {
-    opacity: 1;
-    transform: rotate(45deg) scale(1.08);
-  }
-}
-
-/* =========================================================
    RESPONSIVE
 ========================================================= */
 
@@ -1324,46 +831,39 @@
     align-items: flex-start;
   }
 
-  .planContent {
-    padding-left: 0;
-  }
-
-  .featureList {
-    grid-template-columns: 1fr;
+  .kycContent {
+    align-items: flex-start;
   }
 }
 
 @media (max-width: 700px) {
   .container {
-    padding: 22px 16px 105px;
+    padding: 0 16px 20px;
   }
+
+  /*
+  ==========================================================
+  MOBILE ACCOUNT HEADER
+
+  Hidden completely.
+
+  The profile card becomes the first
+  Account-page content.
+  ==========================================================
+  */
 
   .pageHeader {
-    display: block;
-
-    margin-bottom: 20px;
-  }
-
-  .pageHeader h1 {
-    font-size: 28px;
-  }
-
-  .pageHeader p {
-    font-size: 13px;
-  }
-
-  .memberMeta {
-    align-items: flex-start;
-
-    margin-top: 13px;
-
-    padding-top: 0;
+    display: none;
   }
 
   .profileCard {
     display: block;
 
+    margin-top: 0;
+
     padding: 22px 18px;
+
+    border-radius: 13px;
   }
 
   .profileIdentity {
@@ -1398,18 +898,6 @@
     font-size: 11px;
   }
 
-  .identityRow {
-    display: block;
-  }
-
-  .identityDescription {
-    display: block;
-
-    margin-top: 6px;
-
-    line-height: 1.4;
-  }
-
   .profileActions {
     align-items: stretch;
 
@@ -1432,8 +920,7 @@
      MOBILE GENERIC CARD
   ======================================================= */
 
-  .card,
-  .planCard {
+  .card {
     padding: 19px 17px;
 
     border-radius: 13px;
@@ -1449,8 +936,7 @@
     gap: 10px;
   }
 
-  .cardIcon,
-  .planIcon {
+  .cardIcon {
     width: 43px;
     height: 43px;
 
@@ -1469,83 +955,41 @@
     font-size: 10px;
   }
 
-  .cardHeader > .outlineButton,
-  .cardHeader > .planOutlineButton {
-    min-height: 35px;
+  /* =======================================================
+     MOBILE KYC
+  ======================================================= */
 
-    padding: 0 10px;
+  .kycVerified,
+  .kycPending {
+    min-height: 28px;
+
+    padding: 0 9px;
 
     font-size: 10px;
   }
 
-  /* =======================================================
-     MOBILE PLAN
-  ======================================================= */
-
-  .planContent {
+  .kycContent {
     display: block;
 
-    padding-left: 0;
+    padding: 16px;
   }
 
-  .planContent h3 {
-    font-size: 22px;
-  }
-
-  .planLabel {
-    font-size: 8px;
-  }
-
-  .featureList {
-    gap: 8px;
-  }
-
-  .featureList div {
+  .kycContent p {
     font-size: 11px;
   }
 
-  .planAction {
-    min-width: 0;
+  .kycButton {
+    width: 100%;
 
-    margin-top: 20px;
+    margin-top: 16px;
 
-    text-align: left;
-  }
-
-  .planAction > div {
-    text-align: left;
-  }
-
-  .planPrimaryButton {
-    min-height: 42px;
+    min-height: 41px;
 
     font-size: 11px;
   }
 
   /* =======================================================
-     PERSONAL
-  ======================================================= */
-
-  .personalGrid {
-    display: block;
-  }
-
-  .personalItem,
-  .personalItem:nth-child(odd),
-  .personalItem:nth-child(even) {
-    min-height: 58px;
-
-    padding: 0 2px;
-
-    border-right: 0;
-  }
-
-  .personalItem strong {
-    max-width: 58%;
-  }
-
-  /* =======================================================
-     CONNECTED ACCOUNTS
+     MOBILE CONNECTED ACCOUNTS
   ======================================================= */
 
   .connectedRow {
@@ -1582,7 +1026,7 @@
   }
 
   /* =======================================================
-     ACTIVITY
+     MOBILE ACTIVITY
   ======================================================= */
 
   .activityRow {
@@ -1611,7 +1055,7 @@
   }
 
   /* =======================================================
-     FOOTER
+     MOBILE FOOTER
   ======================================================= */
 
   .accountFooter {
@@ -1635,10 +1079,6 @@
     padding-right: 13px;
   }
 
-  .pageHeader h1 {
-    font-size: 26px;
-  }
-
   .profileIdentity {
     gap: 12px;
   }
@@ -1654,34 +1094,16 @@
     font-size: 17px;
   }
 
-  .card,
-  .planCard {
+  .card {
     padding: 17px 14px;
   }
 
-  .cardHeader > .outlineButton,
-  .cardHeader > .planOutlineButton {
-    max-width: 105px;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
+  .providerLeft span {
+    max-width: 150px;
   }
 
-  .personalItem {
-    gap: 12px;
-  }
-
-  .personalItem span,
-  .personalItem strong {
-    font-size: 10px;
-  }
-
-  .planContent h3 {
-    font-size: 21px;
-  }
-
-  .featureList div {
-    font-size: 10px;
+  .kycVerified,
+  .kycPending {
+    font-size: 9px;
   }
 }

@@ -1951,27 +1951,15 @@ export default function ReviewPage() {
             }
           />
 
+          {/* ==================================================
+              INTRO
+          ================================================== */}
+
           <section
             className={
               styles.intro
             }
           >
-            <div
-              className={
-                styles.reviewBadge
-              }
-            >
-              <span>✓</span>
-              DOCUMENT PACKAGE REVIEW
-            </div>
-
-            <h1>
-              Review Your{" "}
-              <span>
-                Documents
-              </span>
-            </h1>
-
             <p>
               PropertySure AI
               identifies documents
@@ -1986,49 +1974,9 @@ export default function ReviewPage() {
             </p>
           </section>
 
-          <section
-            className={
-              styles.summaryCard
-            }
-          >
-            <div
-              className={
-                styles.summaryIcon
-              }
-            >
-              ▤
-            </div>
-
-            <div
-              className={
-                styles.summaryText
-              }
-            >
-              <strong>
-                Property Document
-                Package
-              </strong>
-
-              <span>
-                {documents.length}{" "}
-                {documents.length ===
-                1
-                  ? "document"
-                  : "documents"}{" "}
-                ready for analysis
-              </span>
-            </div>
-
-            <div
-              className={
-                styles.summaryStatus
-              }
-            >
-              {classificationInProgress
-                ? "Identifying"
-                : "Ready"}
-            </div>
-          </section>
+          {/* ==================================================
+              SUBMITTED DOCUMENTS
+          ================================================== */}
 
           <section
             className={

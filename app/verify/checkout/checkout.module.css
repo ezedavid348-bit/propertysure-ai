@@ -40,6 +40,10 @@
   margin-bottom: 32px;
 }
 
+.headerText {
+  min-width: 0;
+}
+
 .eyebrow,
 .cardEyebrow {
   display: block;
@@ -902,7 +906,7 @@
 }
 
 /* ============================================================
-   TABLET
+   TABLET / MOBILE
 ============================================================ */
 
 @media (max-width: 1050px) {
@@ -929,6 +933,22 @@
   .trustDivider {
     display: none;
   }
+
+  /*
+   * MOBILE/TABLET ONLY:
+   *
+   * Remove:
+   * - PROPERTY VERIFICATION
+   * - Secure Checkout heading
+   * - Complete your payment to begin
+   *   your PropertySure AI verification.
+   *
+   * The separate Secure Checkout badge
+   * remains visible.
+   */
+  .headerText {
+    display: none !important;
+  }
 }
 
 /* ============================================================
@@ -954,15 +974,13 @@
     margin-bottom: 23px;
   }
 
-  .header h1 {
-    font-size: 26px;
-  }
-
-  .header p {
-    font-size: 13px;
-  }
-
+  /*
+   * Keep the separate Secure Checkout
+   * badge visible.
+   */
   .secureBadge {
+    display: inline-flex;
+
     align-self: flex-start;
   }
 
@@ -1060,10 +1078,6 @@
     padding-left: 11px;
 
     padding-right: 11px;
-  }
-
-  .header h1 {
-    font-size: 24px;
   }
 
   .totalRow > strong {
