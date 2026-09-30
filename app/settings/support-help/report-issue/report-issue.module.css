@@ -1,0 +1,775 @@
+.page {
+  min-height: 100%;
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      rgba(22, 142, 255, 0.055),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      #f8fbff 0%,
+      #ffffff 45%,
+      #f7faff 100%
+    );
+  padding: 28px 28px 60px;
+  color: #172554;
+}
+
+.mainInner {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+}
+
+/* ============================================================
+   ICON
+============================================================ */
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   BACK BUTTON
+============================================================ */
+
+.backButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0 0 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #168eff;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.3;
+  cursor: pointer;
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.backButton:hover {
+  color: #0878df;
+  transform: translateX(-2px);
+}
+
+.backArrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+/* ============================================================
+   HERO
+============================================================ */
+
+.heroCard {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(248, 251, 255, 0.96)
+    );
+  border: 1px solid rgba(86, 119, 163, 0.18);
+  border-radius: 24px;
+  padding: 34px 36px 36px;
+  margin-bottom: 22px;
+  box-shadow:
+    0 18px 50px rgba(27, 62, 105, 0.08),
+    0 3px 12px rgba(27, 62, 105, 0.04);
+}
+
+.heroCard::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    #168eff,
+    #5aaeff,
+    #168eff
+  );
+}
+
+.heroIcon {
+  width: 78px;
+  height: 78px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a87a16;
+  background:
+    linear-gradient(
+      145deg,
+      #fff9dc,
+      #fff3b9
+    );
+  border: 1px solid rgba(197, 158, 46, 0.2);
+  box-shadow:
+    0 10px 24px rgba(188, 145, 25, 0.12);
+  margin-bottom: 25px;
+}
+
+.eyebrow,
+.sectionEyebrow {
+  display: block;
+  color: #427fc1;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  line-height: 1.4;
+}
+
+.eyebrow {
+  margin-bottom: 8px;
+}
+
+.heroCard h1 {
+  margin: 0;
+  color: #172554;
+  font-size: clamp(30px, 4vw, 43px);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  font-weight: 760;
+}
+
+.heroCard p {
+  max-width: 730px;
+  margin: 15px 0 0;
+  color: #687795;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+/* ============================================================
+   FORM CARD
+============================================================ */
+
+.formCard {
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(86, 119, 163, 0.18);
+  border-radius: 24px;
+  box-shadow:
+    0 18px 50px rgba(27, 62, 105, 0.07),
+    0 3px 12px rgba(27, 62, 105, 0.035);
+  overflow: hidden;
+}
+
+.formHeader {
+  padding: 32px 36px 28px;
+  border-bottom: 1px solid #edf2f8;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.formHeader h2 {
+  margin: 8px 0 7px;
+  color: #1b2a4a;
+  font-size: 25px;
+  line-height: 1.2;
+  font-weight: 740;
+  letter-spacing: -0.02em;
+}
+
+.formHeader p {
+  margin: 0;
+  max-width: 680px;
+  color: #71809b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.issueBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  padding: 9px 13px;
+  border-radius: 999px;
+  color: #9b741b;
+  background: #fff9df;
+  border: 1px solid #f0e3b0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ============================================================
+   FORM SECTIONS
+============================================================ */
+
+.formSection {
+  padding: 28px 36px;
+  border-bottom: 1px solid #edf2f8;
+}
+
+.sectionTitle {
+  color: #253453;
+  font-size: 14px;
+  font-weight: 750;
+  margin-bottom: 18px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.field label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 9px;
+  color: #263655;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.optional {
+  color: #8a96aa;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d8e1ed;
+  border-radius: 14px;
+  background: #fbfdff;
+  color: #263655;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.field input,
+.field select {
+  height: 52px;
+  padding: 0 15px;
+}
+
+.field textarea {
+  min-height: 190px;
+  padding: 15px;
+  resize: vertical;
+  line-height: 1.65;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #a1adbe;
+}
+
+.field input:hover,
+.field select:hover,
+.field textarea:hover {
+  border-color: #bdcde0;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: #168eff;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 4px rgba(22, 142, 255, 0.09);
+}
+
+.fieldHint {
+  margin-top: 9px;
+  color: #8995a8;
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+/* ============================================================
+   PRIORITY
+============================================================ */
+
+.priorityGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.priorityOption {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid #d9e2ed;
+  border-radius: 14px;
+  background: #fbfdff;
+  color: #6e7c93;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.priorityOption:hover {
+  border-color: #b8cce3;
+  transform: translateY(-1px);
+}
+
+.priorityActive {
+  color: #176fd0;
+  border-color: #5aaeff;
+  background: #f0f7ff;
+}
+
+.priorityDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #a9b6c8;
+}
+
+.priorityDotActive {
+  background: #168eff;
+  box-shadow: 0 0 0 4px rgba(22, 142, 255, 0.1);
+}
+
+/* ============================================================
+   PRIVACY
+============================================================ */
+
+.privacyNote {
+  margin: 28px 36px 0;
+  padding: 16px 17px;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  border: 1px solid #e0eaf5;
+  border-radius: 15px;
+  background: #f7fbff;
+}
+
+.privacyIcon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: #168eff;
+  background: #e8f4ff;
+}
+
+.privacyNote strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #34435e;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.privacyNote span {
+  display: block;
+  color: #77859b;
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+/* ============================================================
+   ACTIONS
+============================================================ */
+
+.formActions {
+  padding: 26px 36px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cancelButton,
+.submitButton,
+.primaryButton,
+.secondaryButton {
+  min-height: 48px;
+  border-radius: 13px;
+  padding: 0 20px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.cancelButton {
+  border: 1px solid #d7e0eb;
+  background: #ffffff;
+  color: #61708a;
+}
+
+.cancelButton:hover {
+  border-color: #bdcad9;
+  transform: translateY(-1px);
+}
+
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 0;
+  background: linear-gradient(
+    135deg,
+    #168eff,
+    #0878df
+  );
+  color: #ffffff;
+  box-shadow:
+    0 10px 24px rgba(22, 142, 255, 0.2);
+}
+
+.submitButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 13px 28px rgba(22, 142, 255, 0.25);
+}
+
+.submitButton:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ============================================================
+   FOOTER NOTE
+============================================================ */
+
+.footerNote {
+  margin-top: 20px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  border: 1px solid #e3eaf3;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.footerIcon {
+  width: 35px;
+  height: 35px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: #2d9b69;
+  background: #eaf8f0;
+}
+
+.footerNote strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #34435e;
+  font-size: 13px;
+}
+
+.footerNote p {
+  margin: 0;
+  color: #7b879b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   SUCCESS
+============================================================ */
+
+.successCard {
+  max-width: 720px;
+  margin: 50px auto 0;
+  padding: 48px 42px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #dce7f2;
+  border-radius: 26px;
+  box-shadow:
+    0 22px 60px rgba(27, 62, 105, 0.09);
+}
+
+.successIcon {
+  width: 78px;
+  height: 78px;
+  margin: 0 auto 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+  color: #2c9c6a;
+  background: #eaf8f0;
+  border: 1px solid #cfeedd;
+}
+
+.successEyebrow {
+  display: block;
+  margin-bottom: 10px;
+  color: #319a6b;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.successCard h1 {
+  margin: 0;
+  color: #172554;
+  font-size: 29px;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.successCard > p {
+  max-width: 570px;
+  margin: 15px auto 25px;
+  color: #6f7e96;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.successReference {
+  max-width: 400px;
+  margin: 0 auto 28px;
+  padding: 14px 17px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  border: 1px solid #e1e9f2;
+  border-radius: 14px;
+  background: #f8fbfe;
+  color: #168eff;
+}
+
+.successReference div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.successReference strong {
+  color: #7b879b;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.successReference span {
+  color: #2b3a56;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.successActions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.primaryButton {
+  border: 0;
+  color: #ffffff;
+  background: #168eff;
+  box-shadow:
+    0 9px 20px rgba(22, 142, 255, 0.18);
+}
+
+.primaryButton:hover {
+  transform: translateY(-1px);
+}
+
+.secondaryButton {
+  border: 1px solid #d8e1ec;
+  color: #5f6e86;
+  background: #ffffff;
+}
+
+.secondaryButton:hover {
+  border-color: #bdcad9;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media (max-width: 760px) {
+  .page {
+    padding: 20px 15px 42px;
+  }
+
+  .backButton {
+    margin-bottom: 19px;
+    font-size: 14px;
+  }
+
+  .heroCard {
+    padding: 27px 22px 29px;
+    border-radius: 20px;
+  }
+
+  .heroIcon {
+    width: 66px;
+    height: 66px;
+    border-radius: 19px;
+    margin-bottom: 20px;
+  }
+
+  .heroCard h1 {
+    font-size: 31px;
+  }
+
+  .heroCard p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .formCard {
+    border-radius: 20px;
+  }
+
+  .formHeader {
+    padding: 25px 21px 23px;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .formHeader h2 {
+    font-size: 22px;
+  }
+
+  .formSection {
+    padding: 23px 21px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .priorityGrid {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .priorityOption {
+    min-height: 50px;
+  }
+
+  .privacyNote {
+    margin: 22px 21px 0;
+  }
+
+  .formActions {
+    padding: 22px 21px 27px;
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .cancelButton,
+  .submitButton {
+    width: 100%;
+  }
+
+  .footerNote {
+    margin-top: 16px;
+    padding: 17px;
+  }
+
+  .successCard {
+    margin-top: 30px;
+    padding: 35px 22px;
+    border-radius: 21px;
+  }
+
+  .successCard h1 {
+    font-size: 25px;
+  }
+
+  .successActions {
+    flex-direction: column;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .page {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .heroCard {
+    padding-left: 19px;
+    padding-right: 19px;
+  }
+
+  .heroCard h1 {
+    font-size: 28px;
+  }
+
+  .formHeader,
+  .formSection {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .privacyNote {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .formActions {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}

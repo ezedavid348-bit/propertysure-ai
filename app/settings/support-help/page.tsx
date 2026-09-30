@@ -5,6 +5,8 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
+import AppShell from "../../AppShell/AppShell";
+import LoadingScreen from "../../AppShell/LoadingScreen";
 import styles from "./support-help.module.css";
 import { supabase } from "../../lib/supabase";
 
@@ -15,23 +17,6 @@ ICON SYSTEM
 */
 
 type IconName =
-  | "dashboard"
-  | "verify"
-  | "properties"
-  | "history"
-  | "fraud"
-  | "reports"
-  | "account"
-  | "settings"
-  | "bell"
-  | "general"
-  | "security"
-  | "notifications"
-  | "appearance"
-  | "language"
-  | "privacy"
-  | "help"
-  | "logout"
   | "book"
   | "support"
   | "issue"
@@ -41,8 +26,7 @@ type IconName =
   | "email"
   | "chat"
   | "phone"
-  | "shield"
-  | "menu";
+  | "shield";
 
 function Icon({
   name,
@@ -54,43 +38,16 @@ function Icon({
   className?: string;
 }) {
   const icons: Record<IconName, string> = {
-    dashboard: "▦",
-    verify: "⇧",
-    properties: "⌂",
-    history: "◷",
-    fraud: "◈",
-    reports: "▤",
-    account: "◯",
-    settings: "⚙",
-
-    /*
-     * PropertySure AI standard notification icon.
-     * Its colour and sizing are controlled by CSS.
-     */
-    bell: "♧",
-
-    general: "▦",
-    security: "◇",
-    notifications: "●",
-    appearance: "◌",
-    language: "◎",
-    privacy: "▤",
-    help: "?",
-    logout: "↪",
-
     book: "▤",
     support: "♧",
     issue: "!",
     feature: "♧",
     document: "▤",
     arrow: "›",
-
     email: "✉",
     chat: "▢",
     phone: "⌕",
     shield: "◇",
-
-    menu: "☰",
   };
 
   return (
@@ -110,64 +67,43 @@ function Icon({
 
 /*
 ============================================================
-NAVIGATION
+POPULAR QUESTIONS
+============================================================
+These are intentionally different from the full Help Center
+article library. They are short, practical FAQ-style questions.
 ============================================================
 */
 
-const primaryNavigation = [
+const popularQuestions = [
   {
-    label: "Verify Property",
-    href: "/verify",
-    icon: "verify" as IconName,
+    question:
+      "What documents do I need to complete a property due diligence verification?",
+    answer:
+      "The required documents depend on the property and verification package. Common documents include the Certificate of Occupancy, Deed of Assignment, Survey Plan, Allocation Letter, and other relevant ownership or development documents.",
   },
   {
-    label: "My Properties",
-    href: "/my-properties",
-    icon: "properties" as IconName,
+    question:
+      "Do I need a subscription before I can verify a property?",
+    answer:
+      "You can review the available verification plans before starting. The plan you select determines the level of verification, checks, and report included for your property.",
   },
   {
-    label: "Verification History",
-    href: "/verification-history",
-    icon: "history" as IconName,
+    question:
+      "Can I verify a property before making payment to the seller?",
+    answer:
+      "Yes. Property due diligence can be performed before you commit to a property purchase. The purpose is to help you identify ownership, documentation, and other relevant risks before proceeding.",
   },
   {
-    label: "Fraud Watch",
-    href: "/fraud-watch",
-    icon: "fraud" as IconName,
+    question:
+      "How long does a property verification normally take?",
+    answer:
+      "The time depends on the verification package, the property location, the documents provided, and any external searches required. Your dashboard will show the status of an active verification.",
   },
   {
-    label: "Reports",
-    href: "/reports",
-    icon: "reports" as IconName,
-  },
-];
-
-/*
-============================================================
-POPULAR TOPICS
-============================================================
-*/
-
-const popularTopics = [
-  {
-    title: "How do I verify a property?",
-    href: "/settings/support-help/how-to-verify",
-  },
-  {
-    title: "How does Fraud Watch work?",
-    href: "/settings/support-help/fraud-watch",
-  },
-  {
-    title: "How do I enable two-factor authentication?",
-    href: "/settings/support-help/two-factor-authentication",
-  },
-  {
-    title: "How do I update my account information?",
-    href: "/settings/support-help/account-information",
-  },
-  {
-    title: "How do I export my data?",
-    href: "/settings/support-help/export-data",
+    question:
+      "Can I verify a Nigerian property if I am outside Nigeria?",
+    answer:
+      "Yes. PropertySure AI is designed to support remote property due diligence, allowing users outside Nigeria to submit property information and documents for verification without needing to be physically present.",
   },
 ];
 
@@ -180,11 +116,11 @@ PAGE
 export default function SupportHelpPage() {
   const router = useRouter();
 
-  const [menuOpen, setMenuOpen] =
-    useState(false);
-
   const [loadingUser, setLoadingUser] =
     useState(true);
+
+  const [openQuestion, setOpenQuestion] =
+    useState<number | null>(null);
 
   /*
   ============================================================
@@ -243,47 +179,17 @@ export default function SupportHelpPage() {
   */
 
   const navigateTo = (path: string) => {
-    setMenuOpen(false);
     router.push(path);
   };
 
   /*
   ============================================================
-  STANDARD BACK BUTTON
+  BACK TO SETTINGS
   ============================================================
   */
 
   const backToSettings = () => {
-    navigateTo("/settings");
-  };
-
-  /*
-  ============================================================
-  STANDARD NOTIFICATIONS
-  ============================================================
-  */
-
-  const openNotifications = () => {
-    navigateTo("/settings/notifications");
-  };
-
-  /*
-  ============================================================
-  SIGN OUT
-  ============================================================
-  */
-
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-
-      router.replace("/signin");
-    } catch (error) {
-      console.error(
-        "Sign out error:",
-        error
-      );
-    }
+    router.push("/settings");
   };
 
   /*
@@ -293,26 +199,7 @@ export default function SupportHelpPage() {
   */
 
   if (loadingUser) {
-    return (
-      <main className={styles.loading}>
-        <div
-          className={styles.loadingBrand}
-        >
-          <span>◆</span>
-
-          <div>
-            PropertySure
-            <strong> AI</strong>
-          </div>
-        </div>
-
-        <div
-          className={styles.loadingText}
-        >
-          Loading support...
-        </div>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   /*
@@ -322,843 +209,674 @@ export default function SupportHelpPage() {
   */
 
   return (
-    <main className={styles.page}>
-      {/* =====================================================
-          DESKTOP SIDEBAR
-      ===================================================== */}
-
-      <aside className={styles.sidebar}>
-        <button
-          type="button"
-          className={styles.brand}
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <span
-            className={styles.brandDiamond}
-          >
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </button>
-
-        <nav
-          className={styles.primaryNav}
-        >
-          {primaryNavigation.map(
-            (item) => (
-              <button
-                key={item.href}
-                type="button"
-                className={styles.navItem}
-                onClick={() =>
-                  navigateTo(
-                    item.href
-                  )
-                }
-              >
-                <Icon
-                  name={item.icon}
-                  size={18}
-                />
-
-                <span>
-                  {item.label}
-                </span>
-              </button>
-            )
-          )}
-        </nav>
-
-        <div
-          className={
-            styles.accountLabel
-          }
-        >
-          ACCOUNT
-        </div>
-
-        <button
-          type="button"
-          className={styles.navItem}
-          onClick={() =>
-            navigateTo("/account")
-          }
-        >
-          <Icon
-            name="account"
-            size={18}
-          />
-
-          <span>Account</span>
-        </button>
-
-        <button
-          type="button"
-          className={`${styles.navItem} ${styles.settingsActive}`}
-          onClick={() =>
-            navigateTo("/settings")
-          }
-        >
-          <Icon
-            name="settings"
-            size={18}
-          />
-
-          <span>Settings</span>
-        </button>
-
-        <div
-          className={
-            styles.sidebarHelp
-          }
-        >
-          <strong>
-            Need Help?
-          </strong>
-
-          <p>
-            Our support team is ready
-            to assist you.
-          </p>
-
-          <button
-            type="button"
-            onClick={() =>
-              navigateTo(
-                "/settings/support-help/contact"
-              )
-            }
-          >
-            <Icon
-              name="support"
-              size={16}
-            />
-
-            Contact Support
-          </button>
-        </div>
-
-        <div
-          className={styles.weather}
-        >
-          <span>☀</span>
-
-          <div>
-            <strong>
-              77°F
-            </strong>
-
-            <small>
-              Mostly clear
-            </small>
-          </div>
-        </div>
-      </aside>
-
-      {/* =====================================================
-          MOBILE HEADER
-      ===================================================== */}
-
-      <header
-        className={styles.mobileHeader}
-      >
-        <button
-          type="button"
-          className={styles.mobileMenuButton}
-          onClick={() =>
-            setMenuOpen(true)
-          }
-          aria-label="Open menu"
-        >
-          <Icon
-            name="menu"
-            size={23}
-          />
-        </button>
-
-        <button
-          type="button"
-          className={styles.mobileBrand}
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <span>◆</span>
-
-          <div>
-            PropertySure
-            <strong> AI</strong>
-          </div>
-        </button>
-
-        {/* =================================================
-            STANDARD MOBILE NOTIFICATION BELL
-        ================================================= */}
-
-        <button
-          type="button"
-          className={styles.topBell}
-          onClick={openNotifications}
-          aria-label="Notifications"
-        >
-          <Icon
-            name="bell"
-            size={20}
-          />
-
-          <span
-            className={
-              styles.topBellDot
-            }
-          />
-        </button>
-      </header>
-
-      {/* =====================================================
-          MOBILE MENU
-      ===================================================== */}
-
-      {menuOpen && (
-        <div
-          className={styles.mobileMenu}
-        >
-          <div
-            className={
-              styles.mobileMenuTop
-            }
-          >
-            <button
-              type="button"
-              onClick={() =>
-                navigateTo(
-                  "/dashboard"
-                )
-              }
-            >
-              ◆ PropertySure
-              <strong> AI</strong>
-            </button>
-
-            <button
-              type="button"
-              className={
-                styles.mobileClose
-              }
-              onClick={() =>
-                setMenuOpen(false)
-              }
-            >
-              ×
-            </button>
-          </div>
-
-          {primaryNavigation.map(
-            (item) => (
-              <button
-                key={item.href}
-                type="button"
-                className={
-                  styles.mobileMenuItem
-                }
-                onClick={() =>
-                  navigateTo(
-                    item.href
-                  )
-                }
-              >
-                <Icon
-                  name={item.icon}
-                  size={18}
-                />
-
-                {item.label}
-              </button>
-            )
-          )}
-
-          <div
-            className={
-              styles.mobileMenuAccount
-            }
-          >
-            ACCOUNT
-          </div>
-
-          <button
-            type="button"
-            className={
-              styles.mobileMenuItem
-            }
-            onClick={() =>
-              navigateTo("/account")
-            }
-          >
-            <Icon
-              name="account"
-              size={18}
-            />
-
-            Account
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.mobileMenuItem} ${styles.mobileMenuActive}`}
-            onClick={() =>
-              navigateTo("/settings")
-            }
-          >
-            <Icon
-              name="settings"
-              size={18}
-            />
-
-            Settings
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.mobileMenuItem} ${styles.mobileLogout}`}
-            onClick={signOut}
-          >
-            <Icon
-              name="logout"
-              size={18}
-            />
-
-            Sign Out
-          </button>
-        </div>
-      )}
-
-      {/* =====================================================
-          MAIN CONTENT
-      ===================================================== */}
-
-      <section
-        className={styles.main}
-      >
-        <div
-          className={styles.mainInner}
-        >
-          {/* =================================================
-              HEADER
-          ================================================= */}
-
-          <header
-            className={styles.pageHeader}
-          >
-            <h1>
-              Support & Help
-            </h1>
-
-            <p>
-              We're here to help.
-              Find answers or get in
-              touch with our support
-              team.
-            </p>
-
+    <AppShell
+      activePath="/settings"
+      headerPath="/settings"
+    >
+      <main className={styles.page}>
+        <section className={styles.main}>
+          <div className={styles.mainInner}>
             {/* =================================================
-                STANDARD BACK BUTTON
+                HEADER
             ================================================= */}
 
-            <button
-              type="button"
-              className={styles.backButton}
-              onClick={backToSettings}
+            <header
+              className={styles.pageHeader}
             >
-              ‹ Back to Settings
-            </button>
-          </header>
-
-          {/* =================================================
-              HOW CAN WE HELP
-          ================================================= */}
-
-          <section
-            className={styles.helpCard}
-          >
-            <h2>
-              How can we help you?
-            </h2>
-
-            <div
-              className={styles.helpGrid}
-            >
-              {/* =================================================
-                  HELP CENTER
-              ================================================= */}
-
-              <button
-                type="button"
-                className={styles.helpOption}
-                onClick={() =>
-                  navigateTo(
-                    "/settings/support-help/help-center"
-                  )
-                }
-              >
+              <div>
                 <div
-                  className={`${styles.helpIcon} ${styles.blue}`}
+                  className={
+                    styles.eyebrow
+                  }
                 >
-                  <Icon
-                    name="book"
-                    size={25}
-                  />
+                  SUPPORT CENTER
                 </div>
 
-                <strong>
-                  Help Center
-                </strong>
+                <h1>
+                  Support & Help
+                </h1>
 
-                <span>
-                  Browse articles and
-                  find solutions
-                </span>
-              </button>
-
-              {/* =================================================
-                  CONTACT SUPPORT
-              ================================================= */}
-
-              <button
-                type="button"
-                className={styles.helpOption}
-                onClick={() =>
-                  navigateTo(
-                    "/settings/support-help/contact"
-                  )
-                }
-              >
-                <div
-                  className={`${styles.helpIcon} ${styles.green}`}
-                >
-                  <Icon
-                    name="support"
-                    size={25}
-                  />
-                </div>
-
-                <strong>
-                  Contact Support
-                </strong>
-
-                <span>
-                  Get help from our
-                  support team
-                </span>
-              </button>
-
-              {/* =================================================
-                  REPORT ISSUE
-              ================================================= */}
-
-              <button
-                type="button"
-                className={styles.helpOption}
-                onClick={() =>
-                  navigateTo(
-                    "/settings/support-help/report-issue"
-                  )
-                }
-              >
-                <div
-                  className={`${styles.helpIcon} ${styles.yellow}`}
-                >
-                  <Icon
-                    name="issue"
-                    size={25}
-                  />
-                </div>
-
-                <strong>
-                  Report an Issue
-                </strong>
-
-                <span>
-                  Report a bug or
-                  unexpected behavior
-                </span>
-              </button>
-
-              {/* =================================================
-                  FEATURE REQUEST
-              ================================================= */}
-
-              <button
-                type="button"
-                className={styles.helpOption}
-                onClick={() =>
-                  navigateTo(
-                    "/settings/support-help/feature-request"
-                  )
-                }
-              >
-                <div
-                  className={`${styles.helpIcon} ${styles.purple}`}
-                >
-                  <Icon
-                    name="feature"
-                    size={25}
-                  />
-                </div>
-
-                <strong>
-                  Feature Request
-                </strong>
-
-                <span>
-                  Suggest features and
-                  improvements
-                </span>
-              </button>
-            </div>
-          </section>
-
-          {/* =================================================
-              LOWER GRID
-          ================================================= */}
-
-          <div
-            className={styles.lowerGrid}
-          >
-            {/* ===============================================
-                POPULAR TOPICS
-            =============================================== */}
-
-            <section
-              className={styles.topicsCard}
-            >
-              <h2>
-                Popular Topics
-              </h2>
-
-              <div
-                className={styles.topicList}
-              >
-                {popularTopics.map(
-                  (topic) => (
-                    <button
-                      key={topic.href}
-                      type="button"
-                      className={
-                        styles.topicItem
-                      }
-                      onClick={() =>
-                        navigateTo(
-                          topic.href
-                        )
-                      }
-                    >
-                      <span
-                        className={
-                          styles.topicIcon
-                        }
-                      >
-                        <Icon
-                          name="document"
-                          size={14}
-                        />
-                      </span>
-
-                      <span
-                        className={
-                          styles.topicTitle
-                        }
-                      >
-                        {topic.title}
-                      </span>
-
-                      <Icon
-                        name="arrow"
-                        size={20}
-                        className={
-                          styles.topicArrow
-                        }
-                      />
-                    </button>
-                  )
-                )}
+                <p>
+                  We're here to help.
+                  Find answers or get in
+                  touch with our support
+                  team.
+                </p>
               </div>
 
+              {/* =================================================
+                  STANDARD BACK BUTTON
+              ================================================= */}
+
               <button
                 type="button"
                 className={
-                  styles.viewArticles
+                  styles.backButton
                 }
-                onClick={() =>
-                  navigateTo(
-                    "/settings/support-help/help-center"
-                  )
+                onClick={
+                  backToSettings
                 }
               >
-                View all articles
-              </button>
-            </section>
+                <span
+                  className={
+                    styles.backArrow
+                  }
+                  aria-hidden="true"
+                >
+                  ←
+                </span>
 
-            {/* ===============================================
-                CONTACT INFORMATION
-            =============================================== */}
+                <span>
+                  Back to Settings
+                </span>
+              </button>
+            </header>
+
+            {/* =================================================
+                HOW CAN WE HELP
+            ================================================= */}
 
             <section
-              className={styles.contactCard}
+              className={styles.helpCard}
             >
-              <h2>
-                Contact Information
-              </h2>
-
               <div
                 className={
-                  styles.contactItem
+                  styles.sectionHeading
                 }
               >
-                <div
-                  className={`${styles.contactIcon} ${styles.blue}`}
-                >
-                  <Icon
-                    name="email"
-                    size={18}
-                  />
-                </div>
-
                 <div>
-                  <strong>
-                    Email Support
-                  </strong>
-
-                  <span>
-                    Contact our support
-                    team through your
-                    registered account.
+                  <span
+                    className={
+                      styles.sectionEyebrow
+                    }
+                  >
+                    SUPPORT OPTIONS
                   </span>
 
-                  <small>
-                    We typically reply
-                    within 24 hours.
-                  </small>
+                  <h2>
+                    How can we help you?
+                  </h2>
+
+                  <p>
+                    Choose an option below
+                    to get the assistance
+                    you need.
+                  </p>
                 </div>
               </div>
 
               <div
+                className={styles.helpGrid}
+              >
+                {/* =================================================
+                    HELP CENTER
+                ================================================= */}
+
+                <button
+                  type="button"
+                  className={
+                    styles.helpOption
+                  }
+                  onClick={() =>
+                    navigateTo(
+                      "/settings/support-help/help-center"
+                    )
+                  }
+                >
+                  <div
+                    className={
+                      styles.helpOptionTop
+                    }
+                  >
+                    <div
+                      className={`${styles.helpIcon} ${styles.blue}`}
+                    >
+                      <Icon
+                        name="book"
+                        size={25}
+                      />
+                    </div>
+
+                    <span
+                      className={
+                        styles.cardArrow
+                      }
+                    >
+                      →
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      styles.helpOptionBody
+                    }
+                  >
+                    <strong>
+                      Help Center
+                    </strong>
+
+                    <span>
+                      Browse our knowledge
+                      base and find
+                      answers to common
+                      questions.
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      styles.cardAction
+                    }
+                  >
+                    Explore Help Center
+                  </div>
+                </button>
+
+                {/* =================================================
+                    CONTACT SUPPORT
+                ================================================= */}
+
+                <button
+                  type="button"
+                  className={
+                    styles.helpOption
+                  }
+                  onClick={() =>
+                    navigateTo(
+                      "/settings/support-help/contact-support"
+                    )
+                  }
+                >
+                  <div
+                    className={
+                      styles.helpOptionTop
+                    }
+                  >
+                    <div
+                      className={`${styles.helpIcon} ${styles.green}`}
+                    >
+                      <Icon
+                        name="support"
+                        size={25}
+                      />
+                    </div>
+
+                    <span
+                      className={
+                        styles.cardArrow
+                      }
+                    >
+                      →
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      styles.helpOptionBody
+                    }
+                  >
+                    <strong>
+                      Contact Support
+                    </strong>
+
+                    <span>
+                      Get direct assistance
+                      from the PropertySure
+                      support team.
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      styles.cardAction
+                    }
+                  >
+                    Contact Our Team
+                  </div>
+                </button>
+
+                {/* =================================================
+                    REPORT ISSUE
+                ================================================= */}
+
+                <button
+                  type="button"
+                  className={
+                    styles.helpOption
+                  }
+                  onClick={() =>
+                    navigateTo(
+                      "/settings/support-help/report-issue"
+                    )
+                  }
+                >
+                  <div
+                    className={
+                      styles.helpOptionTop
+                    }
+                  >
+                    <div
+                      className={`${styles.helpIcon} ${styles.yellow}`}
+                    >
+                      <Icon
+                        name="issue"
+                        size={25}
+                      />
+                    </div>
+
+                    <span
+                      className={
+                        styles.cardArrow
+                      }
+                    >
+                      →
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      styles.helpOptionBody
+                    }
+                  >
+                    <strong>
+                      Report an Issue
+                    </strong>
+
+                    <span>
+                      Tell us about a bug,
+                      technical problem, or
+                      unexpected behavior.
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      styles.cardAction
+                    }
+                  >
+                    Report a Problem
+                  </div>
+                </button>
+
+                {/* =================================================
+                    FEATURE REQUEST
+                ================================================= */}
+
+                <button
+                  type="button"
+                  className={
+                    styles.helpOption
+                  }
+                  onClick={() =>
+                    navigateTo(
+                      "/settings/support-help/feature-request"
+                    )
+                  }
+                >
+                  <div
+                    className={
+                      styles.helpOptionTop
+                    }
+                  >
+                    <div
+                      className={`${styles.helpIcon} ${styles.purple}`}
+                    >
+                      <Icon
+                        name="feature"
+                        size={25}
+                      />
+                    </div>
+
+                    <span
+                      className={
+                        styles.cardArrow
+                      }
+                    >
+                      →
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      styles.helpOptionBody
+                    }
+                  >
+                    <strong>
+                      Feature Requests
+                    </strong>
+
+                    <span>
+                      Suggest a new feature
+                      or improvement for
+                      PropertySure AI.
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      styles.cardAction
+                    }
+                  >
+                    Suggest a Feature
+                  </div>
+                </button>
+              </div>
+            </section>
+
+            {/* =================================================
+                LOWER GRID
+            ================================================= */}
+
+            <div
+              className={styles.lowerGrid}
+            >
+              {/* ===============================================
+                  POPULAR QUESTIONS
+              =============================================== */}
+
+              <section
                 className={
-                  styles.contactItem
+                  styles.topicsCard
                 }
               >
                 <div
-                  className={`${styles.contactIcon} ${styles.blue}`}
+                  className={
+                    styles.cardHeader
+                  }
+                >
+                  <div>
+                    <span
+                      className={
+                        styles.sectionEyebrow
+                      }
+                    >
+                      QUICK ANSWERS
+                    </span>
+
+                    <h2>
+                      Popular Questions
+                    </h2>
+
+                    <p>
+                      Answers to some of the
+                      questions users ask most
+                      often.
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  className={
+                    styles.topicList
+                  }
+                >
+                  {popularQuestions.map(
+                    (
+                      question,
+                      index
+                    ) => {
+                      const isOpen =
+                        openQuestion ===
+                        index;
+
+                      return (
+                        <div
+                          key={
+                            question.question
+                          }
+                          className={
+                            styles.topicItemWrap
+                          }
+                        >
+                          <button
+                            type="button"
+                            className={`${styles.topicItem} ${
+                              isOpen
+                                ? styles.topicItemOpen
+                                : ""
+                            }`}
+                            onClick={() =>
+                              setOpenQuestion(
+                                isOpen
+                                  ? null
+                                  : index
+                              )
+                            }
+                            aria-expanded={
+                              isOpen
+                            }
+                          >
+                            <span
+                              className={
+                                styles.topicIcon
+                              }
+                            >
+                              <Icon
+                                name="document"
+                                size={14}
+                              />
+                            </span>
+
+                            <span
+                              className={
+                                styles.topicTitle
+                              }
+                            >
+                              {
+                                question.question
+                              }
+                            </span>
+
+                            <span
+                              className={
+                                styles.topicToggle
+                              }
+                            >
+                              {isOpen
+                                ? "−"
+                                : "+"}
+                            </span>
+                          </button>
+
+                          {isOpen && (
+                            <div
+                              className={
+                                styles.topicAnswer
+                              }
+                            >
+                              {
+                                question.answer
+                              }
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  className={
+                    styles.viewArticles
+                  }
+                  onClick={() =>
+                    navigateTo(
+                      "/settings/support-help/help-center"
+                    )
+                  }
+                >
+                  Browse the full Help Center
+                  <span>→</span>
+                </button>
+              </section>
+
+              {/* ===============================================
+                  CONTACT INFORMATION
+              =============================================== */}
+
+              <section
+                className={
+                  styles.contactCard
+                }
+              >
+                <h2>
+                  Contact Information
+                </h2>
+
+                <div
+                  className={
+                    styles.contactItem
+                  }
+                >
+                  <div
+                    className={`${styles.contactIcon} ${styles.blue}`}
+                  >
+                    <Icon
+                      name="email"
+                      size={18}
+                    />
+                  </div>
+
+                  <div>
+                    <strong>
+                      Email Support
+                    </strong>
+
+                    <span>
+                      Contact our support
+                      team through your
+                      registered account.
+                    </span>
+
+                    <small>
+                      We typically reply
+                      within 24 hours.
+                    </small>
+                  </div>
+                </div>
+
+                <div
+                  className={
+                    styles.contactItem
+                  }
+                >
+                  <div
+                    className={`${styles.contactIcon} ${styles.blue}`}
+                  >
+                    <Icon
+                      name="chat"
+                      size={18}
+                    />
+                  </div>
+
+                  <div>
+                    <strong>
+                      Live Chat
+                    </strong>
+
+                    <span>
+                      Get assistance directly
+                      from our support team.
+                    </span>
+
+                    <small>
+                      Availability will be
+                      shown when live chat is
+                      enabled.
+                    </small>
+                  </div>
+                </div>
+
+                <div
+                  className={
+                    styles.contactItem
+                  }
+                >
+                  <div
+                    className={`${styles.contactIcon} ${styles.blue}`}
+                  >
+                    <Icon
+                      name="phone"
+                      size={18}
+                    />
+                  </div>
+
+                  <div>
+                    <strong>
+                      Phone Support
+                    </strong>
+
+                    <span>
+                      Phone support will be
+                      available for eligible
+                      customers.
+                    </span>
+
+                    <small>
+                      Support hours will be
+                      displayed here.
+                    </small>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className={
+                    styles.chatButton
+                  }
+                  onClick={() =>
+                    navigateTo(
+                      "/settings/support-help/contact-support"
+                    )
+                  }
                 >
                   <Icon
                     name="chat"
-                    size={18}
+                    size={16}
                   />
-                </div>
 
-                <div>
-                  <strong>
-                    Live Chat
-                  </strong>
+                  Start Live Chat
+                </button>
+              </section>
+            </div>
 
-                  <span>
-                    Get assistance directly
-                    from our support team.
-                  </span>
+            {/* =================================================
+                SATISFACTION BANNER
+            ================================================= */}
 
-                  <small>
-                    Availability will be
-                    shown when live chat is
-                    enabled.
-                  </small>
-                </div>
-              </div>
-
+            <section
+              className={
+                styles.satisfaction
+              }
+            >
               <div
                 className={
-                  styles.contactItem
-                }
-              >
-                <div
-                  className={`${styles.contactIcon} ${styles.blue}`}
-                >
-                  <Icon
-                    name="phone"
-                    size={18}
-                  />
-                </div>
-
-                <div>
-                  <strong>
-                    Phone Support
-                  </strong>
-
-                  <span>
-                    Phone support will be
-                    available for eligible
-                    customers.
-                  </span>
-
-                  <small>
-                    Support hours will be
-                    displayed here.
-                  </small>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className={
-                  styles.chatButton
-                }
-                onClick={() =>
-                  navigateTo(
-                    "/settings/support-help/contact"
-                  )
+                  styles.satisfactionIcon
                 }
               >
                 <Icon
-                  name="chat"
-                  size={16}
+                  name="shield"
+                  size={25}
                 />
+              </div>
 
-                Start Live Chat
-              </button>
+              <div>
+                <strong>
+                  Your satisfaction is our
+                  priority
+                </strong>
+
+                <p>
+                  We're committed to
+                  providing fast, friendly,
+                  and effective support.
+                </p>
+              </div>
             </section>
           </div>
-
-          {/* =================================================
-              SATISFACTION BANNER
-          ================================================= */}
-
-          <section
-            className={
-              styles.satisfaction
-            }
-          >
-            <div
-              className={
-                styles.satisfactionIcon
-              }
-            >
-              <Icon
-                name="shield"
-                size={25}
-              />
-            </div>
-
-            <div>
-              <strong>
-                Your satisfaction is our
-                priority
-              </strong>
-
-              <p>
-                We're committed to
-                providing fast, friendly,
-                and effective support.
-              </p>
-            </div>
-          </section>
-        </div>
-      </section>
-
-      {/* =====================================================
-          MOBILE BOTTOM NAV
-      ===================================================== */}
-
-      <nav
-        className={
-          styles.mobileBottomNav
-        }
-      >
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <Icon
-            name="dashboard"
-            size={19}
-          />
-
-          <span>
-            Dashboard
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/verify")
-          }
-        >
-          <Icon
-            name="verify"
-            size={19}
-          />
-
-          <span>
-            Verify
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/my-properties")
-          }
-        >
-          <Icon
-            name="properties"
-            size={19}
-          />
-
-          <span>
-            Properties
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/reports")
-          }
-        >
-          <Icon
-            name="reports"
-            size={19}
-          />
-
-          <span>
-            Reports
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.activeBottom
-          }
-          onClick={() =>
-            navigateTo("/settings")
-          }
-        >
-          <Icon
-            name="settings"
-            size={19}
-          />
-
-          <span>
-            Settings
-          </span>
-        </button>
-      </nav>
-    </main>
+        </section>
+      </main>
+    </AppShell>
   );
 }

@@ -4,9 +4,13 @@ import {
   useEffect,
   useState,
 } from "react";
+
 import { useRouter } from "next/navigation";
+
 import styles from "./help-center.module.css";
+
 import { supabase } from "../../../lib/supabase";
+
 
 /*
 ============================================================
@@ -46,6 +50,7 @@ type IconName =
   | "user"
   | "logout";
 
+
 function Icon({
   name,
   size = 18,
@@ -55,14 +60,10 @@ function Icon({
   size?: number;
   className?: string;
 }) {
-  const icons: Record<IconName, string> = {
-    /*
-    --------------------------------------------------------
-    EXISTING NAVIGATION ICONS
-    DO NOT CHANGE
-    --------------------------------------------------------
-    */
-
+  const icons: Record<
+    IconName,
+    string
+  > = {
     dashboard: "▦",
     verify: "⇧",
     properties: "⌂",
@@ -73,12 +74,6 @@ function Icon({
     settings: "⚙",
     bell: "🔔",
 
-    /*
-    --------------------------------------------------------
-    EXISTING GENERAL ICONS
-    --------------------------------------------------------
-    */
-
     search: "⌕",
     home: "⌂",
     shield: "♢",
@@ -86,11 +81,6 @@ function Icon({
     creditCard: "▭",
     privacy: "♙",
     chevron: "›",
-
-    /*
-    HEADSET IS RENDERED AS A REAL SVG BELOW.
-    --------------------------------------------------------
-    */
 
     headset: "",
 
@@ -104,13 +94,13 @@ function Icon({
     logout: "↪",
   };
 
+
   /*
   ==========================================================
   REAL HEADSET / SUPPORT ICON
   ==========================================================
-  Used for:
-  - Contact Support
-  - Help Center Tips
+  This is the headset icon we will also use on the
+  Support & Help Contact Support card later.
   ==========================================================
   */
 
@@ -151,6 +141,7 @@ function Icon({
     );
   }
 
+
   return (
     <span
       className={`${styles.icon} ${className}`}
@@ -164,14 +155,12 @@ function Icon({
   );
 }
 
+
 /*
 ============================================================
 HELP CENTER CATEGORY ICON SYSTEM
 ============================================================
 These icons are ONLY for the Browse by Category cards.
-
-They are completely separate from the existing navigation
-icon system.
 ============================================================
 */
 
@@ -184,17 +173,12 @@ type CategoryIconName =
   | "payment"
   | "privacy";
 
+
 function CategoryIcon({
   name,
 }: {
   name: CategoryIconName;
 }) {
-  /*
-  ----------------------------------------------------------
-  PROPERTY VERIFICATION
-  ----------------------------------------------------------
-  */
-
   if (name === "property") {
     return (
       <svg
@@ -223,11 +207,6 @@ function CategoryIcon({
     );
   }
 
-  /*
-  ----------------------------------------------------------
-  FRAUD WATCH
-  ----------------------------------------------------------
-  */
 
   if (name === "fraud") {
     return (
@@ -251,11 +230,6 @@ function CategoryIcon({
     );
   }
 
-  /*
-  ----------------------------------------------------------
-  ACCOUNT & SECURITY
-  ----------------------------------------------------------
-  */
 
   if (name === "security") {
     return (
@@ -287,11 +261,6 @@ function CategoryIcon({
     );
   }
 
-  /*
-  ----------------------------------------------------------
-  REPORTS & HISTORY
-  ----------------------------------------------------------
-  */
 
   if (name === "reports") {
     return (
@@ -319,11 +288,6 @@ function CategoryIcon({
     );
   }
 
-  /*
-  ----------------------------------------------------------
-  GETTING STARTED
-  ----------------------------------------------------------
-  */
 
   if (name === "gettingStarted") {
     return (
@@ -355,11 +319,6 @@ function CategoryIcon({
     );
   }
 
-  /*
-  ----------------------------------------------------------
-  PAYMENTS & SUBSCRIPTIONS
-  ----------------------------------------------------------
-  */
 
   if (name === "payment") {
     return (
@@ -393,11 +352,6 @@ function CategoryIcon({
     );
   }
 
-  /*
-  ----------------------------------------------------------
-  PRIVACY & DATA
-  ----------------------------------------------------------
-  */
 
   return (
     <svg
@@ -418,6 +372,7 @@ function CategoryIcon({
   );
 }
 
+
 /*
 ============================================================
 NAVIGATION
@@ -432,31 +387,26 @@ const navItems = [
     href: "/dashboard",
     icon: "dashboard" as IconName,
   },
-
   {
     label: "Verify Property",
     href: "/verify",
     icon: "verify" as IconName,
   },
-
   {
     label: "My Properties",
     href: "/my-properties",
     icon: "properties" as IconName,
   },
-
   {
     label: "Verification History",
     href: "/verification-history",
     icon: "history" as IconName,
   },
-
   {
     label: "Fraud Watch",
     href: "/fraud-watch",
     icon: "fraud" as IconName,
   },
-
   {
     label: "Reports",
     href: "/reports",
@@ -464,10 +414,12 @@ const navItems = [
   },
 ];
 
+
 /*
 ============================================================
 HELP CATEGORIES
 ============================================================
+Existing article routes are preserved.
 ============================================================
 */
 
@@ -585,6 +537,7 @@ const categories = [
   },
 ];
 
+
 /*
 ============================================================
 POPULAR SEARCHES
@@ -598,6 +551,7 @@ const popularSearches = [
   "reports",
   "getting started",
 ];
+
 
 /*
 ============================================================
@@ -626,7 +580,9 @@ function CategoryCard({
     <button
       type="button"
       className={styles.categoryCard}
-      onClick={() => onClick(href)}
+      onClick={() =>
+        onClick(href)
+      }
     >
       <div
         className={`${styles.categoryIcon} ${styles[color]}`}
@@ -636,15 +592,27 @@ function CategoryCard({
         />
       </div>
 
-      <div className={styles.categoryTitle}>
+      <div
+        className={
+          styles.categoryTitle
+        }
+      >
         {title}
       </div>
 
-      <div className={styles.categoryDescription}>
+      <div
+        className={
+          styles.categoryDescription
+        }
+      >
         {description}
       </div>
 
-      <div className={styles.categoryFooter}>
+      <div
+        className={
+          styles.categoryFooter
+        }
+      >
         <span>
           {articles}
         </span>
@@ -658,6 +626,7 @@ function CategoryCard({
   );
 }
 
+
 /*
 ============================================================
 HELP CENTER PAGE
@@ -665,17 +634,21 @@ HELP CENTER PAGE
 */
 
 export default function HelpCenterPage() {
-  const router = useRouter();
+  const router =
+    useRouter();
+
 
   const [
     menuOpen,
     setMenuOpen,
   ] = useState(false);
 
+
   const [
     search,
     setSearch,
   ] = useState("");
+
 
   const [
     user,
@@ -686,6 +659,7 @@ export default function HelpCenterPage() {
     plan: "Free Plan",
   });
 
+
   /*
   ============================================================
   LOAD USER
@@ -695,77 +669,90 @@ export default function HelpCenterPage() {
   useEffect(() => {
     let mounted = true;
 
-    const loadUser = async () => {
-      try {
-        const {
-          data: { user: authUser },
-        } =
-          await supabase.auth.getUser();
+    const loadUser =
+      async () => {
+        try {
+          const {
+            data: {
+              user: authUser,
+            },
+          } =
+            await supabase.auth.getUser();
 
-        if (!authUser) {
-          router.replace("/signin");
-          return;
+          if (!authUser) {
+            router.replace(
+              "/signin"
+            );
+
+            return;
+          }
+
+          if (!mounted) {
+            return;
+          }
+
+          const metadata =
+            authUser.user_metadata ||
+            {};
+
+          const metadataName =
+            metadata.full_name ||
+            metadata.name ||
+            metadata.display_name ||
+            "";
+
+          const email =
+            authUser.email ||
+            "";
+
+          const fallbackName =
+            email
+              ? email
+                  .split("@")[0]
+                  .replace(
+                    /[._-]+/g,
+                    " "
+                  )
+                  .replace(
+                    /\b\w/g,
+                    (
+                      letter: string
+                    ) =>
+                      letter.toUpperCase()
+                  )
+              : "User";
+
+          const fullName =
+            String(
+              metadataName
+            ).trim() ||
+            fallbackName;
+
+          const initial =
+            fullName
+              .trim()
+              .charAt(0)
+              .toUpperCase() ||
+            "U";
+
+          const plan =
+            metadata.plan ||
+            metadata.subscription_plan ||
+            metadata.account_plan ||
+            "Free Plan";
+
+          setUser({
+            fullName,
+            initial,
+            plan: String(plan),
+          });
+        } catch (error) {
+          console.error(
+            "Help Center user loading error:",
+            error
+          );
         }
-
-        if (!mounted) {
-          return;
-        }
-
-        const metadata =
-          authUser.user_metadata || {};
-
-        const metadataName =
-          metadata.full_name ||
-          metadata.name ||
-          metadata.display_name ||
-          "";
-
-        const email =
-          authUser.email || "";
-
-        const fallbackName = email
-          ? email
-              .split("@")[0]
-              .replace(
-                /[._-]+/g,
-                " "
-              )
-              .replace(
-                /\b\w/g,
-                (letter: string) =>
-                  letter.toUpperCase()
-              )
-          : "User";
-
-        const fullName =
-          String(metadataName).trim() ||
-          fallbackName;
-
-        const initial =
-          fullName
-            .trim()
-            .charAt(0)
-            .toUpperCase() ||
-          "U";
-
-        const plan =
-          metadata.plan ||
-          metadata.subscription_plan ||
-          metadata.account_plan ||
-          "Free Plan";
-
-        setUser({
-          fullName,
-          initial,
-          plan: String(plan),
-        });
-      } catch (error) {
-        console.error(
-          "Help Center user loading error:",
-          error
-        );
-      }
-    };
+      };
 
     loadUser();
 
@@ -774,11 +761,10 @@ export default function HelpCenterPage() {
     };
   }, [router]);
 
+
   /*
   ============================================================
   NAVIGATION
-  ============================================================
-  EXISTING NAVIGATION LOGIC — UNCHANGED
   ============================================================
   */
 
@@ -786,32 +772,38 @@ export default function HelpCenterPage() {
     href: string
   ) => {
     setMenuOpen(false);
+
     router.push(href);
   };
+
 
   /*
   ============================================================
   NOTIFICATIONS
   ============================================================
-  UNCHANGED
-  ============================================================
   */
 
-  const openNotifications = () => {
-    navigateTo(
-      "/settings/notifications"
-    );
-  };
+  const openNotifications =
+    () => {
+      navigateTo(
+        "/settings/notifications"
+      );
+    };
+
 
   /*
   ============================================================
-  BACK TO SETTINGS
+  BACK TO SUPPORT & HELP
   ============================================================
   */
 
-  const backToSettings = () => {
-    navigateTo("/settings");
-  };
+  const backToSupportHelp =
+    () => {
+      navigateTo(
+        "/settings/support-help"
+      );
+    };
+
 
   /*
   ============================================================
@@ -819,20 +811,22 @@ export default function HelpCenterPage() {
   ============================================================
   */
 
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
+  const signOut =
+    async () => {
+      try {
+        await supabase.auth.signOut();
 
-      router.replace(
-        "/signin"
-      );
-    } catch (error) {
-      console.error(
-        "Sign out error:",
-        error
-      );
-    }
-  };
+        router.replace(
+          "/signin"
+        );
+      } catch (error) {
+        console.error(
+          "Sign out error:",
+          error
+        );
+      }
+    };
+
 
   /*
   ============================================================
@@ -842,19 +836,26 @@ export default function HelpCenterPage() {
 
   return (
     <main
-      className={styles.page}
+      className={
+        styles.page
+      }
     >
+
       {/* =====================================================
           DESKTOP SIDEBAR
-          DO NOT CHANGE
       ===================================================== */}
 
       <aside
-        className={styles.sidebar}
+        className={
+          styles.sidebar
+        }
       >
+
         <button
           type="button"
-          className={styles.brandButton}
+          className={
+            styles.brandButton
+          }
           onClick={() =>
             navigateTo(
               "/dashboard"
@@ -862,7 +863,9 @@ export default function HelpCenterPage() {
           }
         >
           <div
-            className={styles.brandName}
+            className={
+              styles.brandName
+            }
           >
             <span
               className={
@@ -892,8 +895,11 @@ export default function HelpCenterPage() {
           </div>
         </button>
 
+
         <nav
-          className={styles.sidebarNav}
+          className={
+            styles.sidebarNav
+          }
         >
           {navItems.map(
             (item) => (
@@ -932,6 +938,7 @@ export default function HelpCenterPage() {
           )}
         </nav>
 
+
         <div
           className={
             styles.accountLabel
@@ -939,6 +946,7 @@ export default function HelpCenterPage() {
         >
           ACCOUNT
         </div>
+
 
         <button
           type="button"
@@ -967,6 +975,7 @@ export default function HelpCenterPage() {
           </span>
         </button>
 
+
         <button
           type="button"
           className={`${styles.navItem} ${styles.navActive}`}
@@ -991,6 +1000,7 @@ export default function HelpCenterPage() {
             Settings
           </span>
         </button>
+
 
         <div
           className={
@@ -1033,6 +1043,7 @@ export default function HelpCenterPage() {
             Contact Support
           </button>
         </div>
+
 
         <button
           type="button"
@@ -1080,11 +1091,12 @@ export default function HelpCenterPage() {
             size={21}
           />
         </button>
+
       </aside>
+
 
       {/* =====================================================
           MOBILE HEADER
-          DO NOT CHANGE
       ===================================================== */}
 
       <header
@@ -1107,6 +1119,7 @@ export default function HelpCenterPage() {
             size={23}
           />
         </button>
+
 
         <button
           type="button"
@@ -1132,6 +1145,7 @@ export default function HelpCenterPage() {
           </span>
         </button>
 
+
         <button
           type="button"
           className={
@@ -1155,9 +1169,9 @@ export default function HelpCenterPage() {
         </button>
       </header>
 
+
       {/* =====================================================
           MOBILE MENU
-          DO NOT CHANGE
       ===================================================== */}
 
       {menuOpen && (
@@ -1200,6 +1214,7 @@ export default function HelpCenterPage() {
               </div>
             </div>
 
+
             <button
               type="button"
               className={
@@ -1218,6 +1233,7 @@ export default function HelpCenterPage() {
               />
             </button>
           </div>
+
 
           <nav
             className={
@@ -1255,6 +1271,7 @@ export default function HelpCenterPage() {
             )}
           </nav>
 
+
           <div
             className={
               styles.mobileAccountLabel
@@ -1262,6 +1279,7 @@ export default function HelpCenterPage() {
           >
             ACCOUNT
           </div>
+
 
           <button
             type="button"
@@ -1284,6 +1302,7 @@ export default function HelpCenterPage() {
             </span>
           </button>
 
+
           <button
             type="button"
             className={`${styles.mobileNavItem} ${styles.mobileActive}`}
@@ -1302,6 +1321,7 @@ export default function HelpCenterPage() {
               Settings
             </span>
           </button>
+
 
           <button
             type="button"
@@ -1322,16 +1342,19 @@ export default function HelpCenterPage() {
         </div>
       )}
 
+
       {/* =====================================================
           MAIN
       ===================================================== */}
 
       <section
-        className={styles.main}
+        className={
+          styles.main
+        }
       >
+
         {/* ===================================================
             TOP BAR
-            DO NOT CHANGE
         =================================================== */}
 
         <header
@@ -1381,6 +1404,7 @@ export default function HelpCenterPage() {
             </span>
           </div>
 
+
           <div
             className={
               styles.topActions
@@ -1408,6 +1432,7 @@ export default function HelpCenterPage() {
               />
             </button>
 
+
             <button
               type="button"
               className={
@@ -1424,6 +1449,7 @@ export default function HelpCenterPage() {
           </div>
         </header>
 
+
         {/* ===================================================
             CONTENT
         =================================================== */}
@@ -1433,6 +1459,7 @@ export default function HelpCenterPage() {
             styles.content
           }
         >
+
           <div
             className={
               styles.contentHeader
@@ -1454,18 +1481,20 @@ export default function HelpCenterPage() {
                 styles.backButton
               }
               onClick={
-                backToSettings
+                backToSupportHelp
               }
             >
-              ‹ Back to Settings
+              ← Back to Support & Help
             </button>
           </div>
+
 
           <div
             className={
               styles.layout
             }
           >
+
             {/* ===============================================
                 LEFT / MAIN COLUMN
             =============================================== */}
@@ -1475,6 +1504,7 @@ export default function HelpCenterPage() {
                 styles.primaryColumn
               }
             >
+
               {/* SEARCH */}
 
               <section
@@ -1501,14 +1531,14 @@ export default function HelpCenterPage() {
                       event
                     ) =>
                       setSearch(
-                        event.target
-                          .value
+                        event.target.value
                       )
                     }
                     placeholder="Search for articles, guides, and topics..."
                     aria-label="Search Help Center"
                   />
                 </div>
+
 
                 <div
                   className={
@@ -1539,12 +1569,10 @@ export default function HelpCenterPage() {
                 </div>
               </section>
 
-              {/* =================================================
+
+              {/* =============================================
                   BROWSE BY CATEGORY
-                  
-                  No Matching Category section.
-                  No Popular Articles section.
-              ================================================= */}
+              ============================================= */}
 
               <section
                 className={
@@ -1577,7 +1605,9 @@ export default function HelpCenterPage() {
                   )}
                 </div>
               </section>
+
             </div>
+
 
             {/* ===============================================
                 RIGHT COLUMN
@@ -1588,76 +1618,15 @@ export default function HelpCenterPage() {
                 styles.rightColumn
               }
             >
+
               {/* =================================================
-                  POPULAR ARTICLES
+                  HELP CENTER TIPS
                   
-                  INTENTIONALLY REMOVED.
-                  
-                  Popular Articles will only be added when the
-                  titles correspond to actual article pages.
+                  Contact Support and Report an Issue have been
+                  intentionally removed from this page because
+                  they already exist as separate cards on the
+                  Support & Help landing page.
               ================================================= */}
-
-              {/* NEED MORE HELP */}
-
-              <section
-                className={
-                  styles.sideCard
-                }
-              >
-                <h2>
-                  Need more help?
-                </h2>
-
-                <p
-                  className={
-                    styles.sideDescription
-                  }
-                >
-                  Can't find what you're
-                  looking for? Our support
-                  team is here to help.
-                </p>
-
-                <button
-                  type="button"
-                  className={
-                    styles.primarySupportButton
-                  }
-                  onClick={() =>
-                    navigateTo(
-                      "/settings/support-help/contact-support"
-                    )
-                  }
-                >
-                  <Icon
-                    name="headset"
-                    size={16}
-                  />
-
-                  Contact Support
-                </button>
-
-                <button
-                  type="button"
-                  className={
-                    styles.secondarySupportButton
-                  }
-                  onClick={() =>
-                    navigateTo(
-                      "/settings/support-help/report-issue"
-                    )
-                  }
-                >
-                  <Icon
-                    name="warning"
-                    size={16}
-                  />
-
-                  Report an Issue
-                </button>
-              </section>
-
-              {/* TIPS */}
 
               <section
                 className={`${styles.sideCard} ${styles.tipsCard}`}
@@ -1683,6 +1652,7 @@ export default function HelpCenterPage() {
                   </h2>
                 </div>
 
+
                 <div
                   className={
                     styles.tipList
@@ -1700,6 +1670,7 @@ export default function HelpCenterPage() {
                     </span>
                   </div>
 
+
                   <div>
                     <Icon
                       name="check"
@@ -1710,6 +1681,7 @@ export default function HelpCenterPage() {
                       Browse by category
                     </span>
                   </div>
+
 
                   <div>
                     <Icon
@@ -1723,6 +1695,7 @@ export default function HelpCenterPage() {
                     </span>
                   </div>
 
+
                   <div>
                     <Icon
                       name="check"
@@ -1731,19 +1704,23 @@ export default function HelpCenterPage() {
 
                     <span>
                       Still need help?
-                      Contact us
+                      Return to Support & Help
                     </span>
                   </div>
                 </div>
               </section>
+
             </aside>
+
           </div>
+
         </div>
+
       </section>
+
 
       {/* =====================================================
           MOBILE BOTTOM NAV
-          DO NOT CHANGE
       ===================================================== */}
 
       <nav
@@ -1751,6 +1728,7 @@ export default function HelpCenterPage() {
           styles.mobileBottomNav
         }
       >
+
         <button
           type="button"
           onClick={() =>
@@ -1768,6 +1746,7 @@ export default function HelpCenterPage() {
             Dashboard
           </span>
         </button>
+
 
         <button
           type="button"
@@ -1787,6 +1766,7 @@ export default function HelpCenterPage() {
           </span>
         </button>
 
+
         <button
           type="button"
           onClick={() =>
@@ -1805,6 +1785,7 @@ export default function HelpCenterPage() {
           </span>
         </button>
 
+
         <button
           type="button"
           onClick={() =>
@@ -1822,6 +1803,7 @@ export default function HelpCenterPage() {
             Reports
           </span>
         </button>
+
 
         <button
           type="button"
@@ -1843,7 +1825,9 @@ export default function HelpCenterPage() {
             Account
           </span>
         </button>
+
       </nav>
+
     </main>
   );
 }

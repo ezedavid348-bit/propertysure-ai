@@ -36,7 +36,7 @@ export default function AdminPage() {
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        router.replace("/signin");
+        router.replace("/admin/login");
         return;
       }
 
@@ -52,12 +52,12 @@ export default function AdminPage() {
       if (adminError) {
         console.error("Admin access check failed:", adminError);
 
-        router.replace("/dashboard");
+        router.replace("/admin/login");
         return;
       }
 
       if (!admin) {
-        router.replace("/dashboard");
+        router.replace("/admin/login");
         return;
       }
 
@@ -67,7 +67,7 @@ export default function AdminPage() {
     } catch (error) {
       console.error("Unexpected admin access error:", error);
 
-      router.replace("/dashboard");
+      router.replace("/admin/login");
     }
   }, [router]);
 
@@ -80,7 +80,10 @@ export default function AdminPage() {
         .select("status");
 
       if (error) {
-        console.error("Unable to load Fraud Watch statistics:", error);
+        console.error(
+          "Unable to load Fraud Watch statistics:",
+          error
+        );
 
         setErrorMessage(
           "Fraud Watch statistics could not be loaded right now."
@@ -110,7 +113,10 @@ export default function AdminPage() {
 
       setFraudLoading(false);
     } catch (error) {
-      console.error("Unexpected Fraud Watch statistics error:", error);
+      console.error(
+        "Unexpected Fraud Watch statistics error:",
+        error
+      );
 
       setErrorMessage(
         "Fraud Watch statistics could not be loaded right now."
@@ -309,6 +315,16 @@ export default function AdminPage() {
             status="Open payment management"
             onClick={() => router.push("/admin/payments")}
             active
+          />
+
+          <AdminCard
+            title="Support Center"
+            description="Manage customer conversations, respond to support requests, and assist PropertySure AI users."
+            status="Open support center"
+            onClick={() => router.push("/admin/support")}
+            active
+            stat="LIVE"
+            statLabel="Support"
           />
         </section>
 

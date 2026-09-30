@@ -1,0 +1,442 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(22, 142, 255, 0.08),
+      transparent 42%
+    ),
+    #f7faff;
+  overflow: hidden;
+}
+
+.backgroundGlow {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  top: -260px;
+  right: -180px;
+  border-radius: 50%;
+  background: rgba(22, 142, 255, 0.05);
+  pointer-events: none;
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 460px;
+  padding: 38px 38px 30px;
+  background: #ffffff;
+  border: 1px solid #e5edf6;
+  border-radius: 20px;
+  box-shadow:
+    0 20px 55px rgba(20, 53, 87, 0.08),
+    0 4px 14px rgba(20, 53, 87, 0.04);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 34px;
+}
+
+.logoMark {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: #168eff;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  box-shadow: 0 7px 18px rgba(22, 142, 255, 0.22);
+}
+
+.brandName {
+  color: #122033;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.brandLabel {
+  margin-top: 3px;
+  color: #168eff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  line-height: 1.2;
+}
+
+.header {
+  margin-bottom: 26px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #168eff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: #101b2d;
+  font-size: 30px;
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -0.7px;
+}
+
+.subtitle {
+  max-width: 390px;
+  margin: 10px 0 0;
+  color: #66758a;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.errorBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 12px 13px;
+  border: 1px solid #f3caca;
+  border-radius: 10px;
+  background: #fff5f5;
+  color: #b42318;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.errorIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #b42318;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  color: #26364a;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.field input {
+  width: 100%;
+  height: 48px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 1px solid #d8e2ed;
+  border-radius: 10px;
+  outline: none;
+  background: #ffffff;
+  color: #172235;
+  font-family: inherit;
+  font-size: 14px;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.field input::placeholder {
+  color: #9aa8b8;
+}
+
+.field input:hover {
+  border-color: #c4d3e2;
+}
+
+.field input:focus {
+  border-color: #168eff;
+  box-shadow: 0 0 0 3px rgba(22, 142, 255, 0.11);
+}
+
+.field input:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  background: #f5f8fb;
+}
+
+.passwordWrapper {
+  position: relative;
+}
+
+.passwordWrapper input {
+  padding-right: 70px;
+}
+
+.passwordToggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  padding: 5px 4px;
+  border: 0;
+  background: transparent;
+  color: #168eff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.passwordToggle:hover {
+  color: #0c78dd;
+}
+
+.passwordToggle:focus-visible {
+  outline: 2px solid #168eff;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.passwordToggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.signInButton {
+  width: 100%;
+  min-height: 49px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 2px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  background: #168eff;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(22, 142, 255, 0.18);
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.signInButton:hover:not(:disabled) {
+  background: #0c78dd;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(22, 142, 255, 0.22);
+}
+
+.signInButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.signInButton:focus-visible {
+  outline: 2px solid #168eff;
+  outline-offset: 3px;
+}
+
+.signInButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.buttonSpinner,
+.loadingSpinner {
+  display: inline-block;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+.buttonSpinner {
+  width: 15px;
+  height: 15px;
+}
+
+.securityNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-top: 25px;
+  padding: 13px;
+  border: 1px solid #e5edf5;
+  border-radius: 10px;
+  background: #f8fbfe;
+}
+
+.lockIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: #eaf5ff;
+  font-size: 14px;
+}
+
+.securityNote strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #26364a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.securityNote p {
+  margin: 0;
+  color: #718096;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.footer {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #edf1f5;
+  text-align: center;
+}
+
+.footer p {
+  margin: 0 0 9px;
+  color: #8a98a8;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.footer a {
+  color: #168eff;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  color: #0c78dd;
+  text-decoration: none;
+}
+
+.loadingScreen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #66758a;
+  font-size: 13px;
+}
+
+.loadingScreen p {
+  margin: 0;
+}
+
+.loadingSpinner {
+  width: 28px;
+  height: 28px;
+  border-width: 3px;
+  border-color: #d9e9f8;
+  border-top-color: #168eff;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    align-items: flex-start;
+    padding: 24px 16px;
+  }
+
+  .card {
+    max-width: none;
+    margin-top: 20px;
+    padding: 30px 24px 25px;
+    border-radius: 16px;
+  }
+
+  .brand {
+    margin-bottom: 28px;
+  }
+
+  .title {
+    font-size: 27px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 430px) {
+  .page {
+    padding: 16px 12px;
+  }
+
+  .card {
+    margin-top: 10px;
+    padding: 26px 19px 22px;
+  }
+
+  .logoMark {
+    width: 42px;
+    height: 42px;
+  }
+
+  .brandName {
+    font-size: 15px;
+  }
+
+  .title {
+    font-size: 25px;
+  }
+
+  .field input {
+    height: 46px;
+  }
+
+  .signInButton {
+    min-height: 47px;
+  }
+}
