@@ -4,11 +4,23 @@ import {
   useEffect,
   useMemo,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+
+import AppShell from "../../AppShell/AppShell";
+import LoadingScreen from "../../AppShell/LoadingScreen";
+
 import styles from "./appearance.module.css";
+
 import { supabase } from "../../lib/supabase";
+
+import {
+  useTheme,
+  type ThemeOption,
+  type DensityOption,
+} from "../../AppShell/ThemeProvider";
 
 /*
 ============================================================
@@ -17,17 +29,13 @@ APPEARANCE SETTINGS PAGE
 ============================================================
 */
 
+/*
+============================================================
+ICONS
+============================================================
+*/
+
 type IconName =
-  | "dashboard"
-  | "verify"
-  | "properties"
-  | "history"
-  | "fraud"
-  | "reports"
-  | "account"
-  | "settings"
-  | "bell"
-  | "menu"
   | "sun"
   | "moon"
   | "system"
@@ -35,12 +43,7 @@ type IconName =
   | "compact"
   | "dense"
   | "check"
-  | "chevron"
-  | "email"
-  | "arrow"
-  | "activity"
-  | "alert"
-  | "property";
+  | "bell";
 
 function Icon({
   name,
@@ -52,16 +55,6 @@ function Icon({
   className?: string;
 }) {
   const icons: Record<IconName, string> = {
-    dashboard: "▦",
-    verify: "⇧",
-    properties: "⌂",
-    history: "◷",
-    fraud: "◈",
-    reports: "▤",
-    account: "◯",
-    settings: "⚙",
-    bell: "🔔",
-    menu: "☰",
     sun: "☀",
     moon: "●",
     system: "▣",
@@ -69,12 +62,7 @@ function Icon({
     compact: "☷",
     dense: "☷",
     check: "✓",
-    chevron: "›",
-    email: "✉",
-    arrow: "‹",
-    activity: "✓",
-    alert: "!",
-    property: "⌂",
+    bell: "🔔",
   };
 
   return (
@@ -92,50 +80,9 @@ function Icon({
 
 /*
 ============================================================
-NAVIGATION
+THEME OPTIONS
 ============================================================
 */
-
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: "dashboard" as IconName,
-  },
-  {
-    label: "Verify Property",
-    href: "/verify",
-    icon: "verify" as IconName,
-  },
-  {
-    label: "My Properties",
-    href: "/my-properties",
-    icon: "properties" as IconName,
-  },
-  {
-    label: "Verification History",
-    href: "/verification-history",
-    icon: "history" as IconName,
-  },
-  {
-    label: "Fraud Watch",
-    href: "/fraud-watch",
-    icon: "fraud" as IconName,
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-    icon: "reports" as IconName,
-  },
-];
-
-/*
-============================================================
-THEME
-============================================================
-*/
-
-type ThemeOption = "light" | "dark" | "system";
 
 const themeOptions: {
   value: ThemeOption;
@@ -180,14 +127,9 @@ const accentColors = [
 
 /*
 ============================================================
-DISPLAY DENSITY
+DENSITY OPTIONS
 ============================================================
 */
-
-type DensityOption =
-  | "comfortable"
-  | "compact"
-  | "dense";
 
 const densityOptions: {
   value: DensityOption;
@@ -217,21 +159,25 @@ const densityOptions: {
 
 /*
 ============================================================
-TYPES FOR DATABASE DATA
+DATABASE TYPES
 ============================================================
 */
 
-type DatabaseRecord = Record<
-  string,
-  unknown
->;
+type DatabaseRecord = Record<string, unknown>;
 
 type PreviewActivityData = {
   id: string;
+
   title: string;
+
   description: string;
+
   time: string;
-  status: "success" | "warning" | "neutral";
+
+  status:
+    | "success"
+    | "warning"
+    | "neutral";
 };
 
 /*
@@ -293,13 +239,10 @@ function formatRelativeTime(
     return "Recent";
   }
 
-  const now = Date.now();
-
-  const difference =
-    Math.max(
-      0,
-      now - timestamp
-    );
+  const difference = Math.max(
+    0,
+    Date.now() - timestamp
+  );
 
   const minutes = Math.floor(
     difference / 60000
@@ -378,7 +321,10 @@ function getActivityStatus(
   record: DatabaseRecord
 ): {
   description: string;
-  status: PreviewActivityData["status"];
+  status:
+    | "success"
+    | "warning"
+    | "neutral";
 } {
   const rawStatus =
     getString(record, [
@@ -407,7 +353,8 @@ function getActivityStatus(
     rawStatus.includes("approved")
   ) {
     return {
-      description: "Verification completed",
+      description:
+        "Verification completed",
       status: "success",
     };
   }
@@ -417,20 +364,22 @@ function getActivityStatus(
     rawStatus.includes("review")
   ) {
     return {
-      description: "Verification pending",
+      description:
+        "Verification pending",
       status: "neutral",
     };
   }
 
   return {
-    description: "Verification submitted",
+    description:
+      "Verification submitted",
     status: "neutral",
   };
 }
 
 /*
 ============================================================
-RADIO SELECT CARD
+SELECTION CARD
 ============================================================
 */
 
@@ -440,14 +389,19 @@ function SelectionCard({
   icon,
   title,
   description,
-  accent = "#168eff",
+  accent,
 }: {
   selected: boolean;
+
   onClick: () => void;
+
   icon: IconName;
+
   title: string;
+
   description: string;
-  accent?: string;
+
+  accent: string;
 }) {
   return (
     <button
@@ -520,8 +474,11 @@ function AppearanceSection({
   children,
 }: {
   label: string;
+
   title: string;
+
   description: string;
+
   children: ReactNode;
 }) {
   return (
@@ -575,9 +532,13 @@ function PreviewActivity({
   status,
 }: {
   accent: string;
+
   title: string;
+
   description: string;
+
   time: string;
+
   status:
     | "success"
     | "warning"
@@ -611,9 +572,7 @@ function PreviewActivity({
       <div>
         <strong>{title}</strong>
 
-        <span>
-          {description}
-        </span>
+        <span>{description}</span>
       </div>
 
       <small>{time}</small>
@@ -628,24 +587,28 @@ PREVIEW PANEL
 */
 
 function PreviewPanel({
-  theme,
   effectiveTheme,
   accent,
   density,
   stats,
   activities,
 }: {
-  theme: ThemeOption;
   effectiveTheme:
     | "light"
     | "dark";
+
   accent: string;
+
   density: DensityOption;
+
   stats: {
     verifications: number;
+
     properties: number;
+
     alerts: number;
   };
+
   activities: PreviewActivityData[];
 }) {
   return (
@@ -655,7 +618,9 @@ function PreviewPanel({
           ? styles.previewDark
           : ""
       } ${
-        styles[`previewDensity${density}`]
+        styles[
+          `previewDensity${density}`
+        ]
       }`}
     >
       <div
@@ -737,7 +702,9 @@ function PreviewPanel({
               </span>
 
               <strong>
-                {stats.verifications}
+                {
+                  stats.verifications
+                }
               </strong>
 
               <small
@@ -788,9 +755,7 @@ function PreviewPanel({
             </div>
           </div>
 
-          <h4>
-            Recent Activity
-          </h4>
+          <h4>Recent Activity</h4>
 
           {activities.length > 0 ? (
             activities.map(
@@ -864,53 +829,40 @@ PAGE
 export default function AppearancePage() {
   const router = useRouter();
 
-  const [
-    menuOpen,
-    setMenuOpen,
-  ] = useState(false);
+  /*
+  ============================================================
+  CENTRAL THEME PROVIDER
+  ============================================================
+  */
+
+  const {
+    theme,
+    effectiveTheme,
+    setTheme,
+    accentColor,
+    setAccentColor,
+    density,
+    setDensity,
+    reduceMotion,
+    setReduceMotion,
+  } = useTheme();
+
+  /*
+  ============================================================
+  USER LOADING
+  ============================================================
+  */
 
   const [
     loadingUser,
     setLoadingUser,
   ] = useState(true);
 
-  const [
-    user,
-    setUser,
-  ] = useState({
-    fullName: "User",
-    initial: "U",
-    plan: "Free Plan",
-  });
-
-  const [
-    theme,
-    setTheme,
-  ] = useState<ThemeOption>("light");
-
-  const [
-    systemTheme,
-    setSystemTheme,
-  ] = useState<
-    "light" | "dark"
-  >("light");
-
-  const [
-    accentColor,
-    setAccentColor,
-  ] = useState("#168eff");
-
-  const [
-    density,
-    setDensity,
-  ] = useState<DensityOption>(
-    "comfortable"
-  );
-
-  const [
-    reduceMotion,
-    setReduceMotion,
-  ] = useState(true);
+  /*
+  ============================================================
+  PREVIEW DATA
+  ============================================================
+  */
 
   const [
     verificationCount,
@@ -934,183 +886,6 @@ export default function AppearancePage() {
     PreviewActivityData[]
   >([]);
 
-  const effectiveTheme =
-    theme === "system"
-      ? systemTheme
-      : theme;
-
-  /*
-  ============================================================
-  LOAD SAVED APPEARANCE SETTINGS
-  ============================================================
-  */
-
-  useEffect(() => {
-    try {
-      const savedTheme =
-        window.localStorage.getItem(
-          "propertysure-theme"
-        );
-
-      const savedAccent =
-        window.localStorage.getItem(
-          "propertysure-accent"
-        );
-
-      const savedDensity =
-        window.localStorage.getItem(
-          "propertysure-density"
-        );
-
-      const savedReduceMotion =
-        window.localStorage.getItem(
-          "propertysure-reduce-motion"
-        );
-
-      if (
-        savedTheme === "light" ||
-        savedTheme === "dark" ||
-        savedTheme === "system"
-      ) {
-        setTheme(savedTheme);
-      }
-
-      if (
-        savedAccent &&
-        accentColors.includes(
-          savedAccent
-        )
-      ) {
-        setAccentColor(
-          savedAccent
-        );
-      }
-
-      if (
-        savedDensity ===
-          "comfortable" ||
-        savedDensity === "compact" ||
-        savedDensity === "dense"
-      ) {
-        setDensity(
-          savedDensity
-        );
-      }
-
-      if (
-        savedReduceMotion ===
-          "true" ||
-        savedReduceMotion ===
-          "false"
-      ) {
-        setReduceMotion(
-          savedReduceMotion ===
-            "true"
-        );
-      }
-    } catch (error) {
-      console.error(
-        "Could not load appearance preferences:",
-        error
-      );
-    }
-  }, []);
-
-  /*
-  ============================================================
-  SYSTEM THEME
-  ============================================================
-  */
-
-  useEffect(() => {
-    const mediaQuery =
-      window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      );
-
-    const updateSystemTheme = () => {
-      setSystemTheme(
-        mediaQuery.matches
-          ? "dark"
-          : "light"
-      );
-    };
-
-    updateSystemTheme();
-
-    mediaQuery.addEventListener(
-      "change",
-      updateSystemTheme
-    );
-
-    return () => {
-      mediaQuery.removeEventListener(
-        "change",
-        updateSystemTheme
-      );
-    };
-  }, []);
-
-  /*
-  ============================================================
-  SAVE THEME
-  ============================================================
-  */
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        "propertysure-theme",
-        theme
-      );
-    } catch {}
-  }, [theme]);
-
-  /*
-  ============================================================
-  SAVE ACCENT
-  ============================================================
-  */
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        "propertysure-accent",
-        accentColor
-      );
-    } catch {}
-  }, [accentColor]);
-
-  /*
-  ============================================================
-  SAVE DENSITY
-  ============================================================
-  */
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        "propertysure-density",
-        density
-      );
-    } catch {}
-  }, [density]);
-
-  /*
-  ============================================================
-  SAVE REDUCE MOTION
-  ============================================================
-  */
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        "propertysure-reduce-motion",
-        String(reduceMotion)
-      );
-    } catch {}
-  }, [reduceMotion]);
-
   /*
   ============================================================
   LOAD USER
@@ -1125,9 +900,7 @@ export default function AppearancePage() {
         setLoadingUser(true);
 
         const {
-          data: {
-            user: authUser,
-          },
+          data: { user: authUser },
           error,
         } =
           await supabase.auth.getUser();
@@ -1142,69 +915,10 @@ export default function AppearancePage() {
         }
 
         if (!authUser) {
-          router.replace(
-            "/signin"
-          );
+          router.replace("/signin");
 
           return;
         }
-
-        if (!mounted) {
-          return;
-        }
-
-        const metadata =
-          authUser.user_metadata ||
-          {};
-
-        const metadataName =
-          metadata.full_name ||
-          metadata.name ||
-          metadata.display_name ||
-          "";
-
-        const email =
-          authUser.email || "";
-
-        const fallbackName = email
-          ? email
-              .split("@")[0]
-              .replace(
-                /[._-]+/g,
-                " "
-              )
-              .replace(
-                /\b\w/g,
-                (
-                  letter: string
-                ) =>
-                  letter.toUpperCase()
-              )
-          : "User";
-
-        const fullName =
-          String(
-            metadataName
-          ).trim() ||
-          fallbackName;
-
-        const initial =
-          fullName
-            .charAt(0)
-            .toUpperCase() ||
-          "U";
-
-        const plan =
-          metadata.plan ||
-          metadata.subscription_plan ||
-          metadata.account_plan ||
-          "Free Plan";
-
-        setUser({
-          fullName,
-          initial,
-          plan: String(plan),
-        });
       } catch (error) {
         console.error(
           "Appearance user loading error:",
@@ -1226,7 +940,7 @@ export default function AppearancePage() {
 
   /*
   ============================================================
-  LOAD REAL PREVIEW DATA
+  LOAD PREVIEW DATA
   ============================================================
   */
 
@@ -1237,16 +951,12 @@ export default function AppearancePage() {
       async () => {
         try {
           /*
-          ------------------------------------------------------
-          TOTAL VERIFICATIONS
-          ------------------------------------------------------
+          VERIFICATIONS
           */
 
           const {
-            count:
-              verificationTotal,
-            error:
-              verificationCountError,
+            count: verificationTotal,
+            error: verificationCountError,
           } =
             await supabase
               .from(
@@ -1267,9 +977,7 @@ export default function AppearancePage() {
           }
 
           /*
-          ------------------------------------------------------
-          FLAGGED REPORTS / ALERTS
-          ------------------------------------------------------
+          FLAGGED REPORTS
           */
 
           const {
@@ -1297,9 +1005,7 @@ export default function AppearancePage() {
           }
 
           /*
-          ------------------------------------------------------
           PROPERTIES
-          ------------------------------------------------------
           */
 
           const {
@@ -1321,9 +1027,7 @@ export default function AppearancePage() {
           }
 
           /*
-          ------------------------------------------------------
-          RECENT VERIFICATION REPORTS
-          ------------------------------------------------------
+          RECENT REPORTS
           */
 
           const {
@@ -1380,16 +1084,20 @@ export default function AppearancePage() {
                         ]
                       ) ||
                       `activity-${index}`,
+
                     title:
                       getActivityTitle(
                         record
                       ),
+
                     description:
                       status.description,
+
                     time:
                       formatRelativeTime(
                         record
                       ),
+
                     status:
                       status.status,
                   };
@@ -1397,9 +1105,7 @@ export default function AppearancePage() {
               );
 
           /*
-          ------------------------------------------------------
-          FALLBACK PROPERTY COUNT
-          ------------------------------------------------------
+          PROPERTY FALLBACK
           */
 
           let finalPropertyCount =
@@ -1471,56 +1177,28 @@ export default function AppearancePage() {
 
   /*
   ============================================================
-  NAVIGATION
+  BACK TO SETTINGS
   ============================================================
   */
-
-  const navigateTo = (
-    path: string
-  ) => {
-    setMenuOpen(false);
-
-    router.push(path);
-  };
 
   const backToSettings = () => {
-    navigateTo("/settings");
+    router.push("/settings");
   };
 
   /*
   ============================================================
-  SIGN OUT
+  PAGE STYLE
   ============================================================
   */
 
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-
-      router.replace("/signin");
-    } catch (error) {
-      console.error(
-        "Sign out error:",
-        error
-      );
-    }
-  };
-
-  /*
-  ============================================================
-  DYNAMIC PAGE STYLE
-  ============================================================
-  */
-
-  const pageStyle =
-    useMemo(
-      () =>
-        ({
-          "--accent-color":
-            accentColor,
-        } as React.CSSProperties),
-      [accentColor]
-    );
+  const pageStyle = useMemo(
+    () =>
+      ({
+        "--accent-color":
+          accentColor,
+      } as CSSProperties),
+    [accentColor]
+  );
 
   /*
   ============================================================
@@ -1529,36 +1207,7 @@ export default function AppearancePage() {
   */
 
   if (loadingUser) {
-    return (
-      <main
-        className={
-          styles.loading
-        }
-      >
-        <div
-          className={
-            styles.loadingBrand
-          }
-        >
-          <span
-            className={
-              styles.loadingDiamond
-            }
-          >
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </div>
-
-        <p>
-          Loading appearance...
-        </p>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   /*
@@ -1568,742 +1217,351 @@ export default function AppearancePage() {
   */
 
   return (
-    <main
-      className={`${styles.page} ${
-        effectiveTheme === "dark"
-          ? styles.themeDark
-          : styles.themeLight
-      } ${
-        styles[`density${density}`]
-      } ${
-        reduceMotion
-          ? styles.reduceMotion
-          : ""
-      }`}
-      style={pageStyle}
+    <AppShell
+      activePath="/settings"
+      headerPath="/settings"
     >
-      {/* ====================================================
-          DESKTOP TOP BAR
-      ==================================================== */}
-
-      <header
-        className={
-          styles.topBar
-        }
+      <main
+        className={`${styles.page} ${
+          effectiveTheme === "dark"
+            ? styles.themeDark
+            : styles.themeLight
+        } ${
+          styles[
+            `density${density}`
+          ]
+        }`}
+        style={pageStyle}
       >
-        <button
-          type="button"
-          className={
-            styles.topBrand
-          }
-          onClick={() =>
-            navigateTo(
-              "/dashboard"
-            )
-          }
+        <section
+          className={styles.main}
         >
-          <span
+          <header
             className={
-              styles.topDiamond
+              styles.pageHeader
             }
           >
-            ◆
-          </span>
+            <h1>Appearance</h1>
 
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </button>
+            <p>
+              Customize how
+              PropertySure AI
+              looks and feels.
+            </p>
 
-        <button
-          type="button"
-          className={
-            styles.topBell
-          }
-          onClick={() =>
-            navigateTo(
-              "/settings/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-          <Icon
-            name="bell"
-            size={20}
-          />
+            {/* EXACT GENERAL-STYLE BACK BUTTON */}
 
-          <span
-            className={
-              styles.topBellDot
-            }
-          />
-        </button>
-      </header>
+            <button
+              type="button"
+              className={
+                styles.backButton
+              }
+              onClick={
+                backToSettings
+              }
+            >
+              <span
+                className={
+                  styles.backArrow
+                }
+                aria-hidden="true"
+              >
+                ←
+              </span>
 
-      {/* ====================================================
-          MOBILE HEADER
-      ==================================================== */}
+              <span>
+                Back to Settings
+              </span>
+            </button>
+          </header>
 
-      <header
-        className={
-          styles.mobileHeader
-        }
-      >
-        <button
-          type="button"
-          className={
-            styles.menuButton
-          }
-          onClick={() =>
-            setMenuOpen(true)
-          }
-          aria-label="Open navigation"
-        >
-          <Icon
-            name="menu"
-            size={24}
-          />
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.mobileLogo
-          }
-          onClick={() =>
-            navigateTo(
-              "/dashboard"
-            )
-          }
-        >
-          <span
-            className={
-              styles.mobileDiamond
-            }
-          >
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.mobileBell
-          }
-          onClick={() =>
-            navigateTo(
-              "/settings/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-          <Icon
-            name="bell"
-            size={19}
-          />
-
-          <span
-            className={
-              styles.mobileBellDot
-            }
-          />
-        </button>
-      </header>
-
-      {/* ====================================================
-          MOBILE MENU
-      ==================================================== */}
-
-      {menuOpen && (
-        <div
-          className={
-            styles.mobileMenu
-          }
-        >
           <div
             className={
-              styles.mobileMenuTop
+              styles.contentLayout
             }
           >
-            <button
-              type="button"
+            {/* ==================================================
+                LEFT SETTINGS
+            ================================================== */}
+
+            <div
               className={
-                styles.mobileMenuLogo
-              }
-              onClick={() =>
-                navigateTo(
-                  "/dashboard"
-                )
+                styles.settingsColumn
               }
             >
-              <span>◆</span>
+              {/* THEME */}
 
-              <strong>
-                PropertySure
-                <b> AI</b>
-              </strong>
-            </button>
-
-            <button
-              type="button"
-              className={
-                styles.closeButton
-              }
-              onClick={() =>
-                setMenuOpen(false)
-              }
-              aria-label="Close menu"
-            >
-              ×
-            </button>
-          </div>
-
-          <p
-            className={
-              styles.mobileMenuSubtitle
-            }
-          >
-            AI-Powered Property
-            <br />
-            Due Diligence
-          </p>
-
-          <nav
-            className={
-              styles.mobileMenuNav
-            }
-          >
-            {navItems.map(
-              (item) => (
-                <button
-                  key={
-                    item.href
-                  }
-                  type="button"
-                  onClick={() =>
-                    navigateTo(
-                      item.href
-                    )
+              <AppearanceSection
+                label="THEME"
+                title="Theme"
+                description="Choose how the application looks."
+              >
+                <div
+                  className={
+                    styles.selectionGrid
                   }
                 >
-                  <Icon
-                    name={
-                      item.icon
-                    }
-                    size={19}
-                  />
-
-                  <span>
-                    {item.label}
-                  </span>
-                </button>
-              )
-            )}
-          </nav>
-
-          <div
-            className={
-              styles.mobileMenuLabel
-            }
-          >
-            ACCOUNT
-          </div>
-
-          <button
-            type="button"
-            className={
-              styles.mobileMenuItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/account"
-              )
-            }
-          >
-            <Icon
-              name="account"
-              size={19}
-            />
-
-            <span>
-              Account
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className={
-              styles.mobileMenuItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/settings"
-              )
-            }
-          >
-            <Icon
-              name="settings"
-              size={19}
-            />
-
-            <span>
-              Settings
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.mobileMenuItem} ${styles.logoutItem}`}
-            onClick={signOut}
-          >
-            <span>↪</span>
-
-            <span>
-              Sign Out
-            </span>
-          </button>
-        </div>
-      )}
-
-      {/* ====================================================
-          MAIN
-      ==================================================== */}
-
-      <section
-        className={styles.main}
-      >
-        <header
-          className={
-            styles.pageHeader
-          }
-        >
-          <h1>
-            Appearance
-          </h1>
-
-          <p>
-            Customize how
-            PropertySure AI
-            looks and feels.
-          </p>
-
-          <button
-            type="button"
-            className={
-              styles.backButton
-            }
-            onClick={
-              backToSettings
-            }
-          >
-            ‹ Back to Settings
-          </button>
-        </header>
-
-        <div
-          className={
-            styles.contentLayout
-          }
-        >
-          {/* ==================================================
-              LEFT SETTINGS
-          ================================================== */}
-
-          <div
-            className={
-              styles.settingsColumn
-            }
-          >
-            {/* =================================================
-                THEME
-            ================================================= */}
-
-            <AppearanceSection
-              label="THEME"
-              title="Theme"
-              description="Choose how the application looks."
-            >
-              <div
-                className={
-                  styles.selectionGrid
-                }
-              >
-                {themeOptions.map(
-                  (option) => (
-                    <SelectionCard
-                      key={
-                        option.value
-                      }
-                      selected={
-                        theme ===
-                        option.value
-                      }
-                      onClick={() =>
-                        setTheme(
+                  {themeOptions.map(
+                    (option) => (
+                      <SelectionCard
+                        key={
                           option.value
-                        )
-                      }
-                      icon={
-                        option.icon
-                      }
-                      title={
-                        option.title
-                      }
-                      description={
-                        option.description
-                      }
-                      accent={
-                        accentColor
-                      }
-                    />
-                  )
-                )}
-              </div>
-            </AppearanceSection>
-
-            {/* =================================================
-                ACCENT COLOR
-            ================================================= */}
-
-            <section
-              className={
-                styles.appearanceSection
-              }
-            >
-              <div
-                className={
-                  styles.sectionLabel
-                }
-              >
-                ACCENT COLOR
-              </div>
-
-              <div
-                className={
-                  styles.settingsCard
-                }
-              >
-                <div
-                  className={
-                    styles.sectionHeader
-                  }
-                >
-                  <div>
-                    <h2>
-                      Accent Color
-                    </h2>
-
-                    <p>
-                      Choose your
-                      preferred
-                      accent color.
-                    </p>
-                  </div>
-                </div>
-
-                <div
-                  className={
-                    styles.colorRow
-                  }
-                >
-                  {accentColors.map(
-                    (color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        className={`${styles.colorButton} ${
-                          accentColor ===
-                          color
-                            ? styles.colorButtonSelected
-                            : ""
-                        }`}
-                        style={{
-                          background:
-                            color,
-                        }}
+                        }
+                        selected={
+                          theme ===
+                          option.value
+                        }
                         onClick={() =>
-                          setAccentColor(
-                            color
+                          setTheme(
+                            option.value
                           )
                         }
-                        aria-label={`Select accent color ${color}`}
-                        aria-pressed={
-                          accentColor ===
-                          color
+                        icon={
+                          option.icon
                         }
-                      >
-                        {accentColor ===
-                          color && (
-                          <span>
-                            ✓
-                          </span>
-                        )}
-                      </button>
+                        title={
+                          option.title
+                        }
+                        description={
+                          option.description
+                        }
+                        accent={
+                          accentColor
+                        }
+                      />
                     )
                   )}
                 </div>
-              </div>
-            </section>
+              </AppearanceSection>
 
-            {/* =================================================
-                DISPLAY DENSITY
-            ================================================= */}
+              {/* ACCENT COLOR */}
 
-            <AppearanceSection
-              label="DISPLAY DENSITY"
-              title="Display Density"
-              description="Adjust the spacing and layout density."
-            >
-              <div
+              <section
                 className={
-                  styles.selectionGrid
-                }
-              >
-                {densityOptions.map(
-                  (option) => (
-                    <SelectionCard
-                      key={
-                        option.value
-                      }
-                      selected={
-                        density ===
-                        option.value
-                      }
-                      onClick={() =>
-                        setDensity(
-                          option.value
-                        )
-                      }
-                      icon={
-                        option.icon
-                      }
-                      title={
-                        option.title
-                      }
-                      description={
-                        option.description
-                      }
-                      accent={
-                        accentColor
-                      }
-                    />
-                  )
-                )}
-              </div>
-            </AppearanceSection>
-
-            {/* =================================================
-                REDUCE MOTION
-            ================================================= */}
-
-            <section
-              className={
-                styles.appearanceSection
-              }
-            >
-              <div
-                className={
-                  styles.sectionLabel
-                }
-              >
-                REDUCE MOTION
-              </div>
-
-              <div
-                className={
-                  styles.settingsCard
+                  styles.appearanceSection
                 }
               >
                 <div
                   className={
-                    styles.motionRow
+                    styles.sectionLabel
+                  }
+                >
+                  ACCENT COLOR
+                </div>
+
+                <div
+                  className={
+                    styles.settingsCard
                   }
                 >
                   <div
                     className={
-                      styles.motionText
+                      styles.sectionHeader
                     }
                   >
-                    <h2>
-                      Reduce Motion
-                    </h2>
+                    <div>
+                      <h2>
+                        Accent Color
+                      </h2>
 
-                    <p>
-                      Minimize
-                      animations and
-                      motion effects.
-                      Helps reduce
-                      motion for
-                      accessibility
-                      and focus.
-                    </p>
+                      <p>
+                        Choose your
+                        preferred
+                        accent color.
+                      </p>
+                    </div>
                   </div>
 
-                  <button
-                    type="button"
-                    className={`${styles.toggle} ${
-                      reduceMotion
-                        ? styles.toggleOn
-                        : ""
-                    }`}
-                    onClick={() =>
-                      setReduceMotion(
-                        (value) =>
-                          !value
-                      )
-                    }
-                    aria-label="Toggle reduce motion"
-                    aria-pressed={
-                      reduceMotion
+                  <div
+                    className={
+                      styles.colorRow
                     }
                   >
-                    <span
-                      className={
-                        styles.toggleKnob
-                      }
-                    />
-                  </button>
+                    {accentColors.map(
+                      (color) => (
+                        <button
+                          key={color}
+                          type="button"
+                          className={`${styles.colorButton} ${
+                            accentColor ===
+                            color
+                              ? styles.colorButtonSelected
+                              : ""
+                          }`}
+                          style={{
+                            background:
+                              color,
+                          }}
+                          onClick={() =>
+                            setAccentColor(
+                              color
+                            )
+                          }
+                          aria-label={`Select accent color ${color}`}
+                          aria-pressed={
+                            accentColor ===
+                            color
+                          }
+                        >
+                          {accentColor ===
+                            color && (
+                            <span>
+                              ✓
+                            </span>
+                          )}
+                        </button>
+                      )
+                    )}
+                  </div>
                 </div>
-              </div>
-            </section>
+              </section>
+
+              {/* DISPLAY DENSITY */}
+
+              <AppearanceSection
+                label="DISPLAY DENSITY"
+                title="Display Density"
+                description="Adjust the spacing and layout density."
+              >
+                <div
+                  className={
+                    styles.selectionGrid
+                  }
+                >
+                  {densityOptions.map(
+                    (option) => (
+                      <SelectionCard
+                        key={
+                          option.value
+                        }
+                        selected={
+                          density ===
+                          option.value
+                        }
+                        onClick={() =>
+                          setDensity(
+                            option.value
+                          )
+                        }
+                        icon={
+                          option.icon
+                        }
+                        title={
+                          option.title
+                        }
+                        description={
+                          option.description
+                        }
+                        accent={
+                          accentColor
+                        }
+                      />
+                    )
+                  )}
+                </div>
+              </AppearanceSection>
+
+              {/* REDUCE MOTION */}
+
+              <section
+                className={
+                  styles.appearanceSection
+                }
+              >
+                <div
+                  className={
+                    styles.sectionLabel
+                  }
+                >
+                  REDUCE MOTION
+                </div>
+
+                <div
+                  className={
+                    styles.settingsCard
+                  }
+                >
+                  <div
+                    className={
+                      styles.motionRow
+                    }
+                  >
+                    <div
+                      className={
+                        styles.motionText
+                      }
+                    >
+                      <h2>
+                        Reduce Motion
+                      </h2>
+
+                      <p>
+                        Minimize
+                        animations
+                        and motion
+                        effects.
+                        Helps
+                        reduce
+                        motion
+                        for
+                        accessibility
+                        and
+                        focus.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      className={`${styles.toggle} ${
+                        reduceMotion
+                          ? styles.toggleOn
+                          : ""
+                      }`}
+                      onClick={() =>
+                        setReduceMotion(
+                          !reduceMotion
+                        )
+                      }
+                      aria-label="Toggle reduce motion"
+                      aria-pressed={
+                        reduceMotion
+                      }
+                    >
+                      <span
+                        className={
+                          styles.toggleKnob
+                        }
+                      />
+                    </button>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            {/* ==================================================
+                PREVIEW
+            ================================================== */}
+
+            <PreviewPanel
+              effectiveTheme={
+                effectiveTheme
+              }
+              accent={accentColor}
+              density={density}
+              stats={{
+                verifications:
+                  verificationCount,
+                properties:
+                  propertyCount,
+                alerts: alertCount,
+              }}
+              activities={
+                activities
+              }
+            />
           </div>
-
-          {/* ==================================================
-              RIGHT PREVIEW
-          ================================================== */}
-
-          <PreviewPanel
-            theme={theme}
-            effectiveTheme={
-              effectiveTheme
-            }
-            accent={
-              accentColor
-            }
-            density={density}
-            stats={{
-              verifications:
-                verificationCount,
-              properties:
-                propertyCount,
-              alerts:
-                alertCount,
-            }}
-            activities={
-              activities
-            }
-          />
-        </div>
-      </section>
-
-      {/* ====================================================
-          MOBILE BOTTOM NAV
-      ==================================================== */}
-
-      <nav
-        className={
-          styles.mobileBottomNav
-        }
-      >
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/dashboard"
-            )
-          }
-        >
-          <Icon
-            name="dashboard"
-            size={20}
-          />
-
-          <span>
-            Dashboard
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/verify"
-            )
-          }
-        >
-          <Icon
-            name="verify"
-            size={20}
-          />
-
-          <span>
-            Verify
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/my-properties"
-            )
-          }
-        >
-          <Icon
-            name="properties"
-            size={20}
-          />
-
-          <span>
-            Properties
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/reports"
-            )
-          }
-        >
-          <Icon
-            name="reports"
-            size={20}
-          />
-
-          <span>
-            Reports
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.bottomActive
-          }
-          onClick={() =>
-            navigateTo(
-              "/account"
-            )
-          }
-        >
-          <Icon
-            name="account"
-            size={20}
-          />
-
-          <span>
-            Account
-          </span>
-        </button>
-      </nav>
-    </main>
+        </section>
+      </main>
+    </AppShell>
   );
 }

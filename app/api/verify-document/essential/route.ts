@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import {
+  searchKnowledge,
+  type PropertyDocumentType,
+} from "@/app/lib/ai";
 
 /*
  * ============================================================
@@ -532,46 +536,32 @@ function valuesContainFalse(
  * ============================================================
  * DERIVE ESSENTIAL FINAL REVIEW STATUS
  * ============================================================
- *
- * Essential is an instant AI assessment.
- *
- * When AI processing is complete, Essential must never leave
- * review_status as "pending". The final review status is derived
- * from the completed AI evidence:
- *
- * - "flagged" when the AI found attention-required issues,
- *   high synthetic-document risk, failed checks, or an
- *   inconclusive document assessment.
- * - "verified" when the completed AI assessment found no such
- *   issues.
- *
- * IMPORTANT:
- * "verified" here means the Essential AI assessment passed its
- * defined checks. It does NOT mean government authenticity,
- * legal ownership, registry confirmation, or physical
- * inspection.
  */
+
 function deriveEssentialReviewStatus(
   documentResults: DocumentAIResult[],
   checks: VerificationChecks,
 ): "verified" | "flagged" {
-  const hasAttention = documentResults.some(
-    (result) =>
-      result.assessmentStatus ===
-        "attention_required" ||
-      result.syntheticDocumentRisk ===
-        "high",
-  );
+  const hasAttention =
+    documentResults.some(
+      (result) =>
+        result.assessmentStatus ===
+          "attention_required" ||
+        result.syntheticDocumentRisk ===
+          "high",
+    );
 
-  const hasInconclusive = documentResults.some(
-    (result) =>
-      result.assessmentStatus ===
-      "inconclusive",
-  );
+  const hasInconclusive =
+    documentResults.some(
+      (result) =>
+        result.assessmentStatus ===
+        "inconclusive",
+    );
 
-  const hasFailedChecks = valuesContainFalse(
-    checks,
-  );
+  const hasFailedChecks =
+    valuesContainFalse(
+      checks,
+    );
 
   if (
     hasAttention ||
@@ -587,11 +577,6 @@ function deriveEssentialReviewStatus(
 /*
  * ============================================================
  * DERIVE DOCUMENT ASSESSMENT
- * ============================================================
- *
- * This is deliberately NOT called "authenticity".
- *
- * A document may have no visible issues and still be fake.
  * ============================================================
  */
 
@@ -626,11 +611,6 @@ function deriveDocumentAssessment(
     return "inconclusive";
   }
 
-  /*
-   * "No significant issues detected" means only that the AI
-   * did not detect significant problems in the supplied content.
-   * It never means "genuine".
-   */
   return "no_significant_issues_detected";
 }
 
@@ -812,6 +792,152 @@ function normalizeSyntheticRisk(
 
 /*
  * ============================================================
+ * PROPERTYsure AI APPROVED KNOWLEDGE
+ * ============================================================
+ *
+ * This is the new integration.
+ *
+ * Only approved knowledge is retrieved.
+ *
+ * Customer documents are NOT automatically added to the
+ * knowledge base.
+ *
+ * If retrieval fails, Essential continues its normal analysis.
+ * ============================================================
+ */
+
+function formatKnowledgeContext(
+  references: any[],
+): string {
+  if (
+    !references ||
+    references.length === 0
+  ) {
+    return `
+No approved PropertySure AI knowledge references were retrieved
+for this document.
+
+Do not invent missing standards, facts, or document characteristics.
+Continue using the supplied document and the existing verification rules.
+`;
+  }
+
+  return references
+    .slice(0, 10)
+    .map(
+      (reference, index) => {
+        const title =
+          reference?.title ||
+          `Approved knowledge reference ${index + 1}`;
+
+        const sourceType =
+          reference?.sourceType ||
+          reference?.source_type ||
+          "approved-reference";
+
+        const referenceDocumentType =
+          reference?.documentType ||
+          reference?.document_type ||
+          "general";
+
+        const similarity =
+          typeof reference?.similarity ===
+          "number"
+            ? reference.similarity.toFixed(
+                3,
+              )
+            : "unknown";
+
+        const content =
+          reference?.content ||
+          reference?.description ||
+          "";
+
+        return `
+REFERENCE ${index + 1}
+Title: ${title}
+Source type: ${sourceType}
+Document type: ${referenceDocumentType}
+Similarity: ${similarity}
+
+Reference content:
+${content}
+`;
+      },
+    )
+    .join("\n");
+}
+
+async function retrieveApprovedKnowledge(
+  documentType?: string,
+) {
+  try {
+    return await searchKnowledge(
+      {
+        /*
+         * The document package currently stores documentType as
+         * string | undefined.
+         *
+         * searchKnowledge expects the controlled
+         * PropertyDocumentType union.
+         *
+         * We narrow the value at this integration boundary
+         * without changing the existing document package type
+         * or the rest of the Essential engine.
+         */
+        documentType:
+          documentType as
+            | PropertyDocumentType
+            | undefined,
+
+        keywords: [
+          "Nigeria",
+          "property document",
+          documentType ||
+            "property document",
+          "verification",
+          "fraud",
+          "manipulation",
+        ],
+
+        /*
+         * IMPORTANT:
+         * searchKnowledge expects "text", not "rawText".
+         */
+        text: [
+          "Nigerian property document verification",
+          documentType
+            ? `document type: ${documentType}`
+            : "property document",
+          "document structure",
+          "document fields",
+          "fraud indicators",
+          "manipulation indicators",
+          "authenticity assessment",
+        ].join("\n"),
+      },
+      {
+        limit: 10,
+        minimumSimilarity: 0.5,
+      },
+    );
+  } catch (error) {
+    /*
+     * Knowledge retrieval is an enhancement to the Essential
+     * engine. A temporary retrieval failure must not prevent
+     * the customer's document from being analyzed.
+     */
+    console.error(
+      "ESSENTIAL KNOWLEDGE RETRIEVAL ERROR:",
+      error,
+    );
+
+    return [];
+  }
+}
+
+/*
+ * ============================================================
  * ANALYZE ONE DOCUMENT
  * ============================================================
  */
@@ -851,6 +977,35 @@ async function analyzeDocument(
   const dataUrl =
     `data:${actualMimeType};base64,${base64}`;
 
+  /*
+   * ==========================================================
+   * NEW:
+   * Retrieve approved PropertySure AI knowledge BEFORE the
+   * existing document analysis.
+   * ==========================================================
+   */
+
+  const knowledgeReferences =
+    await retrieveApprovedKnowledge(
+      documentType,
+    );
+
+  const knowledgeContext =
+    formatKnowledgeContext(
+      knowledgeReferences,
+    );
+
+  console.log(
+    "ESSENTIAL KNOWLEDGE REFERENCES:",
+    knowledgeReferences.length,
+  );
+
+  /*
+   * ==========================================================
+   * EXISTING ESSENTIAL PROMPT + APPROVED KNOWLEDGE CONTEXT
+   * ==========================================================
+   */
+
   const prompt = `
 You are PropertySure AI's Essential property-document verification engine.
 
@@ -860,6 +1015,33 @@ The filename is metadata only. Never use the filename as proof of authenticity o
 
 Document type identified during package review:
 ${documentType || "Unknown"}
+
+============================================================
+APPROVED PROPERTYsure AI KNOWLEDGE
+============================================================
+
+The following information comes ONLY from PropertySure AI
+knowledge that has already passed the internal approval process.
+
+${knowledgeContext}
+
+IMPORTANT KNOWLEDGE RULES:
+
+- Use approved knowledge as supporting context only.
+- Similarity to an approved reference does NOT prove authenticity.
+- A matching layout does NOT prove government issuance.
+- A matching stamp does NOT prove government issuance.
+- A matching signature does NOT prove government issuance.
+- An approved example is NOT proof that the customer's document is genuine.
+- Do not copy facts from a reference into the customer's document.
+- Do not assume information exists in the customer's document when it is not visible.
+- Do not invent missing information.
+- If an approved reference differs from the customer's document, describe the observable difference.
+- Approved knowledge may help identify expected structures, terminology, document fields, patterns, anomalies, and fraud indicators.
+
+============================================================
+END APPROVED PROPERTYsure AI KNOWLEDGE
+============================================================
 
 ============================================================
 CRITICAL AUTHENTICITY RULE
@@ -910,6 +1092,7 @@ Look for, where visible and reasonably assessable:
   digitally fabricated or reconstructed
 
 IMPORTANT:
+
 Absence of visible manipulation is NOT proof of authenticity.
 
 If there are suspicious indicators, explain them specifically in
@@ -985,6 +1168,7 @@ CONFIDENCE
 DOCUMENT ANALYSIS.
 
 It is NOT:
+
 - probability that the document is genuine
 - probability that the document was issued by government
 - probability that ownership is valid
@@ -1019,6 +1203,7 @@ Return JSON only:
 }
 
 Rules:
+
 - confidence must be an integer from 0 to 100.
 - syntheticDocumentRisk must be "low", "medium", "high", or "inconclusive".
 - manipulationIndicators must be an array of concise strings.
@@ -1051,23 +1236,16 @@ Rules:
     });
   } else if (
     actualMimeType ===
-    "image/jpeg"
-  ) {
-    content.push({
-      type: "input_image",
-      image_url:
-        dataUrl,
-      detail: "high",
-    });
-  } else if (
+      "image/jpeg" ||
     actualMimeType ===
-    "image/png"
+      "image/png"
   ) {
     content.push({
       type: "input_image",
       image_url:
         dataUrl,
-      detail: "high",
+      detail:
+        "high",
     });
   } else {
     throw new Error(
@@ -1102,7 +1280,8 @@ Rules:
             max_output_tokens:
               2500,
           }),
-        cache: "no-store",
+        cache:
+          "no-store",
       },
     );
 
@@ -1153,7 +1332,8 @@ Rules:
       outputText,
     );
 
-  const checks: VerificationChecks = {
+  const checks:
+    VerificationChecks = {
     documentStructure:
       normalizeCheckValue(
         parsed.checks
@@ -1270,11 +1450,6 @@ Rules:
 
     assessmentStatus,
 
-    /*
-     * HARD RULE:
-     * Essential never returns an independently authenticated
-     * document.
-     */
     authenticityStatus:
       "not_independently_verified" as const,
 
@@ -1423,7 +1598,7 @@ function buildPackageSummary(
   if (
     mediumSyntheticRiskCount > 0
   ) {
-    return `AI analysis did not establish government authenticity and identified medium synthetic-document risk in ${mediumSyntheticRiskCount} document${mediumSyntheticRiskCount === 1 ? "" : "s"}. Further verification is recommended.`;
+    return `AI document assessment did not establish government authenticity and identified medium synthetic-document risk in ${mediumSyntheticRiskCount} document${mediumSyntheticRiskCount === 1 ? "" : "s"}. Further verification is recommended.`;
   }
 
   if (
@@ -1900,11 +2075,6 @@ export async function POST(
         documentResults,
       );
 
-    /*
-     * Package completeness must reflect the actual document
-     * results after all documents have been analyzed.
-     */
-
     const completenessValues =
       documentResults.map(
         (result) =>
@@ -1954,23 +2124,12 @@ export async function POST(
         checks,
       );
 
-    /*
-     * ----------------------------------------------------------
-     * SUMMARY
-     * ----------------------------------------------------------
-     */
-
     const summary =
       buildPackageSummary(
         documentResults,
         checks,
       );
 
-    /*
-     * Essential processing is complete at this point.
-     * The final AI review outcome must therefore be either
-     * "verified" or "flagged" — never "pending".
-     */
     const reviewStatus =
       deriveEssentialReviewStatus(
         documentResults,
@@ -1980,12 +2139,6 @@ export async function POST(
     /*
      * ----------------------------------------------------------
      * SAVE FINAL RESULT
-     * ----------------------------------------------------------
-     *
-     * The explicit authenticity_status and verification_scope
-     * fields are intentional. They create a hard downstream
-     * distinction between AI assessment and independent
-     * authentication.
      * ----------------------------------------------------------
      */
 
@@ -2041,11 +2194,6 @@ export async function POST(
           "verifications",
         )
         .update({
-          /*
-           * "processed" describes the AI processing lifecycle.
-           * "review_status" describes the completed Essential
-           * outcome and must be verified/flagged here.
-           */
           status:
             "processed",
 
@@ -2083,7 +2231,8 @@ export async function POST(
     }
 
     return NextResponse.json({
-      success: true,
+      success:
+        true,
 
       plan:
         "essential",
@@ -2105,9 +2254,6 @@ export async function POST(
 
       summary,
 
-      /*
-       * Explicitly expose scope to the Processing/Result layers.
-       */
       authenticityStatus:
         "not_independently_verified",
 
@@ -2126,7 +2272,8 @@ export async function POST(
 
     return NextResponse.json(
       {
-        success: false,
+        success:
+          false,
 
         error:
           error instanceof Error

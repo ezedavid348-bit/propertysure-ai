@@ -7,6 +7,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
+import AppShell from "../../../AppShell/AppShell";
 import LoadingScreen from "../../../AppShell/LoadingScreen";
 
 /* ============================================================
@@ -20,17 +21,6 @@ type DocumentType =
   | "passport";
 
 type IconName =
-  | "dashboard"
-  | "verify"
-  | "properties"
-  | "history"
-  | "fraud"
-  | "reports"
-  | "account"
-  | "settings"
-  | "bell"
-  | "menu"
-  | "arrow"
   | "user"
   | "calendar"
   | "gender"
@@ -74,17 +64,6 @@ function Icon({
   size?: number;
 }) {
   const icons: Record<IconName, string> = {
-    dashboard: "▦",
-    verify: "⇧",
-    properties: "⌂",
-    history: "◷",
-    fraud: "◇",
-    reports: "▤",
-    account: "◯",
-    settings: "⚙",
-    bell: "🔔",
-    menu: "☰",
-    arrow: "←",
     user: "♙",
     calendar: "▣",
     gender: "♙",
@@ -105,43 +84,6 @@ function Icon({
     </span>
   );
 }
-
-/* ============================================================
-   NAVIGATION
-============================================================ */
-
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: "dashboard" as IconName,
-  },
-  {
-    label: "Verify Property",
-    href: "/verify",
-    icon: "verify" as IconName,
-  },
-  {
-    label: "My Properties",
-    href: "/my-properties",
-    icon: "properties" as IconName,
-  },
-  {
-    label: "Verification History",
-    href: "/verification-history",
-    icon: "history" as IconName,
-  },
-  {
-    label: "Fraud Watch",
-    href: "/fraud-watch",
-    icon: "fraud" as IconName,
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-    icon: "reports" as IconName,
-  },
-];
 
 /* ============================================================
    SAFE VALUE
@@ -251,27 +193,27 @@ function getDocumentBadge(
 export default function InformationConfirmationPage() {
   const router = useRouter();
 
-  /*
-  ============================================================
-  SHARED PAGE LOADING
-  ============================================================
-  */
+  /* ==========================================================
+     SHARED PAGE LOADING
+  ========================================================== */
 
   const [loading, setLoading] =
     useState(true);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setLoading(false);
-    }, 800);
+    const timer =
+      window.setTimeout(() => {
+        setLoading(false);
+      }, 800);
 
     return () => {
       window.clearTimeout(timer);
     };
   }, []);
 
-  const [menuOpen, setMenuOpen] =
-    useState(false);
+  /* ==========================================================
+     KYC STATE
+  ========================================================== */
 
   const [documentType, setDocumentType] =
     useState<DocumentType>("nin");
@@ -299,7 +241,8 @@ export default function InformationConfirmationPage() {
 
   useEffect(() => {
     if (
-      typeof window === "undefined"
+      typeof window ===
+      "undefined"
     ) {
       return;
     }
@@ -397,24 +340,11 @@ export default function InformationConfirmationPage() {
   }, []);
 
   /* ==========================================================
-     NAVIGATION
-  ========================================================== */
-
-  const navigateTo = (
-    path: string
-  ) => {
-    setMenuOpen(false);
-    router.push(path);
-  };
-
-  /* ==========================================================
      BACK TO PREVIOUS KYC STEP
   ========================================================== */
 
   const navigateBackToDocumentUpload =
     () => {
-      setMenuOpen(false);
-
       router.push(
         "/account/identity-verification/upload"
       );
@@ -496,842 +426,437 @@ export default function InformationConfirmationPage() {
     return <LoadingScreen />;
   }
 
+  /* ==========================================================
+     PAGE
+  ========================================================== */
+
   return (
-    <main
-      className={
-        styles.page
-      }
+    <AppShell
+      activePath="/account"
+      headerPath="/account"
     >
-
-      {/* ======================================================
-          HEADER
-      ====================================================== */}
-
-      <header
+      <main
         className={
-          styles.mobileHeader
+          styles.page
         }
       >
-
-        <button
-          type="button"
+        <section
           className={
-            styles.menuButton
-          }
-          onClick={() =>
-            setMenuOpen(true)
-          }
-          aria-label="Open navigation"
-        >
-          <Icon
-            name="menu"
-            size={23}
-          />
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.mobileLogoButton
-          }
-          onClick={() =>
-            navigateTo(
-              "/dashboard"
-            )
-          }
-          aria-label="PropertySure AI Dashboard"
-        >
-          <span
-            className={
-              styles.mobileLogoDiamond
-            }
-          >
-            ◆
-          </span>
-
-          <span
-            className={
-              styles.mobileBrandName
-            }
-          >
-            PropertySure
-            <strong>
-              {" "}AI
-            </strong>
-          </span>
-
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.mobileBell
-          }
-          onClick={() =>
-            navigateTo(
-              "/account/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-          <Icon
-            name="bell"
-            size={17}
-          />
-
-          <span
-            className={
-              styles.mobileNotificationDot
-            }
-          />
-
-        </button>
-
-      </header>
-
-      {/* ======================================================
-          MOBILE MENU
-      ====================================================== */}
-
-      {menuOpen && (
-        <div
-          className={
-            styles.mobileMenu
+            styles.main
           }
         >
-
           <div
             className={
-              styles.mobileMenuHeader
+              styles.content
             }
           >
-
-            <button
-              type="button"
-              className={
-                styles.mobileMenuLogo
-              }
-              onClick={() =>
-                navigateTo(
-                  "/dashboard"
-                )
-              }
-            >
-              <span>
-                ◆
-              </span>
-
-              <div>
-                PropertySure
-                <strong>
-                  {" "}AI
-                </strong>
-              </div>
-
-            </button>
-
-            <button
-              type="button"
-              className={
-                styles.closeMenu
-              }
-              onClick={() =>
-                setMenuOpen(false)
-              }
-              aria-label="Close navigation"
-            >
-              ×
-            </button>
-
-          </div>
-
-          <div
-            className={
-              styles.mobileMenuSubtitle
-            }
-          >
-            AI-Powered Property Due
-            Diligence
-          </div>
-
-          <nav
-            className={
-              styles.mobileMenuNav
-            }
-          >
-
-            {navItems.map(
-              (item) => (
-                <button
-                  key={
-                    item.href
-                  }
-                  type="button"
-                  className={
-                    styles.mobileNavItem
-                  }
-                  onClick={() =>
-                    navigateTo(
-                      item.href
-                    )
-                  }
-                >
-
-                  <span
-                    className={
-                      styles.navIcon
-                    }
-                  >
-                    <Icon
-                      name={
-                        item.icon
-                      }
-                      size={18}
-                    />
-                  </span>
-
-                  <span>
-                    {
-                      item.label
-                    }
-                  </span>
-
-                </button>
-              )
-            )}
-
-          </nav>
-
-          <div
-            className={
-              styles.mobileAccountLabel
-            }
-          >
-            ACCOUNT
-          </div>
-
-          <button
-            type="button"
-            className={
-              styles.mobileNavItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/account"
-              )
-            }
-          >
-
-            <span
-              className={
-                styles.navIcon
-              }
-            >
-              <Icon
-                name="account"
-                size={18}
-              />
-            </span>
-
-            <span>
-              Account
-            </span>
-
-          </button>
-
-          <button
-            type="button"
-            className={
-              styles.mobileNavItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/settings"
-              )
-            }
-          >
-
-            <span
-              className={
-                styles.navIcon
-              }
-            >
-              <Icon
-                name="settings"
-                size={18}
-              />
-            </span>
-
-            <span>
-              Settings
-            </span>
-
-          </button>
-
-        </div>
-      )}
-
-      {/* ======================================================
-          MAIN
-      ====================================================== */}
-
-      <section
-        className={
-          styles.main
-        }
-      >
-
-        <div
-          className={
-            styles.content
-          }
-        >
-
-          {/* ==================================================
-              PAGE INTRO
-          ================================================== */}
-
-          <div
-            className={
-              styles.pageIntro
-            }
-          >
-
-            <h1>
-              Identity Verification
-            </h1>
-
-            <p>
-              Complete the steps below to verify your
-              identity and secure your account.
-            </p>
-
-            {/* =================================================
-                BACK TO DOCUMENT UPLOAD
-            ================================================= */}
-
-            <button
-              type="button"
-              className={
-                styles.backLink
-              }
-              onClick={
-                navigateBackToDocumentUpload
-              }
-            >
-
-              <Icon
-                name="arrow"
-                size={18}
-              />
-
-              <span>
-                Back to Document Upload
-              </span>
-
-            </button>
-
-            {/* STATUS */}
+            {/* ==================================================
+                PAGE INTRO
+            ================================================== */}
 
             <div
               className={
-                styles.statusBadge
+                styles.pageIntro
               }
             >
+              <h1>
+                Identity Verification
+              </h1>
 
-              <span
-                className={
-                  styles.statusDiamond
-                }
-              >
-                ◇
-              </span>
+              <p>
+                Complete the steps below to verify your
+                identity and secure your account.
+              </p>
 
-              <span>
-                Not Verified
-              </span>
-
-            </div>
-
-          </div>
-
-          {/* ==================================================
-              FIVE STEP PROGRESS
-          ================================================== */}
-
-          <div
-            className={
-              styles.steps
-            }
-          >
-
-            <Step
-              completed
-              number={1}
-              label={
-                <>
-                  Identity
-                  <br />
-                  Document
-                </>
-              }
-            />
-
-            <StepLine
-              active
-            />
-
-            <Step
-              completed
-              number={2}
-              label={
-                <>
-                  Document
-                  <br />
-                  Upload
-                </>
-              }
-            />
-
-            <StepLine
-              active
-            />
-
-            <Step
-              active
-              number={3}
-              label={
-                <>
-                  Information
-                  <br />
-                  Confirmation
-                </>
-              }
-            />
-
-            <StepLine />
-
-            <Step
-              number={4}
-              label={
-                <>
-                  Selfie
-                  <br />
-                  Verification
-                </>
-              }
-            />
-
-            <StepLine />
-
-            <Step
-              number={5}
-              label={
-                <>
-                  Review &
-                  <br />
-                  Submit
-                </>
-              }
-            />
-
-          </div>
-
-          {/* ==================================================
-              VERIFICATION CARD
-          ================================================== */}
-
-          <section
-            className={
-              styles.verificationCard
-            }
-          >
-
-            {/* CARD HEADER */}
-
-            <div
-              className={
-                styles.cardHeader
-              }
-            >
-
-              <div
-                className={
-                  styles.cardHeaderIcon
-                }
-              >
-                <UserCheckIcon />
-              </div>
-
-              <div
-                className={
-                  styles.cardHeaderText
-                }
-              >
-
-                <h2>
-                  Step 3: Information Confirmation
-                </h2>
-
-                <p>
-                  Please confirm that the information below
-                  matches your identity document.
-                </p>
-
-              </div>
-
-            </div>
-
-            <div
-              className={
-                styles.divider
-              }
-            />
-
-            {/* =================================================
-                PERSONAL INFORMATION
-            ================================================= */}
-
-            <InformationSection
-              title="Personal Information"
-            >
-
-              <InformationRow
-                icon="user"
-                label="Full Name"
-                value={
-                  loadingData
-                    ? "Loading..."
-                    : fullName
-                }
-              />
-
-              <InformationRow
-                icon="calendar"
-                label="Date of Birth"
-                value={
-                  loadingData
-                    ? "Loading..."
-                    : dateOfBirth
-                }
-              />
-
-              <InformationRow
-                icon="gender"
-                label="Gender"
-                value={
-                  loadingData
-                    ? "Loading..."
-                    : gender
-                }
-              />
-
-              <InformationRow
-                icon="nationality"
-                label="Nationality"
-                value={
-                  loadingData
-                    ? "Loading..."
-                    : nationality
-                }
-              />
-
-            </InformationSection>
-
-            {/* =================================================
-                DOCUMENT INFORMATION
-            ================================================= */}
-
-            <InformationSection
-              title="Document Information"
-            >
-
-              <InformationRow
-                documentBadge={
-                  documentBadge
-                }
-                label="Document Type"
-                value={
-                  loadingData
-                    ? "Loading..."
-                    : documentName
-                }
-              />
-
-              <InformationRow
-                icon="id"
-                label="Document Number"
-                value={
-                  loadingData
-                    ? "Loading..."
-                    : documentNumber
-                }
-              />
-
-              <InformationRow
-                icon="calendar"
-                label="Date of Issue"
-                value={
-                  loadingData
-                    ? "Loading..."
-                    : dateOfIssue
-                }
-              />
-
-            </InformationSection>
-
-            {/* =================================================
-                UPLOADED DOCUMENT
-            ================================================= */}
-
-            <InformationSection
-              title="Uploaded Document"
-            >
-
-              <div
-                className={
-                  styles.uploadedDocument
-                }
-              >
-
-                <div
-                  className={
-                    styles.rowIcon
-                  }
-                >
-                  <Icon
-                    name="document"
-                    size={18}
-                  />
-                </div>
-
-                <div
-                  className={
-                    styles.rowLabel
-                  }
-                >
-                  File Name
-                </div>
-
-                <div
-                  className={
-                    styles.rowValue
-                  }
-                >
-                  {loadingData
-                    ? "Loading..."
-                    : fileName}
-                </div>
-
-              </div>
-
-            </InformationSection>
-
-            {/* =================================================
-                CONFIRMATION
-            ================================================= */}
-
-            <label
-              className={
-                styles.confirmationBox
-              }
-            >
-
-              <input
-                type="checkbox"
-                checked={
-                  confirmed
-                }
-                onChange={(
-                  event
-                ) =>
-                  setConfirmed(
-                    event.target.checked
-                  )
-                }
-              />
-
-              <span
-                className={
-                  styles.customCheckbox
-                }
-              >
-                {confirmed &&
-                  "✓"}
-              </span>
-
-              <span
-                className={
-                  styles.confirmationText
-                }
-              >
-                I confirm that the above information is correct
-                and matches my identity document.
-              </span>
-
-            </label>
-
-            {/* =================================================
-                CONTINUE
-            ================================================= */}
-
-            <div
-              className={
-                styles.continueRow
-              }
-            >
+              {/* =================================================
+                  BACK TO DOCUMENT UPLOAD
+              ================================================= */}
 
               <button
                 type="button"
                 className={
-                  styles.continueButton
+                  styles.backLink
                 }
                 onClick={
-                  handleContinue
-                }
-                disabled={
-                  !confirmed
+                  navigateBackToDocumentUpload
                 }
               >
+                <span
+                  className={
+                    styles.backArrow
+                  }
+                >
+                  ←
+                </span>
 
                 <span>
-                  Continue
+                  Back to Document Upload
+                </span>
+              </button>
+
+              {/* =================================================
+                  STATUS
+              ================================================= */}
+
+              <div
+                className={
+                  styles.statusBadge
+                }
+              >
+                <span
+                  className={
+                    styles.statusDiamond
+                  }
+                >
+                  ◇
+                </span>
+
+                <span>
+                  Not Verified
+                </span>
+              </div>
+            </div>
+
+            {/* ==================================================
+                FIVE STEP PROGRESS
+            ================================================== */}
+
+            <div
+              className={
+                styles.steps
+              }
+            >
+              <Step
+                completed
+                number={1}
+                label={
+                  <>
+                    Identity
+                    <br />
+                    Document
+                  </>
+                }
+              />
+
+              <StepLine
+                active
+              />
+
+              <Step
+                completed
+                number={2}
+                label={
+                  <>
+                    Document
+                    <br />
+                    Upload
+                  </>
+                }
+              />
+
+              <StepLine
+                active
+              />
+
+              <Step
+                active
+                number={3}
+                label={
+                  <>
+                    Information
+                    <br />
+                    Confirmation
+                  </>
+                }
+              />
+
+              <StepLine />
+
+              <Step
+                number={4}
+                label={
+                  <>
+                    Selfie
+                    <br />
+                    Verification
+                  </>
+                }
+              />
+
+              <StepLine />
+
+              <Step
+                number={5}
+                label={
+                  <>
+                    Review &
+                    <br />
+                    Submit
+                  </>
+                }
+              />
+            </div>
+
+            {/* ==================================================
+                VERIFICATION CARD
+            ================================================== */}
+
+            <section
+              className={
+                styles.verificationCard
+              }
+            >
+              {/* =================================================
+                  CARD HEADER
+              ================================================= */}
+
+              <div
+                className={
+                  styles.cardHeader
+                }
+              >
+                <div
+                  className={
+                    styles.cardHeaderIcon
+                  }
+                >
+                  <UserCheckIcon />
+                </div>
+
+                <div
+                  className={
+                    styles.cardHeaderText
+                  }
+                >
+                  <h2>
+                    Step 3: Information Confirmation
+                  </h2>
+
+                  <p>
+                    Please confirm that the information below
+                    matches your identity document.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className={
+                  styles.divider
+                }
+              />
+
+              {/* =================================================
+                  PERSONAL INFORMATION
+              ================================================= */}
+
+              <InformationSection
+                title="Personal Information"
+              >
+                <InformationRow
+                  icon="user"
+                  label="Full Name"
+                  value={
+                    loadingData
+                      ? "Loading..."
+                      : fullName
+                  }
+                />
+
+                <InformationRow
+                  icon="calendar"
+                  label="Date of Birth"
+                  value={
+                    loadingData
+                      ? "Loading..."
+                      : dateOfBirth
+                  }
+                />
+
+                <InformationRow
+                  icon="gender"
+                  label="Gender"
+                  value={
+                    loadingData
+                      ? "Loading..."
+                      : gender
+                  }
+                />
+
+                <InformationRow
+                  icon="nationality"
+                  label="Nationality"
+                  value={
+                    loadingData
+                      ? "Loading..."
+                      : nationality
+                  }
+                />
+              </InformationSection>
+
+              {/* =================================================
+                  DOCUMENT INFORMATION
+              ================================================= */}
+
+              <InformationSection
+                title="Document Information"
+              >
+                <InformationRow
+                  documentBadge={
+                    documentBadge
+                  }
+                  label="Document Type"
+                  value={
+                    loadingData
+                      ? "Loading..."
+                      : documentName
+                  }
+                />
+
+                <InformationRow
+                  icon="id"
+                  label="Document Number"
+                  value={
+                    loadingData
+                      ? "Loading..."
+                      : documentNumber
+                  }
+                />
+
+                <InformationRow
+                  icon="calendar"
+                  label="Date of Issue"
+                  value={
+                    loadingData
+                      ? "Loading..."
+                      : dateOfIssue
+                  }
+                />
+              </InformationSection>
+
+              {/* =================================================
+                  UPLOADED DOCUMENT
+              ================================================= */}
+
+              <InformationSection
+                title="Uploaded Document"
+              >
+                <div
+                  className={
+                    styles.uploadedDocument
+                  }
+                >
+                  <div
+                    className={
+                      styles.rowIcon
+                    }
+                  >
+                    <Icon
+                      name="document"
+                      size={18}
+                    />
+                  </div>
+
+                  <div
+                    className={
+                      styles.rowLabel
+                    }
+                  >
+                    File Name
+                  </div>
+
+                  <div
+                    className={
+                      styles.rowValue
+                    }
+                  >
+                    {loadingData
+                      ? "Loading..."
+                      : fileName}
+                  </div>
+                </div>
+              </InformationSection>
+
+              {/* =================================================
+                  CONFIRMATION
+              ================================================= */}
+
+              <label
+                className={
+                  styles.confirmationBox
+                }
+              >
+                <input
+                  type="checkbox"
+                  checked={
+                    confirmed
+                  }
+                  onChange={(
+                    event
+                  ) =>
+                    setConfirmed(
+                      event.target.checked
+                    )
+                  }
+                />
+
+                <span
+                  className={
+                    styles.customCheckbox
+                  }
+                >
+                  {confirmed &&
+                    "✓"}
                 </span>
 
                 <span
                   className={
-                    styles.continueArrow
+                    styles.confirmationText
                   }
                 >
-                  →
+                  I confirm that the above information is correct
+                  and matches my identity document.
                 </span>
+              </label>
 
-              </button>
+              {/* =================================================
+                  CONTINUE
+              ================================================= */}
 
-            </div>
+              <div
+                className={
+                  styles.continueRow
+                }
+              >
+                <button
+                  type="button"
+                  className={
+                    styles.continueButton
+                  }
+                  onClick={
+                    handleContinue
+                  }
+                  disabled={
+                    !confirmed
+                  }
+                >
+                  <span>
+                    Continue
+                  </span>
 
-          </section>
-
-        </div>
-
-      </section>
-
-      {/* ======================================================
-          MOBILE BOTTOM NAV
-      ====================================================== */}
-
-      <nav
-        className={
-          styles.mobileBottomNav
-        }
-      >
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/dashboard"
-            )
-          }
-        >
-
-          <Icon
-            name="dashboard"
-            size={20}
-          />
-
-          <span>
-            Dashboard
-          </span>
-
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.activeBottom
-          }
-          onClick={() =>
-            navigateTo(
-              "/verify"
-            )
-          }
-        >
-
-          <Icon
-            name="verify"
-            size={20}
-          />
-
-          <span>
-            Verify
-          </span>
-
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/my-properties"
-            )
-          }
-        >
-
-          <Icon
-            name="properties"
-            size={20}
-          />
-
-          <span>
-            Properties
-          </span>
-
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/reports"
-            )
-          }
-        >
-
-          <Icon
-            name="reports"
-            size={20}
-          />
-
-          <span>
-            Reports
-          </span>
-
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/account"
-            )
-          }
-        >
-
-          <Icon
-            name="account"
-            size={20}
-          />
-
-          <span>
-            Account
-          </span>
-
-        </button>
-
-      </nav>
-
-    </main>
+                  <span
+                    className={
+                      styles.continueArrow
+                    }
+                  >
+                    →
+                  </span>
+                </button>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </AppShell>
   );
 }
 
@@ -1358,7 +883,6 @@ function Step({
           : ""
       }`}
     >
-
       <div
         className={`${styles.stepCircle} ${
           active
@@ -1370,13 +894,11 @@ function Step({
             : ""
         }`}
       >
-
         {completed ? (
           "✓"
         ) : (
           number
         )}
-
       </div>
 
       <div
@@ -1386,7 +908,6 @@ function Step({
       >
         {label}
       </div>
-
     </div>
   );
 }
@@ -1428,7 +949,6 @@ function InformationSection({
         styles.informationSection
       }
     >
-
       <h3>
         {title}
       </h3>
@@ -1440,7 +960,6 @@ function InformationSection({
       >
         {children}
       </div>
-
     </section>
   );
 }
@@ -1466,7 +985,6 @@ function InformationRow({
         styles.informationRow
       }
     >
-
       {documentBadge ? (
         <div
           className={
@@ -1481,14 +999,12 @@ function InformationRow({
             styles.rowIcon
           }
         >
-
           {icon && (
             <Icon
               name={icon}
               size={17}
             />
           )}
-
         </div>
       )}
 
@@ -1507,7 +1023,6 @@ function InformationRow({
       >
         {value}
       </div>
-
     </div>
   );
 }
@@ -1529,7 +1044,6 @@ function UserCheckIcon() {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-
       <circle
         cx="9"
         cy="7"
@@ -1549,7 +1063,6 @@ function UserCheckIcon() {
       <path
         d="m15.5 17 1 1 2-2"
       />
-
     </svg>
   );
 }

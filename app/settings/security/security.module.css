@@ -2,9 +2,8 @@
    SECURITY & PRIVACY SETTINGS
    PropertySure AI
 
-   MASTER UI MATCHES:
-   /settings/general
-
+   APP SHELL VERSION
+   Premium Settings UI
    CSS MODULE
 ========================================================= */
 
@@ -46,263 +45,13 @@
 ========================================================= */
 
 .security-page {
-  min-height: 100vh;
   width: 100%;
+  min-height: 100%;
 
   background: #ffffff;
   color: #18253a;
 
-  padding-bottom: 90px;
-}
-
-/* =========================================================
-   MASTER HEADER
-========================================================= */
-
-.security-header {
-  width: 100%;
-  height: 72px;
-
-  position: sticky;
-  top: 0;
-
-  z-index: 100;
-
-  display: grid;
-
-  grid-template-columns:
-    44px
-    minmax(0, 1fr)
-    44px;
-
-  align-items: center;
-
-  padding: 0 14px;
-
-  background: #061b38;
-
-  border-bottom:
-    1px solid
-    #193650;
-}
-
-/* =========================================================
-   MASTER THREE-DASH BUTTON
-========================================================= */
-
-.security-menu-button {
-  width: 40px;
-  height: 40px;
-
-  border: 0;
-
-  background: transparent;
-
-  color: #ffffff;
-
-  padding: 0;
-
-  cursor: pointer;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-}
-
-.security-master-menu-icon {
-  width: 40px;
-  height: 40px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  color: #ffffff;
-
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
-  font-size: 23px;
-
-  font-weight: 400;
-
-  line-height: 1;
-
-  transform:
-    translateY(-1px);
-}
-
-/* =========================================================
-   MASTER PROPERTY SURE AI LOGO
-========================================================= */
-
-.security-brand {
-  height: 40px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  gap: 7px;
-
-  min-width: 0;
-
-  color: #ffffff;
-
-  text-decoration: none;
-}
-
-.security-brand-diamond {
-  width: 23px;
-  height: 23px;
-
-  flex-shrink: 0;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  color: #168eff;
-
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
-  font-size: 23px;
-
-  line-height: 1;
-
-  transform: none;
-}
-
-.security-brand-text {
-  color: #ffffff;
-
-  font-size: 17px;
-
-  font-weight: 700;
-
-  letter-spacing: -0.2px;
-
-  line-height: 1;
-
-  white-space: nowrap;
-}
-
-.security-brand-ai {
-  color: #168eff;
-}
-
-/* =========================================================
-   MASTER NATIVE NOTIFICATION BUTTON
-========================================================= */
-
-.security-notification-button {
-  width: 40px;
-  height: 40px;
-
-  border: 0;
-
-  background: transparent;
-
-  position: relative;
-
-  display: grid;
-
-  place-items: center;
-
-  cursor: pointer;
-
-  padding: 0;
-
-  color: inherit;
-
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-/* =========================================================
-   MASTER NATIVE NOTIFICATION BELL
-========================================================= */
-
-.security-master-bell {
-  width: 20px;
-  height: 20px;
-
-  display: inline-flex;
-
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
-
-  font-family:
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Noto Color Emoji",
-    sans-serif !important;
-
-  font-size: 17px;
-
-  font-style: normal;
-
-  font-weight: normal;
-
-  line-height: 1;
-
-  letter-spacing: normal;
-
-  text-align: center;
-
-  white-space: nowrap;
-
-  color: initial !important;
-
-  filter: none !important;
-
-  -webkit-filter: none !important;
-
-  -webkit-text-fill-color: initial;
-
-  opacity: 1;
-
-  transform:
-    translateY(-1px);
-
-  font-variant-emoji: emoji;
-}
-
-/* =========================================================
-   NOTIFICATION DOT
-========================================================= */
-
-.security-notification-dot {
-  position: absolute;
-
-  width: 8px;
-  height: 8px;
-
-  top: 5px;
-  right: 3px;
-
-  border-radius: 50%;
-
-  background: #168eff;
-
-  box-shadow:
-    0 0 8px
-    rgba(22, 142, 255, 0.7);
+  padding-bottom: 70px;
 }
 
 /* =========================================================
@@ -311,13 +60,20 @@
 
 .security-content {
   width: 100%;
-
-  max-width: 900px;
+  max-width: 930px;
 
   margin: 0 auto;
 
   padding:
-    35px 30px 60px;
+    38px 30px 70px;
+}
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+.security-page-header {
+  margin-bottom: 25px;
 }
 
 .security-content h1 {
@@ -327,14 +83,16 @@
 
   font-size: 34px;
 
-  line-height: 1.1;
+  line-height: 1.12;
 
   font-weight: 700;
 
-  letter-spacing: -0.7px;
+  letter-spacing: -0.8px;
 }
 
 .security-description {
+  max-width: 650px;
+
   margin:
     8px 0 0;
 
@@ -342,18 +100,22 @@
 
   font-size: 14px;
 
-  line-height: 1.5;
+  line-height: 1.55;
 }
+
+/* =========================================================
+   BACK TO SETTINGS
+   Matches the upgraded Settings pattern
+========================================================= */
 
 .security-back-link {
   display: inline-flex;
 
   align-items: center;
 
-  gap: 7px;
+  gap: 6px;
 
-  margin-top: 20px;
-  margin-bottom: 22px;
+  margin-top: 18px;
 
   color: #168eff;
 
@@ -362,18 +124,35 @@
   font-size: 13px;
 
   font-weight: 600;
+
+  line-height: 1.3;
+
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
 }
 
 .security-back-link:hover {
-  text-decoration: underline;
+  color: #0878df;
+
+  text-decoration: none;
+
+  transform:
+    translateX(-1px);
 }
 
 .security-back-arrow {
-  font-size: 27px;
+  display: inline-flex;
 
-  line-height: 0.7;
+  align-items: center;
 
-  font-weight: 300;
+  justify-content: center;
+
+  font-size: 18px;
+
+  line-height: 1;
+
+  font-weight: 400;
 }
 
 /* =========================================================
@@ -383,24 +162,34 @@
 .security-card {
   width: 100%;
 
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 
   padding:
-    16px 15px;
+    17px 16px;
 
   border:
     1px solid
-    #dce4ed;
+    #dfe6ee;
 
-  border-radius: 11px;
+  border-radius: 13px;
 
   background: #ffffff;
 
   box-shadow:
-    0 1px 2px
-    rgba(10, 30, 70, 0.02);
+    0 2px 7px
+    rgba(13, 38, 72, 0.025);
 
-  overflow: visible;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.security-card:hover {
+  border-color: #d7e1ec;
+
+  box-shadow:
+    0 5px 16px
+    rgba(13, 38, 72, 0.045);
 }
 
 /* =========================================================
@@ -408,7 +197,8 @@
 ========================================================= */
 
 .security-section-label {
-  margin-bottom: 10px;
+  margin:
+    1px 2px 10px;
 
   color: #168eff;
 
@@ -416,7 +206,7 @@
 
   font-weight: 700;
 
-  letter-spacing: 1px;
+  letter-spacing: 1.15px;
 
   line-height: 1.2;
 }
@@ -426,7 +216,7 @@
 ========================================================= */
 
 .security-setting-row {
-  min-height: 74px;
+  min-height: 76px;
 
   display: grid;
 
@@ -437,7 +227,7 @@
 
   align-items: center;
 
-  gap: 11px;
+  gap: 12px;
 
   position: relative;
 }
@@ -450,9 +240,10 @@
   height: 1px;
 
   margin:
-    0 0 0 65px;
+    0 0 0 66px;
 
-  background: #e1e7ee;
+  background:
+    #e7ecf2;
 }
 
 /* =========================================================
@@ -465,13 +256,23 @@
 
   flex: 0 0 54px;
 
-  border-radius: 13px;
-
   display: flex;
 
   align-items: center;
 
   justify-content: center;
+
+  border-radius: 13px;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.security-setting-row:hover
+.security-icon-box {
+  transform:
+    translateY(-1px);
 }
 
 .security-icon-box svg {
@@ -487,28 +288,28 @@
   color: #168eff;
 
   background:
-    rgba(35, 135, 255, 0.11);
+    rgba(35, 135, 255, 0.10);
 }
 
 .security-icon-green {
   color: #15965a;
 
   background:
-    rgba(30, 190, 125, 0.12);
+    rgba(30, 190, 125, 0.11);
 }
 
 .security-icon-purple {
   color: #7956d8;
 
   background:
-    rgba(126, 88, 255, 0.11);
+    rgba(126, 88, 255, 0.10);
 }
 
 .security-icon-yellow {
   color: #d79a13;
 
   background:
-    rgba(255, 160, 20, 0.12);
+    rgba(255, 160, 20, 0.11);
 }
 
 /* =========================================================
@@ -527,19 +328,23 @@
 
   font-size: 15px;
 
-  line-height: 1.25;
+  line-height: 1.3;
 
   font-weight: 700;
+
+  letter-spacing: -0.1px;
 }
 
 .security-setting-content p {
   margin: 0;
 
+  max-width: 540px;
+
   color: #71849e;
 
   font-size: 10px;
 
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 /* =========================================================
@@ -547,9 +352,9 @@
 ========================================================= */
 
 .security-action-button {
-  min-width: 165px;
+  min-width: 166px;
 
-  height: 44px;
+  height: 43px;
 
   padding:
     0 13px;
@@ -560,11 +365,11 @@
 
   justify-content: space-between;
 
-  gap: 10px;
+  gap: 12px;
 
   border:
     1px solid
-    #c9d6e5;
+    #ccd8e6;
 
   border-radius: 8px;
 
@@ -575,6 +380,8 @@
   font-size: 12px;
 
   font-weight: 600;
+
+  white-space: nowrap;
 
   cursor: pointer;
 
@@ -598,14 +405,47 @@
     translateY(-1px);
 }
 
+.security-action-button:focus-visible {
+  outline:
+    3px solid
+    rgba(22, 142, 255, 0.18);
+
+  outline-offset: 2px;
+}
+
+.security-action-button:active {
+  transform:
+    translateY(0);
+}
+
 .security-chevron {
-  font-size: 22px;
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #168eff;
+
+  font-size: 21px;
 
   line-height: 1;
 
   font-weight: 300;
+}
 
-  color: #168eff;
+/* =========================================================
+   RIGHT SIDE CONTROL GROUP
+========================================================= */
+
+.security-row-end {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-end;
+
+  gap: 17px;
 }
 
 /* =========================================================
@@ -617,19 +457,27 @@
 
   align-items: center;
 
-  gap: 18px;
+  justify-content: flex-end;
+
+  gap: 17px;
 }
 
+/* =========================================================
+   STATUS
+========================================================= */
+
 .security-status {
-  display: flex;
+  display: inline-flex;
 
   align-items: center;
 
-  gap: 6px;
+  gap: 7px;
 
   font-size: 11px;
 
   font-weight: 600;
+
+  line-height: 1;
 
   white-space: nowrap;
 }
@@ -646,15 +494,19 @@
   width: 20px;
   height: 20px;
 
+  flex: 0 0 20px;
+
   border-radius: 50%;
 
-  display: flex;
+  display: inline-flex;
 
   align-items: center;
 
   justify-content: center;
 
-  font-size: 11px;
+  font-size: 10px;
+
+  line-height: 1;
 
   font-weight: 700;
 }
@@ -662,14 +514,14 @@
 .security-status-enabled
 .security-status-circle {
   border:
-    1.8px solid
+    1.7px solid
     #15965a;
 }
 
 .security-status-warning
 .security-status-circle {
   border:
-    1.8px solid
+    1.7px solid
     #d79a13;
 }
 
@@ -693,13 +545,13 @@
   margin-top: 18px;
 
   padding:
-    19px 25px;
+    19px 24px;
 
   display: flex;
 
   align-items: center;
 
-  gap: 18px;
+  gap: 17px;
 
   position: relative;
 
@@ -709,18 +561,18 @@
     1px solid
     #d5e4f5;
 
-  border-radius: 11px;
+  border-radius: 13px;
 
   background:
     linear-gradient(
       100deg,
-      #f5faff 0%,
+      #f6faff 0%,
       #eef6ff 100%
     );
 
   box-shadow:
-    0 2px 8px
-    rgba(22, 142, 255, 0.04);
+    0 3px 10px
+    rgba(22, 142, 255, 0.045);
 }
 
 .security-notice-icon {
@@ -763,6 +615,8 @@
 
   font-size: 15px;
 
+  line-height: 1.3;
+
   font-weight: 700;
 }
 
@@ -776,17 +630,17 @@
 
   font-size: 10px;
 
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .security-notice-watermark {
-  width: 100px;
-  height: 100px;
+  width: 105px;
+  height: 105px;
 
   position: absolute;
 
-  right: 25px;
-  top: 6px;
+  right: 24px;
+  top: 5px;
 
   display: flex;
 
@@ -796,87 +650,14 @@
 
   color: #168eff;
 
-  opacity: 0.09;
+  opacity: 0.085;
+
+  pointer-events: none;
 }
 
 .security-notice-watermark svg {
-  width: 78px;
-  height: 78px;
-}
-
-/* =========================================================
-   LOADING
-========================================================= */
-
-.security-loading {
-  min-height: 100vh;
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  justify-content: center;
-
-  gap: 10px;
-
-  background:
-    linear-gradient(
-      180deg,
-      #031229 0%,
-      #061b3b 100%
-    );
-
-  color: #ffffff;
-}
-
-.security-loading-brand {
-  display: flex;
-
-  align-items: center;
-
-  gap: 8px;
-
-  font-size: 22px;
-
-  font-weight: 700;
-}
-
-.security-loading-brand > span {
-  color: #168eff;
-
-  font-size: 38px;
-}
-
-.security-loading-brand em {
-  color: #168eff;
-
-  font-style: normal;
-}
-
-.security-loading p {
-  margin: 0;
-
-  color: #9eb1c9;
-
-  font-size: 13px;
-}
-
-/* =========================================================
-   MOBILE MENU
-========================================================= */
-
-.security-mobile-menu {
-  display: none;
-}
-
-/* =========================================================
-   BOTTOM NAV
-========================================================= */
-
-.security-bottom-nav {
-  display: none;
+  width: 80px;
+  height: 80px;
 }
 
 /* =========================================================
@@ -886,74 +667,14 @@
 @media (min-width: 701px) {
 
   .security-page {
-    padding-bottom: 0;
-  }
-
-  .security-header {
-    position: relative;
-
-    height: 88px;
-
-    grid-template-columns:
-      60px
-      minmax(0, 1fr)
-      60px;
-
-    padding:
-      0 24px;
-  }
-
-  .security-menu-button {
-    display: none;
-  }
-
-  .security-brand {
-    justify-content: flex-start;
-  }
-
-  .security-brand-diamond {
-    width: 28px;
-    height: 28px;
-
-    font-size: 28px;
-  }
-
-  .security-brand-text {
-    font-size: 24px;
-  }
-
-  .security-notification-button {
-    justify-self: end;
-  }
-
-  .security-master-bell {
-    width: 25px;
-    height: 25px;
-
-    font-size: 21px;
-
-    font-family:
-      "Apple Color Emoji",
-      "Segoe UI Emoji",
-      "Noto Color Emoji",
-      sans-serif !important;
-
-    color: initial !important;
-
-    filter: none !important;
-
-    -webkit-filter: none !important;
-
-    -webkit-text-fill-color: initial;
-
-    font-variant-emoji: emoji;
+    padding-bottom: 30px;
   }
 
   .security-content {
-    max-width: 900px;
+    max-width: 930px;
 
     padding:
-      35px 30px 60px;
+      38px 30px 70px;
   }
 
   .security-content h1 {
@@ -971,9 +692,52 @@
   .security-setting-content p {
     font-size: 10px;
   }
+}
 
-  .security-bottom-nav {
-    display: none;
+/* =========================================================
+   TABLET / SMALL DESKTOP
+========================================================= */
+
+@media (max-width: 900px) and (min-width: 701px) {
+
+  .security-content {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .security-setting-row {
+    grid-template-columns:
+      54px
+      minmax(0, 1fr);
+
+    align-items: center;
+  }
+
+  .security-setting-row
+  > .security-action-button,
+  .security-setting-row
+  > .security-status,
+  .security-setting-row
+  > .security-status-action,
+  .security-setting-row
+  > .security-row-end {
+    grid-column:
+      1 / -1;
+  }
+
+  .security-action-button {
+    width: 100%;
+
+    margin-top: 3px;
+  }
+
+  .security-status-action,
+  .security-row-end {
+    width: 100%;
+
+    justify-content: space-between;
+
+    margin-top: 3px;
   }
 }
 
@@ -984,254 +748,10 @@
 @media (max-width: 700px) {
 
   .security-page {
-    min-height: 100vh;
+    min-height: 100%;
 
-    padding-bottom: 74px;
+    padding-bottom: 30px;
   }
-
-  .security-header {
-    height: 72px;
-
-    padding: 0 14px;
-  }
-
-  .security-master-menu-icon {
-    font-size: 23px;
-  }
-
-  .security-brand-diamond {
-    width: 23px;
-    height: 23px;
-
-    font-size: 23px;
-  }
-
-  .security-brand-text {
-    font-size: 17px;
-
-    font-weight: 700;
-  }
-
-  /* =======================================================
-     MASTER MOBILE NATIVE BELL
-  ======================================================= */
-
-  .security-master-bell {
-    width: 20px;
-    height: 20px;
-
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    font-family:
-      "Apple Color Emoji",
-      "Segoe UI Emoji",
-      "Noto Color Emoji",
-      sans-serif !important;
-
-    font-size: 17px;
-
-    font-style: normal;
-
-    font-weight: normal;
-
-    line-height: 1;
-
-    letter-spacing: normal;
-
-    text-align: center;
-
-    white-space: nowrap;
-
-    color: initial !important;
-
-    filter: none !important;
-
-    -webkit-filter: none !important;
-
-    -webkit-text-fill-color: initial;
-
-    opacity: 1;
-
-    transform:
-      translateY(-1px);
-
-    font-variant-emoji: emoji;
-  }
-
-  /* =======================================================
-     NOTIFICATION DOT
-  ======================================================= */
-
-  .security-notification-dot {
-    width: 8px;
-    height: 8px;
-
-    top: 5px;
-    right: 3px;
-
-    background: #168eff;
-
-    box-shadow:
-      0 0 8px
-      rgba(22, 142, 255, 0.7);
-  }
-
-  /* =======================================================
-     MOBILE MENU
-  ======================================================= */
-
-  .security-mobile-menu {
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 300;
-
-    display: block;
-
-    padding: 22px;
-
-    background: #031229;
-
-    color: #ffffff;
-
-    overflow-y: auto;
-  }
-
-  .security-mobile-menu-header {
-    display: flex;
-
-    align-items: flex-start;
-
-    justify-content: space-between;
-  }
-
-  .security-mobile-menu-brand {
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    color: #ffffff;
-
-    text-decoration: none;
-
-    font-size: 20px;
-
-    font-weight: 700;
-  }
-
-  .security-mobile-menu-brand > span {
-    color: #168eff;
-
-    font-size: 25px;
-  }
-
-  .security-mobile-menu-brand em {
-    color: #168eff;
-
-    font-style: normal;
-  }
-
-  .security-mobile-close {
-    border: 0;
-
-    background: transparent;
-
-    color: #ffffff;
-
-    font-size: 30px;
-
-    line-height: 1;
-
-    cursor: pointer;
-  }
-
-  .security-mobile-menu-subtitle {
-    margin-top: 9px;
-
-    color: #91a7c2;
-
-    font-size: 11px;
-
-    line-height: 1.5;
-  }
-
-  .security-mobile-menu-nav {
-    margin-top: 30px;
-  }
-
-  .security-mobile-menu-nav button {
-    width: 100%;
-
-    min-height: 50px;
-
-    margin-bottom: 5px;
-
-    padding:
-      0 14px;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 14px;
-
-    border: 0;
-
-    border-radius: 9px;
-
-    background: transparent;
-
-    color: #b9c8dc;
-
-    font-size: 14px;
-
-    text-align: left;
-
-    cursor: pointer;
-  }
-
-  .security-mobile-menu-nav button:hover {
-    background:
-      rgba(26, 119, 220, 0.14);
-
-    color: #ffffff;
-  }
-
-  .security-mobile-menu-nav
-  button > span:first-child {
-    width: 20px;
-
-    min-width: 20px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    color: #8db9e9;
-  }
-
-  .security-mobile-account-label {
-    color: #607897;
-
-    font-size: 10px;
-
-    letter-spacing: 1.5px;
-
-    margin:
-      25px 14px 10px;
-  }
-
-  /* =======================================================
-     CONTENT
-  ======================================================= */
 
   .security-content {
     width: 100%;
@@ -1239,25 +759,41 @@
     max-width: none;
 
     padding:
-      28px 15px 30px;
+      28px 15px 45px;
+  }
+
+  /* =======================================================
+     PAGE HEADER
+  ======================================================= */
+
+  .security-page-header {
+    margin-bottom: 23px;
   }
 
   .security-content h1 {
     font-size: 30px;
+
+    letter-spacing: -0.55px;
   }
 
   .security-description {
     max-width: 100%;
 
+    margin-top: 7px;
+
     font-size: 12px;
+
+    line-height: 1.55;
   }
 
   .security-back-link {
-    margin-top: 19px;
-
-    margin-bottom: 22px;
+    margin-top: 18px;
 
     font-size: 13px;
+  }
+
+  .security-back-arrow {
+    font-size: 18px;
   }
 
   /* =======================================================
@@ -1270,16 +806,18 @@
     padding:
       16px 15px;
 
-    border-radius: 11px;
-
-    overflow: visible;
+    border-radius: 12px;
   }
 
   .security-section-label {
-    font-size: 10px;
-
     margin-bottom: 10px;
+
+    font-size: 10px;
   }
+
+  /* =======================================================
+     SETTING ROW
+  ======================================================= */
 
   .security-setting-row {
     min-height: 74px;
@@ -1288,9 +826,9 @@
       54px
       minmax(0, 1fr);
 
-    gap: 11px;
-
     align-items: center;
+
+    gap: 11px;
   }
 
   .security-icon-box {
@@ -1298,8 +836,13 @@
     height: 54px;
   }
 
+  .security-icon-box svg {
+    width: 27px;
+    height: 27px;
+  }
+
   .security-setting-content {
-    padding-right: 2px;
+    padding-right: 1px;
   }
 
   .security-setting-content h2 {
@@ -1309,9 +852,11 @@
   }
 
   .security-setting-content p {
+    max-width: 100%;
+
     font-size: 9px;
 
-    line-height: 1.45;
+    line-height: 1.5;
   }
 
   .security-row-divider {
@@ -1322,7 +867,8 @@
      MOBILE ACTION BUTTONS
   ======================================================= */
 
-  .security-action-button {
+  .security-setting-row
+  > .security-action-button {
     grid-column:
       1 / -1;
 
@@ -1338,12 +884,14 @@
   }
 
   /* =======================================================
-     MOBILE 2FA STATUS
+     MOBILE 2FA
   ======================================================= */
 
   .security-status-action {
     grid-column:
       1 / -1;
+
+    width: 100%;
 
     display: flex;
 
@@ -1352,6 +900,13 @@
     align-items: stretch;
 
     gap: 9px;
+
+    margin-top: 2px;
+  }
+
+  .security-status-action
+  .security-action-button {
+    width: 100%;
   }
 
   .security-status,
@@ -1362,11 +917,42 @@
   }
 
   /* =======================================================
-     EMAIL / PHONE STATUS
+     MOBILE PHONE CONTROL
   ======================================================= */
 
-  .security-setting-row >
+  .security-row-end {
+    grid-column:
+      1 / -1;
+
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: stretch;
+
+    gap: 9px;
+
+    margin-top: 2px;
+  }
+
+  .security-row-end
   .security-status {
+    justify-content: flex-end;
+  }
+
+  .security-row-end
+  .security-action-button {
+    width: 100%;
+  }
+
+  /* =======================================================
+     EMAIL STATUS
+  ======================================================= */
+
+  .security-setting-row
+  > .security-status {
     grid-column:
       1 / -1;
 
@@ -1388,6 +974,8 @@
     align-items: flex-start;
 
     gap: 12px;
+
+    border-radius: 12px;
   }
 
   .security-notice-icon {
@@ -1409,113 +997,11 @@
   .security-notice-content p {
     font-size: 9px;
 
-    line-height: 1.5;
+    line-height: 1.55;
   }
 
   .security-notice-watermark {
     display: none;
-  }
-
-  /* =======================================================
-     MOBILE BOTTOM NAV
-  ======================================================= */
-
-  .security-bottom-nav {
-    position: fixed;
-
-    display: flex;
-
-    left: 0;
-    right: 0;
-    bottom: 0;
-
-    height: 74px;
-
-    z-index: 150;
-
-    background:
-      rgba(3, 18, 40, 0.98);
-
-    border-top:
-      1px solid
-      rgba(255, 255, 255, 0.1);
-
-    justify-content:
-      space-around;
-
-    align-items: center;
-
-    backdrop-filter:
-      blur(15px);
-  }
-
-  .security-nav-item {
-    flex: 1;
-
-    height: 100%;
-
-    border: none;
-
-    background: transparent;
-
-    color: #7d93ae;
-
-    text-decoration: none;
-
-    cursor: pointer;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 4px;
-
-    transition:
-      color 0.2s ease;
-  }
-
-  .security-nav-item span:last-child {
-    font-size: 8px;
-
-    line-height: 1.2;
-  }
-
-  .security-nav-item:hover {
-    color: #a9bad0;
-  }
-
-  .security-nav-active {
-    color: #168eff;
-  }
-
-  .security-master-nav-icon {
-    width: 20px;
-    height: 20px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    flex-shrink: 0;
-
-    color: currentColor;
-
-    font-family:
-      Arial,
-      Helvetica,
-      sans-serif;
-
-    font-size: 20px;
-
-    font-weight: 600;
-
-    line-height: 1;
   }
 }
 
@@ -1528,17 +1014,6 @@
   .security-content {
     padding-left: 12px;
     padding-right: 12px;
-  }
-
-  .security-brand-text {
-    font-size: 15px;
-  }
-
-  .security-brand-diamond {
-    width: 21px;
-    height: 21px;
-
-    font-size: 21px;
   }
 
   .security-content h1 {
@@ -1568,30 +1043,14 @@
     margin-left: 61px;
   }
 
-  .security-bottom-nav {
-    height: 74px;
+  .security-notice {
+    padding: 14px;
   }
 
-  .security-master-bell {
-    width: 20px;
-    height: 20px;
+  .security-notice-icon {
+    width: 42px;
+    height: 42px;
 
-    font-size: 17px;
-
-    font-family:
-      "Apple Color Emoji",
-      "Segoe UI Emoji",
-      "Noto Color Emoji",
-      sans-serif !important;
-
-    color: initial !important;
-
-    filter: none !important;
-
-    -webkit-filter: none !important;
-
-    -webkit-text-fill-color: initial;
-
-    font-variant-emoji: emoji;
+    flex-basis: 42px;
   }
 }

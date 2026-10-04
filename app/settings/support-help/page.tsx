@@ -19,6 +19,7 @@ ICON SYSTEM
 type IconName =
   | "book"
   | "support"
+  | "headset"
   | "issue"
   | "feature"
   | "document"
@@ -37,7 +38,63 @@ function Icon({
   size?: number;
   className?: string;
 }) {
-  const icons: Record<IconName, string> = {
+  /*
+  ==========================================================
+  HEADSET ICON
+  ==========================================================
+  */
+
+  if (name === "headset") {
+    return (
+      <span
+        className={`${styles.icon} ${className}`}
+        style={{
+          width: size
+            ? `${size}px`
+            : undefined,
+          height: size
+            ? `${size}px`
+            : undefined,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+        aria-hidden="true"
+      >
+        <svg
+          width={size || 25}
+          height={size || 25}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.9"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 14a8 8 0 0 1 16 0" />
+
+          <path d="M4 14v3a2 2 0 0 0 2 2h1v-6H6a2 2 0 0 0-2 2Z" />
+
+          <path d="M20 14v3a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2Z" />
+
+          <path d="M17 19c0 1.1-.9 2-2 2h-2" />
+        </svg>
+      </span>
+    );
+  }
+
+  /*
+  ==========================================================
+  EXISTING ICONS
+  ==========================================================
+  */
+
+  const icons: Record<
+    Exclude<IconName, "headset">,
+    string
+  > = {
     book: "▤",
     support: "♧",
     issue: "!",
@@ -216,6 +273,7 @@ export default function SupportHelpPage() {
       <main className={styles.page}>
         <section className={styles.main}>
           <div className={styles.mainInner}>
+
             {/* =================================================
                 HEADER
             ================================================= */}
@@ -308,6 +366,7 @@ export default function SupportHelpPage() {
               <div
                 className={styles.helpGrid}
               >
+
                 {/* =================================================
                     HELP CENTER
                 ================================================= */}
@@ -374,6 +433,7 @@ export default function SupportHelpPage() {
 
                 {/* =================================================
                     CONTACT SUPPORT
+                    HEADSET ICON
                 ================================================= */}
 
                 <button
@@ -393,10 +453,10 @@ export default function SupportHelpPage() {
                     }
                   >
                     <div
-                      className={`${styles.helpIcon} ${styles.green}`}
+                      className={`${styles.helpIcon} ${styles.blue}`}
                     >
                       <Icon
-                        name="support"
+                        name="headset"
                         size={25}
                       />
                     </div>
@@ -560,6 +620,7 @@ export default function SupportHelpPage() {
                     Suggest a Feature
                   </div>
                 </button>
+
               </div>
             </section>
 
@@ -570,6 +631,7 @@ export default function SupportHelpPage() {
             <div
               className={styles.lowerGrid}
             >
+
               {/* ===============================================
                   POPULAR QUESTIONS
               =============================================== */}
@@ -707,7 +769,10 @@ export default function SupportHelpPage() {
                   }
                 >
                   Browse the full Help Center
-                  <span>→</span>
+
+                  <span>
+                    →
+                  </span>
                 </button>
               </section>
 
@@ -874,6 +939,7 @@ export default function SupportHelpPage() {
                 </p>
               </div>
             </section>
+
           </div>
         </section>
       </main>

@@ -5,9 +5,81 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import AppShell from "../../AppShell/AppShell";
+import LoadingScreen from "../../AppShell/LoadingScreen";
 import styles from "./notifications.module.css";
 import { supabase } from "../../lib/supabase";
+
+/*
+============================================================
+PROPERTYsure AI
+NOTIFICATION PREFERENCES
+
+Route:
+    /settings/notifications
+
+Shared application shell:
+    - AppShell desktop sidebar
+    - AppShell desktop header
+    - AppShell mobile header
+    - AppShell mobile bottom navigation
+    - Shared LoadingScreen
+
+Notification preferences:
+    - Delivery channels
+    - Verification notifications
+    - Property & fraud alerts
+    - Account & security alerts
+============================================================
+*/
+
+type NotificationSettings = {
+  notificationsEnabled: boolean;
+  emailNotifications: boolean;
+  smsNotifications: boolean;
+  pushNotifications: boolean;
+
+  verificationCompleted: boolean;
+  verificationAttention: boolean;
+  verificationFailed: boolean;
+  verificationReportReady: boolean;
+
+  fraudWatchAlerts: boolean;
+  propertyStatusChanges: boolean;
+  propertyWarnings: boolean;
+  savedPropertyActivity: boolean;
+
+  newLogin: boolean;
+  passwordSecurity: boolean;
+  twoFactorSecurity: boolean;
+  accountChanges: boolean;
+};
+
+const STORAGE_KEY =
+  "propertysure-notification-settings";
+
+const DEFAULT_SETTINGS: NotificationSettings = {
+  notificationsEnabled: true,
+  emailNotifications: true,
+  smsNotifications: true,
+  pushNotifications: true,
+
+  verificationCompleted: true,
+  verificationAttention: true,
+  verificationFailed: true,
+  verificationReportReady: true,
+
+  fraudWatchAlerts: true,
+  propertyStatusChanges: true,
+  propertyWarnings: true,
+  savedPropertyActivity: true,
+
+  newLogin: true,
+  passwordSecurity: true,
+  twoFactorSecurity: true,
+  accountChanges: true,
+};
 
 /*
 ============================================================
@@ -16,25 +88,10 @@ ICON SYSTEM
 */
 
 type IconName =
-  | "dashboard"
-  | "verify"
-  | "properties"
-  | "history"
-  | "fraud"
-  | "reports"
-  | "account"
-  | "settings"
   | "bell"
   | "email"
   | "sms"
   | "push"
-  | "verification"
-  | "fraudAlert"
-  | "lock"
-  | "delivery"
-  | "logout"
-  | "menu"
-  | "chevron"
   | "check";
 
 function Icon({
@@ -46,94 +103,40 @@ function Icon({
   size?: number;
   className?: string;
 }) {
-  /*
-  ==========================================================
-  MASTER VERIFY ICON
-  ==========================================================
-
-  Same document + verification badge design
-  used throughout the Settings experience.
-  ==========================================================
-  */
-
-  if (name === "verify") {
+  if (name === "bell") {
     return (
       <svg
         width={size}
         height={size}
-        viewBox="0 0 42 42"
+        viewBox="0 0 24 24"
         fill="none"
-        className={`${styles.verifyMasterIcon} ${className}`}
+        className={className}
         aria-hidden="true"
       >
         <path
-          d="M11 6.5H25L31 12.5V34.5H11V6.5Z"
+          d="M12 4C8.8 4 6.7 6.6 6.7 9.8V13.5L4.8 16.5H19.2L17.3 13.5V9.8C17.3 6.6 15.2 4 12 4Z"
           stroke="currentColor"
-          strokeWidth="2.5"
+          strokeWidth="1.8"
           strokeLinejoin="round"
         />
 
         <path
-          d="M24 6.5V13H30.5"
+          d="M9.9 19C10.3 20 11 20.5 12 20.5C13 20.5 13.7 20 14.1 19"
           stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinejoin="round"
-        />
-
-        <path
-          d="M16 19H25"
-          stroke="currentColor"
-          strokeWidth="2.5"
+          strokeWidth="1.8"
           strokeLinecap="round"
-        />
-
-        <path
-          d="M16 24H21"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        />
-
-        <circle
-          cx="27"
-          cy="28"
-          r="4"
-          fill="currentColor"
-        />
-
-        <path
-          d="M25.2 28L26.5 29.3L29 26.8"
-          stroke="white"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
         />
       </svg>
     );
   }
 
   const icons: Record<
-    Exclude<IconName, "verify">,
+    Exclude<IconName, "bell">,
     string
   > = {
-    dashboard: "▦",
-    properties: "⌂",
-    history: "◷",
-    fraud: "◈",
-    reports: "▤",
-    account: "◯",
-    settings: "⚙",
-    bell: "🔔",
     email: "✉",
     sms: "▣",
     push: "▯",
-    verification: "▤",
-    fraudAlert: "⬟",
-    lock: "▣",
-    delivery: "✉",
-    logout: "↪",
-    menu: "☰",
-    chevron: "›",
     check: "✓",
   };
 
@@ -149,45 +152,6 @@ function Icon({
     </span>
   );
 }
-
-/*
-============================================================
-NAVIGATION
-============================================================
-*/
-
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: "dashboard" as IconName,
-  },
-  {
-    label: "Verify Property",
-    href: "/verify",
-    icon: "verify" as IconName,
-  },
-  {
-    label: "My Properties",
-    href: "/my-properties",
-    icon: "properties" as IconName,
-  },
-  {
-    label: "Verification History",
-    href: "/verification-history",
-    icon: "history" as IconName,
-  },
-  {
-    label: "Fraud Watch",
-    href: "/fraud-watch",
-    icon: "fraud" as IconName,
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-    icon: "reports" as IconName,
-  },
-];
 
 /*
 ============================================================
@@ -211,7 +175,9 @@ function Toggle({
         enabled ? styles.toggleOn : ""
       }`}
       onClick={onChange}
-      aria-label={label}
+      aria-label={`${label}: ${
+        enabled ? "On" : "Off"
+      }`}
       aria-pressed={enabled}
     >
       <span className={styles.toggleKnob} />
@@ -238,10 +204,14 @@ function CheckBox({
     <button
       type="button"
       className={`${styles.checkboxButton} ${
-        checked ? styles.checkboxChecked : ""
+        checked
+          ? styles.checkboxChecked
+          : ""
       }`}
       onClick={onChange}
-      aria-label={label}
+      aria-label={`${label}: ${
+        checked ? "On" : "Off"
+      }`}
       aria-pressed={checked}
     >
       <span className={styles.checkbox}>
@@ -272,21 +242,43 @@ function NotificationSection({
   children: ReactNode;
 }) {
   return (
-    <section className={styles.notificationSection}>
-      <div className={styles.sectionLabel}>
+    <section
+      className={
+        styles.notificationSection
+      }
+    >
+      <div
+        className={styles.sectionLabel}
+      >
         {title.toUpperCase()}
       </div>
 
-      <div className={styles.notificationCard}>
-        <div className={styles.sectionHeader}>
-          <div className={styles.sectionHeaderText}>
+      <div
+        className={
+          styles.notificationCard
+        }
+      >
+        <div
+          className={
+            styles.sectionHeader
+          }
+        >
+          <div
+            className={
+              styles.sectionHeaderText
+            }
+          >
             <h2>{title}</h2>
 
             <p>{description}</p>
           </div>
         </div>
 
-        <div className={styles.sectionRows}>
+        <div
+          className={
+            styles.sectionRows
+          }
+        >
           {children}
         </div>
       </div>
@@ -321,7 +313,9 @@ function ChannelRow({
   return (
     <div className={styles.channelRow}>
       <div
-        className={`${styles.channelIcon} ${styles[color]}`}
+        className={`${styles.channelIcon} ${
+          styles[color]
+        }`}
       >
         <Icon
           name={icon}
@@ -329,7 +323,9 @@ function ChannelRow({
         />
       </div>
 
-      <div className={styles.rowText}>
+      <div
+        className={styles.rowText}
+      >
         <strong>{title}</strong>
 
         <span>{description}</span>
@@ -338,9 +334,7 @@ function ChannelRow({
       <Toggle
         enabled={enabled}
         onChange={onChange}
-        label={`${
-          enabled ? "Disable" : "Enable"
-        } ${title}`}
+        label={title}
       />
     </div>
   );
@@ -371,7 +365,9 @@ function CheckRow({
         label={title}
       />
 
-      <div className={styles.checkText}>
+      <div
+        className={styles.checkText}
+      >
         <strong>{title}</strong>
 
         <span>{description}</span>
@@ -387,1061 +383,562 @@ PAGE
 */
 
 export default function NotificationsPage() {
-  const router = useRouter();
-
-  const [menuOpen, setMenuOpen] =
-    useState(false);
-
-  const [loadingUser, setLoadingUser] =
+  const [loading, setLoading] =
     useState(true);
 
-  const [user, setUser] = useState({
-    fullName: "User",
-    initial: "U",
-    plan: "Free Plan",
-  });
+  const [settings, setSettings] =
+    useState<NotificationSettings>(
+      DEFAULT_SETTINGS,
+    );
 
   /*
-  ============================================================
-  NOTIFICATION CHANNELS
-  ============================================================
-  */
-
-  const [
-    notificationsEnabled,
-    setNotificationsEnabled,
-  ] = useState(true);
-
-  const [
-    emailNotifications,
-    setEmailNotifications,
-  ] = useState(true);
-
-  const [
-    smsNotifications,
-    setSmsNotifications,
-  ] = useState(true);
-
-  const [
-    pushNotifications,
-    setPushNotifications,
-  ] = useState(true);
-
-  /*
-  ============================================================
-  VERIFICATION
-  ============================================================
-  */
-
-  const [
-    verificationCompleted,
-    setVerificationCompleted,
-  ] = useState(true);
-
-  const [
-    verificationAttention,
-    setVerificationAttention,
-  ] = useState(true);
-
-  const [
-    verificationFailed,
-    setVerificationFailed,
-  ] = useState(true);
-
-  const [
-    verificationReportReady,
-    setVerificationReportReady,
-  ] = useState(true);
-
-  /*
-  ============================================================
-  PROPERTY / FRAUD
-  ============================================================
-  */
-
-  const [
-    fraudWatchAlerts,
-    setFraudWatchAlerts,
-  ] = useState(true);
-
-  const [
-    propertyStatusChanges,
-    setPropertyStatusChanges,
-  ] = useState(true);
-
-  const [
-    propertyWarnings,
-    setPropertyWarnings,
-  ] = useState(true);
-
-  const [
-    savedPropertyActivity,
-    setSavedPropertyActivity,
-  ] = useState(true);
-
-  /*
-  ============================================================
-  SECURITY
-  ============================================================
-  */
-
-  const [newLogin, setNewLogin] =
-    useState(true);
-
-  const [
-    passwordSecurity,
-    setPasswordSecurity,
-  ] = useState(true);
-
-  const [
-    twoFactorSecurity,
-    setTwoFactorSecurity,
-  ] = useState(true);
-
-  const [
-    accountChanges,
-    setAccountChanges,
-  ] = useState(true);
-
-  /*
-  ============================================================
-  LOAD USER
-  ============================================================
+  ==========================================================
+  LOAD USER + SAVED NOTIFICATION SETTINGS
+  ==========================================================
   */
 
   useEffect(() => {
     let mounted = true;
 
-    const loadUser = async () => {
+    const loadSettings = async () => {
       try {
         const {
-          data: { user: authUser },
-          error,
-        } =
-          await supabase.auth.getUser();
+          data: { user },
+        } = await supabase.auth.getUser();
 
-        if (error) {
-          console.error(
-            "Could not load authenticated user:",
-            error
+        if (!user) {
+          window.location.href =
+            "/signin";
+          return;
+        }
+
+        const stored =
+          window.localStorage.getItem(
+            STORAGE_KEY,
           );
-          return;
+
+        if (stored && mounted) {
+          try {
+            const parsed =
+              JSON.parse(
+                stored,
+              ) as Partial<NotificationSettings>;
+
+            setSettings({
+              ...DEFAULT_SETTINGS,
+              ...parsed,
+            });
+          } catch {
+            window.localStorage.removeItem(
+              STORAGE_KEY,
+            );
+          }
         }
-
-        if (!authUser) {
-          router.replace("/signin");
-          return;
-        }
-
-        if (!mounted) {
-          return;
-        }
-
-        const metadata =
-          authUser.user_metadata || {};
-
-        const metadataName =
-          metadata.full_name ||
-          metadata.name ||
-          metadata.display_name ||
-          "";
-
-        const email =
-          authUser.email || "";
-
-        const fallbackName = email
-          ? email
-              .split("@")[0]
-              .replace(
-                /[._-]+/g,
-                " "
-              )
-              .replace(
-                /\b\w/g,
-                (letter: string) =>
-                  letter.toUpperCase()
-              )
-          : "User";
-
-        const fullName =
-          String(
-            metadataName
-          ).trim() ||
-          fallbackName;
-
-        const initial =
-          fullName
-            .charAt(0)
-            .toUpperCase() ||
-          "U";
-
-        const plan =
-          metadata.plan ||
-          metadata.subscription_plan ||
-          metadata.account_plan ||
-          "Free Plan";
-
-        setUser({
-          fullName,
-          initial,
-          plan: String(plan),
-        });
       } catch (error) {
         console.error(
-          "Notification user loading error:",
-          error
+          "Notification settings loading error:",
+          error,
         );
       } finally {
         if (mounted) {
-          setLoadingUser(false);
+          setLoading(false);
         }
       }
     };
 
-    loadUser();
+    loadSettings();
 
     return () => {
       mounted = false;
     };
-  }, [router]);
+  }, []);
 
   /*
-  ============================================================
-  NAVIGATION
-  ============================================================
+  ==========================================================
+  SAVE SETTINGS
+  ==========================================================
   */
 
-  const navigateTo = (
-    path: string
-  ) => {
-    setMenuOpen(false);
-    router.push(path);
-  };
-
-  const backToSettings = () => {
-    navigateTo("/settings");
-  };
-
-  /*
-  ============================================================
-  SIGN OUT
-  ============================================================
-  */
-
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      router.replace("/signin");
-    } catch (error) {
-      console.error(
-        "Sign out error:",
-        error
-      );
+  useEffect(() => {
+    if (loading) {
+      return;
     }
+
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(settings),
+    );
+
+    /*
+     * Notify the rest of PropertySure AI
+     * that notification preferences changed.
+     */
+    window.dispatchEvent(
+      new CustomEvent(
+        "propertysure-notification-settings-changed",
+        {
+          detail: settings,
+        },
+      ),
+    );
+  }, [settings, loading]);
+
+  /*
+  ==========================================================
+  UPDATE ONE SETTING
+  ==========================================================
+  */
+
+  const updateSetting = <
+    K extends keyof NotificationSettings
+  >(
+    key: K,
+  ) => {
+    setSettings((current) => ({
+      ...current,
+      [key]: !current[key],
+    }));
   };
 
   /*
-  ============================================================
+  ==========================================================
   LOADING
-  ============================================================
+  ==========================================================
   */
 
-  if (loadingUser) {
-    return (
-      <main className={styles.loading}>
-        <div className={styles.loadingBrand}>
-          <span
-            className={
-              styles.loadingDiamond
-            }
-          >
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </div>
-
-        <p>
-          Loading notifications...
-        </p>
-      </main>
-    );
+  if (loading) {
+    return <LoadingScreen />;
   }
 
   /*
-  ============================================================
+  ==========================================================
   PAGE
-  ============================================================
+  ==========================================================
   */
 
   return (
-    <main className={styles.page}>
-      {/* ====================================================
-          DESKTOP / TABLET TOP BAR
-      ==================================================== */}
-
-      <header className={styles.topBar}>
-        <button
-          type="button"
-          className={styles.topBrand}
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <span
-            className={styles.topDiamond}
-          >
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={styles.topBell}
-          onClick={() =>
-            navigateTo(
-              "/settings/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-          <Icon
-            name="bell"
-            size={20}
-          />
-
-          <span
-            className={
-              styles.topBellDot
-            }
-          />
-        </button>
-      </header>
-
-      {/* ====================================================
-          MOBILE HEADER
-      ==================================================== */}
-
-      <header
-        className={
-          styles.mobileHeader
-        }
+    <AppShell
+      activePath="/settings"
+      headerPath="/settings"
+    >
+      <main
+        className={styles.page}
       >
-        <button
-          type="button"
-          className={
-            styles.menuButton
-          }
-          onClick={() =>
-            setMenuOpen(true)
-          }
-          aria-label="Open navigation"
+        <section
+          className={styles.main}
         >
-          <Icon
-            name="menu"
-            size={24}
-          />
-        </button>
+          {/* =================================================
+              PAGE HEADER
+          ================================================= */}
 
-        <button
-          type="button"
-          className={
-            styles.mobileLogo
-          }
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <span
+          <header
             className={
-              styles.mobileDiamond
+              styles.pageHeader
             }
           >
-            ◆
-          </span>
+            <h1>
+              Notification Preferences
+            </h1>
 
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </button>
+            <p>
+              Choose which alerts you
+              receive for verification,
+              fraud monitoring, account
+              security, and property
+              activity.
+            </p>
 
-        <button
-          type="button"
-          className={
-            styles.mobileBell
-          }
-          onClick={() =>
-            navigateTo(
-              "/settings/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-          <Icon
-            name="bell"
-            size={19}
-          />
+            <Link
+              href="/settings"
+              className={
+                styles.backButton
+              }
+            >
+              <span
+                className={
+                  styles.backArrow
+                }
+                aria-hidden="true"
+              >
+                ←
+              </span>
 
-          <span
-            className={
-              styles.mobileBellDot
-            }
-          />
-        </button>
-      </header>
+              <span>
+                Back to Settings
+              </span>
+            </Link>
+          </header>
 
-      {/* ====================================================
-          MOBILE MENU
-      ==================================================== */}
-
-      {menuOpen && (
-        <div
-          className={
-            styles.mobileMenu
-          }
-        >
           <div
             className={
-              styles.mobileMenuTop
+              styles.content
             }
           >
-            <button
-              type="button"
+            {/* ================================================
+                DELIVERY CHANNELS
+            ================================================= */}
+
+            <NotificationSection
+              title="Delivery Channels"
+              description="Control how PropertySure AI delivers your notifications."
+            >
+              <ChannelRow
+                icon="bell"
+                color="green"
+                title="Enable Notifications"
+                description="Master switch for all notifications."
+                enabled={
+                  settings.notificationsEnabled
+                }
+                onChange={() =>
+                  updateSetting(
+                    "notificationsEnabled",
+                  )
+                }
+              />
+
+              <ChannelRow
+                icon="email"
+                color="green"
+                title="Email Notifications"
+                description="Receive notifications via email."
+                enabled={
+                  settings.emailNotifications
+                }
+                onChange={() =>
+                  updateSetting(
+                    "emailNotifications",
+                  )
+                }
+              />
+
+              <ChannelRow
+                icon="sms"
+                color="yellow"
+                title="SMS Notifications"
+                description="Receive important alerts via SMS."
+                enabled={
+                  settings.smsNotifications
+                }
+                onChange={() =>
+                  updateSetting(
+                    "smsNotifications",
+                  )
+                }
+              />
+
+              <ChannelRow
+                icon="push"
+                color="purple"
+                title="Push Notifications"
+                description="Receive push notifications in your browser."
+                enabled={
+                  settings.pushNotifications
+                }
+                onChange={() =>
+                  updateSetting(
+                    "pushNotifications",
+                  )
+                }
+              />
+            </NotificationSection>
+
+            {/* ================================================
+                VERIFICATION
+            ================================================= */}
+
+            <NotificationSection
+              title="Verification Notifications"
+              description="Receive updates about verification activities."
+            >
+              <CheckRow
+                title="Verification Completed"
+                description="Get notified when a verification is completed."
+                checked={
+                  settings.verificationCompleted
+                }
+                onChange={() =>
+                  updateSetting(
+                    "verificationCompleted",
+                  )
+                }
+              />
+
+              <CheckRow
+                title="Verification Requires Attention"
+                description="Get notified when verification requires your attention."
+                checked={
+                  settings.verificationAttention
+                }
+                onChange={() =>
+                  updateSetting(
+                    "verificationAttention",
+                  )
+                }
+              />
+
+              <CheckRow
+                title="Verification Failed / Flagged"
+                description="Get notified when verification fails or is flagged."
+                checked={
+                  settings.verificationFailed
+                }
+                onChange={() =>
+                  updateSetting(
+                    "verificationFailed",
+                  )
+                }
+              />
+
+              <CheckRow
+                title="Verification Report Ready"
+                description="Get notified when your verification report is ready to view."
+                checked={
+                  settings.verificationReportReady
+                }
+                onChange={() =>
+                  updateSetting(
+                    "verificationReportReady",
+                  )
+                }
+              />
+            </NotificationSection>
+
+            {/* ================================================
+                PROPERTY & FRAUD
+            ================================================= */}
+
+            <NotificationSection
+              title="Property & Fraud Alerts"
+              description="Important alerts about your properties and fraud watch."
+            >
+              <CheckRow
+                title="Fraud Watch Alerts"
+                description="Get notified about potential fraud activities."
+                checked={
+                  settings.fraudWatchAlerts
+                }
+                onChange={() =>
+                  updateSetting(
+                    "fraudWatchAlerts",
+                  )
+                }
+              />
+
+              <CheckRow
+                title="Property Status Changes"
+                description="Get notified when property status changes."
+                checked={
+                  settings.propertyStatusChanges
+                }
+                onChange={() =>
+                  updateSetting(
+                    "propertyStatusChanges",
+                  )
+                }
+              />
+
+              <CheckRow
+                title="Important Property Warnings"
+                description="Get notified about important property warnings."
+                checked={
+                  settings.propertyWarnings
+                }
+                onChange={() =>
+                  updateSetting(
+                    "propertyWarnings",
+                  )
+                }
+              />
+
+              <CheckRow
+                title="New Activity on Saved Properties"
+                description="Get notified about new activity on your saved properties."
+                checked={
+                  settings.savedPropertyActivity
+                }
+                onChange={() =>
+                  updateSetting(
+                    "savedPropertyActivity",
+                  )
+                }
+              />
+            </NotificationSection>
+
+            {/* ================================================
+                ACCOUNT & SECURITY
+            ================================================= */}
+
+            <NotificationSection
+              title="Account & Security Alerts"
+              description="Critical alerts about your account and security."
+            >
+              <CheckRow
+                title="New Login"
+                description="Get notified when someone logs in to your account."
+                checked={
+                  settings.newLogin
+                }
+                onChange={() =>
+                  updateSetting(
+                    "newLogin",
+                  )
+                }
+              />
+
+              <CheckRow
+                title="Password / Security Changes"
+                description="Get notified when password or security settings change."
+                checked={
+                  settings.passwordSecurity
+                }
+                onChange={() =>
+                  updateSetting(
+                    "passwordSecurity",
+                  )
+                }
+              />
+
+              <CheckRow
+                title="2FA / Security Events"
+                description="Get notified about 2FA or other security events."
+                checked={
+                  settings.twoFactorSecurity
+                }
+                onChange={() =>
+                  updateSetting(
+                    "twoFactorSecurity",
+                  )
+                }
+              />
+
+              <CheckRow
+                title="Account Changes"
+                description="Get notified about important account changes."
+                checked={
+                  settings.accountChanges
+                }
+                onChange={() =>
+                  updateSetting(
+                    "accountChanges",
+                  )
+                }
+              />
+            </NotificationSection>
+
+            {/* ================================================
+                NOTIFICATION DELIVERY
+            ================================================= */}
+
+            <section
               className={
-                styles.mobileMenuLogo
-              }
-              onClick={() =>
-                navigateTo(
-                  "/dashboard"
-                )
+                styles.deliverySection
               }
             >
-              <span>◆</span>
+              <div
+                className={
+                  styles.sectionLabel
+                }
+              >
+                NOTIFICATION DELIVERY
+              </div>
 
-              <strong>
-                PropertySure
-                <b> AI</b>
-              </strong>
-            </button>
-
-            <button
-              type="button"
-              className={
-                styles.closeButton
-              }
-              onClick={() =>
-                setMenuOpen(false)
-              }
-              aria-label="Close menu"
-            >
-              ×
-            </button>
-          </div>
-
-          <p
-            className={
-              styles.mobileMenuSubtitle
-            }
-          >
-            AI-Powered Property
-            <br />
-            Due Diligence
-          </p>
-
-          <nav
-            className={
-              styles.mobileMenuNav
-            }
-          >
-            {navItems.map(
-              (item) => (
-                <button
-                  key={item.href}
-                  type="button"
-                  onClick={() =>
-                    navigateTo(
-                      item.href
-                    )
+              <div
+                className={
+                  styles.deliveryCard
+                }
+              >
+                <div
+                  className={
+                    styles.deliveryItem
                   }
                 >
-                  <Icon
-                    name={item.icon}
-                    size={
-                      item.icon === "verify"
-                        ? 20
-                        : 19
-                    }
-                  />
+                  <div
+                    className={`${styles.deliveryIcon} ${styles.deliveryBlue}`}
+                  >
+                    <Icon
+                      name="email"
+                      size={16}
+                    />
+                  </div>
 
-                  <span>
-                    {item.label}
-                  </span>
-                </button>
-              )
-            )}
-          </nav>
+                  <div>
+                    <strong>
+                      Email
+                    </strong>
 
-          <div
-            className={
-              styles.mobileMenuLabel
-            }
-          >
-            ACCOUNT
+                    <span>
+                      Account email
+                    </span>
+
+                    <small>
+                      ✓ Verified
+                    </small>
+                  </div>
+                </div>
+
+                <div
+                  className={
+                    styles.deliveryItem
+                  }
+                >
+                  <div
+                    className={`${styles.deliveryIcon} ${styles.deliveryOrange}`}
+                  >
+                    <Icon
+                      name="sms"
+                      size={16}
+                    />
+                  </div>
+
+                  <div>
+                    <strong>
+                      Phone (SMS)
+                    </strong>
+
+                    <span>
+                      Account phone
+                    </span>
+
+                    <small>
+                      ✓ Verified
+                    </small>
+                  </div>
+                </div>
+
+                <div
+                  className={
+                    styles.deliveryItem
+                  }
+                >
+                  <div
+                    className={`${styles.deliveryIcon} ${styles.deliveryPurple}`}
+                  >
+                    <Icon
+                      name="push"
+                      size={16}
+                    />
+                  </div>
+
+                  <div>
+                    <strong>
+                      Push Notifications
+                    </strong>
+
+                    <span>
+                      This browser
+                    </span>
+
+                    <small>
+                      ✓ Enabled
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
-
-          <button
-            type="button"
-            className={
-              styles.mobileMenuItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/account"
-              )
-            }
-          >
-            <Icon
-              name="account"
-              size={19}
-            />
-
-            <span>Account</span>
-          </button>
-
-          <button
-            type="button"
-            className={
-              styles.mobileMenuItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/settings"
-              )
-            }
-          >
-            <Icon
-              name="settings"
-              size={19}
-            />
-
-            <span>Settings</span>
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.mobileMenuItem} ${styles.logoutItem}`}
-            onClick={signOut}
-          >
-            <Icon
-              name="logout"
-              size={19}
-            />
-
-            <span>Sign Out</span>
-          </button>
-        </div>
-      )}
-
-      {/* ====================================================
-          MAIN CONTENT
-      ==================================================== */}
-
-      <section
-        className={styles.main}
-      >
-        <header
-          className={
-            styles.pageHeader
-          }
-        >
-          <h1>
-            Notification Preferences
-          </h1>
-
-          <p>
-            Choose which alerts you
-            receive for verification,
-            fraud monitoring, account
-            security, and property
-            activity.
-          </p>
-
-          <button
-            type="button"
-            className={
-              styles.backButton
-            }
-            onClick={backToSettings}
-          >
-            ‹ Back to Settings
-          </button>
-        </header>
-
-        <div
-          className={
-            styles.content
-          }
-        >
-          {/* ==================================================
-              DELIVERY CHANNELS
-          ================================================== */}
-
-          <NotificationSection
-            title="Delivery Channels"
-            description="Control how PropertySure AI delivers your notifications."
-          >
-            <ChannelRow
-              icon="bell"
-              color="green"
-              title="Enable Notifications"
-              description="Master switch for all notifications."
-              enabled={
-                notificationsEnabled
-              }
-              onChange={() =>
-                setNotificationsEnabled(
-                  (value) => !value
-                )
-              }
-            />
-
-            <ChannelRow
-              icon="email"
-              color="green"
-              title="Email Notifications"
-              description="Receive notifications via email."
-              enabled={
-                emailNotifications
-              }
-              onChange={() =>
-                setEmailNotifications(
-                  (value) => !value
-                )
-              }
-            />
-
-            <ChannelRow
-              icon="sms"
-              color="yellow"
-              title="SMS Notifications"
-              description="Receive important alerts via SMS."
-              enabled={
-                smsNotifications
-              }
-              onChange={() =>
-                setSmsNotifications(
-                  (value) => !value
-                )
-              }
-            />
-
-            <ChannelRow
-              icon="push"
-              color="purple"
-              title="Push Notifications"
-              description="Receive push notifications in your browser."
-              enabled={
-                pushNotifications
-              }
-              onChange={() =>
-                setPushNotifications(
-                  (value) => !value
-                )
-              }
-            />
-          </NotificationSection>
-
-          {/* ==================================================
-              VERIFICATION NOTIFICATIONS
-          ================================================== */}
-
-          <NotificationSection
-            title="Verification Notifications"
-            description="Receive updates about verification activities."
-          >
-            <CheckRow
-              title="Verification Completed"
-              description="Get notified when a verification is completed."
-              checked={
-                verificationCompleted
-              }
-              onChange={() =>
-                setVerificationCompleted(
-                  (value) => !value
-                )
-              }
-            />
-
-            <CheckRow
-              title="Verification Requires Attention"
-              description="Get notified when verification requires your attention."
-              checked={
-                verificationAttention
-              }
-              onChange={() =>
-                setVerificationAttention(
-                  (value) => !value
-                )
-              }
-            />
-
-            <CheckRow
-              title="Verification Failed / Flagged"
-              description="Get notified when verification fails or is flagged."
-              checked={
-                verificationFailed
-              }
-              onChange={() =>
-                setVerificationFailed(
-                  (value) => !value
-                )
-              }
-            />
-
-            <CheckRow
-              title="Verification Report Ready"
-              description="Get notified when your verification report is ready to view."
-              checked={
-                verificationReportReady
-              }
-              onChange={() =>
-                setVerificationReportReady(
-                  (value) => !value
-                )
-              }
-            />
-          </NotificationSection>
-
-          {/* ==================================================
-              PROPERTY & FRAUD
-          ================================================== */}
-
-          <NotificationSection
-            title="Property & Fraud Alerts"
-            description="Important alerts about your properties and fraud watch."
-          >
-            <CheckRow
-              title="Fraud Watch Alerts"
-              description="Get notified about potential fraud activities."
-              checked={
-                fraudWatchAlerts
-              }
-              onChange={() =>
-                setFraudWatchAlerts(
-                  (value) => !value
-                )
-              }
-            />
-
-            <CheckRow
-              title="Property Status Changes"
-              description="Get notified when property status changes."
-              checked={
-                propertyStatusChanges
-              }
-              onChange={() =>
-                setPropertyStatusChanges(
-                  (value) => !value
-                )
-              }
-            />
-
-            <CheckRow
-              title="Important Property Warnings"
-              description="Get notified about important property warnings."
-              checked={
-                propertyWarnings
-              }
-              onChange={() =>
-                setPropertyWarnings(
-                  (value) => !value
-                )
-              }
-            />
-
-            <CheckRow
-              title="New Activity on Saved Properties"
-              description="Get notified about new activity on your saved properties."
-              checked={
-                savedPropertyActivity
-              }
-              onChange={() =>
-                setSavedPropertyActivity(
-                  (value) => !value
-                )
-              }
-            />
-          </NotificationSection>
-
-          {/* ==================================================
-              ACCOUNT & SECURITY
-          ================================================== */}
-
-          <NotificationSection
-            title="Account & Security Alerts"
-            description="Critical alerts about your account and security."
-          >
-            <CheckRow
-              title="New Login"
-              description="Get notified when someone logs in to your account."
-              checked={newLogin}
-              onChange={() =>
-                setNewLogin(
-                  (value) => !value
-                )
-              }
-            />
-
-            <CheckRow
-              title="Password / Security Changes"
-              description="Get notified when password or security settings change."
-              checked={
-                passwordSecurity
-              }
-              onChange={() =>
-                setPasswordSecurity(
-                  (value) => !value
-                )
-              }
-            />
-
-            <CheckRow
-              title="2FA / Security Events"
-              description="Get notified about 2FA or other security events."
-              checked={
-                twoFactorSecurity
-              }
-              onChange={() =>
-                setTwoFactorSecurity(
-                  (value) => !value
-                )
-              }
-            />
-
-            <CheckRow
-              title="Account Changes"
-              description="Get notified about important account changes."
-              checked={
-                accountChanges
-              }
-              onChange={() =>
-                setAccountChanges(
-                  (value) => !value
-                )
-              }
-            />
-          </NotificationSection>
-
-          {/* ==================================================
-              NOTIFICATION DELIVERY
-          ================================================== */}
-
-          <section
-            className={
-              styles.deliverySection
-            }
-          >
-            <div
-              className={
-                styles.sectionLabel
-              }
-            >
-              NOTIFICATION DELIVERY
-            </div>
-
-            <div
-              className={
-                styles.deliveryCard
-              }
-            >
-              <div
-                className={
-                  styles.deliveryItem
-                }
-              >
-                <div
-                  className={`${styles.deliveryIcon} ${styles.deliveryBlue}`}
-                >
-                  <Icon
-                    name="email"
-                    size={16}
-                  />
-                </div>
-
-                <div>
-                  <strong>
-                    Email
-                  </strong>
-
-                  <span>
-                    Account email
-                  </span>
-
-                  <small>
-                    ✓ Verified
-                  </small>
-                </div>
-              </div>
-
-              <div
-                className={
-                  styles.deliveryItem
-                }
-              >
-                <div
-                  className={`${styles.deliveryIcon} ${styles.deliveryOrange}`}
-                >
-                  <Icon
-                    name="sms"
-                    size={16}
-                  />
-                </div>
-
-                <div>
-                  <strong>
-                    Phone (SMS)
-                  </strong>
-
-                  <span>
-                    Account phone
-                  </span>
-
-                  <small>
-                    ✓ Verified
-                  </small>
-                </div>
-              </div>
-
-              <div
-                className={
-                  styles.deliveryItem
-                }
-              >
-                <div
-                  className={`${styles.deliveryIcon} ${styles.deliveryPurple}`}
-                >
-                  <Icon
-                    name="push"
-                    size={16}
-                  />
-                </div>
-
-                <div>
-                  <strong>
-                    Push Notifications
-                  </strong>
-
-                  <span>
-                    This browser
-                  </span>
-
-                  <small>
-                    ✓ Enabled
-                  </small>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-      </section>
-
-      {/* ====================================================
-          MOBILE BOTTOM NAV
-      ==================================================== */}
-
-      <nav
-        className={
-          styles.mobileBottomNav
-        }
-      >
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <Icon
-            name="dashboard"
-            size={20}
-          />
-
-          <span>
-            Dashboard
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/verify")
-          }
-        >
-          <Icon
-            name="verify"
-            size={20}
-          />
-
-          <span>Verify</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/my-properties"
-            )
-          }
-        >
-          <Icon
-            name="properties"
-            size={20}
-          />
-
-          <span>
-            Properties
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/reports")
-          }
-        >
-          <Icon
-            name="reports"
-            size={20}
-          />
-
-          <span>Reports</span>
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.bottomActive
-          }
-          onClick={() =>
-            navigateTo("/account")
-          }
-        >
-          <Icon
-            name="account"
-            size={20}
-          />
-
-          <span>Account</span>
-        </button>
-      </nav>
-    </main>
+        </section>
+      </main>
+    </AppShell>
   );
 }

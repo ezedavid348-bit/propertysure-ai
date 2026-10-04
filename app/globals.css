@@ -5,32 +5,9 @@
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
 /* =========================================================
-   PROPERTYSURE AI - DASHBOARD RESPONSIVE LAYOUT
+   PROPERTYSURE AI - GLOBAL THEME
    ========================================================= */
-
-* {
-  box-sizing: border-box;
-}
 
 html,
 body {
@@ -40,7 +17,72 @@ body {
   overflow-x: hidden;
 }
 
-/* MAIN DASHBOARD */
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================================================
+   PROPERTYSURE AI - THEME STATE
+   ========================================================= */
+
+html[data-propertysure-theme="dark"] {
+  color-scheme: dark;
+
+  --background: #07111f;
+  --foreground: #f5f8ff;
+}
+
+html[data-propertysure-theme="light"] {
+  color-scheme: light;
+
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+/* System preference when the user selects System */
+html[data-propertysure-theme="light"][
+  data-propertysure-theme-preference="system"
+] {
+  color-scheme: light;
+}
+
+html[data-propertysure-theme="dark"][
+  data-propertysure-theme-preference="system"
+] {
+  color-scheme: dark;
+}
+
+/* =========================================================
+   ACCESSIBILITY / REDUCED MOTION
+   ========================================================= */
+
+html.propertysure-reduce-motion *,
+html.propertysure-reduce-motion *::before,
+html.propertysure-reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* =========================================================
+   GLOBAL BOX SIZING
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   PROPERTYSURE AI - DASHBOARD RESPONSIVE LAYOUT
+   ========================================================= */
+
 .dashboard {
   width: 100%;
   min-height: 100vh;
@@ -58,7 +100,11 @@ body {
 
 .verification {
   display: grid;
-  grid-template-columns: minmax(220px, 1.4fr) minmax(180px, 1fr) minmax(120px, 0.7fr) minmax(120px, 0.7fr);
+  grid-template-columns:
+    minmax(220px, 1.4fr)
+    minmax(180px, 1fr)
+    minmax(120px, 0.7fr)
+    minmax(120px, 0.7fr);
   align-items: center;
   gap: 20px;
   width: 100%;
@@ -124,31 +170,22 @@ body {
    ========================================================= */
 
 @media (max-width: 768px) {
-
   html,
   body {
     width: 100%;
     overflow-x: hidden;
   }
 
-  /* Keep dashboard inside phone width */
   .dashboard {
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
   }
 
-  /* Recent verification panel */
   .verificationList {
     width: 100%;
   }
 
-  /*
-     IMPORTANT:
-     On mobile each verification becomes
-     one clean horizontal row/card instead
-     of forcing desktop columns.
-  */
   .verification {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -203,6 +240,15 @@ body {
   .date {
     font-size: 11px;
   }
+
+  .dashboard {
+    padding-top: 70px;
+    padding-bottom: 65px;
+  }
+
+  .dashboard > * {
+    box-sizing: border-box;
+  }
 }
 
 /* =========================================================
@@ -210,7 +256,6 @@ body {
    ========================================================= */
 
 @media (max-width: 480px) {
-
   .verification {
     padding: 16px 14px;
     gap: 7px 10px;
@@ -236,30 +281,9 @@ body {
   .date {
     font-size: 10px;
   }
-}
-/* =========================================================
-   MOBILE HEADER & BOTTOM NAVIGATION
-   Prevent fixed elements from covering dashboard content
-   ========================================================= */
-
-@media (max-width: 768px) {
 
   .dashboard {
-    padding-top: 70px;
-   padding-bottom: 65px;
+    padding-top: 0;
+    padding-bottom: 15px;
   }
-
-  .dashboard > * {
-    box-sizing: border-box;
-  }
-
-}
-
-@media (max-width: 480px) {
-
-  .dashboard {
-   padding-top: 0;
-  padding-bottom: 15px;
-  }
-
 }

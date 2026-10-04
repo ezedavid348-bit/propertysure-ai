@@ -900,9 +900,11 @@ export default function ReviewPage() {
 
                 classificationSource:
                   document.classificationSource ||
-                  (document.documentType
-                    ? "existing"
-                    : "unknown"),
+                  (
+                    document.documentType
+                      ? "existing"
+                      : "unknown"
+                  ),
               }),
             )
           : [];
@@ -1001,10 +1003,6 @@ export default function ReviewPage() {
 
       setLoading(false);
 
-      /*
-       * Identify documents that have not yet been classified.
-       */
-
       void classifyUnknownDocuments(
         preparedDocuments,
         record,
@@ -1047,7 +1045,9 @@ export default function ReviewPage() {
           document.classificationStatus ===
             "failed" ||
           document.classificationStatus ===
-            "uncertain",
+            "uncertain" ||
+          document.classificationSource ===
+            "existing",
       );
 
     if (
@@ -1057,37 +1057,48 @@ export default function ReviewPage() {
       return;
     }
 
-    setDocuments(
-      (previous): ReviewDocument[] =>
-        previous.map(
-          (
-            document,
-          ): ReviewDocument =>
-            unknownDocuments.some(
-              (unknown) =>
-                unknown.path ===
-                document.path,
-            )
-              ? {
-                  ...document,
-
-                  classificationStatus:
-                    "classifying",
-
-                  classificationSource:
-                    "ai",
-
-                  classificationMessage:
-                    "Identifying document from its contents...",
-                }
-              : document,
+    const unknownPaths =
+      new Set(
+        unknownDocuments.map(
+          (document) =>
+            document.path,
         ),
+      );
+
+    const processingDocuments =
+      currentDocuments.map(
+        (
+          document,
+        ): ReviewDocument =>
+          unknownPaths.has(
+            document.path,
+          )
+            ? {
+                ...document,
+
+                classificationStatus:
+                  "classifying",
+
+                classificationSource:
+                  "ai",
+
+                classificationMessage:
+                  "Identifying document from its contents...",
+              }
+            : document,
+      );
+
+    setDocuments(
+      processingDocuments,
     );
+
+    documentsRef.current =
+      processingDocuments;
 
     try {
       const classifiedDocuments: ReviewDocument[] =
         [
-          ...currentDocuments,
+          ...processingDocuments,
         ];
 
       for (
@@ -2176,24 +2187,25 @@ export default function ReviewPage() {
                             </small>
                           )}
 
-                          {document.classificationMessage && (
-                            <small>
-                              {
-                                document.classificationMessage
-                              }
-                            </small>
-                          )}
-
                           {isClassifying && (
                             <small
                               className={
                                 styles.classificationProcessing
                               }
                             >
-                              Identifying
-                              from
-                              document
-                              contents...
+                              <span
+                                className={
+                                  styles.classificationSpinner
+                                }
+                                aria-hidden="true"
+                              />
+
+                              <span>
+                                Identifying
+                                from
+                                document
+                                contents...
+                              </span>
                             </small>
                           )}
 

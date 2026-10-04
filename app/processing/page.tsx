@@ -103,6 +103,8 @@ type PlanKey =
 type VerificationRecord = {
   id: string;
 
+  user_id?: string | null;
+
   doc_name?: string | null;
 
   file_url?: string | null;
@@ -124,24 +126,41 @@ type VerificationRecord = {
 
 type VerificationStatusPayment = {
   id?: string | number;
+
   verification_id?: string | number;
+
   user_id?: string;
+
   plan?: string | null;
+
   amount?: number | null;
+
   currency?: string | null;
+
   provider?: string | null;
+
   provider_reference?: string | null;
+
   status?: string | null;
+
   payment_method?: string | null;
+
   paid_at?: string | null;
+
+  created_at?: string | null;
 };
 
 type VerificationStatusResponse = {
   success?: boolean;
+
   verification?: VerificationRecord;
+
   plan?: string | null;
+
   payment?: VerificationStatusPayment | null;
+
   error?: string;
+
   message?: string;
 };
 
@@ -322,7 +341,210 @@ async function getAuthenticatedSession() {
 
 /*
  * ============================================================
+ * NORMALIZE PLAN
+ * ============================================================
+ */
+
+function normalizePlan(
+  value: unknown,
+): PlanKey | null {
+  const normalized =
+    String(value || "")
+      .trim()
+      .toLowerCase();
+
+  if (
+    normalized ===
+      "essential" ||
+    normalized ===
+      "professional" ||
+    normalized ===
+      "premium"
+  ) {
+    return normalized;
+  }
+
+  return null;
+}
+
+/*
+ * ============================================================
+ * DIRECT SUPABASE VERIFICATION FALLBACK
+ * ============================================================
+ *
+ * This is used only when the status API refuses the request.
+ *
+ * The browser Supabase client uses the currently authenticated
+ * user's session and RLS policies.
+ *
+ * We explicitly filter by BOTH:
+ *
+ *   verification ID
+ *   authenticated user ID
+ *
+ * so a user cannot load another user's verification.
+ * ============================================================
+ */
+
+async function loadVerificationDirectly(
+  id: string,
+  userId: string,
+): Promise<VerificationRecord | null> {
+  const {
+    data,
+    error,
+  } =
+    await supabase
+      .from("verifications")
+      .select(
+        "id, user_id, doc_name, file_url, doc_type, status, trust_score, confidence, risk, findings, created_at",
+      )
+      .eq(
+        "id",
+        id,
+      )
+      .eq(
+        "user_id",
+        userId,
+      )
+      .maybeSingle();
+
+  if (error) {
+    console.error(
+      "PROCESSING DIRECT VERIFICATION LOAD ERROR:",
+      error,
+    );
+
+    throw new Error(
+      error.message ||
+        "Verification record could not be loaded.",
+    );
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return data as VerificationRecord;
+}
+
+/*
+ * ============================================================
+ * DIRECT PAYMENT FALLBACK
+ * ============================================================
+ *
+ * If the status endpoint is unavailable or returns an
+ * authorization response, attempt to recover the paid plan
+ * directly from the authenticated user's payment record.
+ *
+ * The payment is still restricted to:
+ *
+ *   verification_id
+ *   user_id
+ *   provider = paystack
+ *   status = paid
+ * ============================================================
+ */
+
+async function loadPaidPlanDirectly(
+  verificationId: string,
+  userId: string,
+): Promise<{
+  plan: PlanKey | null;
+  payment: VerificationStatusPayment | null;
+}> {
+  const {
+    data,
+    error,
+  } =
+    await supabase
+      .from("payments")
+      .select(
+        "id, verification_id, user_id, plan, amount, currency, provider, payment_method, provider_reference, status, paid_at, created_at",
+      )
+      .eq(
+        "verification_id",
+        verificationId,
+      )
+      .eq(
+        "user_id",
+        userId,
+      )
+      .eq(
+        "provider",
+        "paystack",
+      )
+      .eq(
+        "status",
+        "paid",
+      )
+      .order(
+        "created_at",
+        {
+          ascending:
+            false,
+        },
+      )
+      .limit(1);
+
+  if (error) {
+    console.error(
+      "PROCESSING DIRECT PAYMENT LOAD ERROR:",
+      error,
+    );
+
+    /*
+     * Do not immediately destroy the processing workflow.
+     *
+     * The status API may still contain the authoritative
+     * payment information.
+     */
+    return {
+      plan: null,
+      payment: null,
+    };
+  }
+
+  const payment =
+    Array.isArray(data) &&
+    data.length > 0
+      ? (data[0] as VerificationStatusPayment)
+      : null;
+
+  return {
+    plan:
+      normalizePlan(
+        payment?.plan,
+      ),
+
+    payment,
+  };
+}
+
+/*
+ * ============================================================
  * LOAD VERIFICATION
+ * ============================================================
+ *
+ * PRIMARY:
+ *
+ *   /api/verify-document/status
+ *
+ * FALLBACK:
+ *
+ *   authenticated Supabase browser client
+ *
+ * The fallback exists because the browser is currently
+ * receiving:
+ *
+ *   "You are not authorized to access this verification."
+ *
+ * from the status request.
+ *
+ * The Processing page should not stop simply because that
+ * status endpoint authorization path is temporarily refusing
+ * the request, provided the authenticated user can still
+ * access their own verification through Supabase RLS.
  * ============================================================
  */
 
@@ -330,10 +552,19 @@ async function loadVerification(
   id: string,
 ): Promise<{
   verification: VerificationRecord;
+
   plan: PlanKey | null;
+
+  payment: VerificationStatusPayment | null;
 }> {
   const session =
     await getAuthenticatedSession();
+
+  /*
+   * ----------------------------------------------------------
+   * PRIMARY STATUS API
+   * ----------------------------------------------------------
+   */
 
   const response =
     await fetch(
@@ -423,98 +654,180 @@ async function loadVerification(
     },
   );
 
-  if (!response.ok) {
+  /*
+   * ----------------------------------------------------------
+   * PRIMARY API SUCCESS
+   * ----------------------------------------------------------
+   */
+
+  if (
+    response.ok &&
+    payload.verification
+  ) {
+    const verification =
+      payload.verification;
+
+    let plan =
+      normalizePlan(
+        payload.plan ||
+          payload.payment?.plan ||
+          verification
+            .findings
+            ?.essential
+            ?.plan,
+      );
+
+    let payment =
+      payload.payment ||
+      null;
+
+    /*
+     * If the status API returned the verification but omitted
+     * the plan/payment, recover it directly.
+     */
+
+    if (!plan) {
+      const directPayment =
+        await loadPaidPlanDirectly(
+          id,
+          session.user.id,
+        );
+
+      if (
+        directPayment.plan
+      ) {
+        plan =
+          directPayment.plan;
+      }
+
+      if (
+        !payment &&
+        directPayment.payment
+      ) {
+        payment =
+          directPayment.payment;
+      }
+    }
+
+    return {
+      verification,
+      plan,
+      payment,
+    };
+  }
+
+  /*
+   * ----------------------------------------------------------
+   * STATUS API FAILED
+   * ----------------------------------------------------------
+   *
+   * DO NOT immediately throw.
+   *
+   * First attempt the authenticated Supabase fallback.
+   * ----------------------------------------------------------
+   */
+
+  console.warn(
+    "PROCESSING STATUS API FAILED — USING DIRECT SUPABASE FALLBACK:",
+    {
+      status:
+        response.status,
+
+      error:
+        payload.error,
+
+      message:
+        payload.message,
+    },
+  );
+
+  /*
+   * ----------------------------------------------------------
+   * DIRECT VERIFICATION FALLBACK
+   * ----------------------------------------------------------
+   */
+
+  const directVerification =
+    await loadVerificationDirectly(
+      id,
+      session.user.id,
+    );
+
+  if (
+    !directVerification
+  ) {
+    /*
+     * Only now do we report the original status API error.
+     */
+
     throw new Error(
       payload.error ||
         payload.message ||
-        `Verification status request failed (${response.status}).`,
+        "You are not authorized to access this verification.",
     );
   }
-
-  let verification =
-    payload.verification ||
-    null;
 
   /*
-   * Fallback for older status API responses.
+   * ----------------------------------------------------------
+   * DIRECT PAYMENT FALLBACK
+   * ----------------------------------------------------------
    */
 
-  if (!verification) {
-    console.warn(
-      "PROCESSING STATUS FALLBACK: status API returned no verification record; loading the record directly from Supabase.",
+  const directPayment =
+    await loadPaidPlanDirectly(
+      id,
+      session.user.id,
     );
 
-    const {
-      data:
-        directVerification,
-      error:
-        directVerificationError,
-    } =
-      await supabase
-        .from("verifications")
-        .select(
-          "id, doc_name, file_url, doc_type, status, trust_score, confidence, risk, findings, created_at",
-        )
-        .eq(
-          "id",
-          id,
-        )
-        .maybeSingle();
+  const fallbackPlan =
+    directPayment.plan ||
+    normalizePlan(
+      directVerification
+        .findings
+        ?.essential
+        ?.plan,
+    );
 
-    if (
-      directVerificationError
-    ) {
-      console.error(
-        "PROCESSING DIRECT VERIFICATION LOAD ERROR:",
-        directVerificationError,
-      );
+  /*
+   * ----------------------------------------------------------
+   * RETURN FALLBACK DATA
+   * ----------------------------------------------------------
+   */
 
-      throw new Error(
-        `Verification record could not be loaded: ${directVerificationError.message}`,
-      );
-    }
+  console.log(
+    "PROCESSING DIRECT FALLBACK SUCCESS:",
+    {
+      verificationId:
+        directVerification.id,
 
-    if (!directVerification) {
-      throw new Error(
-        payload.error ||
-          payload.message ||
-          "Verification record could not be found.",
-      );
-    }
+      userId:
+        session.user.id,
 
-    verification =
-      directVerification as VerificationRecord;
-  }
+      verificationStatus:
+        directVerification.status,
 
-  const rawPlan =
-    payload.plan ||
-    payload.payment?.plan ||
-    verification.findings
-      ?.essential?.plan ||
-    null;
+      plan:
+        fallbackPlan,
 
-  const normalizedPlan =
-    String(
-      rawPlan || "",
-    )
-      .trim()
-      .toLowerCase();
+      paymentId:
+        directPayment.payment
+          ?.id,
 
-  const plan:
-    | PlanKey
-    | null =
-    normalizedPlan ===
-        "essential" ||
-    normalizedPlan ===
-        "professional" ||
-    normalizedPlan ===
-        "premium"
-      ? normalizedPlan
-      : null;
+      paymentStatus:
+        directPayment.payment
+          ?.status,
+    },
+  );
 
   return {
-    verification,
-    plan,
+    verification:
+      directVerification,
+
+    plan:
+      fallbackPlan,
+
+    payment:
+      directPayment.payment,
   };
 }
 
@@ -937,7 +1250,8 @@ export default function ProcessingPage() {
         ) {
           /*
            * Polling errors are supplementary.
-           * Do not terminate the actual verification request.
+           *
+           * The main verification request remains active.
            */
 
           console.error(
@@ -965,7 +1279,9 @@ export default function ProcessingPage() {
     async function processVerification() {
       try {
         /*
+         * --------------------------------------------------------
          * LOAD VERIFICATION
+         * --------------------------------------------------------
          */
 
         const loaded =
@@ -976,8 +1292,29 @@ export default function ProcessingPage() {
         const verification =
           loaded.verification;
 
-        const selectedPlan =
+        let selectedPlan =
           loaded.plan;
+
+        /*
+         * --------------------------------------------------------
+         * IF THE STATUS API FALLBACK DID NOT PROVIDE A PLAN,
+         * TRY ONE MORE DIRECT PAYMENT LOOKUP.
+         * --------------------------------------------------------
+         */
+
+        if (!selectedPlan) {
+          const session =
+            await getAuthenticatedSession();
+
+          const directPayment =
+            await loadPaidPlanDirectly(
+              verificationIdFromUrl,
+              session.user.id,
+            );
+
+          selectedPlan =
+            directPayment.plan;
+        }
 
         if (!selectedPlan) {
           throw new Error(
@@ -986,7 +1323,9 @@ export default function ProcessingPage() {
         }
 
         /*
+         * --------------------------------------------------------
          * PRESERVE REVIEWED PACKAGE
+         * --------------------------------------------------------
          */
 
         const reviewedPackage =
@@ -999,7 +1338,9 @@ export default function ProcessingPage() {
         );
 
         /*
+         * --------------------------------------------------------
          * UPLOAD DATE
+         * --------------------------------------------------------
          */
 
         if (
@@ -1031,7 +1372,9 @@ export default function ProcessingPage() {
         }
 
         /*
+         * --------------------------------------------------------
          * ALREADY PROCESSED
+         * --------------------------------------------------------
          */
 
         if (
@@ -1078,7 +1421,9 @@ export default function ProcessingPage() {
         }
 
         /*
+         * --------------------------------------------------------
          * FAILED
+         * --------------------------------------------------------
          */
 
         if (
@@ -1094,7 +1439,9 @@ export default function ProcessingPage() {
         }
 
         /*
+         * --------------------------------------------------------
          * INITIAL UI STATE
+         * --------------------------------------------------------
          */
 
         setProgress(
@@ -1123,7 +1470,9 @@ export default function ProcessingPage() {
         );
 
         /*
+         * --------------------------------------------------------
          * START POLLING
+         * --------------------------------------------------------
          */
 
         void pollVerification(
@@ -1131,7 +1480,9 @@ export default function ProcessingPage() {
         );
 
         /*
+         * --------------------------------------------------------
          * SELECT PAID VERIFICATION ENGINE
+         * --------------------------------------------------------
          */
 
         const verificationEndpoint =
@@ -1144,16 +1495,18 @@ export default function ProcessingPage() {
               : "/api/verify-document/essential";
 
         /*
+         * --------------------------------------------------------
          * GET AUTHENTICATED SESSION
-         *
-         * Use the resilient session helper.
+         * --------------------------------------------------------
          */
 
         const currentSession =
           await getAuthenticatedSession();
 
         /*
+         * --------------------------------------------------------
          * START SERVER-SIDE VERIFICATION
+         * --------------------------------------------------------
          */
 
         const response =
@@ -1185,11 +1538,17 @@ export default function ProcessingPage() {
         let data:
           | {
               success?: boolean;
+
               error?: string;
+
               verificationId?: string;
+
               trustScore?: number;
+
               confidence?: number;
+
               risk?: string;
+
               plan?: string;
             }
           | null =
@@ -1222,7 +1581,9 @@ export default function ProcessingPage() {
         }
 
         /*
+         * --------------------------------------------------------
          * RELOAD FINAL DATABASE STATE
+         * --------------------------------------------------------
          */
 
         const completedLoaded =
@@ -1311,13 +1672,17 @@ export default function ProcessingPage() {
     }
 
     /*
+     * ==========================================================
      * RUN REAL VERIFICATION
+     * ==========================================================
      */
 
     void processVerification();
 
     /*
+     * ==========================================================
      * CLEANUP
+     * ==========================================================
      */
 
     return () => {
@@ -1332,12 +1697,6 @@ export default function ProcessingPage() {
   /*
    * ============================================================
    * SHARED PROPERTYSURE AI LOADING SCREEN
-   * ============================================================
-   *
-   * This is intentionally the same loading component used
-   * throughout the application.
-   *
-   * Do not use the old page-specific loading markup here.
    * ============================================================
    */
 

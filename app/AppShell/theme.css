@@ -1,0 +1,298 @@
+/*
+============================================================
+PROPERTYSURE AI
+GLOBAL THEME SYSTEM
+============================================================
+*/
+
+/*
+============================================================
+LIGHT THEME
+============================================================
+*/
+
+:root {
+  --ps-background: #f6f8fc;
+  --ps-background-secondary: #eef3f9;
+
+  --ps-surface: #ffffff;
+  --ps-surface-secondary: #f8fafc;
+  --ps-surface-tertiary: #f1f5f9;
+
+  --ps-text-primary: #172554;
+  --ps-text-secondary: #64748b;
+  --ps-text-muted: #94a3b8;
+
+  --ps-border: #dbe3ee;
+  --ps-border-light: #e8eef5;
+
+  --ps-shadow-sm:
+    0 2px 8px rgba(15, 23, 42, 0.05);
+
+  --ps-shadow-md:
+    0 8px 25px rgba(15, 23, 42, 0.08);
+
+  --ps-shadow-lg:
+    0 18px 45px rgba(15, 23, 42, 0.10);
+
+  --ps-primary: #2563eb;
+  --ps-primary-hover: #1d4ed8;
+  --ps-primary-soft: #eff6ff;
+
+  --ps-success: #16a34a;
+  --ps-success-soft: #f0fdf4;
+
+  --ps-warning: #d97706;
+  --ps-warning-soft: #fffbeb;
+
+  --ps-danger: #dc2626;
+  --ps-danger-soft: #fef2f2;
+
+  --ps-info: #0284c7;
+  --ps-info-soft: #f0f9ff;
+
+  --ps-radius-sm: 8px;
+  --ps-radius-md: 14px;
+  --ps-radius-lg: 20px;
+  --ps-radius-xl: 28px;
+
+  --ps-transition:
+    180ms ease;
+}
+
+
+/*
+============================================================
+DARK THEME
+============================================================
+*/
+
+:root[data-theme="dark"] {
+  --ps-background: #071426;
+  --ps-background-secondary: #0a1a2f;
+
+  --ps-surface: #0d1d33;
+  --ps-surface-secondary: #10243d;
+  --ps-surface-tertiary: #142b47;
+
+  --ps-text-primary: #f8fbff;
+  --ps-text-secondary: #b5c4d8;
+  --ps-text-muted: #8295ad;
+
+  --ps-border: #203957;
+  --ps-border-light: #1a304a;
+
+  --ps-shadow-sm:
+    0 2px 8px rgba(0, 0, 0, 0.20);
+
+  --ps-shadow-md:
+    0 8px 25px rgba(0, 0, 0, 0.28);
+
+  --ps-shadow-lg:
+    0 18px 45px rgba(0, 0, 0, 0.35);
+
+  --ps-primary: #3b82f6;
+  --ps-primary-hover: #60a5fa;
+  --ps-primary-soft: #102c50;
+
+  --ps-success: #22c55e;
+  --ps-success-soft: #0d2a1a;
+
+  --ps-warning: #f59e0b;
+  --ps-warning-soft: #30240b;
+
+  --ps-danger: #ef4444;
+  --ps-danger-soft: #321414;
+
+  --ps-info: #38bdf8;
+  --ps-info-soft: #0b2940;
+}
+
+
+/*
+============================================================
+ACCENT COLORS
+============================================================
+*/
+
+/* BLUE */
+
+:root[data-accent="blue"] {
+  --ps-primary: #2563eb;
+  --ps-primary-hover: #1d4ed8;
+  --ps-primary-soft: #eff6ff;
+}
+
+:root[data-theme="dark"][data-accent="blue"] {
+  --ps-primary: #3b82f6;
+  --ps-primary-hover: #60a5fa;
+  --ps-primary-soft: #102c50;
+}
+
+
+/* GREEN */
+
+:root[data-accent="green"] {
+  --ps-primary: #16a34a;
+  --ps-primary-hover: #15803d;
+  --ps-primary-soft: #f0fdf4;
+}
+
+:root[data-theme="dark"][data-accent="green"] {
+  --ps-primary: #22c55e;
+  --ps-primary-hover: #4ade80;
+  --ps-primary-soft: #0d2a1a;
+}
+
+
+/* PURPLE */
+
+:root[data-accent="purple"] {
+  --ps-primary: #7c3aed;
+  --ps-primary-hover: #6d28d9;
+  --ps-primary-soft: #f5f3ff;
+}
+
+:root[data-theme="dark"][data-accent="purple"] {
+  --ps-primary: #8b5cf6;
+  --ps-primary-hover: #a78bfa;
+  --ps-primary-soft: #24153f;
+}
+
+
+/* YELLOW */
+
+:root[data-accent="yellow"] {
+  --ps-primary: #d97706;
+  --ps-primary-hover: #b45309;
+  --ps-primary-soft: #fffbeb;
+}
+
+:root[data-theme="dark"][data-accent="yellow"] {
+  --ps-primary: #f59e0b;
+  --ps-primary-hover: #fbbf24;
+  --ps-primary-soft: #30240b;
+}
+
+
+/* RED */
+
+:root[data-accent="red"] {
+  --ps-primary: #dc2626;
+  --ps-primary-hover: #b91c1c;
+  --ps-primary-soft: #fef2f2;
+}
+
+:root[data-theme="dark"][data-accent="red"] {
+  --ps-primary: #ef4444;
+  --ps-primary-hover: #f87171;
+  --ps-primary-soft: #321414;
+}
+
+
+/* TEAL */
+
+:root[data-accent="teal"] {
+  --ps-primary: #0f766e;
+  --ps-primary-hover: #115e59;
+  --ps-primary-soft: #f0fdfa;
+}
+
+:root[data-theme="dark"][data-accent="teal"] {
+  --ps-primary: #14b8a6;
+  --ps-primary-hover: #2dd4bf;
+  --ps-primary-soft: #0b302d;
+}
+
+
+/*
+============================================================
+GLOBAL APPLICATION BASE
+============================================================
+*/
+
+html {
+  background: var(--ps-background);
+  color: var(--ps-text-primary);
+  transition:
+    background-color var(--ps-transition),
+    color var(--ps-transition);
+}
+
+body {
+  background: var(--ps-background);
+  color: var(--ps-text-primary);
+
+  transition:
+    background-color var(--ps-transition),
+    color var(--ps-transition);
+}
+
+
+/*
+============================================================
+FORM ELEMENTS
+============================================================
+*/
+
+input,
+textarea,
+select,
+button {
+  transition:
+    background-color var(--ps-transition),
+    color var(--ps-transition),
+    border-color var(--ps-transition),
+    box-shadow var(--ps-transition);
+}
+
+
+/*
+============================================================
+SELECTION
+============================================================
+*/
+
+::selection {
+  background: var(--ps-primary);
+  color: #ffffff;
+}
+
+
+/*
+============================================================
+SCROLLBAR
+============================================================
+*/
+
+:root[data-theme="dark"] {
+  scrollbar-color:
+    #29435f
+    #071426;
+}
+
+:root[data-theme="light"] {
+  scrollbar-color:
+    #cbd5e1
+    #f6f8fc;
+}
+
+
+/*
+============================================================
+ACCESSIBILITY / REDUCED MOTION
+============================================================
+*/
+
+@media (
+  prefers-reduced-motion: reduce
+) {
+  html,
+  body,
+  input,
+  textarea,
+  select,
+  button {
+    transition: none !important;
+  }
+}

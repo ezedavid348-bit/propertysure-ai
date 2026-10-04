@@ -4,8 +4,8 @@
    ============================================================ */
 
 .page {
-  min-height: 100vh;
   width: 100%;
+  min-height: 100%;
 
   background: #ffffff;
   color: #17243b;
@@ -39,97 +39,12 @@
 }
 
 /* ============================================================
-   TOP BAR
-   ============================================================ */
-
-.topBar {
-  width: 100%;
-  height: 72px;
-
-  padding: 0 42px;
-
-  background: #06152f;
-
-  border-bottom:
-    1px solid
-    #193650;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: space-between;
-}
-
-.topBrand {
-  border: 0;
-  background: transparent;
-
-  color: #ffffff;
-
-  display: flex;
-  align-items: center;
-
-  gap: 8px;
-
-  padding: 0;
-
-  font-size: 18px;
-  font-weight: 700;
-
-  cursor: pointer;
-}
-
-.topBrand strong {
-  color: #168eff;
-}
-
-.topDiamond {
-  color: #168eff;
-
-  font-size: 21px;
-  line-height: 1;
-}
-
-.topBell {
-  position: relative;
-
-  width: 40px;
-  height: 40px;
-
-  border: 0;
-  background: transparent;
-
-  color: #f2b500;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-}
-
-.topBellDot {
-  position: absolute;
-
-  top: 4px;
-  right: 3px;
-
-  width: 7px;
-  height: 7px;
-
-  border-radius: 50%;
-
-  background: #168eff;
-}
-
-/* ============================================================
    MAIN
-   ============================================================ */
+============================================================ */
 
 .main {
-  min-height:
-    calc(100vh - 72px);
+  width: 100%;
+  min-height: 100%;
 
   padding:
     34px
@@ -141,7 +56,7 @@
 
 /* ============================================================
    PAGE HEADER
-   ============================================================ */
+============================================================ */
 
 .pageHeader {
   width: 100%;
@@ -173,8 +88,19 @@
   line-height: 1.5;
 }
 
+/* ============================================================
+   BACK TO SETTINGS
+   FIXED TEMPLATE
+============================================================ */
+
 .backButton {
-  margin-top: 16px;
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-top: 19px;
 
   padding: 0;
 
@@ -184,14 +110,49 @@
 
   color: #168eff;
 
-  font-size: 11px;
+  text-decoration: none;
+
+  font-size: 13px;
   font-weight: 600;
 
+  line-height: 1;
+
   cursor: pointer;
+
+  appearance: none;
+
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
 }
 
 .backButton:hover {
-  text-decoration: underline;
+  color: #0c78dd;
+
+  text-decoration: none;
+}
+
+.backButton:focus-visible {
+  outline:
+    2px solid
+    #168eff;
+
+  outline-offset: 4px;
+
+  border-radius: 3px;
+}
+
+.backArrow {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18px;
+
+  line-height: 1;
+
+  font-weight: 500;
 }
 
 /* ============================================================
@@ -868,73 +829,6 @@
 }
 
 /* ============================================================
-   MOBILE DEFAULTS
-   ============================================================ */
-
-.mobileHeader,
-.mobileMenu,
-.mobileBottomNav {
-  display: none;
-}
-
-/* ============================================================
-   LOADING
-   ============================================================ */
-
-.loading {
-  min-height: 100vh;
-
-  background: #06152f;
-
-  color: #ffffff;
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-  justify-content: center;
-
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-}
-
-.loadingBrand {
-  display: flex;
-
-  align-items: center;
-
-  gap: 9px;
-
-  color: #ffffff;
-
-  font-size: 22px;
-  font-weight: 700;
-}
-
-.loadingBrand strong {
-  color: #168eff;
-}
-
-.loadingDiamond {
-  color: #168eff;
-
-  font-size: 24px;
-}
-
-.loading p {
-  margin-top: 13px;
-
-  color: #8ea4c3;
-
-  font-size: 12px;
-}
-
-/* ============================================================
    TABLET
    ============================================================ */
 
@@ -958,12 +852,14 @@
    ============================================================ */
 
 @media (max-width: 700px) {
-  .topBar {
-    display: none;
+  .page {
+    min-height: auto;
+
+    background: #ffffff;
   }
 
   .main {
-    min-height: 100vh;
+    min-height: auto;
 
     padding:
       0
@@ -974,114 +870,12 @@
   }
 
   /* ----------------------------------------------------------
-     MOBILE HEADER
-  ---------------------------------------------------------- */
-
-  .mobileHeader {
-    position: sticky;
-
-    top: 0;
-
-    width: 100%;
-    height: 70px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: space-between;
-
-    padding:
-      0 18px;
-
-    background: #06152f;
-
-    border-bottom:
-      1px solid
-      #193650;
-
-    z-index: 100;
-  }
-
-  .menuButton,
-  .mobileBell {
-    position: relative;
-
-    width: 40px;
-    height: 40px;
-
-    padding: 0;
-
-    border: 0;
-
-    background: transparent;
-
-    color: #ffffff;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    cursor: pointer;
-  }
-
-  .mobileBell .icon {
-    color: #f2b500;
-  }
-
-  .mobileLogo {
-    border: 0;
-
-    background: transparent;
-
-    color: #ffffff;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    padding: 0;
-
-    font-size: 17px;
-
-    font-weight: 700;
-
-    cursor: pointer;
-  }
-
-  .mobileLogo strong {
-    color: #168eff;
-  }
-
-  .mobileDiamond {
-    color: #168eff;
-
-    font-size: 21px;
-  }
-
-  .mobileBellDot {
-    position: absolute;
-
-    top: 4px;
-    right: 2px;
-
-    width: 7px;
-    height: 7px;
-
-    border-radius: 50%;
-
-    background: #168eff;
-  }
-
-  /* ----------------------------------------------------------
      PAGE HEADER
   ---------------------------------------------------------- */
 
   .pageHeader {
     padding:
-      28px 30px 0;
+      24px 20px 0;
   }
 
   .pageHeader h1 {
@@ -1101,9 +895,13 @@
   }
 
   .backButton {
-    margin-top: 15px;
+    margin-top: 17px;
 
-    font-size: 11px;
+    font-size: 12px;
+  }
+
+  .backArrow {
+    font-size: 17px;
   }
 
   /* ----------------------------------------------------------
@@ -1115,10 +913,12 @@
 
     flex-direction: column;
 
-    padding:
-      0 30px;
+    width: 100%;
 
-    margin-top: 27px;
+    padding:
+      0 20px;
+
+    margin-top: 25px;
 
     gap: 0;
   }
@@ -1278,224 +1078,6 @@
   .previewNotice p {
     font-size: 8px;
   }
-
-  /* ----------------------------------------------------------
-     MOBILE MENU
-  ---------------------------------------------------------- */
-
-  .mobileMenu {
-    position: fixed;
-
-    inset: 0;
-
-    display: block;
-
-    padding:
-      25px 22px;
-
-    background: #06152f;
-
-    color: #ffffff;
-
-    z-index: 300;
-
-    overflow-y: auto;
-  }
-
-  .mobileMenuTop {
-    display: flex;
-
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-
-  .mobileMenuLogo {
-    border: 0;
-
-    padding: 0;
-
-    background: transparent;
-
-    color: #ffffff;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    font-size: 18px;
-
-    cursor: pointer;
-  }
-
-  .mobileMenuLogo > span {
-    color: #168eff;
-
-    font-size: 22px;
-  }
-
-  .mobileMenuLogo b {
-    color: #168eff;
-  }
-
-  .mobileMenuSubtitle {
-    margin:
-      12px 0 0;
-
-    color: #8ea4c3;
-
-    font-size: 10px;
-
-    line-height: 1.45;
-  }
-
-  .closeButton {
-    width: 40px;
-    height: 40px;
-
-    border: 0;
-
-    background: transparent;
-
-    color: #ffffff;
-
-    font-size: 31px;
-
-    font-weight: 200;
-
-    cursor: pointer;
-  }
-
-  .mobileMenuNav {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 6px;
-
-    margin-top: 45px;
-  }
-
-  .mobileMenuNav button,
-  .mobileMenuItem {
-    width: 100%;
-    height: 48px;
-
-    border: 0;
-
-    border-radius: 8px;
-
-    background: transparent;
-
-    color: #aebed4;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 14px;
-
-    padding:
-      0 14px;
-
-    font-size: 14px;
-
-    text-align: left;
-
-    cursor: pointer;
-  }
-
-  .mobileMenuNav button:hover,
-  .mobileMenuItem:hover {
-    background:
-      rgba(22, 142, 255, 0.12);
-
-    color: #ffffff;
-  }
-
-  .mobileMenuLabel {
-    margin:
-      32px 14px 8px;
-
-    color: #6f87a9;
-
-    font-size: 9px;
-
-    font-weight: 700;
-
-    letter-spacing: 1.5px;
-  }
-
-  .mobileMenuItem {
-    margin-bottom: 4px;
-  }
-
-  .logoutItem {
-    color: #ff8b91 !important;
-
-    margin-top: 10px;
-  }
-
-  /* ----------------------------------------------------------
-     MOBILE BOTTOM NAV
-  ---------------------------------------------------------- */
-
-  .mobileBottomNav {
-    position: fixed;
-
-    left: 0;
-    right: 0;
-    bottom: 0;
-
-    height: 74px;
-
-    display: grid;
-
-    grid-template-columns:
-      repeat(5, 1fr);
-
-    background:
-      rgba(3, 18, 40, 0.98);
-
-    border-top:
-      1px solid
-      #193650;
-
-    backdrop-filter:
-      blur(15px);
-
-    z-index: 150;
-  }
-
-  .mobileBottomNav button {
-    border: 0;
-
-    background: transparent;
-
-    color: #7990ad;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 4px;
-
-    font-size: 8px;
-
-    cursor: pointer;
-  }
-
-  .mobileBottomNav button .icon {
-    font-size: 20px;
-  }
-
-  .mobileBottomNav .bottomActive {
-    color: #168eff;
-  }
 }
 
 /* ============================================================
@@ -1503,23 +1085,14 @@
    ============================================================ */
 
 @media (max-width: 380px) {
-  .mobileHeader {
-    padding:
-      0 14px;
-  }
-
-  .mobileLogo {
-    font-size: 15px;
-  }
-
   .pageHeader {
-    padding-left: 22px;
-    padding-right: 22px;
+    padding-left: 18px;
+    padding-right: 18px;
   }
 
   .contentLayout {
-    padding-left: 22px;
-    padding-right: 22px;
+    padding-left: 18px;
+    padding-right: 18px;
   }
 
   .pageHeader h1 {

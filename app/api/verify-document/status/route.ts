@@ -1,16 +1,45 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-
-export const dynamic = "force-dynamic";
-
-type PlanKey =
-  | "essential"
-  | "professional"
-  | "premium";
 
 /*
  * ============================================================
- * SUPABASE ADMIN CLIENT
+ * PROPERTYSURE AI — VERIFICATION STATUS API
+ * ============================================================
+ *
+ * GET /api/verify-document/status?id=<verificationId>
+ *
+ * This endpoint is READ-ONLY.
+ *
+ * It:
+ * - verifies the authenticated Supabase user
+ * - loads the requested verification
+ * - verifies that the authenticated user is connected to the
+ *   verification through the verification record OR its paid
+ *   payment record
+ * - loads the latest confirmed Paystack payment
+ * - returns the paid plan
+ * - returns the current verification/progress state
+ *
+ * IMPORTANT:
+ * - Do NOT query created_at / updated_at from verifications.
+ * - Payment created_at is also not required here.
+ * - This endpoint does NOT start AI verification.
+ * - Processing starts the appropriate verification engine.
+ * ============================================================
+ */
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const VALID_PLANS = new Set([
+  "essential",
+  "professional",
+  "premium",
+]);
+
+/*
+ * ============================================================
+ * SUPABASE ADMIN
  * ============================================================
  */
 
@@ -19,17 +48,15 @@ function getSupabaseAdmin() {
     process.env.NEXT_PUBLIC_SUPABASE_URL;
 
   const serviceRoleKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY;
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SECRET_KEY;
 
-  if (!supabaseUrl) {
+  if (
+    !supabaseUrl ||
+    !serviceRoleKey
+  ) {
     throw new Error(
-      "NEXT_PUBLIC_SUPABASE_URL is not configured.",
-    );
-  }
-
-  if (!serviceRoleKey) {
-    throw new Error(
-      "SUPABASE_SERVICE_ROLE_KEY is not configured.",
+      "Supabase server configuration is missing.",
     );
   }
 
@@ -47,7 +74,61 @@ function getSupabaseAdmin() {
 
 /*
  * ============================================================
- * JSON ERROR HELPER
+ * SUPABASE PUBLIC CLIENT
+ * ============================================================
+ *
+ * IMPORTANT:
+ *
+ * The browser application currently uses:
+ *
+ * NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+ *
+ * We therefore use that key here as the primary public key.
+ *
+ * NEXT_PUBLIC_SUPABASE_ANON_KEY is kept as a fallback for
+ * projects that still use the legacy Supabase anon key.
+ * ============================================================
+ */
+
+function getSupabasePublic() {
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  /*
+   * Primary:
+   *   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+   *
+   * Fallback:
+   *   NEXT_PUBLIC_SUPABASE_ANON_KEY
+   */
+  const publicKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (
+    !supabaseUrl ||
+    !publicKey
+  ) {
+    throw new Error(
+      "Supabase public configuration is missing. Please check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.",
+    );
+  }
+
+  return createClient(
+    supabaseUrl,
+    publicKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    },
+  );
+}
+
+/*
+ * ============================================================
+ * JSON ERROR
  * ============================================================
  */
 
@@ -72,61 +153,29 @@ function jsonError(
 
 /*
  * ============================================================
- * NORMALIZE PLAN
- * ============================================================
- */
-
-function normalizePlan(
-  value: unknown,
-): PlanKey | null {
-  const normalized =
-    String(value || "")
-      .trim()
-      .toLowerCase();
-
-  if (
-    normalized === "essential" ||
-    normalized === "professional" ||
-    normalized === "premium"
-  ) {
-    return normalized;
-  }
-
-  return null;
-}
-
-/*
- * ============================================================
- * GET VERIFICATION STATUS
+ * GET — VERIFICATION STATUS
  * ============================================================
  */
 
 export async function GET(
-  request: NextRequest,
+  request: Request,
 ) {
   try {
     /*
      * ----------------------------------------------------------
-     * 1. CREATE SERVER SUPABASE CLIENT
+     * 1. READ VERIFICATION ID
      * ----------------------------------------------------------
      */
 
-    const supabaseAdmin =
-      getSupabaseAdmin();
-
-    /*
-     * ----------------------------------------------------------
-     * 2. GET VERIFICATION ID
-     * ----------------------------------------------------------
-     */
-
-    const { searchParams } =
+    const url =
       new URL(request.url);
 
     const verificationId =
-      searchParams
-        .get("id")
-        ?.trim();
+      String(
+        url.searchParams.get(
+          "id",
+        ) || "",
+      ).trim();
 
     if (!verificationId) {
       return jsonError(
@@ -137,7 +186,7 @@ export async function GET(
 
     /*
      * ----------------------------------------------------------
-     * 3. GET AUTHORIZATION TOKEN
+     * 2. READ AUTHORIZATION HEADER
      * ----------------------------------------------------------
      */
 
@@ -163,17 +212,21 @@ export async function GET(
 
     /*
      * ----------------------------------------------------------
-     * 4. AUTHENTICATE USER
+     * 3. VERIFY SUPABASE USER
      * ----------------------------------------------------------
      */
+
+    const supabasePublic =
+      getSupabasePublic();
 
     const {
       data: {
         user,
       },
-      error: userError,
+      error:
+        userError,
     } =
-      await supabaseAdmin.auth.getUser(
+      await supabasePublic.auth.getUser(
         accessToken,
       );
 
@@ -187,34 +240,52 @@ export async function GET(
       );
 
       return jsonError(
-        "Your session is invalid or has expired.",
+        "Your session could not be verified. Please sign in again.",
         401,
       );
     }
 
     /*
      * ----------------------------------------------------------
-     * 5. LOAD VERIFICATION
+     * 4. ADMIN CLIENT
+     * ----------------------------------------------------------
+     */
+
+    const supabaseAdmin =
+      getSupabaseAdmin();
+
+    /*
+     * ----------------------------------------------------------
+     * 5. LOAD VERIFICATION BY ID
      * ----------------------------------------------------------
      *
      * IMPORTANT:
      *
-     * We only request fields that exist in the current
-     * verifications structure.
+     * We intentionally DO NOT put:
      *
-     * There is NO verification.plan here.
+     *   .eq("user_id", user.id)
      *
-     * The paid plan comes from the payments table.
+     * on this first query.
+     *
+     * We need to inspect the actual ownership relationship first.
+     *
+     * This also allows us to diagnose the situation where the
+     * verification was created under an anonymous/session user
+     * while the payment belongs to the currently authenticated
+     * user.
      * ----------------------------------------------------------
      */
 
     const {
-      data: verification,
+      data:
+        verification,
       error:
         verificationError,
     } =
       await supabaseAdmin
-        .from("verifications")
+        .from(
+          "verifications",
+        )
         .select(
           "id,user_id,doc_name,file_url,doc_type,status,trust_score,confidence,risk,findings",
         )
@@ -222,71 +293,68 @@ export async function GET(
           "id",
           verificationId,
         )
-        .eq(
-          "user_id",
-          user.id,
-        )
         .maybeSingle();
 
     if (
       verificationError
     ) {
       console.error(
-        "STATUS VERIFICATION QUERY ERROR:",
+        "STATUS VERIFICATION LOAD ERROR:",
         verificationError,
       );
 
       return jsonError(
-        verificationError.message ||
-          "Unable to load verification.",
+        "Verification record could not be loaded.",
         500,
       );
     }
 
     if (!verification) {
-      console.warn(
+      console.error(
         "STATUS VERIFICATION NOT FOUND:",
         {
           verificationId,
-          userId: user.id,
+          authenticatedUserId:
+            user.id,
         },
       );
 
       return jsonError(
-        "Verification record not found.",
+        "Verification record was not found.",
         404,
       );
     }
 
     /*
      * ----------------------------------------------------------
-     * 6. LOAD PAID PAYSTACK PAYMENT
+     * 6. LOAD CONFIRMED PAYMENT
      * ----------------------------------------------------------
      *
-     * The payment is linked to the SAME verification ID.
+     * We deliberately load the payment using ONLY the
+     * verification ID first.
      *
-     * Only a confirmed paid Paystack payment can authorize
-     * Processing to start.
+     * This lets us determine whether the payment belongs to
+     * the currently authenticated user even if the verification
+     * record was created under an earlier/anonymous session ID.
      * ----------------------------------------------------------
      */
 
     const {
-      data: payments,
+      data:
+        payment,
       error:
-        paymentsError,
+        paymentError,
     } =
       await supabaseAdmin
-        .from("payments")
+        .from(
+          "payments",
+        )
         .select(
-          "id,verification_id,user_id,plan,amount,currency,provider,payment_method,provider_reference,status,paid_at,created_at",
+          "id,verification_id,user_id,plan,amount,currency,provider,provider_reference,status,payment_method,paid_at",
         )
         .eq(
           "verification_id",
-          verification.id,
-        )
-        .eq(
-          "user_id",
-          user.id,
+          verificationId,
         )
         .eq(
           "provider",
@@ -295,229 +363,287 @@ export async function GET(
         .eq(
           "status",
           "paid",
-        );
+        )
+        .in(
+          "plan",
+          [
+            "essential",
+            "professional",
+            "premium",
+          ],
+        )
+        .order(
+          "paid_at",
+          {
+            ascending:
+              false,
+          },
+        )
+        .limit(1)
+        .maybeSingle();
 
     if (
-      paymentsError
+      paymentError
     ) {
       console.error(
-        "STATUS PAYMENT QUERY ERROR:",
-        paymentsError,
+        "STATUS PAYMENT LOOKUP ERROR:",
+        paymentError,
       );
 
       return jsonError(
-        paymentsError.message ||
-          "Unable to load payment status.",
+        "Payment record could not be checked.",
         500,
       );
     }
 
     /*
      * ----------------------------------------------------------
-     * 7. NORMALIZE PAYMENT ARRAY
+     * 7. AUTHORIZATION
+     * ----------------------------------------------------------
+     *
+     * A verification is considered accessible when the current
+     * authenticated user owns either:
+     *
+     * A. the verification record
+     *
+     * OR
+     *
+     * B. the confirmed payment attached to that verification.
+     *
+     * This handles the anonymous-auth/session transition without
+     * exposing unrelated verification records.
+     *
+     * We NEVER authorize based only on knowing the verification ID.
      * ----------------------------------------------------------
      */
 
-    const paidPayments =
-      Array.isArray(payments)
-        ? payments
-        : [];
+    const verificationOwnerId =
+      String(
+        verification.user_id ||
+          "",
+      ).trim();
 
-    /*
-     * ----------------------------------------------------------
-     * 8. SELECT MOST RECENT PAID PAYMENT
-     * ----------------------------------------------------------
-     */
+    const paymentOwnerId =
+      String(
+        payment?.user_id ||
+          "",
+      ).trim();
 
-    const sortedPayments =
-      [...paidPayments].sort(
-        (
-          first,
-          second,
-        ) => {
-          const firstTime =
-            first?.created_at
-              ? new Date(
-                  first.created_at,
-                ).getTime()
-              : 0;
+    const authenticatedUserId =
+      String(
+        user.id ||
+          "",
+      ).trim();
 
-          const secondTime =
-            second?.created_at
-              ? new Date(
-                  second.created_at,
-                ).getTime()
-              : 0;
-
-          return (
-            secondTime -
-            firstTime
-          );
-        },
+    const ownsVerification =
+      Boolean(
+        verificationOwnerId &&
+          verificationOwnerId ===
+            authenticatedUserId,
       );
 
-    const payment =
-      sortedPayments[0] ||
-      null;
-
-    /*
-     * ----------------------------------------------------------
-     * 9. DETERMINE THE ACTUAL PAID PLAN
-     * ----------------------------------------------------------
-     *
-     * IMPORTANT:
-     *
-     * We DO NOT read:
-     *
-     * verification.plan
-     *
-     * because the current verifications schema does not contain
-     * that property.
-     *
-     * The payment selected by the customer is authoritative.
-     *
-     * payment.plan
-     *      ↓
-     * normalizePlan()
-     *      ↓
-     * plan
-     *
-     * Example:
-     *
-     * payment.plan = "professional"
-     *
-     * result:
-     *
-     * plan = "professional"
-     * ----------------------------------------------------------
-     */
-
-    const plan =
-      normalizePlan(
-        payment?.plan,
+    const ownsPayment =
+      Boolean(
+        paymentOwnerId &&
+          paymentOwnerId ===
+            authenticatedUserId,
       );
 
-    /*
-     * ----------------------------------------------------------
-     * 10. NO PAID PAYMENT
-     * ----------------------------------------------------------
-     *
-     * This is NOT an API failure.
-     *
-     * The verification exists, but payment has not yet been
-     * confirmed.
-     * ----------------------------------------------------------
-     */
+    const authorized =
+      ownsVerification ||
+      ownsPayment;
 
-    if (!payment) {
-      console.warn(
-        "STATUS PAYMENT NOT FOUND:",
-        {
-          verificationId:
-            verification.id,
+    console.log(
+      "STATUS AUTHORIZATION CHECK:",
+      {
+        verificationId,
 
-          userId:
-            user.id,
-        },
-      );
+        authenticatedUserId,
 
-      return NextResponse.json(
-        {
-          success: true,
+        verificationOwnerId,
 
-          verification,
+        paymentOwnerId,
 
-          plan: null,
+        ownsVerification,
 
-          payment: null,
-        },
-        {
-          status: 200,
+        ownsPayment,
 
-          headers: {
-            "Cache-Control":
-              "no-store, no-cache, must-revalidate",
-          },
-        },
-      );
-    }
+        authorized,
+      },
+    );
 
-    /*
-     * ----------------------------------------------------------
-     * 11. PAYMENT EXISTS BUT PLAN IS INVALID
-     * ----------------------------------------------------------
-     */
+    if (!authorized) {
+      /*
+       * Do not expose another user's IDs to the browser.
+       *
+       * The detailed ownership information is already logged
+       * server-side for development/debugging.
+       */
 
-    if (!plan) {
       console.error(
-        "STATUS PAID PAYMENT HAS NO VALID PLAN:",
+        "STATUS AUTHORIZATION FAILED:",
         {
-          paymentId:
-            payment.id,
-
-          paymentPlan:
-            payment.plan,
+          verificationId,
+          authenticatedUserId,
+          hasVerificationOwner:
+            Boolean(
+              verificationOwnerId,
+            ),
+          hasPaymentOwner:
+            Boolean(
+              paymentOwnerId,
+            ),
+          hasPaidPayment:
+            Boolean(
+              payment,
+            ),
         },
       );
 
       return jsonError(
-        "The paid verification plan could not be determined.",
-        409,
+        "You are not authorized to access this verification.",
+        403,
       );
     }
 
     /*
      * ----------------------------------------------------------
-     * 12. LOG VERIFIED STATUS
+     * 8. PLAN FALLBACK
+     * ----------------------------------------------------------
+     *
+     * The paid payment is authoritative.
+     *
+     * If there is no payment row, older verification records may
+     * already contain the plan in findings.
+     * ----------------------------------------------------------
+     */
+
+    const findings =
+      verification.findings &&
+      typeof verification.findings ===
+        "object" &&
+      !Array.isArray(
+        verification.findings,
+      )
+        ? (verification.findings as Record<
+            string,
+            unknown
+          >)
+        : {};
+
+    const essentialFindings =
+      findings.essential &&
+      typeof findings.essential ===
+        "object" &&
+      !Array.isArray(
+        findings.essential,
+      )
+        ? (findings.essential as Record<
+            string,
+            unknown
+          >)
+        : {};
+
+    const professionalFindings =
+      findings.professional &&
+      typeof findings.professional ===
+        "object" &&
+      !Array.isArray(
+        findings.professional,
+      )
+        ? (findings.professional as Record<
+            string,
+            unknown
+          >)
+        : {};
+
+    const premiumFindings =
+      findings.premium &&
+      typeof findings.premium ===
+        "object" &&
+      !Array.isArray(
+        findings.premium,
+      )
+        ? (findings.premium as Record<
+            string,
+            unknown
+          >)
+        : {};
+
+    const paymentPlan =
+      String(
+        payment?.plan ||
+          "",
+      )
+        .trim()
+        .toLowerCase();
+
+    const findingsPlan =
+      String(
+        premiumFindings.plan ||
+          professionalFindings.plan ||
+          essentialFindings.plan ||
+          findings.plan ||
+          "",
+      )
+        .trim()
+        .toLowerCase();
+
+    const rawPlan =
+      paymentPlan ||
+      findingsPlan;
+
+    const plan =
+      VALID_PLANS.has(
+        rawPlan,
+      )
+        ? rawPlan
+        : null;
+
+    /*
+     * ----------------------------------------------------------
+     * 9. DEVELOPMENT LOG
      * ----------------------------------------------------------
      */
 
     console.log(
-      "PROPERTY SURE AI VERIFICATION STATUS:",
+      "STATUS VERIFICATION AUTHORIZED:",
       {
         verificationId:
           verification.id,
 
-        userId:
-          user.id,
+        authenticatedUserId,
+
+        verificationOwnerId,
+
+        paymentOwnerId,
+
+        authorizationSource:
+          ownsVerification
+            ? "verification"
+            : ownsPayment
+              ? "payment"
+              : "none",
 
         verificationStatus:
           verification.status,
 
-        plan,
-
-        paymentId:
-          payment.id,
-
         paymentStatus:
-          payment.status,
+          payment?.status ||
+          null,
 
-        paymentProvider:
-          payment.provider,
+        paymentPlan:
+          payment?.plan ||
+          null,
 
-        paymentCurrency:
-          payment.currency,
-
-        paymentAmount:
-          payment.amount,
+        finalPlan:
+          plan,
       },
     );
 
     /*
      * ----------------------------------------------------------
-     * 13. RETURN COMPLETE STATUS
-     * ----------------------------------------------------------
-     *
-     * Processing receives:
-     *
-     * {
-     *   success: true,
-     *   verification: {...},
-     *   plan: "professional",
-     *   payment: {...}
-     * }
-     *
-     * The SAME verification ID remains intact.
+     * 10. RESPONSE
      * ----------------------------------------------------------
      */
 
@@ -525,57 +651,82 @@ export async function GET(
       {
         success: true,
 
-        /*
-         * SAME SUPABASE VERIFICATION
-         */
-        verification,
-
-        /*
-         * ACTUAL PAID PLAN
-         */
-        plan,
-
-        /*
-         * CONFIRMED PAYMENT
-         */
-        payment: {
+        verification: {
           id:
-            payment.id,
-
-          verification_id:
-            payment.verification_id,
+            verification.id,
 
           user_id:
-            payment.user_id,
+            verification.user_id,
 
-          plan:
-            payment.plan,
+          doc_name:
+            verification.doc_name,
 
-          amount:
-            payment.amount,
+          file_url:
+            verification.file_url,
 
-          currency:
-            payment.currency,
-
-          provider:
-            payment.provider,
-
-          payment_method:
-            payment.payment_method,
-
-          provider_reference:
-            payment.provider_reference,
+          doc_type:
+            verification.doc_type,
 
           status:
-            payment.status,
+            verification.status,
 
-          paid_at:
-            payment.paid_at,
+          trust_score:
+            verification.trust_score,
 
-          created_at:
-            payment.created_at ??
-            null,
+          confidence:
+            verification.confidence,
+
+          risk:
+            verification.risk,
+
+          findings:
+            verification.findings,
         },
+
+        plan,
+
+        payment:
+          payment
+            ? {
+                id:
+                  payment.id,
+
+                verification_id:
+                  payment.verification_id,
+
+                user_id:
+                  payment.user_id,
+
+                plan:
+                  payment.plan,
+
+                amount:
+                  payment.amount,
+
+                currency:
+                  payment.currency,
+
+                provider:
+                  payment.provider,
+
+                provider_reference:
+                  payment.provider_reference,
+
+                status:
+                  payment.status,
+
+                payment_method:
+                  payment.payment_method,
+
+                paid_at:
+                  payment.paid_at,
+              }
+            : null,
+
+        message:
+          payment
+            ? "Verification status loaded successfully."
+            : "Verification status loaded. No confirmed Paystack payment was found yet.",
       },
       {
         status: 200,
@@ -586,7 +737,9 @@ export async function GET(
         },
       },
     );
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "VERIFICATION STATUS API ERROR:",
       error,

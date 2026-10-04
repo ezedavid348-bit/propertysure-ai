@@ -7,6 +7,8 @@ import {
 import { useRouter } from "next/navigation";
 import styles from "./phone-number.module.css";
 import { supabase } from "../../lib/supabase";
+import AppShell from "../../AppShell/AppShell";
+import LoadingScreen from "../../AppShell/LoadingScreen";
 
 /*
 ============================================================
@@ -15,22 +17,9 @@ ICON SYSTEM
 */
 
 type IconName =
-  | "dashboard"
-  | "verify"
-  | "properties"
-  | "history"
-  | "fraud"
-  | "reports"
-  | "account"
-  | "settings"
-  | "bell"
   | "phone"
   | "shield"
   | "lock"
-  | "menu"
-  | "chevron"
-  | "arrow"
-  | "logout"
   | "check"
   | "info";
 
@@ -42,22 +31,9 @@ function Icon({
   size?: number;
 }) {
   const icons: Record<IconName, string> = {
-    dashboard: "▦",
-    verify: "⇧",
-    properties: "⌂",
-    history: "◷",
-    fraud: "◇",
-    reports: "▤",
-    account: "◯",
-    settings: "⚙",
-    bell: "🔔",
     phone: "☎",
     shield: "♢",
     lock: "▣",
-    menu: "☰",
-    chevron: "›",
-    arrow: "←",
-    logout: "↪",
     check: "✓",
     info: "ⓘ",
   };
@@ -74,45 +50,6 @@ function Icon({
     </span>
   );
 }
-
-/*
-============================================================
-NAVIGATION
-============================================================
-*/
-
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: "dashboard" as IconName,
-  },
-  {
-    label: "Verify Property",
-    href: "/verify",
-    icon: "verify" as IconName,
-  },
-  {
-    label: "My Properties",
-    href: "/my-properties",
-    icon: "properties" as IconName,
-  },
-  {
-    label: "Verification History",
-    href: "/verification-history",
-    icon: "history" as IconName,
-  },
-  {
-    label: "Fraud Watch",
-    href: "/fraud-watch",
-    icon: "fraud" as IconName,
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-    icon: "reports" as IconName,
-  },
-];
 
 /*
 ============================================================
@@ -196,9 +133,6 @@ export default function AddPhoneNumberPage() {
 
   const [loadingUser, setLoadingUser] =
     useState(true);
-
-  const [menuOpen, setMenuOpen] =
-    useState(false);
 
   const [submitting, setSubmitting] =
     useState(false);
@@ -306,7 +240,7 @@ export default function AddPhoneNumberPage() {
 
         /*
         --------------------------------------------------------
-        IF USER ALREADY HAS A PHONE, TRY TO DISPLAY IT
+        IF USER ALREADY HAS A PHONE, DISPLAY IT
         --------------------------------------------------------
         */
 
@@ -366,26 +300,27 @@ export default function AddPhoneNumberPage() {
   */
 
   const navigateTo = (path: string) => {
-    setMenuOpen(false);
     router.push(path);
   };
 
   /*
   ============================================================
-  SIGN OUT
+  BACK TO SECURITY & PRIVACY
+  ============================================================
+  
+  IMPORTANT:
+  The Security & Privacy page is located at:
+
+  /settings/security
+
+  NOT:
+
+  /security
   ============================================================
   */
 
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      router.replace("/signin");
-    } catch (signOutError) {
-      console.error(
-        "Sign out error:",
-        signOutError
-      );
-    }
+  const goBackToSecurity = () => {
+    router.push("/settings/security");
   };
 
   /*
@@ -498,7 +433,7 @@ export default function AddPhoneNumberPage() {
 
       /*
       --------------------------------------------------------
-      Move to the phone verification page.
+      Move to phone verification page.
       --------------------------------------------------------
       */
 
@@ -524,41 +459,12 @@ export default function AddPhoneNumberPage() {
 
   /*
   ============================================================
-  LOADING
+  SHARED LOADING SCREEN
   ============================================================
   */
 
   if (loadingUser) {
-    return (
-      <main className={styles.loading}>
-        <div
-          className={
-            styles.loadingBrand
-          }
-        >
-          <span
-            className={
-              styles.loadingLogo
-            }
-          >
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </div>
-
-        <div
-          className={
-            styles.loadingText
-          }
-        >
-          Loading phone settings...
-        </div>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   /*
@@ -568,559 +474,17 @@ export default function AddPhoneNumberPage() {
   */
 
   return (
-    <main className={styles.page}>
-      {/* =====================================================
-          DESKTOP SIDEBAR
-      ===================================================== */}
+    <AppShell
+      activePath="/account"
+      headerPath="/account"
+    >
+      <main className={styles.page}>
+        <div className={styles.content}>
 
-      <aside className={styles.sidebar}>
-        <button
-          type="button"
-          className={styles.brandButton}
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <div
-            className={
-              styles.brandName
-            }
-          >
-            <span
-              className={
-                styles.brandLogoDiamond
-              }
-            >
-              ◆
-            </span>
+          {/* =================================================
+              PAGE INTRO
+          ================================================= */}
 
-            <span>
-              PropertySure
-              <strong> AI</strong>
-            </span>
-          </div>
-
-          <div
-            className={
-              styles.brandSubtitle
-            }
-          >
-            AI-Powered Property
-            <br />
-            Due Diligence
-          </div>
-        </button>
-
-        <nav
-          className={
-            styles.sidebarNav
-          }
-        >
-          {navItems.map((item) => (
-            <button
-              key={item.href}
-              type="button"
-              className={
-                styles.navItem
-              }
-              onClick={() =>
-                navigateTo(item.href)
-              }
-            >
-              <span
-                className={
-                  styles.navIcon
-                }
-              >
-                <Icon
-                  name={item.icon}
-                  size={18}
-                />
-              </span>
-
-              <span>
-                {item.label}
-              </span>
-            </button>
-          ))}
-        </nav>
-
-        <div
-          className={
-            styles.accountLabel
-          }
-        >
-          ACCOUNT
-        </div>
-
-        <button
-          type="button"
-          className={styles.navItem}
-          onClick={() =>
-            navigateTo("/account")
-          }
-        >
-          <span
-            className={
-              styles.navIcon
-            }
-          >
-            <Icon
-              name="account"
-              size={18}
-            />
-          </span>
-
-          <span>Account</span>
-        </button>
-
-        <button
-          type="button"
-          className={styles.navItem}
-          onClick={() =>
-            navigateTo("/settings")
-          }
-        >
-          <span
-            className={
-              styles.navIcon
-            }
-          >
-            <Icon
-              name="settings"
-              size={18}
-            />
-          </span>
-
-          <span>Settings</span>
-        </button>
-
-        {/* SUPPORT */}
-
-        <div
-          className={
-            styles.helpBox
-          }
-        >
-          <div
-            className={
-              styles.helpTitle
-            }
-          >
-            Need Help?
-          </div>
-
-          <div
-            className={
-              styles.helpText
-            }
-          >
-            Our support team is ready
-            <br />
-            to assist you.
-          </div>
-
-          <button
-            type="button"
-            className={
-              styles.supportButton
-            }
-            onClick={() =>
-              navigateTo("/account")
-            }
-          >
-            Contact Support
-          </button>
-        </div>
-
-        {/* USER */}
-
-        <button
-          type="button"
-          className={
-            styles.sidebarUser
-          }
-          onClick={() =>
-            navigateTo("/account")
-          }
-        >
-          <div
-            className={styles.avatar}
-          >
-            {user.initial}
-          </div>
-
-          <div
-            className={
-              styles.userInfo
-            }
-          >
-            <div
-              className={
-                styles.userName
-              }
-            >
-              {user.fullName}
-            </div>
-
-            <div
-              className={
-                styles.userPlan
-              }
-            >
-              {user.plan}
-            </div>
-          </div>
-
-          <span
-            className={
-              styles.userChevron
-            }
-          >
-            ⌄
-          </span>
-        </button>
-      </aside>
-
-      {/* =====================================================
-          MOBILE HEADER
-      ===================================================== */}
-
-      <header
-        className={
-          styles.mobileHeader
-        }
-      >
-        <button
-          type="button"
-          className={
-            styles.menuButton
-          }
-          onClick={() =>
-            setMenuOpen(true)
-          }
-          aria-label="Open navigation"
-        >
-          <Icon
-            name="menu"
-            size={23}
-          />
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.mobileLogoButton
-          }
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <span
-            className={
-              styles.mobileLogoDiamond
-            }
-          >
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.mobileBell
-          }
-          onClick={() =>
-            navigateTo(
-              "/account/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-          <Icon
-            name="bell"
-            size={17}
-          />
-
-          <span
-            className={
-              styles.mobileNotificationDot
-            }
-          />
-        </button>
-      </header>
-
-      {/* =====================================================
-          MOBILE MENU
-      ===================================================== */}
-
-      {menuOpen && (
-        <div
-          className={
-            styles.mobileMenu
-          }
-        >
-          <div
-            className={
-              styles.mobileMenuHeader
-            }
-          >
-            <button
-              type="button"
-              className={
-                styles.mobileMenuLogo
-              }
-              onClick={() =>
-                navigateTo("/dashboard")
-              }
-            >
-              <span>◆</span>
-
-              <div>
-                PropertySure
-                <strong> AI</strong>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              className={
-                styles.closeMenu
-              }
-              onClick={() =>
-                setMenuOpen(false)
-              }
-              aria-label="Close navigation"
-            >
-              ×
-            </button>
-          </div>
-
-          <div
-            className={
-              styles.mobileMenuSubtitle
-            }
-          >
-            AI-Powered Property Due
-            Diligence
-          </div>
-
-          <nav
-            className={
-              styles.mobileMenuNav
-            }
-          >
-            {navItems.map((item) => (
-              <button
-                key={item.href}
-                type="button"
-                className={
-                  styles.mobileNavItem
-                }
-                onClick={() =>
-                  navigateTo(item.href)
-                }
-              >
-                <span
-                  className={
-                    styles.navIcon
-                  }
-                >
-                  <Icon
-                    name={item.icon}
-                    size={18}
-                  />
-                </span>
-
-                <span>
-                  {item.label}
-                </span>
-              </button>
-            ))}
-          </nav>
-
-          <div
-            className={
-              styles.mobileAccountLabel
-            }
-          >
-            ACCOUNT
-          </div>
-
-          <button
-            type="button"
-            className={
-              styles.mobileNavItem
-            }
-            onClick={() =>
-              navigateTo("/account")
-            }
-          >
-            <span
-              className={
-                styles.navIcon
-              }
-            >
-              <Icon
-                name="account"
-                size={18}
-              />
-            </span>
-
-            <span>Account</span>
-          </button>
-
-          <button
-            type="button"
-            className={
-              styles.mobileNavItem
-            }
-            onClick={() =>
-              navigateTo("/settings")
-            }
-          >
-            <span
-              className={
-                styles.navIcon
-              }
-            >
-              <Icon
-                name="settings"
-                size={18}
-              />
-            </span>
-
-            <span>Settings</span>
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.mobileNavItem} ${styles.logoutItem}`}
-            onClick={signOut}
-          >
-            <span
-              className={
-                styles.navIcon
-              }
-            >
-              <Icon
-                name="logout"
-                size={18}
-              />
-            </span>
-
-            <span>Sign Out</span>
-          </button>
-        </div>
-      )}
-
-      {/* =====================================================
-          MAIN
-      ===================================================== */}
-
-      <section className={styles.main}>
-        {/* ===================================================
-            TOP BAR
-        =================================================== */}
-
-        <header
-          className={
-            styles.topBar
-          }
-        >
-          <div
-            className={
-              styles.topBarTitle
-            }
-          >
-            Add Phone Number
-          </div>
-
-          <div
-            className={
-              styles.topBarRight
-            }
-          >
-            <button
-              type="button"
-              className={
-                styles.topNotification
-              }
-              onClick={() =>
-                navigateTo(
-                  "/account/notifications"
-                )
-              }
-              aria-label="Notifications"
-            >
-              <Icon
-                name="bell"
-                size={18}
-              />
-
-              <span
-                className={
-                  styles.topNotificationDot
-                }
-              />
-            </button>
-
-            <button
-              type="button"
-              className={
-                styles.topUser
-              }
-              onClick={() =>
-                navigateTo("/account")
-              }
-            >
-              <div
-                className={
-                  styles.topAvatar
-                }
-              >
-                {user.initial}
-              </div>
-
-              <div
-                className={
-                  styles.topUserText
-                }
-              >
-                <strong>
-                  {user.fullName}
-                </strong>
-
-                <span>
-                  {user.plan}
-                </span>
-              </div>
-
-              <span
-                className={
-                  styles.topChevron
-                }
-              >
-                ⌄
-              </span>
-            </button>
-          </div>
-        </header>
-
-        {/* ===================================================
-            CONTENT
-        =================================================== */}
-
-        <div
-          className={
-            styles.content
-          }
-        >
           <div
             className={
               styles.pageIntro
@@ -1137,21 +501,24 @@ export default function AddPhoneNumberPage() {
               enhanced security.
             </p>
 
-            {/* BACK LINK BELOW TITLE */}
+            {/* =================================================
+                BACK TO SECURITY & PRIVACY
+            ================================================= */}
 
             <button
               type="button"
               className={
                 styles.backLink
               }
-              onClick={() =>
-                navigateTo("/security")
+              onClick={
+                goBackToSecurity
               }
             >
-              <Icon
-                name="arrow"
-                size={18}
-              />
+              <span
+                aria-hidden="true"
+              >
+                ←
+              </span>
 
               <span>
                 Back to Security & Privacy
@@ -1168,7 +535,10 @@ export default function AddPhoneNumberPage() {
               styles.phoneCard
             }
           >
-            {/* LEFT SIDE */}
+
+            {/* =================================================
+                LEFT SIDE — PHONE FORM
+            ================================================= */}
 
             <div
               className={
@@ -1225,6 +595,7 @@ export default function AddPhoneNumberPage() {
                       setSelectedCountry(
                         event.target.value
                       );
+
                       setError("");
                       setMessage("");
                     }}
@@ -1363,7 +734,9 @@ export default function AddPhoneNumberPage() {
                 onClick={
                   sendVerificationCode
                 }
-                disabled={submitting}
+                disabled={
+                  submitting
+                }
               >
                 {submitting
                   ? "Sending..."
@@ -1545,97 +918,9 @@ export default function AddPhoneNumberPage() {
               </p>
             </div>
           </section>
+
         </div>
-      </section>
-
-      {/* =====================================================
-          MOBILE BOTTOM NAV
-      ===================================================== */}
-
-      <nav
-        className={
-          styles.mobileBottomNav
-        }
-      >
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <Icon
-            name="dashboard"
-            size={20}
-          />
-
-          <span>
-            Dashboard
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/verify")
-          }
-        >
-          <Icon
-            name="verify"
-            size={20}
-          />
-
-          <span>Verify</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/my-properties"
-            )
-          }
-        >
-          <Icon
-            name="properties"
-            size={20}
-          />
-
-          <span>
-            Properties
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/reports")
-          }
-        >
-          <Icon
-            name="reports"
-            size={20}
-          />
-
-          <span>Reports</span>
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.activeBottom
-          }
-          onClick={() =>
-            navigateTo("/account")
-          }
-        >
-          <Icon
-            name="account"
-            size={20}
-          />
-
-          <span>Account</span>
-        </button>
-      </nav>
-    </main>
+      </main>
+    </AppShell>
   );
 }

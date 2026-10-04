@@ -7,6 +7,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
+import AppShell from "../../../AppShell/AppShell";
 import LoadingScreen from "../../../AppShell/LoadingScreen";
 
 /* ============================================================
@@ -14,15 +15,6 @@ import LoadingScreen from "../../../AppShell/LoadingScreen";
 ============================================================ */
 
 type IconName =
-  | "dashboard"
-  | "verify"
-  | "properties"
-  | "reports"
-  | "account"
-  | "settings"
-  | "bell"
-  | "menu"
-  | "arrow"
   | "user"
   | "calendar"
   | "gender"
@@ -81,15 +73,6 @@ function Icon({
   size?: number;
 }) {
   const icons: Record<IconName, string> = {
-    dashboard: "▦",
-    verify: "⇧",
-    properties: "⌂",
-    reports: "▤",
-    account: "◯",
-    settings: "⚙",
-    bell: "🔔",
-    menu: "☰",
-    arrow: "←",
     user: "♙",
     calendar: "▣",
     gender: "♙",
@@ -114,33 +97,6 @@ function Icon({
 }
 
 /* ============================================================
-   NAVIGATION
-============================================================ */
-
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: "dashboard" as IconName,
-  },
-  {
-    label: "Verify Property",
-    href: "/verify",
-    icon: "verify" as IconName,
-  },
-  {
-    label: "My Properties",
-    href: "/my-properties",
-    icon: "properties" as IconName,
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-    icon: "reports" as IconName,
-  },
-];
-
-/* ============================================================
    HELPERS
 ============================================================ */
 
@@ -154,6 +110,10 @@ function displayValue(
   return value.trim();
 }
 
+/* ============================================================
+   NORMALIZE DOCUMENT TYPE
+============================================================ */
+
 function normalizeDocumentType(
   value: string | undefined
 ): DocumentType {
@@ -161,9 +121,10 @@ function normalizeDocumentType(
     return "nin";
   }
 
-  const normalized = value
-    .toLowerCase()
-    .trim();
+  const normalized =
+    value
+      .toLowerCase()
+      .trim();
 
   if (
     normalized === "nin" ||
@@ -186,7 +147,9 @@ function normalizeDocumentType(
   if (
     normalized ===
       "drivers-license" ||
-    normalized.includes("driver") ||
+    normalized.includes(
+      "driver"
+    ) ||
     normalized.includes(
       "driving licence"
     ) ||
@@ -199,13 +162,19 @@ function normalizeDocumentType(
 
   if (
     normalized === "passport" ||
-    normalized.includes("passport")
+    normalized.includes(
+      "passport"
+    )
   ) {
     return "passport";
   }
 
   return "nin";
 }
+
+/* ============================================================
+   DOCUMENT BADGE
+============================================================ */
 
 function getDocumentBadge(
   documentType: DocumentType
@@ -243,21 +212,15 @@ export default function ReviewAndSubmitPage() {
     useState(true);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setLoading(false);
-    }, 800);
+    const timer =
+      window.setTimeout(() => {
+        setLoading(false);
+      }, 800);
 
     return () => {
       window.clearTimeout(timer);
     };
   }, []);
-
-  /* ==========================================================
-     MENU
-  ========================================================== */
-
-  const [menuOpen, setMenuOpen] =
-    useState(false);
 
   /* ==========================================================
      KYC DATA
@@ -293,7 +256,8 @@ export default function ReviewAndSubmitPage() {
 
   useEffect(() => {
     if (
-      typeof window === "undefined"
+      typeof window ===
+      "undefined"
     ) {
       return;
     }
@@ -406,34 +370,26 @@ export default function ReviewAndSubmitPage() {
           storedSelfie
         );
       }
+
+      /* ------------------------------------------------------
+         SUBMITTED STATE
+      ------------------------------------------------------ */
+
+      const storedSubmitted =
+        sessionStorage.getItem(
+          "propertysure_kyc_submitted"
+        );
+
+      if (
+        storedSubmitted ===
+        "true"
+      ) {
+        setSubmitted(true);
+      }
     } finally {
       setLoadingData(false);
     }
   }, []);
-
-  /* ==========================================================
-     NAVIGATION
-  ========================================================== */
-
-  const navigateTo = (
-    path: string
-  ) => {
-    setMenuOpen(false);
-    router.push(path);
-  };
-
-  /* ==========================================================
-     BACK TO SELFIE VERIFICATION
-  ========================================================== */
-
-  const navigateBackToSelfie =
-    () => {
-      setMenuOpen(false);
-
-      router.push(
-        "/account/identity-verification/selfie"
-      );
-    };
 
   /* ==========================================================
      DOCUMENT INFORMATION
@@ -449,6 +405,10 @@ export default function ReviewAndSubmitPage() {
     getDocumentBadge(
       documentType
     );
+
+  /* ==========================================================
+     PERSONAL INFORMATION
+  ========================================================== */
 
   const fullName =
     displayValue(
@@ -470,6 +430,10 @@ export default function ReviewAndSubmitPage() {
       kycData.nationality
     );
 
+  /* ==========================================================
+     DOCUMENT INFORMATION
+  ========================================================== */
+
   const documentNumber =
     displayValue(
       kycData.documentNumber
@@ -481,12 +445,24 @@ export default function ReviewAndSubmitPage() {
     );
 
   /* ==========================================================
+     BACK TO SELFIE VERIFICATION
+  ========================================================== */
+
+  const navigateBackToSelfie =
+    () => {
+      router.push(
+        "/account/identity-verification/selfie"
+      );
+    };
+
+  /* ==========================================================
      SUBMIT
   ========================================================== */
 
   const handleSubmit = () => {
     if (
       !confirmed ||
+      !selfieData ||
       submitted
     ) {
       return;
@@ -496,6 +472,7 @@ export default function ReviewAndSubmitPage() {
      * Mark the KYC review as submitted locally.
      * The backend submission can be connected here later.
      */
+
     try {
       sessionStorage.setItem(
         "propertysure_kyc_submitted",
@@ -513,990 +490,661 @@ export default function ReviewAndSubmitPage() {
   ========================================================== */
 
   if (loading) {
-    return <LoadingScreen />;
+    return (
+      <LoadingScreen />
+    );
   }
 
+  /* ==========================================================
+     PAGE
+  ========================================================== */
+
   return (
-    <main
-      className={
-        styles.page
-      }
+    <AppShell
+      activePath="/account"
+      headerPath="/account"
     >
-      {/* ======================================================
-          MOBILE HEADER
-      ====================================================== */}
-
-      <header
+      <main
         className={
-          styles.mobileHeader
+          styles.page
         }
       >
-        <button
-          type="button"
+        <section
           className={
-            styles.menuButton
-          }
-          onClick={() =>
-            setMenuOpen(true)
-          }
-          aria-label="Open navigation"
-        >
-          <Icon
-            name="menu"
-            size={23}
-          />
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.mobileLogoButton
-          }
-          onClick={() =>
-            navigateTo(
-              "/dashboard"
-            )
-          }
-          aria-label="PropertySure AI Dashboard"
-        >
-          <span
-            className={
-              styles.mobileLogoDiamond
-            }
-          >
-            ◆
-          </span>
-
-          <span
-            className={
-              styles.mobileBrandName
-            }
-          >
-            PropertySure
-            <strong>
-              {" "}AI
-            </strong>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.mobileBell
-          }
-          onClick={() =>
-            navigateTo(
-              "/account/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-          <Icon
-            name="bell"
-            size={17}
-          />
-
-          <span
-            className={
-              styles.mobileNotificationDot
-            }
-          />
-        </button>
-      </header>
-
-      {/* ======================================================
-          MOBILE MENU
-      ====================================================== */}
-
-      {menuOpen && (
-        <div
-          className={
-            styles.mobileMenu
+            styles.main
           }
         >
           <div
             className={
-              styles.mobileMenuHeader
+              styles.content
             }
           >
-            <button
-              type="button"
-              className={
-                styles.mobileMenuLogo
-              }
-              onClick={() =>
-                navigateTo(
-                  "/dashboard"
-                )
-              }
-            >
-              <span>
-                ◆
-              </span>
-
-              <div>
-                PropertySure
-                <strong>
-                  {" "}AI
-                </strong>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              className={
-                styles.closeMenu
-              }
-              onClick={() =>
-                setMenuOpen(false)
-              }
-              aria-label="Close navigation"
-            >
-              ×
-            </button>
-          </div>
-
-          <div
-            className={
-              styles.mobileMenuSubtitle
-            }
-          >
-            AI-Powered Property Due
-            Diligence
-          </div>
-
-          <nav
-            className={
-              styles.mobileMenuNav
-            }
-          >
-            {navItems.map(
-              (item) => (
-                <button
-                  key={
-                    item.href
-                  }
-                  type="button"
-                  className={
-                    styles.mobileNavItem
-                  }
-                  onClick={() =>
-                    navigateTo(
-                      item.href
-                    )
-                  }
-                >
-                  <span
-                    className={
-                      styles.navIcon
-                    }
-                  >
-                    <Icon
-                      name={
-                        item.icon
-                      }
-                      size={18}
-                    />
-                  </span>
-
-                  <span>
-                    {
-                      item.label
-                    }
-                  </span>
-                </button>
-              )
-            )}
-          </nav>
-
-          <div
-            className={
-              styles.mobileAccountLabel
-            }
-          >
-            ACCOUNT
-          </div>
-
-          <button
-            type="button"
-            className={
-              styles.mobileNavItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/account"
-              )
-            }
-          >
-            <span
-              className={
-                styles.navIcon
-              }
-            >
-              <Icon
-                name="account"
-                size={18}
-              />
-            </span>
-
-            <span>
-              Account
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className={
-              styles.mobileNavItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/settings"
-              )
-            }
-          >
-            <span
-              className={
-                styles.navIcon
-              }
-            >
-              <Icon
-                name="settings"
-                size={18}
-              />
-            </span>
-
-            <span>
-              Settings
-            </span>
-          </button>
-        </div>
-      )}
-
-      {/* ======================================================
-          MAIN
-      ====================================================== */}
-
-      <section
-        className={
-          styles.main
-        }
-      >
-        <div
-          className={
-            styles.content
-          }
-        >
-          {/* ==================================================
-              INTRO
-          ================================================== */}
-
-          <div
-            className={
-              styles.pageIntro
-            }
-          >
-            <h1>
-              Identity Verification
-            </h1>
-
-            <p>
-              Complete the steps below to verify your
-              identity and secure your account.
-            </p>
-
-            {/* =================================================
-                BACK TO SELFIE VERIFICATION
-            ================================================= */}
-
-            <button
-              type="button"
-              className={
-                styles.backLink
-              }
-              onClick={
-                navigateBackToSelfie
-              }
-            >
-              <Icon
-                name="arrow"
-                size={18}
-              />
-
-              <span>
-                Back to Selfie Verification
-              </span>
-            </button>
-
-            {/* STATUS */}
+            {/* ==================================================
+                INTRO
+            ================================================== */}
 
             <div
               className={
-                styles.statusBadge
+                styles.pageIntro
               }
             >
-              <span
-                className={
-                  styles.statusDiamond
-                }
-              >
-                ◇
-              </span>
+              <h1>
+                Identity Verification
+              </h1>
 
-              <span>
-                Not Verified
-              </span>
-            </div>
-          </div>
+              <p>
+                Complete the steps below to verify your
+                identity and secure your account.
+              </p>
 
-          {/* ==================================================
-              FIVE STEP PROGRESS
-          ================================================== */}
-
-          <div
-            className={
-              styles.steps
-            }
-          >
-            <StepItem
-              number={1}
-              completed
-              label={
-                <>
-                  Identity
-                  <br />
-                  Document
-                </>
-              }
-            />
-
-            <StepLine
-              active
-            />
-
-            <StepItem
-              number={2}
-              completed
-              label={
-                <>
-                  Document
-                  <br />
-                  Upload
-                </>
-              }
-            />
-
-            <StepLine
-              active
-            />
-
-            <StepItem
-              number={3}
-              completed
-              label={
-                <>
-                  Information
-                  <br />
-                  Confirmation
-                </>
-              }
-            />
-
-            <StepLine
-              active
-            />
-
-            <StepItem
-              number={4}
-              completed
-              label={
-                <>
-                  Selfie
-                  <br />
-                  Verification
-                </>
-              }
-            />
-
-            <StepLine />
-
-            <StepItem
-              number={5}
-              active
-              label={
-                <>
-                  Review &
-                  <br />
-                  Submit
-                </>
-              }
-            />
-          </div>
-
-          {/* ==================================================
-              REVIEW CARD
-          ================================================== */}
-
-          <section
-            className={
-              styles.verificationCard
-            }
-          >
-            {/* CARD HEADER */}
-
-            <div
-              className={
-                styles.cardHeader
-              }
-            >
-              <div
-                className={
-                  styles.cardHeaderIcon
-                }
-              >
-                <ReviewHeaderIcon />
-              </div>
-
-              <div
-                className={
-                  styles.cardHeaderText
-                }
-              >
-                <h2>
-                  Step 5: Review & Submit
-                </h2>
-
-                <p>
-                  Review your identity verification information
-                  before submitting.
-                </p>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.divider
-              }
-            />
-
-            {/* =================================================
-                PERSONAL INFORMATION
-            ================================================= */}
-
-            <section
-              className={
-                styles.reviewSection
-              }
-            >
-              <div
-                className={
-                  styles.reviewSectionHeader
-                }
-              >
-                <h3>
-                  Personal Information
-                </h3>
-              </div>
-
-              <div
-                className={
-                  styles.personalBox
-                }
-              >
-                <ReviewRow
-                  icon="user"
-                  label="Full Name"
-                  value={
-                    loadingData
-                      ? "Loading..."
-                      : fullName
-                  }
-                />
-
-                <ReviewRow
-                  icon="calendar"
-                  label="Date of Birth"
-                  value={
-                    loadingData
-                      ? "Loading..."
-                      : dateOfBirth
-                  }
-                />
-
-                <ReviewRow
-                  icon="gender"
-                  label="Gender"
-                  value={
-                    loadingData
-                      ? "Loading..."
-                      : gender
-                  }
-                />
-
-                <ReviewRow
-                  icon="nationality"
-                  label="Nationality"
-                  value={
-                    loadingData
-                      ? "Loading..."
-                      : nationality
-                  }
-                />
-              </div>
-            </section>
-
-            {/* =================================================
-                DOCUMENT INFORMATION
-            ================================================= */}
-
-            <section
-              className={
-                styles.reviewSection
-              }
-            >
-              <div
-                className={
-                  styles.reviewSectionHeader
-                }
-              >
-                <h3>
-                  Document Information
-                </h3>
-              </div>
-
-              <div
-                className={
-                  styles.documentBox
-                }
-              >
-                <ReviewRow
-                  documentBadge={
-                    documentBadge
-                  }
-                  label="Document Type"
-                  value={
-                    loadingData
-                      ? "Loading..."
-                      : documentName
-                  }
-                />
-
-                <ReviewRow
-                  icon="id"
-                  label="Document Number"
-                  value={
-                    loadingData
-                      ? "Loading..."
-                      : documentNumber
-                  }
-                />
-
-                <ReviewRow
-                  icon="calendar"
-                  label="Date of Issue"
-                  value={
-                    loadingData
-                      ? "Loading..."
-                      : dateOfIssue
-                  }
-                />
-              </div>
-            </section>
-
-            {/* =================================================
-                UPLOADED DOCUMENT
-            ================================================= */}
-
-            <section
-              className={
-                styles.reviewSection
-              }
-            >
-              <div
-                className={
-                  styles.reviewSectionHeader
-                }
-              >
-                <h3>
-                  Uploaded Document
-                </h3>
-              </div>
-
-              <div
-                className={
-                  styles.uploadedBox
-                }
-              >
-                <div
-                  className={
-                    styles.fileIcon
-                  }
-                >
-                  <Icon
-                    name="document"
-                    size={18}
-                  />
-                </div>
-
-                <div
-                  className={
-                    styles.fileDetails
-                  }
-                >
-                  <span>
-                    File Name
-                  </span>
-
-                  <strong>
-                    {loadingData
-                      ? "Loading..."
-                      : fileName}
-                  </strong>
-                </div>
-              </div>
-            </section>
-
-            {/* =================================================
-                SELFIE
-            ================================================= */}
-
-            <section
-              className={
-                styles.reviewSection
-              }
-            >
-              <div
-                className={
-                  styles.reviewSectionHeader
-                }
-              >
-                <h3>
-                  Selfie Verification
-                </h3>
-              </div>
-
-              <div
-                className={
-                  styles.selfieBox
-                }
-              >
-                <div
-                  className={
-                    styles.selfieThumbnail
-                  }
-                >
-                  {selfieData ? (
-                    <img
-                      src={
-                        selfieData
-                      }
-                      alt="Captured selfie"
-                    />
-                  ) : (
-                    <div
-                      className={
-                        styles.selfiePlaceholder
-                      }
-                    >
-                      <Icon
-                        name="user"
-                        size={24}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div
-                  className={
-                    styles.selfieDetails
-                  }
-                >
-                  <strong>
-                    Identity Selfie
-                  </strong>
-
-                  <span>
-                    {selfieData
-                      ? "Selfie captured successfully."
-                      : "No selfie has been captured yet."}
-                  </span>
-                </div>
-
-                {selfieData ? (
-                  <div
-                    className={
-                      styles.capturedBadge
-                    }
-                  >
-                    <Icon
-                      name="check"
-                      size={12}
-                    />
-
-                    <span>
-                      Captured
-                    </span>
-                  </div>
-                ) : (
-                  <div
-                    className={
-                      styles.missingBadge
-                    }
-                  >
-                    Required
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* =================================================
-                CONFIRMATION
-            ================================================= */}
-
-            <label
-              className={
-                styles.confirmationBox
-              }
-            >
-              <input
-                type="checkbox"
-                checked={
-                  confirmed
-                }
-                onChange={(
-                  event
-                ) =>
-                  setConfirmed(
-                    event.target.checked
-                  )
-                }
-              />
-
-              <span
-                className={
-                  styles.customCheckbox
-                }
-              >
-                {confirmed &&
-                  "✓"}
-              </span>
-
-              <span
-                className={
-                  styles.confirmationContent
-                }
-              >
-                <span
-                  className={
-                    styles.confirmationLock
-                  }
-                >
-                  <Icon
-                    name="lock"
-                    size={15}
-                  />
-                </span>
-
-                <span>
-                  I confirm that the information above is
-                  correct and that the identity document and
-                  selfie belong to me.
-                </span>
-              </span>
-            </label>
-
-            {/* =================================================
-                SUBMIT
-            ================================================= */}
-
-            {!submitted && (
               <button
                 type="button"
-                className={`${styles.submitButton} ${
-                  !confirmed ||
-                  !selfieData
-                    ? styles.submitDisabled
-                    : ""
-                }`}
-                onClick={
-                  handleSubmit
+                className={
+                  styles.backLink
                 }
-                disabled={
-                  !confirmed ||
-                  !selfieData
+                onClick={
+                  navigateBackToSelfie
                 }
               >
-                <span>
-                  Submit Verification
-                </span>
-
                 <span
                   className={
-                    styles.submitDiamond
+                    styles.backArrow
                   }
                 >
-                  ◆
+                  ←
+                </span>
+
+                <span>
+                  Back to Selfie Verification
                 </span>
               </button>
-            )}
 
-            {/* =================================================
-                SUBMITTED
-            ================================================= */}
-
-            {submitted && (
               <div
                 className={
-                  styles.submittedBox
+                  styles.statusBadge
+                }
+              >
+                <span
+                  className={
+                    styles.statusDiamond
+                  }
+                >
+                  ◇
+                </span>
+
+                <span>
+                  {submitted
+                    ? "Verification Submitted"
+                    : "Not Verified"}
+                </span>
+              </div>
+            </div>
+
+            {/* ==================================================
+                FIVE STEP PROGRESS
+            ================================================== */}
+
+            <div
+              className={
+                styles.steps
+              }
+            >
+              <StepItem
+                number={1}
+                completed
+                label={
+                  <>
+                    Identity
+                    <br />
+                    Document
+                  </>
+                }
+              />
+
+              <StepLine
+                active
+              />
+
+              <StepItem
+                number={2}
+                completed
+                label={
+                  <>
+                    Document
+                    <br />
+                    Upload
+                  </>
+                }
+              />
+
+              <StepLine
+                active
+              />
+
+              <StepItem
+                number={3}
+                completed
+                label={
+                  <>
+                    Information
+                    <br />
+                    Confirmation
+                  </>
+                }
+              />
+
+              <StepLine
+                active
+              />
+
+              <StepItem
+                number={4}
+                completed
+                label={
+                  <>
+                    Selfie
+                    <br />
+                    Verification
+                  </>
+                }
+              />
+
+              <StepLine />
+
+              <StepItem
+                number={5}
+                active
+                label={
+                  <>
+                    Review &
+                    <br />
+                    Submit
+                  </>
+                }
+              />
+            </div>
+
+            {/* ==================================================
+                REVIEW CARD
+            ================================================== */}
+
+            <section
+              className={
+                styles.verificationCard
+              }
+            >
+              {/* =================================================
+                  CARD HEADER
+              ================================================= */}
+
+              <div
+                className={
+                  styles.cardHeader
                 }
               >
                 <div
                   className={
-                    styles.submittedIcon
+                    styles.cardHeaderIcon
                   }
                 >
-                  ✓
+                  <ReviewHeaderIcon />
                 </div>
 
-                <div>
-                  <h3>
-                    Verification Submitted
-                  </h3>
+                <div
+                  className={
+                    styles.cardHeaderText
+                  }
+                >
+                  <h2>
+                    Step 5: Review & Submit
+                  </h2>
 
                   <p>
-                    Your identity verification has been
-                    submitted successfully for review.
+                    Review your identity verification information
+                    before submitting.
                   </p>
                 </div>
               </div>
-            )}
 
-            {/* =================================================
-                PRIVACY
-            ================================================= */}
-
-            <div
-              className={
-                styles.privacyBox
-              }
-            >
-              <Icon
-                name="lock"
-                size={17}
+              <div
+                className={
+                  styles.divider
+                }
               />
 
-              <p>
-                Your identity information and verification
-                data are securely processed and protected.
-              </p>
-            </div>
-          </section>
-        </div>
-      </section>
+              {/* =================================================
+                  PERSONAL INFORMATION
+              ================================================= */}
 
-      {/* ======================================================
-          MOBILE BOTTOM NAV
-      ====================================================== */}
+              <section
+                className={
+                  styles.reviewSection
+                }
+              >
+                <div
+                  className={
+                    styles.reviewSectionHeader
+                  }
+                >
+                  <h3>
+                    Personal Information
+                  </h3>
+                </div>
 
-      <nav
-        className={
-          styles.mobileBottomNav
-        }
-      >
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/dashboard"
-            )
-          }
-        >
-          <Icon
-            name="dashboard"
-            size={20}
-          />
+                <div
+                  className={
+                    styles.personalBox
+                  }
+                >
+                  <ReviewRow
+                    icon="user"
+                    label="Full Name"
+                    value={
+                      loadingData
+                        ? "Loading..."
+                        : fullName
+                    }
+                  />
 
-          <span>
-            Dashboard
-          </span>
-        </button>
+                  <ReviewRow
+                    icon="calendar"
+                    label="Date of Birth"
+                    value={
+                      loadingData
+                        ? "Loading..."
+                        : dateOfBirth
+                    }
+                  />
 
-        <button
-          type="button"
-          className={
-            styles.activeBottom
-          }
-          onClick={() =>
-            navigateTo(
-              "/verify"
-            )
-          }
-        >
-          <Icon
-            name="verify"
-            size={20}
-          />
+                  <ReviewRow
+                    icon="gender"
+                    label="Gender"
+                    value={
+                      loadingData
+                        ? "Loading..."
+                        : gender
+                    }
+                  />
 
-          <span>
-            Verify
-          </span>
-        </button>
+                  <ReviewRow
+                    icon="nationality"
+                    label="Nationality"
+                    value={
+                      loadingData
+                        ? "Loading..."
+                        : nationality
+                    }
+                  />
+                </div>
+              </section>
 
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/my-properties"
-            )
-          }
-        >
-          <Icon
-            name="properties"
-            size={20}
-          />
+              {/* =================================================
+                  DOCUMENT INFORMATION
+              ================================================= */}
 
-          <span>
-            Properties
-          </span>
-        </button>
+              <section
+                className={
+                  styles.reviewSection
+                }
+              >
+                <div
+                  className={
+                    styles.reviewSectionHeader
+                  }
+                >
+                  <h3>
+                    Document Information
+                  </h3>
+                </div>
 
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/reports"
-            )
-          }
-        >
-          <Icon
-            name="reports"
-            size={20}
-          />
+                <div
+                  className={
+                    styles.documentBox
+                  }
+                >
+                  <ReviewRow
+                    documentBadge={
+                      documentBadge
+                    }
+                    label="Document Type"
+                    value={
+                      loadingData
+                        ? "Loading..."
+                        : documentName
+                    }
+                  />
 
-          <span>
-            Reports
-          </span>
-        </button>
+                  <ReviewRow
+                    icon="id"
+                    label="Document Number"
+                    value={
+                      loadingData
+                        ? "Loading..."
+                        : documentNumber
+                    }
+                  />
 
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/account"
-            )
-          }
-        >
-          <Icon
-            name="account"
-            size={20}
-          />
+                  <ReviewRow
+                    icon="calendar"
+                    label="Date of Issue"
+                    value={
+                      loadingData
+                        ? "Loading..."
+                        : dateOfIssue
+                    }
+                  />
+                </div>
+              </section>
 
-          <span>
-            Account
-          </span>
-        </button>
-      </nav>
-    </main>
+              {/* =================================================
+                  UPLOADED DOCUMENT
+              ================================================= */}
+
+              <section
+                className={
+                  styles.reviewSection
+                }
+              >
+                <div
+                  className={
+                    styles.reviewSectionHeader
+                  }
+                >
+                  <h3>
+                    Uploaded Document
+                  </h3>
+                </div>
+
+                <div
+                  className={
+                    styles.uploadedBox
+                  }
+                >
+                  {filePreview ? (
+                    <div
+                      className={
+                        styles.filePreview
+                      }
+                    >
+                      <img
+                        src={
+                          filePreview
+                        }
+                        alt="Uploaded identity document"
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={
+                        styles.fileIcon
+                      }
+                    >
+                      <Icon
+                        name="document"
+                        size={18}
+                      />
+                    </div>
+                  )}
+
+                  <div
+                    className={
+                      styles.fileDetails
+                    }
+                  >
+                    <span>
+                      File Name
+                    </span>
+
+                    <strong>
+                      {loadingData
+                        ? "Loading..."
+                        : fileName}
+                    </strong>
+                  </div>
+                </div>
+              </section>
+
+              {/* =================================================
+                  SELFIE
+              ================================================= */}
+
+              <section
+                className={
+                  styles.reviewSection
+                }
+              >
+                <div
+                  className={
+                    styles.reviewSectionHeader
+                  }
+                >
+                  <h3>
+                    Selfie Verification
+                  </h3>
+                </div>
+
+                <div
+                  className={
+                    styles.selfieBox
+                  }
+                >
+                  <div
+                    className={
+                      styles.selfieThumbnail
+                    }
+                  >
+                    {selfieData ? (
+                      <img
+                        src={
+                          selfieData
+                        }
+                        alt="Captured selfie"
+                      />
+                    ) : (
+                      <div
+                        className={
+                          styles.selfiePlaceholder
+                        }
+                      >
+                        <Icon
+                          name="user"
+                          size={24}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div
+                    className={
+                      styles.selfieDetails
+                    }
+                  >
+                    <strong>
+                      Identity Selfie
+                    </strong>
+
+                    <span>
+                      {selfieData
+                        ? "Selfie captured successfully."
+                        : "No selfie has been captured yet."}
+                    </span>
+                  </div>
+
+                  {selfieData ? (
+                    <div
+                      className={
+                        styles.capturedBadge
+                      }
+                    >
+                      <Icon
+                        name="check"
+                        size={12}
+                      />
+
+                      <span>
+                        Captured
+                      </span>
+                    </div>
+                  ) : (
+                    <div
+                      className={
+                        styles.missingBadge
+                      }
+                    >
+                      Required
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {/* =================================================
+                  CONFIRMATION
+              ================================================= */}
+
+              {!submitted && (
+                <label
+                  className={
+                    styles.confirmationBox
+                  }
+                >
+                  <input
+                    type="checkbox"
+                    checked={
+                      confirmed
+                    }
+                    onChange={(
+                      event
+                    ) =>
+                      setConfirmed(
+                        event.target.checked
+                      )
+                    }
+                  />
+
+                  <span
+                    className={
+                      styles.customCheckbox
+                    }
+                  >
+                    {confirmed &&
+                      "✓"}
+                  </span>
+
+                  <span
+                    className={
+                      styles.confirmationContent
+                    }
+                  >
+                    <span
+                      className={
+                        styles.confirmationLock
+                      }
+                    >
+                      <Icon
+                        name="lock"
+                        size={15}
+                      />
+                    </span>
+
+                    <span>
+                      I confirm that the information above is
+                      correct and that the identity document and
+                      selfie belong to me.
+                    </span>
+                  </span>
+                </label>
+              )}
+
+              {/* =================================================
+                  SUBMIT
+              ================================================= */}
+
+              {!submitted && (
+                <button
+                  type="button"
+                  className={`${styles.submitButton} ${
+                    !confirmed ||
+                    !selfieData
+                      ? styles.submitDisabled
+                      : ""
+                  }`}
+                  onClick={
+                    handleSubmit
+                  }
+                  disabled={
+                    !confirmed ||
+                    !selfieData
+                  }
+                >
+                  <span>
+                    Submit Verification
+                  </span>
+
+                  <span
+                    className={
+                      styles.submitDiamond
+                    }
+                  >
+                    ◆
+                  </span>
+                </button>
+              )}
+
+              {/* =================================================
+                  SUBMITTED
+              ================================================= */}
+
+              {submitted && (
+                <div
+                  className={
+                    styles.submittedBox
+                  }
+                >
+                  <div
+                    className={
+                      styles.submittedIcon
+                    }
+                  >
+                    ✓
+                  </div>
+
+                  <div>
+                    <h3>
+                      Verification Submitted
+                    </h3>
+
+                    <p>
+                      Your identity verification has been
+                      submitted successfully for review.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* =================================================
+                  PRIVACY
+              ================================================= */}
+
+              <div
+                className={
+                  styles.privacyBox
+                }
+              >
+                <Icon
+                  name="lock"
+                  size={17}
+                />
+
+                <p>
+                  Your identity information and verification
+                  data are securely processed and protected.
+                </p>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </AppShell>
   );
 }
 
@@ -1530,7 +1178,9 @@ function StepItem({
         }`}
       >
         {completed ? (
-          "✓"
+          <span>
+            ✓
+          </span>
         ) : (
           number
         )}

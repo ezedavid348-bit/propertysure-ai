@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
+import AppShell from "../../../AppShell/AppShell";
 import LoadingScreen from "../../../AppShell/LoadingScreen";
 
 /* ============================================================
@@ -15,22 +16,17 @@ import LoadingScreen from "../../../AppShell/LoadingScreen";
 ============================================================ */
 
 type IconName =
-  | "dashboard"
-  | "verify"
-  | "properties"
-  | "reports"
-  | "account"
-  | "settings"
-  | "bell"
-  | "menu"
-  | "arrow"
   | "camera"
   | "sun"
   | "glasses"
   | "face"
-  | "phone"
-  | "lock"
-  | "check";
+  | "phone";
+
+type SelfieRequirementIcon =
+  | "sun"
+  | "glasses"
+  | "face"
+  | "phone";
 
 /* ============================================================
    ICON
@@ -44,22 +40,11 @@ function Icon({
   size?: number;
 }) {
   const icons: Record<IconName, string> = {
-    dashboard: "▦",
-    verify: "⇧",
-    properties: "⌂",
-    reports: "▤",
-    account: "◯",
-    settings: "⚙",
-    bell: "🔔",
-    menu: "☰",
-    arrow: "←",
     camera: "◎",
     sun: "☀",
     glasses: "◉",
     face: "♙",
     phone: "▯",
-    lock: "♧",
-    check: "✓",
   };
 
   return (
@@ -76,33 +61,6 @@ function Icon({
 }
 
 /* ============================================================
-   NAVIGATION
-============================================================ */
-
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: "dashboard" as IconName,
-  },
-  {
-    label: "Verify Property",
-    href: "/verify",
-    icon: "verify" as IconName,
-  },
-  {
-    label: "My Properties",
-    href: "/my-properties",
-    icon: "properties" as IconName,
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-    icon: "reports" as IconName,
-  },
-];
-
-/* ============================================================
    MAIN PAGE
 ============================================================ */
 
@@ -117,21 +75,15 @@ export default function SelfieVerificationPage() {
     useState(true);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setLoading(false);
-    }, 800);
+    const timer =
+      window.setTimeout(() => {
+        setLoading(false);
+      }, 800);
 
     return () => {
       window.clearTimeout(timer);
     };
   }, []);
-
-  /* ----------------------------------------------------------
-     NAVIGATION
-  ---------------------------------------------------------- */
-
-  const [menuOpen, setMenuOpen] =
-    useState(false);
 
   /* ----------------------------------------------------------
      CAMERA REFERENCES
@@ -167,7 +119,10 @@ export default function SelfieVerificationPage() {
   ---------------------------------------------------------- */
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (
+      typeof window ===
+      "undefined"
+    ) {
       return;
     }
 
@@ -196,11 +151,13 @@ export default function SelfieVerificationPage() {
       streamRef.current;
 
     if (stream) {
-      stream.getTracks().forEach(
-        (track) => {
-          track.stop();
-        }
-      );
+      stream
+        .getTracks()
+        .forEach(
+          (track) => {
+            track.stop();
+          }
+        );
 
       streamRef.current = null;
     }
@@ -226,11 +183,13 @@ export default function SelfieVerificationPage() {
         streamRef.current;
 
       if (stream) {
-        stream.getTracks().forEach(
-          (track) => {
-            track.stop();
-          }
-        );
+        stream
+          .getTracks()
+          .forEach(
+            (track) => {
+              track.stop();
+            }
+          );
       }
 
       streamRef.current = null;
@@ -246,1260 +205,968 @@ export default function SelfieVerificationPage() {
   }, []);
 
   /* ----------------------------------------------------------
-     NAVIGATION
-  ---------------------------------------------------------- */
-
-  const navigateTo = (
-    path: string
-  ) => {
-    setMenuOpen(false);
-    router.push(path);
-  };
-
-  /* ----------------------------------------------------------
      START CAMERA
 
-     IMPORTANT:
-     The camera is only started after the user presses the
-     "Take Selfie" button.
-
-     This is safer for iPhone/Safari and prevents the camera
-     from unexpectedly taking over the page.
+     The camera is only started after the user presses
+     "Take Selfie".
   ---------------------------------------------------------- */
 
-  const startCamera = async () => {
-    if (startingCamera) {
-      return;
-    }
-
-    setCameraError("");
-    setStartingCamera(true);
-
-    try {
-      if (
-        typeof window === "undefined" ||
-        typeof navigator === "undefined"
-      ) {
-        throw new Error(
-          "BROWSER_UNAVAILABLE"
-        );
+  const startCamera =
+    async () => {
+      if (startingCamera) {
+        return;
       }
 
-      if (
-        !navigator.mediaDevices ||
-        typeof navigator.mediaDevices
-          .getUserMedia !== "function"
-      ) {
-        throw new Error(
-          "CAMERA_UNSUPPORTED"
-        );
-      }
-
-      /*
-       * Make absolutely sure an old stream is not still active.
-       */
-
-      if (streamRef.current) {
-        streamRef.current
-          .getTracks()
-          .forEach((track) => {
-            track.stop();
-          });
-
-        streamRef.current = null;
-      }
-
-      /*
-       * Use the front-facing camera.
-       *
-       * We deliberately avoid forcing an exact 720x720 camera
-       * resolution because some iPhone/Safari combinations
-       * behave badly when an exact resolution is requested.
-       */
-
-      const stream =
-        await navigator.mediaDevices.getUserMedia(
-          {
-            audio: false,
-            video: {
-              facingMode: {
-                ideal: "user",
-              },
-              width: {
-                ideal: 640,
-              },
-              height: {
-                ideal: 640,
-              },
-            },
-          }
-        );
-
-      streamRef.current =
-        stream;
-
-      const video =
-        videoRef.current;
-
-      if (!video) {
-        stream
-          .getTracks()
-          .forEach((track) => {
-            track.stop();
-          });
-
-        streamRef.current = null;
-
-        throw new Error(
-          "VIDEO_ELEMENT_UNAVAILABLE"
-        );
-      }
-
-      /*
-       * iPhone/Safari compatibility.
-       */
-
-      video.setAttribute(
-        "playsinline",
-        "true"
-      );
-
-      video.setAttribute(
-        "webkit-playsinline",
-        "true"
-      );
-
-      video.autoplay = true;
-      video.muted = true;
-      video.playsInline = true;
-
-      video.srcObject =
-        stream;
-
-      /*
-       * Wait until Safari knows the dimensions of the camera
-       * stream before showing the camera state.
-       */
-
-      await new Promise<void>(
-        (resolve) => {
-          if (
-            video.readyState >= 2 &&
-            video.videoWidth > 0 &&
-            video.videoHeight > 0
-          ) {
-            resolve();
-            return;
-          }
-
-          const handleLoadedMetadata =
-            () => {
-              video.removeEventListener(
-                "loadedmetadata",
-                handleLoadedMetadata
-              );
-
-              resolve();
-            };
-
-          video.addEventListener(
-            "loadedmetadata",
-            handleLoadedMetadata
-          );
-        }
-      );
+      setCameraError("");
+      setStartingCamera(true);
 
       try {
-        await video.play();
-      } catch {
-        /*
-         * If Safari refuses the first play attempt, try once
-         * again after the stream has been attached.
-         */
-
-        try {
-          video.muted = true;
-          video.playsInline = true;
-
-          await video.play();
-        } catch {
+        if (
+          typeof window ===
+            "undefined" ||
+          typeof navigator ===
+            "undefined"
+        ) {
           throw new Error(
-            "VIDEO_PLAY_FAILED"
+            "BROWSER_UNAVAILABLE"
           );
         }
-      }
 
-      setCapturedSelfie(null);
-      setCameraActive(true);
-    } catch (error) {
-      /*
-       * Make sure no partially-created camera stream remains.
-       */
+        if (
+          !navigator.mediaDevices ||
+          typeof navigator
+            .mediaDevices
+            .getUserMedia !==
+            "function"
+        ) {
+          throw new Error(
+            "CAMERA_UNSUPPORTED"
+          );
+        }
 
-      if (streamRef.current) {
-        streamRef.current
-          .getTracks()
-          .forEach((track) => {
-            track.stop();
-          });
+        /*
+         * Make absolutely sure an old stream
+         * is not still active.
+         */
 
-        streamRef.current = null;
-      }
+        if (
+          streamRef.current
+        ) {
+          streamRef.current
+            .getTracks()
+            .forEach(
+              (track) => {
+                track.stop();
+              }
+            );
 
-      if (videoRef.current) {
-        videoRef.current.pause();
-        videoRef.current.srcObject =
-          null;
-      }
+          streamRef.current = null;
+        }
 
-      setCameraActive(false);
+        /*
+         * Use the front-facing camera.
+         *
+         * Avoid forcing an exact camera resolution
+         * for better iPhone/Safari compatibility.
+         */
 
-      const errorCode =
-        error instanceof Error
-          ? error.message
-          : "";
+        const stream =
+          await navigator.mediaDevices.getUserMedia(
+            {
+              audio: false,
+              video: {
+                facingMode: {
+                  ideal: "user",
+                },
+                width: {
+                  ideal: 640,
+                },
+                height: {
+                  ideal: 640,
+                },
+              },
+            }
+          );
 
-      if (
-        errorCode ===
-        "CAMERA_UNSUPPORTED"
-      ) {
-        setCameraError(
-          "Camera access is not supported on this device or browser."
+        streamRef.current =
+          stream;
+
+        const video =
+          videoRef.current;
+
+        if (!video) {
+          stream
+            .getTracks()
+            .forEach(
+              (track) => {
+                track.stop();
+              }
+            );
+
+          streamRef.current =
+            null;
+
+          throw new Error(
+            "VIDEO_ELEMENT_UNAVAILABLE"
+          );
+        }
+
+        /*
+         * iPhone/Safari compatibility.
+         */
+
+        video.setAttribute(
+          "playsinline",
+          "true"
         );
-      } else if (
-        errorCode ===
-        "VIDEO_ELEMENT_UNAVAILABLE"
-      ) {
-        setCameraError(
-          "The camera could not be opened. Please refresh the page and try again."
+
+        video.setAttribute(
+          "webkit-playsinline",
+          "true"
         );
-      } else if (
-        errorCode ===
-        "VIDEO_PLAY_FAILED"
-      ) {
-        setCameraError(
-          "The camera could not start. Please tap Take Selfie again."
+
+        video.autoplay = true;
+        video.muted = true;
+        video.playsInline = true;
+
+        video.srcObject =
+          stream;
+
+        /*
+         * Wait until Safari knows the
+         * camera dimensions.
+         */
+
+        await new Promise<void>(
+          (resolve) => {
+            if (
+              video.readyState >=
+                2 &&
+              video.videoWidth >
+                0 &&
+              video.videoHeight >
+                0
+            ) {
+              resolve();
+              return;
+            }
+
+            const handleLoadedMetadata =
+              () => {
+                video.removeEventListener(
+                  "loadedmetadata",
+                  handleLoadedMetadata
+                );
+
+                resolve();
+              };
+
+            video.addEventListener(
+              "loadedmetadata",
+              handleLoadedMetadata
+            );
+          }
         );
-      } else {
-        setCameraError(
-          "Camera access was denied or unavailable. Please allow camera permission and try again."
+
+        try {
+          await video.play();
+        } catch {
+          /*
+           * Try once more for Safari.
+           */
+
+          try {
+            video.muted = true;
+            video.playsInline = true;
+
+            await video.play();
+          } catch {
+            throw new Error(
+              "VIDEO_PLAY_FAILED"
+            );
+          }
+        }
+
+        setCapturedSelfie(
+          null
+        );
+
+        setCameraActive(
+          true
+        );
+      } catch (error) {
+        /*
+         * Make sure no partially-created
+         * camera stream remains.
+         */
+
+        if (
+          streamRef.current
+        ) {
+          streamRef.current
+            .getTracks()
+            .forEach(
+              (track) => {
+                track.stop();
+              }
+            );
+
+          streamRef.current = null;
+        }
+
+        if (
+          videoRef.current
+        ) {
+          videoRef.current.pause();
+          videoRef.current.srcObject =
+            null;
+        }
+
+        setCameraActive(
+          false
+        );
+
+        const errorCode =
+          error instanceof Error
+            ? error.message
+            : "";
+
+        if (
+          errorCode ===
+          "CAMERA_UNSUPPORTED"
+        ) {
+          setCameraError(
+            "Camera access is not supported on this device or browser."
+          );
+        } else if (
+          errorCode ===
+          "VIDEO_ELEMENT_UNAVAILABLE"
+        ) {
+          setCameraError(
+            "The camera could not be opened. Please refresh the page and try again."
+          );
+        } else if (
+          errorCode ===
+          "VIDEO_PLAY_FAILED"
+        ) {
+          setCameraError(
+            "The camera could not start. Please tap Take Selfie again."
+          );
+        } else {
+          setCameraError(
+            "Camera access was denied or unavailable. Please allow camera permission and try again."
+          );
+        }
+      } finally {
+        setStartingCamera(
+          false
         );
       }
-    } finally {
-      setStartingCamera(false);
-    }
-  };
+    };
 
   /* ----------------------------------------------------------
      CAPTURE SELFIE
   ---------------------------------------------------------- */
 
-  const captureSelfie = () => {
-    const video =
-      videoRef.current;
+  const captureSelfie =
+    () => {
+      const video =
+        videoRef.current;
 
-    const canvas =
-      canvasRef.current;
+      const canvas =
+        canvasRef.current;
 
-    if (!video || !canvas) {
-      setCameraError(
-        "The camera is not ready yet. Please try again."
+      if (
+        !video ||
+        !canvas
+      ) {
+        setCameraError(
+          "The camera is not ready yet. Please try again."
+        );
+
+        return;
+      }
+
+      if (
+        video.videoWidth ===
+          0 ||
+        video.videoHeight ===
+          0
+      ) {
+        setCameraError(
+          "The camera is not ready yet. Please wait a moment and try again."
+        );
+
+        return;
+      }
+
+      const size =
+        Math.min(
+          video.videoWidth,
+          video.videoHeight
+        );
+
+      canvas.width =
+        size;
+
+      canvas.height =
+        size;
+
+      const context =
+        canvas.getContext(
+          "2d"
+        );
+
+      if (!context) {
+        setCameraError(
+          "Unable to capture the selfie. Please try again."
+        );
+
+        return;
+      }
+
+      const sourceX =
+        (video.videoWidth -
+          size) /
+        2;
+
+      const sourceY =
+        (video.videoHeight -
+          size) /
+        2;
+
+      context.clearRect(
+        0,
+        0,
+        size,
+        size
       );
 
-      return;
-    }
+      context.save();
 
-    if (
-      video.videoWidth === 0 ||
-      video.videoHeight === 0
-    ) {
-      setCameraError(
-        "The camera is not ready yet. Please wait a moment and try again."
+      /*
+       * Mirror the selfie so the captured image
+       * behaves naturally like the front camera.
+       */
+
+      context.translate(
+        size,
+        0
       );
 
-      return;
-    }
-
-    const size = Math.min(
-      video.videoWidth,
-      video.videoHeight
-    );
-
-    canvas.width = size;
-    canvas.height = size;
-
-    const context =
-      canvas.getContext("2d");
-
-    if (!context) {
-      setCameraError(
-        "Unable to capture the selfie. Please try again."
+      context.scale(
+        -1,
+        1
       );
 
-      return;
-    }
-
-    const sourceX =
-      (video.videoWidth - size) /
-      2;
-
-    const sourceY =
-      (video.videoHeight - size) /
-      2;
-
-    context.clearRect(
-      0,
-      0,
-      size,
-      size
-    );
-
-    context.save();
-
-    /*
-     * Mirror the selfie so the captured image behaves
-     * naturally like the front-facing camera preview.
-     */
-
-    context.translate(
-      size,
-      0
-    );
-
-    context.scale(
-      -1,
-      1
-    );
-
-    context.drawImage(
-      video,
-      sourceX,
-      sourceY,
-      size,
-      size,
-      0,
-      0,
-      size,
-      size
-    );
-
-    context.restore();
-
-    const imageData =
-      canvas.toDataURL(
-        "image/jpeg",
-        0.88
+      context.drawImage(
+        video,
+        sourceX,
+        sourceY,
+        size,
+        size,
+        0,
+        0,
+        size,
+        size
       );
 
-    setCapturedSelfie(
-      imageData
-    );
+      context.restore();
 
-    /*
-     * Store the selfie for the next verification step.
-     */
+      const imageData =
+        canvas.toDataURL(
+          "image/jpeg",
+          0.88
+        );
 
-    try {
-      sessionStorage.setItem(
-        "propertysure_kyc_selfie_data",
+      setCapturedSelfie(
         imageData
       );
-    } catch {
-      /*
-       * If storage fails, the image still remains in React
-       * state for the current page.
-       */
-    }
 
-    stopCamera();
-    setCameraError("");
-  };
+      /*
+       * Store selfie for the next verification step.
+       */
+
+      try {
+        sessionStorage.setItem(
+          "propertysure_kyc_selfie_data",
+          imageData
+        );
+      } catch {
+        /*
+         * If storage fails, the image still
+         * remains in React state.
+         */
+      }
+
+      stopCamera();
+      setCameraError("");
+    };
 
   /* ----------------------------------------------------------
      RETAKE
   ---------------------------------------------------------- */
 
-  const handleRetake = async () => {
-    try {
-      sessionStorage.removeItem(
-        "propertysure_kyc_selfie_data"
+  const handleRetake =
+    async () => {
+      try {
+        sessionStorage.removeItem(
+          "propertysure_kyc_selfie_data"
+        );
+      } catch {
+        // Ignore storage errors.
+      }
+
+      setCapturedSelfie(
+        null
       );
-    } catch {
-      // Ignore storage errors.
-    }
 
-    setCapturedSelfie(null);
-    setCameraError("");
+      setCameraError("");
 
-    /*
-     * Start the camera again after the previous stream has
-     * been completely stopped.
-     */
+      /*
+       * Start camera again after the
+       * previous stream is completely stopped.
+       */
 
-    await startCamera();
-  };
+      await startCamera();
+    };
 
   /* ----------------------------------------------------------
      CONTINUE
   ---------------------------------------------------------- */
 
-  const handleContinue = () => {
-    if (!capturedSelfie) {
-      return;
-    }
+  const handleContinue =
+    () => {
+      if (
+        !capturedSelfie
+      ) {
+        return;
+      }
 
-    router.push(
-      "/account/identity-verification/review"
-    );
-  };
+      router.push(
+        "/account/identity-verification/review"
+      );
+    };
 
   /* ==========================================================
      SHARED LOADING SCREEN
   ========================================================== */
 
   if (loading) {
-    return <LoadingScreen />;
+    return (
+      <LoadingScreen />
+    );
   }
 
+  /* ==========================================================
+     PAGE
+  ========================================================== */
+
   return (
-    <main
-      className={
-        styles.page
-      }
+    <AppShell
+      activePath="/account"
+      headerPath="/account"
     >
-      {/* ======================================================
-          MOBILE HEADER
-      ====================================================== */}
-
-      <header
+      <main
         className={
-          styles.mobileHeader
+          styles.page
         }
       >
-        <button
-          type="button"
+        <section
           className={
-            styles.menuButton
-          }
-          onClick={() =>
-            setMenuOpen(true)
-          }
-          aria-label="Open navigation"
-        >
-          <Icon
-            name="menu"
-            size={23}
-          />
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.mobileLogoButton
-          }
-          onClick={() =>
-            navigateTo(
-              "/dashboard"
-            )
-          }
-          aria-label="PropertySure AI Dashboard"
-        >
-          <span
-            className={
-              styles.mobileLogoDiamond
-            }
-          >
-            ◆
-          </span>
-
-          <span
-            className={
-              styles.mobileBrandName
-            }
-          >
-            PropertySure
-            <strong>
-              {" "}AI
-            </strong>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.mobileBell
-          }
-          onClick={() =>
-            navigateTo(
-              "/account/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-          <Icon
-            name="bell"
-            size={17}
-          />
-
-          <span
-            className={
-              styles.mobileNotificationDot
-            }
-          />
-        </button>
-      </header>
-
-      {/* ======================================================
-          MOBILE MENU
-      ====================================================== */}
-
-      {menuOpen && (
-        <div
-          className={
-            styles.mobileMenu
+            styles.main
           }
         >
           <div
             className={
-              styles.mobileMenuHeader
+              styles.content
             }
           >
-            <button
-              type="button"
-              className={
-                styles.mobileMenuLogo
-              }
-              onClick={() =>
-                navigateTo(
-                  "/dashboard"
-                )
-              }
-            >
-              <span>
-                ◆
-              </span>
-
-              <div>
-                PropertySure
-                <strong>
-                  {" "}AI
-                </strong>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              className={
-                styles.closeMenu
-              }
-              onClick={() =>
-                setMenuOpen(false)
-              }
-              aria-label="Close navigation"
-            >
-              ×
-            </button>
-          </div>
-
-          <div
-            className={
-              styles.mobileMenuSubtitle
-            }
-          >
-            AI-Powered Property Due
-            Diligence
-          </div>
-
-          <nav
-            className={
-              styles.mobileMenuNav
-            }
-          >
-            {navItems.map(
-              (item) => (
-                <button
-                  key={
-                    item.href
-                  }
-                  type="button"
-                  className={
-                    styles.mobileNavItem
-                  }
-                  onClick={() =>
-                    navigateTo(
-                      item.href
-                    )
-                  }
-                >
-                  <span
-                    className={
-                      styles.navIcon
-                    }
-                  >
-                    <Icon
-                      name={
-                        item.icon
-                      }
-                      size={18}
-                    />
-                  </span>
-
-                  <span>
-                    {
-                      item.label
-                    }
-                  </span>
-                </button>
-              )
-            )}
-          </nav>
-
-          <div
-            className={
-              styles.mobileAccountLabel
-            }
-          >
-            ACCOUNT
-          </div>
-
-          <button
-            type="button"
-            className={
-              styles.mobileNavItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/account"
-              )
-            }
-          >
-            <span
-              className={
-                styles.navIcon
-              }
-            >
-              <Icon
-                name="account"
-                size={18}
-              />
-            </span>
-
-            <span>
-              Account
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className={
-              styles.mobileNavItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/settings"
-              )
-            }
-          >
-            <span
-              className={
-                styles.navIcon
-              }
-            >
-              <Icon
-                name="settings"
-                size={18}
-              />
-            </span>
-
-            <span>
-              Settings
-            </span>
-          </button>
-        </div>
-      )}
-
-      {/* ======================================================
-          MAIN
-      ====================================================== */}
-
-      <section
-        className={
-          styles.main
-        }
-      >
-        <div
-          className={
-            styles.content
-          }
-        >
-          {/* ==================================================
-              INTRO
-          ================================================== */}
-
-          <div
-            className={
-              styles.pageIntro
-            }
-          >
-            <h1>
-              Identity Verification
-            </h1>
-
-            <p>
-              Complete the steps below to verify your
-              identity and secure your account.
-            </p>
-
-            <button
-              type="button"
-              className={
-                styles.backLink
-              }
-              onClick={() =>
-                router.push(
-                  "/account/identity-verification/information-confirmation"
-                )
-              }
-            >
-              <Icon
-                name="arrow"
-                size={18}
-              />
-
-              <span>
-                Back to Information Confirmation
-              </span>
-            </button>
+            {/* ==================================================
+                INTRO
+            ================================================== */}
 
             <div
               className={
-                styles.statusBadge
+                styles.pageIntro
               }
             >
-              <span
-                className={
-                  styles.statusDiamond
-                }
-              >
-                ◇
-              </span>
-
-              <span>
-                Not Verified
-              </span>
-            </div>
-          </div>
-
-          {/* ==================================================
-              FIVE STEP PROGRESS
-          ================================================== */}
-
-          <div
-            className={
-              styles.steps
-            }
-          >
-            <StepItem>
-              <Step
-                completed
-                number={1}
-                label={
-                  <>
-                    Identity
-                    <br />
-                    Document
-                  </>
-                }
-              />
-
-              <StepLine active />
-            </StepItem>
-
-            <StepItem>
-              <Step
-                completed
-                number={2}
-                label={
-                  <>
-                    Document
-                    <br />
-                    Upload
-                  </>
-                }
-              />
-
-              <StepLine active />
-            </StepItem>
-
-            <StepItem>
-              <Step
-                completed
-                number={3}
-                label={
-                  <>
-                    Information
-                    <br />
-                    Confirmation
-                  </>
-                }
-              />
-
-              <StepLine active />
-            </StepItem>
-
-            <StepItem>
-              <Step
-                active
-                number={4}
-                label={
-                  <>
-                    Selfie
-                    <br />
-                    Verification
-                  </>
-                }
-              />
-
-              <StepLine />
-            </StepItem>
-
-            <StepItem last>
-              <Step
-                number={5}
-                label={
-                  <>
-                    Review &
-                    <br />
-                    Submit
-                  </>
-                }
-              />
-            </StepItem>
-          </div>
-
-          {/* ==================================================
-              VERIFICATION CARD
-          ================================================== */}
-
-          <section
-            className={
-              styles.verificationCard
-            }
-          >
-            {/* CARD HEADER */}
-
-            <div
-              className={
-                styles.cardHeader
-              }
-            >
-              <div
-                className={
-                  styles.cardHeaderIcon
-                }
-              >
-                <SelfieHeaderIcon />
-              </div>
-
-              <div
-                className={
-                  styles.cardHeaderText
-                }
-              >
-                <h2>
-                  Step 4: Selfie Verification
-                </h2>
-
-                <p>
-                  Take a clear selfie to verify that you are
-                  the owner of this identity.
-                </p>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.divider
-              }
-            />
-
-            {/* =================================================
-                REQUIREMENTS
-            ================================================= */}
-
-            <div
-              className={
-                styles.requirementsBox
-              }
-            >
-              <h3>
-                Make sure:
-              </h3>
-
-              <div
-                className={
-                  styles.requirementsGrid
-                }
-              >
-                <SelfieRequirement
-                  icon="sun"
-                  text={
-                    <>
-                      You are in a
-                      <br />
-                      well-lit area
-                    </>
-                  }
-                />
-
-                <SelfieRequirement
-                  icon="glasses"
-                  text={
-                    <>
-                      Remove hats,
-                      <br />
-                      glasses, and
-                      <br />
-                      face coverings
-                    </>
-                  }
-                />
-
-                <SelfieRequirement
-                  icon="face"
-                  text={
-                    <>
-                      Your face is
-                      <br />
-                      clearly visible
-                    </>
-                  }
-                />
-
-                <SelfieRequirement
-                  icon="phone"
-                  text={
-                    <>
-                      Hold your phone
-                      <br />
-                      at eye level
-                    </>
-                  }
-                />
-              </div>
-            </div>
-
-            {/* =================================================
-                SELFIE CAMERA AREA
-            ================================================= */}
-
-            <div
-              className={`${styles.selfieArea} ${
-                cameraActive
-                  ? styles.selfieAreaCamera
-                  : ""
-              } ${
-                capturedSelfie
-                  ? styles.selfieAreaCaptured
-                  : ""
-              }`}
-            >
-              {cameraActive ? (
-                <video
-                  ref={videoRef}
-                  className={
-                    styles.cameraVideo
-                  }
-                  autoPlay
-                  muted
-                  playsInline
-                  controls={false}
-                  disablePictureInPicture
-                  aria-label="Selfie camera preview"
-                />
-              ) : capturedSelfie ? (
-                <img
-                  src={
-                    capturedSelfie
-                  }
-                  alt="Captured selfie"
-                  className={
-                    styles.selfiePreview
-                  }
-                />
-              ) : (
-                <div
-                  className={
-                    styles.selfiePlaceholder
-                  }
-                >
-                  <div
-                    className={
-                      styles.cameraIcon
-                    }
-                  >
-                    <CameraIcon />
-                  </div>
-
-                  <h3>
-                    Take a Selfie
-                  </h3>
-
-                  <p>
-                    Position your face in the center
-                    <br />
-                    of the circle
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* CAMERA ERROR */}
-
-            {cameraError && (
-              <div
-                className={
-                  styles.cameraError
-                }
-                role="alert"
-              >
-                {cameraError}
-              </div>
-            )}
-
-            {/* =================================================
-                SECURITY
-            ================================================= */}
-
-            <div
-              className={
-                styles.securityBox
-              }
-            >
-              <div
-                className={
-                  styles.securityLock
-                }
-              >
-                <LockIcon />
-              </div>
+              <h1>
+                Identity Verification
+              </h1>
 
               <p>
-                Your selfie is encrypted and used only for
-                identity verification.
-                <br />
-                We never share your data with third parties.
+                Complete the steps below to verify your
+                identity and secure your account.
               </p>
+
+              <button
+                type="button"
+                className={
+                  styles.backLink
+                }
+                onClick={() =>
+                  router.push(
+                    "/account/identity-verification/information-confirmation"
+                  )
+                }
+              >
+                <span
+                  className={
+                    styles.backArrow
+                  }
+                >
+                  ←
+                </span>
+
+                <span>
+                  Back to Information Confirmation
+                </span>
+              </button>
+
+              <div
+                className={
+                  styles.statusBadge
+                }
+              >
+                <span
+                  className={
+                    styles.statusDiamond
+                  }
+                >
+                  ◇
+                </span>
+
+                <span>
+                  Not Verified
+                </span>
+              </div>
             </div>
 
-            {/* =================================================
-                ACTION
-            ================================================= */}
+            {/* ==================================================
+                FIVE STEP PROGRESS
+            ================================================== */}
 
             <div
               className={
-                styles.actionRow
+                styles.steps
               }
             >
-              {!cameraActive &&
-                !capturedSelfie && (
-                  <button
-                    type="button"
-                    className={
-                      styles.takeSelfieButton
-                    }
-                    onClick={
-                      startCamera
-                    }
-                    disabled={
-                      startingCamera
-                    }
-                  >
-                    <CameraButtonIcon />
-
-                    <span>
-                      {startingCamera
-                        ? "Opening Camera..."
-                        : "Take Selfie"}
-                    </span>
-                  </button>
-                )}
-
-              {cameraActive && (
-                <button
-                  type="button"
-                  className={
-                    styles.takeSelfieButton
+              <StepItem>
+                <Step
+                  completed
+                  number={1}
+                  label={
+                    <>
+                      Identity
+                      <br />
+                      Document
+                    </>
                   }
-                  onClick={
-                    captureSelfie
+                />
+
+                <StepLine
+                  active
+                />
+              </StepItem>
+
+              <StepItem>
+                <Step
+                  completed
+                  number={2}
+                  label={
+                    <>
+                      Document
+                      <br />
+                      Upload
+                    </>
+                  }
+                />
+
+                <StepLine
+                  active
+                />
+              </StepItem>
+
+              <StepItem>
+                <Step
+                  completed
+                  number={3}
+                  label={
+                    <>
+                      Information
+                      <br />
+                      Confirmation
+                    </>
+                  }
+                />
+
+                <StepLine
+                  active
+                />
+              </StepItem>
+
+              <StepItem>
+                <Step
+                  active
+                  number={4}
+                  label={
+                    <>
+                      Selfie
+                      <br />
+                      Verification
+                    </>
+                  }
+                />
+
+                <StepLine />
+              </StepItem>
+
+              <StepItem last>
+                <Step
+                  number={5}
+                  label={
+                    <>
+                      Review &
+                      <br />
+                      Submit
+                    </>
+                  }
+                />
+              </StepItem>
+            </div>
+
+            {/* ==================================================
+                VERIFICATION CARD
+            ================================================== */}
+
+            <section
+              className={
+                styles.verificationCard
+              }
+            >
+              {/* =================================================
+                  CARD HEADER
+              ================================================= */}
+
+              <div
+                className={
+                  styles.cardHeader
+                }
+              >
+                <div
+                  className={
+                    styles.cardHeaderIcon
                   }
                 >
-                  <CameraButtonIcon />
+                  <SelfieHeaderIcon />
+                </div>
 
-                  <span>
-                    Capture Selfie
-                  </span>
-                </button>
-              )}
+                <div
+                  className={
+                    styles.cardHeaderText
+                  }
+                >
+                  <h2>
+                    Step 4: Selfie Verification
+                  </h2>
 
-              {capturedSelfie &&
-                !cameraActive && (
+                  <p>
+                    Take a clear selfie to verify that you are
+                    the owner of this identity.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className={
+                  styles.divider
+                }
+              />
+
+              {/* =================================================
+                  REQUIREMENTS
+              ================================================= */}
+
+              <div
+                className={
+                  styles.requirementsBox
+                }
+              >
+                <h3>
+                  Make sure:
+                </h3>
+
+                <div
+                  className={
+                    styles.requirementsGrid
+                  }
+                >
+                  <SelfieRequirement
+                    icon="sun"
+                    text={
+                      <>
+                        You are in a
+                        <br />
+                        well-lit area
+                      </>
+                    }
+                  />
+
+                  <SelfieRequirement
+                    icon="glasses"
+                    text={
+                      <>
+                        Remove hats,
+                        <br />
+                        glasses, and
+                        <br />
+                        face coverings
+                      </>
+                    }
+                  />
+
+                  <SelfieRequirement
+                    icon="face"
+                    text={
+                      <>
+                        Your face is
+                        <br />
+                        clearly visible
+                      </>
+                    }
+                  />
+
+                  <SelfieRequirement
+                    icon="phone"
+                    text={
+                      <>
+                        Hold your phone
+                        <br />
+                        at eye level
+                      </>
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* =================================================
+                  SELFIE CAMERA AREA
+              ================================================= */}
+
+              <div
+                className={`${styles.selfieArea} ${
+                  cameraActive
+                    ? styles.selfieAreaCamera
+                    : ""
+                } ${
+                  capturedSelfie
+                    ? styles.selfieAreaCaptured
+                    : ""
+                }`}
+              >
+                {cameraActive ? (
+                  <video
+                    ref={videoRef}
+                    className={
+                      styles.cameraVideo
+                    }
+                    autoPlay
+                    muted
+                    playsInline
+                    controls={
+                      false
+                    }
+                    disablePictureInPicture
+                    aria-label="Selfie camera preview"
+                  />
+                ) : capturedSelfie ? (
+                  <img
+                    src={
+                      capturedSelfie
+                    }
+                    alt="Captured selfie"
+                    className={
+                      styles.selfiePreview
+                    }
+                  />
+                ) : (
                   <div
                     className={
-                      styles.capturedActions
+                      styles.selfiePlaceholder
                     }
                   >
-                    <button
-                      type="button"
+                    <div
                       className={
-                        styles.retakeButton
-                      }
-                      onClick={
-                        handleRetake
+                        styles.cameraIcon
                       }
                     >
-                      Retake Selfie
-                    </button>
+                      <CameraIcon />
+                    </div>
 
+                    <h3>
+                      Take a Selfie
+                    </h3>
+
+                    <p>
+                      Position your face in the center
+                      <br />
+                      of the circle
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* =================================================
+                  CAMERA ERROR
+              ================================================= */}
+
+              {cameraError && (
+                <div
+                  className={
+                    styles.cameraError
+                  }
+                  role="alert"
+                >
+                  {cameraError}
+                </div>
+              )}
+
+              {/* =================================================
+                  SECURITY
+              ================================================= */}
+
+              <div
+                className={
+                  styles.securityBox
+                }
+              >
+                <div
+                  className={
+                    styles.securityLock
+                  }
+                >
+                  <LockIcon />
+                </div>
+
+                <p>
+                  Your selfie is encrypted and used only for
+                  identity verification.
+                  <br />
+                  We never share your data with third parties.
+                </p>
+              </div>
+
+              {/* =================================================
+                  ACTION
+              ================================================= */}
+
+              <div
+                className={
+                  styles.actionRow
+                }
+              >
+                {!cameraActive &&
+                  !capturedSelfie && (
                     <button
                       type="button"
                       className={
                         styles.takeSelfieButton
                       }
                       onClick={
-                        handleContinue
+                        startCamera
+                      }
+                      disabled={
+                        startingCamera
                       }
                     >
-                      <span>
-                        Continue
-                      </span>
+                      <CameraButtonIcon />
 
-                      <span
-                        className={
-                          styles.continueArrow
-                        }
-                      >
-                        →
+                      <span>
+                        {startingCamera
+                          ? "Opening Camera..."
+                          : "Take Selfie"}
                       </span>
                     </button>
-                  </div>
+                  )}
+
+                {cameraActive && (
+                  <button
+                    type="button"
+                    className={
+                      styles.takeSelfieButton
+                    }
+                    onClick={
+                      captureSelfie
+                    }
+                  >
+                    <CameraButtonIcon />
+
+                    <span>
+                      Capture Selfie
+                    </span>
+                  </button>
                 )}
-            </div>
 
-            <canvas
-              ref={canvasRef}
-              className={
-                styles.hiddenCanvas
-              }
-            />
-          </section>
-        </div>
-      </section>
+                {capturedSelfie &&
+                  !cameraActive && (
+                    <div
+                      className={
+                        styles.capturedActions
+                      }
+                    >
+                      <button
+                        type="button"
+                        className={
+                          styles.retakeButton
+                        }
+                        onClick={
+                          handleRetake
+                        }
+                      >
+                        Retake Selfie
+                      </button>
 
-      {/* ======================================================
-          MOBILE BOTTOM NAV
-      ====================================================== */}
+                      <button
+                        type="button"
+                        className={
+                          styles.takeSelfieButton
+                        }
+                        onClick={
+                          handleContinue
+                        }
+                      >
+                        <span>
+                          Continue
+                        </span>
 
-      <nav
-        className={
-          styles.mobileBottomNav
-        }
-      >
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/dashboard"
-            )
-          }
-        >
-          <Icon
-            name="dashboard"
-            size={20}
-          />
+                        <span
+                          className={
+                            styles.continueArrow
+                          }
+                        >
+                          →
+                        </span>
+                      </button>
+                    </div>
+                  )}
+              </div>
 
-          <span>
-            Dashboard
-          </span>
-        </button>
+              {/* =================================================
+                  HIDDEN CANVAS
+              ================================================= */}
 
-        <button
-          type="button"
-          className={
-            styles.activeBottom
-          }
-          onClick={() =>
-            navigateTo(
-              "/verify"
-            )
-          }
-        >
-          <Icon
-            name="verify"
-            size={20}
-          />
-
-          <span>
-            Verify
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/my-properties"
-            )
-          }
-        >
-          <Icon
-            name="properties"
-            size={20}
-          />
-
-          <span>
-            Properties
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/reports"
-            )
-          }
-        >
-          <Icon
-            name="reports"
-            size={20}
-          />
-
-          <span>
-            Reports
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/account"
-            )
-          }
-        >
-          <Icon
-            name="account"
-            size={20}
-          />
-
-          <span>
-            Account
-          </span>
-        </button>
-      </nav>
-    </main>
+              <canvas
+                ref={canvasRef}
+                className={
+                  styles.hiddenCanvas
+                }
+              />
+            </section>
+          </div>
+        </section>
+      </main>
+    </AppShell>
   );
 }
 
@@ -1609,11 +1276,7 @@ function SelfieRequirement({
   icon,
   text,
 }: {
-  icon:
-    | "sun"
-    | "glasses"
-    | "face"
-    | "phone";
+  icon: SelfieRequirementIcon;
   text: ReactNode;
 }) {
   return (

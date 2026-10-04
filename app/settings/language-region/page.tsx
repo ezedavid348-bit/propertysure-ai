@@ -7,6 +7,8 @@ import {
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+import AppShell from "../../AppShell/AppShell";
+import LoadingScreen from "../../AppShell/LoadingScreen";
 import styles from "./language-region.module.css";
 import { supabase } from "../../lib/supabase";
 
@@ -24,24 +26,14 @@ ICON SYSTEM
 */
 
 type IconName =
-  | "dashboard"
-  | "verify"
-  | "properties"
-  | "history"
-  | "fraud"
-  | "reports"
-  | "account"
-  | "settings"
-  | "bell"
-  | "menu"
+  | "language"
   | "globe"
   | "location"
   | "calendar"
   | "number"
   | "clock"
   | "check"
-  | "chevron"
-  | "language";
+  | "chevron";
 
 function Icon({
   name,
@@ -134,63 +126,16 @@ function Icon({
       return (
         <span
           className={`${styles.icon} ${className}`}
-          style={{ fontSize: `${size}px` }}
+          style={{
+            fontSize: `${size}px`,
+          }}
           aria-hidden="true"
         >
-          {name === "dashboard" && "▦"}
-          {name === "verify" && "⇧"}
-          {name === "properties" && "⌂"}
-          {name === "history" && "◷"}
-          {name === "fraud" && "◈"}
-          {name === "reports" && "▤"}
-          {name === "account" && "◯"}
-          {name === "settings" && "⚙"}
-          {name === "bell" && "🔔"}
-          {name === "menu" && "☰"}
           {name === "number" && "123"}
         </span>
       );
   }
 }
-
-/*
-============================================================
-NAVIGATION
-============================================================
-*/
-
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: "dashboard" as IconName,
-  },
-  {
-    label: "Verify Property",
-    href: "/verify",
-    icon: "verify" as IconName,
-  },
-  {
-    label: "My Properties",
-    href: "/my-properties",
-    icon: "properties" as IconName,
-  },
-  {
-    label: "Verification History",
-    href: "/verification-history",
-    icon: "history" as IconName,
-  },
-  {
-    label: "Fraud Watch",
-    href: "/fraud-watch",
-    icon: "fraud" as IconName,
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-    icon: "reports" as IconName,
-  },
-];
 
 /*
 ============================================================
@@ -839,13 +784,29 @@ function SettingsSection({
   children: ReactNode;
 }) {
   return (
-    <section className={styles.settingsSection}>
-      <div className={styles.sectionLabel}>
+    <section
+      className={
+        styles.settingsSection
+      }
+    >
+      <div
+        className={
+          styles.sectionLabel
+        }
+      >
         {label}
       </div>
 
-      <div className={styles.settingsCard}>
-        <div className={styles.sectionHeader}>
+      <div
+        className={
+          styles.settingsCard
+        }
+      >
+        <div
+          className={
+            styles.sectionHeader
+          }
+        >
           <div>
             <h2>{title}</h2>
             <p>{description}</p>
@@ -882,32 +843,54 @@ function SelectControl({
 }) {
   return (
     <label className={styles.selectField}>
-      <span className={styles.selectLabel}>
-        <Icon name={icon} size={15} />
+      <span
+        className={
+          styles.selectLabel
+        }
+      >
+        <Icon
+          name={icon}
+          size={15}
+        />
+
         <span>{label}</span>
       </span>
 
-      <span className={styles.selectWrapper}>
+      <span
+        className={
+          styles.selectWrapper
+        }
+      >
         <select
           value={value}
           onChange={(event) =>
-            onChange(event.target.value)
+            onChange(
+              event.target.value
+            )
           }
         >
-          {options.map((option) => (
-            <option
-              key={option.value}
-              value={option.value}
-            >
-              {option.label}
-            </option>
-          ))}
+          {options.map(
+            (option) => (
+              <option
+                key={
+                  option.value
+                }
+                value={
+                  option.value
+                }
+              >
+                {option.label}
+              </option>
+            )
+          )}
         </select>
 
         <Icon
           name="chevron"
           size={17}
-          className={styles.selectChevron}
+          className={
+            styles.selectChevron
+          }
         />
       </span>
     </label>
@@ -927,64 +910,89 @@ function formatDate(
   timeZone: string
 ) {
   try {
-    const parts = new Intl.DateTimeFormat(
-      locale,
-      {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        timeZone,
-      }
-    ).formatToParts(date);
+    const parts =
+      new Intl.DateTimeFormat(
+        locale,
+        {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          timeZone,
+        }
+      ).formatToParts(date);
 
     const day =
       parts.find(
-        (part) => part.type === "day"
+        (part) =>
+          part.type === "day"
       )?.value || "";
 
     const month =
       parts.find(
-        (part) => part.type === "month"
+        (part) =>
+          part.type === "month"
       )?.value || "";
 
     const year =
       parts.find(
-        (part) => part.type === "year"
+        (part) =>
+          part.type === "year"
       )?.value || "";
 
-    if (format === "MM/DD/YYYY") {
+    if (
+      format ===
+      "MM/DD/YYYY"
+    ) {
       return `${month}/${day}/${year}`;
     }
 
-    if (format === "YYYY-MM-DD") {
+    if (
+      format ===
+      "YYYY-MM-DD"
+    ) {
       return `${year}-${month}-${day}`;
     }
 
-    if (format === "DD.MM.YYYY") {
+    if (
+      format ===
+      "DD.MM.YYYY"
+    ) {
       return `${day}.${month}.${year}`;
     }
 
     return `${day}/${month}/${year}`;
   } catch {
-    const day = String(
-      date.getDate()
-    ).padStart(2, "0");
+    const day =
+      String(
+        date.getDate()
+      ).padStart(2, "0");
 
-    const month = String(
-      date.getMonth() + 1
-    ).padStart(2, "0");
+    const month =
+      String(
+        date.getMonth() + 1
+      ).padStart(2, "0");
 
-    const year = date.getFullYear();
+    const year =
+      date.getFullYear();
 
-    if (format === "MM/DD/YYYY") {
+    if (
+      format ===
+      "MM/DD/YYYY"
+    ) {
       return `${month}/${day}/${year}`;
     }
 
-    if (format === "YYYY-MM-DD") {
+    if (
+      format ===
+      "YYYY-MM-DD"
+    ) {
       return `${year}-${month}-${day}`;
     }
 
-    if (format === "DD.MM.YYYY") {
+    if (
+      format ===
+      "DD.MM.YYYY"
+    ) {
       return `${day}.${month}.${year}`;
     }
 
@@ -1002,7 +1010,10 @@ function formatNumber(
   value: number,
   format: NumberFormat
 ) {
-  if (format === "1,23,456.78") {
+  if (
+    format ===
+    "1,23,456.78"
+  ) {
     return new Intl.NumberFormat(
       "en-IN",
       {
@@ -1012,7 +1023,10 @@ function formatNumber(
     ).format(value);
   }
 
-  if (format === "1.234,56") {
+  if (
+    format ===
+    "1.234,56"
+  ) {
     return new Intl.NumberFormat(
       "de-DE",
       {
@@ -1022,7 +1036,10 @@ function formatNumber(
     ).format(value);
   }
 
-  if (format === "1 234,56") {
+  if (
+    format ===
+    "1 234,56"
+  ) {
     return new Intl.NumberFormat(
       "fr-FR",
       {
@@ -1032,10 +1049,17 @@ function formatNumber(
     ).format(value);
   }
 
-  if (format === "1'234.56") {
-    const fixed = value.toFixed(2);
-    const [integer, decimal] =
-      fixed.split(".");
+  if (
+    format ===
+    "1'234.56"
+  ) {
+    const fixed =
+      value.toFixed(2);
+
+    const [
+      integer,
+      decimal,
+    ] = fixed.split(".");
 
     const grouped =
       integer.replace(
@@ -1112,16 +1136,25 @@ function PreviewPanel({
   weekStartsOn: WeekStart;
 }) {
   const [now, setNow] =
-    useState<Date>(() => new Date());
+    useState<Date>(
+      () => new Date()
+    );
 
   useEffect(() => {
     const interval =
-      window.setInterval(() => {
-        setNow(new Date());
-      }, 1000);
+      window.setInterval(
+        () => {
+          setNow(
+            new Date()
+          );
+        },
+        1000
+      );
 
     return () =>
-      window.clearInterval(interval);
+      window.clearInterval(
+        interval
+      );
   }, []);
 
   const formattedDate =
@@ -1146,92 +1179,186 @@ function PreviewPanel({
     );
 
   return (
-    <section className={styles.previewSection}>
-      <div className={styles.sectionLabel}>
+    <section
+      className={
+        styles.previewSection
+      }
+    >
+      <div
+        className={
+          styles.sectionLabel
+        }
+      >
         PREVIEW
       </div>
 
-      <div className={styles.previewCard}>
-        <div className={styles.previewHeader}>
-          <div className={styles.previewBrand}>
+      <div
+        className={
+          styles.previewCard
+        }
+      >
+        <div
+          className={
+            styles.previewHeader
+          }
+        >
+          <div
+            className={
+              styles.previewBrand
+            }
+          >
             <span
-              className={styles.previewDiamond}
+              className={
+                styles.previewDiamond
+              }
             >
               ◆
             </span>
 
             <strong>
               PropertySure
-              <span> AI</span>
+              <span>
+                {" "}
+                AI
+              </span>
             </strong>
           </div>
 
-          <span className={styles.previewBell}>
+          <span
+            className={
+              styles.previewBell
+            }
+          >
             🔔
           </span>
         </div>
 
-        <div className={styles.previewBody}>
-          <div className={styles.previewIntro}>
-            <h3>Language & Region</h3>
+        <div
+          className={
+            styles.previewBody
+          }
+        >
+          <div
+            className={
+              styles.previewIntro
+            }
+          >
+            <h3>
+              Language & Region
+            </h3>
 
             <p>
-              Live preview of your selected
+              Live preview of
+              your selected
               settings.
             </p>
           </div>
 
-          <div className={styles.previewGrid}>
-            <div className={styles.previewItem}>
-              <span>LANGUAGE</span>
+          <div
+            className={
+              styles.previewGrid
+            }
+          >
+            <div
+              className={
+                styles.previewItem
+              }
+            >
+              <span>
+                LANGUAGE
+              </span>
 
               <strong>
-                {language.label}
+                {
+                  language.label
+                }
               </strong>
             </div>
 
-            <div className={styles.previewItem}>
-              <span>REGION</span>
+            <div
+              className={
+                styles.previewItem
+              }
+            >
+              <span>
+                REGION
+              </span>
 
               <strong>
                 {region.label}
               </strong>
             </div>
 
-            <div className={styles.previewItem}>
-              <span>DATE</span>
+            <div
+              className={
+                styles.previewItem
+              }
+            >
+              <span>
+                DATE
+              </span>
 
               <strong>
-                {formattedDate}
+                {
+                  formattedDate
+                }
               </strong>
             </div>
 
-            <div className={styles.previewItem}>
-              <span>NUMBER</span>
+            <div
+              className={
+                styles.previewItem
+              }
+            >
+              <span>
+                NUMBER
+              </span>
 
               <strong>
-                {formattedNumber}
+                {
+                  formattedNumber
+                }
               </strong>
             </div>
 
-            <div className={styles.previewItem}>
-              <span>LOCAL TIME</span>
+            <div
+              className={
+                styles.previewItem
+              }
+            >
+              <span>
+                LOCAL TIME
+              </span>
 
               <strong>
-                {formattedTime}
+                {
+                  formattedTime
+                }
               </strong>
             </div>
 
-            <div className={styles.previewItem}>
-              <span>WEEK STARTS</span>
+            <div
+              className={
+                styles.previewItem
+              }
+            >
+              <span>
+                WEEK STARTS
+              </span>
 
               <strong>
-                {weekStartsOn}
+                {
+                  weekStartsOn
+                }
               </strong>
             </div>
           </div>
 
-          <div className={styles.previewExample}>
+          <div
+            className={
+              styles.previewExample
+            }
+          >
             <div
               className={
                 styles.previewExampleHeader
@@ -1258,12 +1385,18 @@ function PreviewPanel({
             </div>
 
             <p>
-              This value updates automatically
-              when you change the date format.
+              This value updates
+              automatically
+              when you change
+              the date format.
             </p>
           </div>
 
-          <div className={styles.previewExample}>
+          <div
+            className={
+              styles.previewExample
+            }
+          >
             <div
               className={
                 styles.previewExampleHeader
@@ -1277,7 +1410,8 @@ function PreviewPanel({
               </span>
 
               <strong>
-                Example property value
+                Example property
+                value
               </strong>
             </div>
 
@@ -1290,12 +1424,18 @@ function PreviewPanel({
             </div>
 
             <p>
-              This value updates automatically
-              when you change the number format.
+              This value updates
+              automatically
+              when you change
+              the number format.
             </p>
           </div>
 
-          <div className={styles.previewTime}>
+          <div
+            className={
+              styles.previewTime
+            }
+          >
             <div>
               <span>
                 CURRENT LOCAL TIME
@@ -1307,7 +1447,9 @@ function PreviewPanel({
             </div>
 
             <div>
-              <span>TIME ZONE</span>
+              <span>
+                TIME ZONE
+              </span>
 
               <strong>
                 {timeZone}
@@ -1317,17 +1459,27 @@ function PreviewPanel({
         </div>
       </div>
 
-      <div className={styles.previewNotice}>
-        <span className={styles.noticeIcon}>
+      <div
+        className={
+          styles.previewNotice
+        }
+      >
+        <span
+          className={
+            styles.noticeIcon
+          }
+        >
           i
         </span>
 
         <p>
-          Changes are applied to your
-          PropertySure AI preferences.
-          Other parts of the application
-          can use these saved settings for
-          localized dates, numbers and times.
+          Changes are applied
+          to your PropertySure
+          AI preferences. Other
+          parts of the application
+          can use these saved
+          settings for localized
+          dates, numbers and times.
         </p>
       </div>
     </section>
@@ -1341,25 +1493,21 @@ PAGE
 */
 
 export default function LanguageRegionPage() {
-  const router = useRouter();
+  const router =
+    useRouter();
 
-  const [menuOpen, setMenuOpen] =
-    useState(false);
-
-  const [loadingUser, setLoadingUser] =
-    useState(true);
+  const [
+    loadingUser,
+    setLoadingUser,
+  ] = useState(true);
 
   const [saving, setSaving] =
     useState(false);
 
-  const [savedMessage, setSavedMessage] =
-    useState("");
-
-  const [user, setUser] = useState({
-    fullName: "User",
-    initial: "U",
-    plan: "Free Plan",
-  });
+  const [
+    savedMessage,
+    setSavedMessage,
+  ] = useState("");
 
   /*
   ============================================================
@@ -1373,17 +1521,35 @@ export default function LanguageRegionPage() {
   const [region, setRegion] =
     useState("NG");
 
-  const [dateFormat, setDateFormat] =
-    useState<DateFormat>("DD/MM/YYYY");
+  const [
+    dateFormat,
+    setDateFormat,
+  ] =
+    useState<DateFormat>(
+      "DD/MM/YYYY"
+    );
 
-  const [numberFormat, setNumberFormat] =
-    useState<NumberFormat>("1,234.56");
+  const [
+    numberFormat,
+    setNumberFormat,
+  ] =
+    useState<NumberFormat>(
+      "1,234.56"
+    );
 
-  const [timeZone, setTimeZone] =
+  const [
+    timeZone,
+    setTimeZone,
+  ] =
     useState("Africa/Lagos");
 
-  const [weekStartsOn, setWeekStartsOn] =
-    useState<WeekStart>("Sunday");
+  const [
+    weekStartsOn,
+    setWeekStartsOn,
+  ] =
+    useState<WeekStart>(
+      "Sunday"
+    );
 
   /*
   ============================================================
@@ -1397,7 +1563,8 @@ export default function LanguageRegionPage() {
     const selected =
       regionOptions.find(
         (item) =>
-          item.value === regionCode
+          item.value ===
+          regionCode
       );
 
     if (!selected) {
@@ -1447,263 +1614,211 @@ export default function LanguageRegionPage() {
   useEffect(() => {
     let mounted = true;
 
-    const loadUser = async () => {
-      try {
-        /*
-        ------------------------------------------------------
-        LOCAL STORAGE
-        ------------------------------------------------------
-        */
+    const loadUser =
+      async () => {
+        try {
+          /*
+          ------------------------------------------------------
+          LOCAL STORAGE
+          ------------------------------------------------------
+          */
 
-        if (
-          typeof window !==
-          "undefined"
-        ) {
-          const saved =
-            window.localStorage.getItem(
-              STORAGE_KEY
+          if (
+            typeof window !==
+            "undefined"
+          ) {
+            const saved =
+              window.localStorage.getItem(
+                STORAGE_KEY
+              );
+
+            if (saved) {
+              try {
+                const parsed =
+                  JSON.parse(
+                    saved
+                  ) as Partial<SavedSettings>;
+
+                if (
+                  parsed.language
+                ) {
+                  setLanguage(
+                    parsed.language
+                  );
+                }
+
+                if (
+                  parsed.region
+                ) {
+                  setRegion(
+                    parsed.region
+                  );
+                }
+
+                if (
+                  parsed.dateFormat
+                ) {
+                  setDateFormat(
+                    parsed.dateFormat
+                  );
+                }
+
+                if (
+                  parsed.numberFormat
+                ) {
+                  setNumberFormat(
+                    parsed.numberFormat
+                  );
+                }
+
+                if (
+                  parsed.timeZone
+                ) {
+                  setTimeZone(
+                    parsed.timeZone
+                  );
+                }
+
+                if (
+                  parsed.weekStartsOn
+                ) {
+                  setWeekStartsOn(
+                    parsed.weekStartsOn
+                  );
+                }
+              } catch {
+                console.warn(
+                  "Could not parse saved language and region settings."
+                );
+              }
+            }
+          }
+
+          /*
+          ------------------------------------------------------
+          SUPABASE
+          ------------------------------------------------------
+          */
+
+          const {
+            data: {
+              user: authUser,
+            },
+            error,
+          } =
+            await supabase.auth.getUser();
+
+          if (error) {
+            console.error(
+              "Could not load authenticated user:",
+              error
             );
 
-          if (saved) {
-            try {
-              const parsed =
-                JSON.parse(
-                  saved
-                ) as Partial<SavedSettings>;
+            return;
+          }
 
-              if (
-                parsed.language
-              ) {
-                setLanguage(
-                  parsed.language
-                );
-              }
+          if (!authUser) {
+            router.replace(
+              "/signin"
+            );
 
-              if (
-                parsed.region
-              ) {
-                setRegion(
-                  parsed.region
-                );
-              }
+            return;
+          }
 
-              if (
-                parsed.dateFormat
-              ) {
-                setDateFormat(
-                  parsed.dateFormat
-                );
-              }
+          if (!mounted) {
+            return;
+          }
 
-              if (
-                parsed.numberFormat
-              ) {
-                setNumberFormat(
-                  parsed.numberFormat
-                );
-              }
+          const metadata =
+            authUser.user_metadata ||
+            {};
 
-              if (
-                parsed.timeZone
-              ) {
-                setTimeZone(
-                  parsed.timeZone
-                );
-              }
+          /*
+          ------------------------------------------------------
+          SUPABASE SETTINGS
+          ------------------------------------------------------
+          */
 
-              if (
-                parsed.weekStartsOn
-              ) {
-                setWeekStartsOn(
-                  parsed.weekStartsOn
-                );
-              }
-            } catch {
-              console.warn(
-                "Could not parse saved language and region settings."
+          if (
+            metadata.language
+          ) {
+            setLanguage(
+              String(
+                metadata.language
+              )
+            );
+          }
+
+          if (
+            metadata.region
+          ) {
+            setRegion(
+              String(
+                metadata.region
+              )
+            );
+          }
+
+          if (
+            metadata.date_format
+          ) {
+            setDateFormat(
+              metadata.date_format as DateFormat
+            );
+          }
+
+          if (
+            metadata.number_format
+          ) {
+            setNumberFormat(
+              metadata.number_format as NumberFormat
+            );
+          }
+
+          if (
+            metadata.time_zone
+          ) {
+            setTimeZone(
+              String(
+                metadata.time_zone
+              )
+            );
+          }
+
+          if (
+            metadata.week_starts_on
+          ) {
+            const savedWeekStart =
+              String(
+                metadata.week_starts_on
+              );
+
+            if (
+              savedWeekStart ===
+                "Monday" ||
+              savedWeekStart ===
+                "Sunday" ||
+              savedWeekStart ===
+                "Saturday"
+            ) {
+              setWeekStartsOn(
+                savedWeekStart
               );
             }
           }
-        }
-
-        /*
-        ------------------------------------------------------
-        SUPABASE
-        ------------------------------------------------------
-        */
-
-        const {
-          data: {
-            user: authUser,
-          },
-          error,
-        } =
-          await supabase.auth.getUser();
-
-        if (error) {
+        } catch (error) {
           console.error(
-            "Could not load authenticated user:",
+            "Language and region loading error:",
             error
           );
-
-          return;
-        }
-
-        if (!authUser) {
-          router.replace(
-            "/signin"
-          );
-
-          return;
-        }
-
-        if (!mounted) {
-          return;
-        }
-
-        const metadata =
-          authUser.user_metadata ||
-          {};
-
-        /*
-        ------------------------------------------------------
-        USER
-        ------------------------------------------------------
-        */
-
-        const metadataName =
-          metadata.full_name ||
-          metadata.name ||
-          metadata.display_name ||
-          "";
-
-        const email =
-          authUser.email || "";
-
-        const fallbackName = email
-          ? email
-              .split("@")[0]
-              .replace(
-                /[._-]+/g,
-                " "
-              )
-              .replace(
-                /\b\w/g,
-                (
-                  letter: string
-                ) =>
-                  letter.toUpperCase()
-              )
-          : "User";
-
-        const fullName =
-          String(
-            metadataName
-          ).trim() ||
-          fallbackName;
-
-        const initial =
-          fullName
-            .charAt(0)
-            .toUpperCase() ||
-          "U";
-
-        const plan =
-          metadata.plan ||
-          metadata.subscription_plan ||
-          metadata.account_plan ||
-          "Free Plan";
-
-        setUser({
-          fullName,
-          initial,
-          plan: String(plan),
-        });
-
-        /*
-        ------------------------------------------------------
-        SUPABASE SETTINGS
-        ------------------------------------------------------
-        */
-
-        if (
-          metadata.language
-        ) {
-          setLanguage(
-            String(
-              metadata.language
-            )
-          );
-        }
-
-        if (
-          metadata.region
-        ) {
-          setRegion(
-            String(
-              metadata.region
-            )
-          );
-        }
-
-        if (
-          metadata.date_format
-        ) {
-          setDateFormat(
-            metadata.date_format as DateFormat
-          );
-        }
-
-        if (
-          metadata.number_format
-        ) {
-          setNumberFormat(
-            metadata.number_format as NumberFormat
-          );
-        }
-
-        if (
-          metadata.time_zone
-        ) {
-          setTimeZone(
-            String(
-              metadata.time_zone
-            )
-          );
-        }
-
-        if (
-          metadata.week_starts_on
-        ) {
-          const savedWeekStart =
-            String(
-              metadata.week_starts_on
-            );
-
-          if (
-            savedWeekStart ===
-              "Monday" ||
-            savedWeekStart ===
-              "Sunday" ||
-            savedWeekStart ===
-              "Saturday"
-          ) {
-            setWeekStartsOn(
-              savedWeekStart
+        } finally {
+          if (mounted) {
+            setLoadingUser(
+              false
             );
           }
         }
-      } catch (error) {
-        console.error(
-          "Language and region loading error:",
-          error
-        );
-      } finally {
-        if (mounted) {
-          setLoadingUser(false);
-        }
-      }
-    };
+      };
 
     loadUser();
 
@@ -1878,38 +1993,12 @@ export default function LanguageRegionPage() {
 
   /*
   ============================================================
-  NAVIGATION
+  BACK TO SETTINGS
   ============================================================
   */
-
-  const navigateTo = (
-    path: string
-  ) => {
-    setMenuOpen(false);
-    router.push(path);
-  };
 
   const backToSettings = () => {
-    navigateTo("/settings");
-  };
-
-  /*
-  ============================================================
-  SIGN OUT
-  ============================================================
-  */
-
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-
-      router.replace("/signin");
-    } catch (error) {
-      console.error(
-        "Sign out error:",
-        error
-      );
-    }
+    router.push("/settings");
   };
 
   /*
@@ -1919,32 +2008,7 @@ export default function LanguageRegionPage() {
   */
 
   if (loadingUser) {
-    return (
-      <main className={styles.loading}>
-        <div
-          className={
-            styles.loadingBrand
-          }
-        >
-          <span
-            className={
-              styles.loadingDiamond
-            }
-          >
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </div>
-
-        <p>
-          Loading language settings...
-        </p>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   /*
@@ -1954,633 +2018,292 @@ export default function LanguageRegionPage() {
   */
 
   return (
-    <main className={styles.page}>
-      {/* ====================================================
-          DESKTOP TOP BAR
-      ==================================================== */}
-
-      <header className={styles.topBar}>
-        <button
-          type="button"
-          className={styles.topBrand}
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <span
-            className={
-              styles.topDiamond
-            }
-          >
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={styles.topBell}
-          onClick={() =>
-            navigateTo(
-              "/settings/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-          <Icon
-            name="bell"
-            size={20}
-          />
-
-          <span
-            className={
-              styles.topBellDot
-            }
-          />
-        </button>
-      </header>
-
-      {/* ====================================================
-          MOBILE HEADER
-      ==================================================== */}
-
-      <header
+    <AppShell
+      activePath="/settings"
+      headerPath="/settings"
+    >
+      <main
         className={
-          styles.mobileHeader
+          styles.page
         }
       >
-        <button
-          type="button"
+        <section
           className={
-            styles.menuButton
-          }
-          onClick={() =>
-            setMenuOpen(true)
-          }
-          aria-label="Open navigation"
-        >
-          <Icon
-            name="menu"
-            size={24}
-          />
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.mobileLogo
-          }
-          onClick={() =>
-            navigateTo(
-              "/dashboard"
-            )
+            styles.main
           }
         >
-          <span
+          <header
             className={
-              styles.mobileDiamond
+              styles.pageHeader
             }
           >
-            ◆
-          </span>
+            <h1>
+              Language & Region
+            </h1>
 
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </button>
+            <p>
+              Choose your preferred
+              language, region, and
+              formats.
+            </p>
 
-        <button
-          type="button"
-          className={
-            styles.mobileBell
-          }
-          onClick={() =>
-            navigateTo(
-              "/settings/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-          <Icon
-            name="bell"
-            size={19}
-          />
-
-          <span
-            className={
-              styles.mobileBellDot
-            }
-          />
-        </button>
-      </header>
-
-      {/* ====================================================
-          MOBILE MENU
-      ==================================================== */}
-
-      {menuOpen && (
-        <div
-          className={
-            styles.mobileMenu
-          }
-        >
-          <div
-            className={
-              styles.mobileMenuTop
-            }
-          >
-            <button
-              type="button"
-              className={
-                styles.mobileMenuLogo
-              }
-              onClick={() =>
-                navigateTo(
-                  "/dashboard"
-                )
-              }
-            >
-              <span>◆</span>
-
-              <strong>
-                PropertySure
-                <b> AI</b>
-              </strong>
-            </button>
+            {/* FIXED TEMPLATE BACK BUTTON */}
 
             <button
               type="button"
               className={
-                styles.closeButton
+                styles.backButton
               }
-              onClick={() =>
-                setMenuOpen(false)
+              onClick={
+                backToSettings
               }
-              aria-label="Close menu"
             >
-              ×
+              <span
+                className={
+                  styles.backArrow
+                }
+                aria-hidden="true"
+              >
+                ←
+              </span>
+
+              <span>
+                Back to Settings
+              </span>
             </button>
-          </div>
-
-          <p
-            className={
-              styles.mobileMenuSubtitle
-            }
-          >
-            AI-Powered Property
-            <br />
-            Due Diligence
-          </p>
-
-          <nav
-            className={
-              styles.mobileMenuNav
-            }
-          >
-            {navItems.map(
-              (item) => (
-                <button
-                  key={item.href}
-                  type="button"
-                  onClick={() =>
-                    navigateTo(
-                      item.href
-                    )
-                  }
-                >
-                  <Icon
-                    name={item.icon}
-                    size={19}
-                  />
-
-                  <span>
-                    {item.label}
-                  </span>
-                </button>
-              )
-            )}
-          </nav>
+          </header>
 
           <div
             className={
-              styles.mobileMenuLabel
+              styles.contentLayout
             }
           >
-            ACCOUNT
-          </div>
+            {/* ==================================================
+                LEFT SETTINGS
+            ================================================== */}
 
-          <button
-            type="button"
-            className={
-              styles.mobileMenuItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/account"
-              )
-            }
-          >
-            <Icon
-              name="account"
-              size={19}
-            />
-
-            <span>
-              Account
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className={
-              styles.mobileMenuItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/settings"
-              )
-            }
-          >
-            <Icon
-              name="settings"
-              size={19}
-            />
-
-            <span>
-              Settings
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.mobileMenuItem} ${styles.logoutItem}`}
-            onClick={signOut}
-          >
-            <span>↪</span>
-
-            <span>
-              Sign Out
-            </span>
-          </button>
-        </div>
-      )}
-
-      {/* ====================================================
-          MAIN
-      ==================================================== */}
-
-      <section className={styles.main}>
-        <header
-          className={
-            styles.pageHeader
-          }
-        >
-          <h1>
-            Language & Region
-          </h1>
-
-          <p>
-            Choose your preferred
-            language, region, and
-            formats.
-          </p>
-
-          <button
-            type="button"
-            className={
-              styles.backButton
-            }
-            onClick={
-              backToSettings
-            }
-          >
-            ‹ Back to Settings
-          </button>
-        </header>
-
-        <div
-          className={
-            styles.contentLayout
-          }
-        >
-          {/* ==================================================
-              LEFT SETTINGS
-          ================================================== */}
-
-          <div
-            className={
-              styles.settingsColumn
-            }
-          >
-            <SettingsSection
-              label="LANGUAGE"
-              title="Language"
-              description="Select the language you prefer to use."
+            <div
+              className={
+                styles.settingsColumn
+              }
             >
-              <div
-                className={
-                  styles.sectionContent
-                }
+              <SettingsSection
+                label="LANGUAGE"
+                title="Language"
+                description="Select the language you prefer to use."
               >
-                <SelectControl
-                  icon="language"
-                  label="Language"
-                  value={
-                    language
-                  }
-                  options={
-                    languageOptions.map(
-                      (item) => ({
-                        value:
-                          item.value,
-                        label:
-                          `${item.label} · ${item.nativeLabel}`,
-                      })
-                    )
-                  }
-                  onChange={
-                    handleLanguageChange
-                  }
-                />
-              </div>
-            </SettingsSection>
-
-            <SettingsSection
-              label="REGION & FORMAT"
-              title="Region & Format"
-              description="Set your country or region, date format, and number format."
-            >
-              <div
-                className={
-                  styles.sectionContent
-                }
-              >
-                <SelectControl
-                  icon="location"
-                  label="Region"
-                  value={
-                    region
-                  }
-                  options={
-                    regionOptions
-                  }
-                  onChange={
-                    handleRegionChange
-                  }
-                />
-
                 <div
                   className={
-                    styles.divider
-                  }
-                />
-
-                <div
-                  className={
-                    styles.twoColumn
+                    styles.sectionContent
                   }
                 >
                   <SelectControl
-                    icon="calendar"
-                    label="Date Format"
+                    icon="language"
+                    label="Language"
                     value={
-                      dateFormat
+                      language
                     }
                     options={
-                      dateFormatOptions
-                    }
-                    onChange={(
-                      value
-                    ) =>
-                      setDateFormat(
-                        value as DateFormat
+                      languageOptions.map(
+                        (item) => ({
+                          value:
+                            item.value,
+                          label:
+                            `${item.label} · ${item.nativeLabel}`,
+                        })
                       )
                     }
+                    onChange={
+                      handleLanguageChange
+                    }
+                  />
+                </div>
+              </SettingsSection>
+
+              <SettingsSection
+                label="REGION & FORMAT"
+                title="Region & Format"
+                description="Set your country or region, date format, and number format."
+              >
+                <div
+                  className={
+                    styles.sectionContent
+                  }
+                >
+                  <SelectControl
+                    icon="location"
+                    label="Region"
+                    value={
+                      region
+                    }
+                    options={
+                      regionOptions
+                    }
+                    onChange={
+                      handleRegionChange
+                    }
+                  />
+
+                  <div
+                    className={
+                      styles.divider
+                    }
+                  />
+
+                  <div
+                    className={
+                      styles.twoColumn
+                    }
+                  >
+                    <SelectControl
+                      icon="calendar"
+                      label="Date Format"
+                      value={
+                        dateFormat
+                      }
+                      options={
+                        dateFormatOptions
+                      }
+                      onChange={(
+                        value
+                      ) =>
+                        setDateFormat(
+                          value as DateFormat
+                        )
+                      }
+                    />
+
+                    <SelectControl
+                      icon="number"
+                      label="Number Format"
+                      value={
+                        numberFormat
+                      }
+                      options={
+                        numberFormatOptions
+                      }
+                      onChange={(
+                        value
+                      ) =>
+                        setNumberFormat(
+                          value as NumberFormat
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+              </SettingsSection>
+
+              <SettingsSection
+                label="TIME & CALENDAR"
+                title="Time & Calendar"
+                description="Set your time zone and preferred week start day."
+              >
+                <div
+                  className={
+                    styles.sectionContent
+                  }
+                >
+                  <SelectControl
+                    icon="clock"
+                    label="Time Zone"
+                    value={
+                      timeZone
+                    }
+                    options={
+                      timeZoneOptions
+                    }
+                    onChange={
+                      setTimeZone
+                    }
+                  />
+
+                  <div
+                    className={
+                      styles.divider
+                    }
                   />
 
                   <SelectControl
-                    icon="number"
-                    label="Number Format"
+                    icon="calendar"
+                    label="Week Starts On"
                     value={
-                      numberFormat
+                      weekStartsOn
                     }
                     options={
-                      numberFormatOptions
+                      weekStartOptions.map(
+                        (day) => ({
+                          value: day,
+                          label: day,
+                        })
+                      )
                     }
                     onChange={(
                       value
                     ) =>
-                      setNumberFormat(
-                        value as NumberFormat
+                      setWeekStartsOn(
+                        value as WeekStart
                       )
                     }
                   />
                 </div>
-              </div>
-            </SettingsSection>
+              </SettingsSection>
 
-            <SettingsSection
-              label="TIME & CALENDAR"
-              title="Time & Calendar"
-              description="Set your time zone and preferred week start day."
-            >
-              <div
-                className={
-                  styles.sectionContent
-                }
-              >
-                <SelectControl
-                  icon="clock"
-                  label="Time Zone"
-                  value={
-                    timeZone
-                  }
-                  options={
-                    timeZoneOptions
-                  }
-                  onChange={
-                    setTimeZone
-                  }
-                />
-
+              {(saving ||
+                savedMessage) && (
                 <div
                   className={
-                    styles.divider
-                  }
-                />
-
-                <SelectControl
-                  icon="calendar"
-                  label="Week Starts On"
-                  value={
-                    weekStartsOn
-                  }
-                  options={
-                    weekStartOptions.map(
-                      (day) => ({
-                        value: day,
-                        label: day,
-                      })
-                    )
-                  }
-                  onChange={(
-                    value
-                  ) =>
-                    setWeekStartsOn(
-                      value as WeekStart
-                    )
-                  }
-                />
-              </div>
-            </SettingsSection>
-
-            {(saving ||
-              savedMessage) && (
-              <div
-                className={
-                  styles.saveStatus
-                }
-              >
-                <span
-                  className={
-                    saving
-                      ? styles.saveSpinner
-                      : styles.saveCheck
+                    styles.saveStatus
                   }
                 >
-                  {saving
-                    ? ""
-                    : "✓"}
-                </span>
+                  <span
+                    className={
+                      saving
+                        ? styles.saveSpinner
+                        : styles.saveCheck
+                    }
+                  >
+                    {saving
+                      ? ""
+                      : "✓"}
+                  </span>
 
-                <span>
-                  {saving
-                    ? "Saving changes..."
-                    : savedMessage}
-                </span>
-              </div>
-            )}
+                  <span>
+                    {saving
+                      ? "Saving changes..."
+                      : savedMessage}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* ==================================================
+                RIGHT PREVIEW
+            ================================================== */}
+
+            <PreviewPanel
+              language={
+                selectedLanguage
+              }
+              region={
+                selectedRegion
+              }
+              dateFormat={
+                dateFormat
+              }
+              numberFormat={
+                numberFormat
+              }
+              timeZone={
+                timeZone
+              }
+              weekStartsOn={
+                weekStartsOn
+              }
+            />
           </div>
-
-          {/* ==================================================
-              RIGHT PREVIEW
-          ================================================== */}
-
-          <PreviewPanel
-            language={
-              selectedLanguage
-            }
-            region={
-              selectedRegion
-            }
-            dateFormat={
-              dateFormat
-            }
-            numberFormat={
-              numberFormat
-            }
-            timeZone={
-              timeZone
-            }
-            weekStartsOn={
-              weekStartsOn
-            }
-          />
-        </div>
-      </section>
-
-      {/* ====================================================
-          MOBILE BOTTOM NAV
-      ==================================================== */}
-
-      <nav
-        className={
-          styles.mobileBottomNav
-        }
-      >
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/dashboard"
-            )
-          }
-        >
-          <Icon
-            name="dashboard"
-            size={20}
-          />
-          <span>Dashboard</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/verify"
-            )
-          }
-        >
-          <Icon
-            name="verify"
-            size={20}
-          />
-          <span>Verify</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/my-properties"
-            )
-          }
-        >
-          <Icon
-            name="properties"
-            size={20}
-          />
-          <span>Properties</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/reports"
-            )
-          }
-        >
-          <Icon
-            name="reports"
-            size={20}
-          />
-          <span>Reports</span>
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.bottomActive
-          }
-          onClick={() =>
-            navigateTo(
-              "/account"
-            )
-          }
-        >
-          <Icon
-            name="account"
-            size={20}
-          />
-          <span>Account</span>
-        </button>
-      </nav>
-    </main>
+        </section>
+      </main>
+    </AppShell>
   );
 }

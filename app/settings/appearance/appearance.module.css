@@ -1,15 +1,15 @@
 /* ============================================================
    PROPERTYSURE AI
-   APPEARANCE PAGE
+   APPEARANCE SETTINGS PAGE
 ============================================================ */
 
 .page {
   --accent-color: #168eff;
 
-  min-height: 100vh;
+  width: 100%;
+  min-height: 100%;
 
   background: #ffffff;
-
   color: #17243b;
 
   font-family:
@@ -30,36 +30,39 @@
   box-sizing: border-box;
 }
 
+/* ============================================================
+   ICON
+============================================================ */
+
 .icon {
   display: inline-flex;
-
   align-items: center;
   justify-content: center;
 
   line-height: 1;
-
   flex-shrink: 0;
 }
 
 /* ============================================================
-   LIGHT / DARK THEME
+   LIGHT THEME
 ============================================================ */
 
 .themeLight {
   background: #ffffff;
-
   color: #17243b;
 }
 
+/* ============================================================
+   DARK THEME
+============================================================ */
+
 .themeDark {
   background: #07152b;
-
   color: #eef5ff;
 }
 
 .themeDark .main {
   background: #07152b;
-
   color: #eef5ff;
 }
 
@@ -78,9 +81,7 @@
 .themeDark .settingsCard,
 .themeDark .previewCard {
   background: #0d1d35;
-
   border-color: #263c58;
-
   color: #eef5ff;
 }
 
@@ -94,22 +95,18 @@
 
 .themeDark .selectionCard {
   background: #0d1d35;
-
   border-color: #2a405d;
-
   color: #eef5ff;
 }
 
 .themeDark .selectionCard:hover {
   background: #122640;
-
   border-color: #496987;
 }
 
 .themeDark .selectionCardSelected {
   background:
     rgba(22, 142, 255, 0.13);
-
   border-color: var(--accent-color);
 }
 
@@ -159,7 +156,6 @@
 
 .themeDark .previewStats > div {
   background: #112640;
-
   border-color: #29405d;
 }
 
@@ -191,7 +187,7 @@
   color: #eef5ff;
 }
 
-.themeDark .previewEmpty span:last-child {
+.themeDark .previewEmpty div span {
   color: #91a6c1;
 }
 
@@ -199,10 +195,10 @@
    REDUCE MOTION
 ============================================================ */
 
-.reduceMotion,
-.reduceMotion *,
-.reduceMotion *::before,
-.reduceMotion *::after {
+:global(html.propertysure-reduce-motion),
+:global(html.propertysure-reduce-motion) *,
+:global(html.propertysure-reduce-motion) *::before,
+:global(html.propertysure-reduce-motion) *::after {
   transition: none !important;
 
   animation-duration: 0.001ms !important;
@@ -213,109 +209,12 @@
 }
 
 /* ============================================================
-   TOP BAR
-============================================================ */
-
-.topBar {
-  height: 72px;
-
-  width: 100%;
-
-  background: #06152f;
-
-  border-bottom:
-    1px solid
-    #193650;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  padding:
-    0 42px;
-}
-
-.topBrand {
-  border: 0;
-
-  background: transparent;
-
-  color: #ffffff;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 8px;
-
-  padding: 0;
-
-  font-size: 18px;
-
-  font-weight: 700;
-
-  cursor: pointer;
-}
-
-.topBrand strong {
-  color: var(--accent-color);
-}
-
-.topDiamond {
-  color: var(--accent-color);
-
-  font-size: 21px;
-
-  line-height: 1;
-}
-
-.topBell {
-  position: relative;
-
-  width: 40px;
-
-  height: 40px;
-
-  border: 0;
-
-  background: transparent;
-
-  color: #f2b500;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  cursor: pointer;
-}
-
-.topBellDot {
-  position: absolute;
-
-  top: 4px;
-
-  right: 3px;
-
-  width: 7px;
-
-  height: 7px;
-
-  border-radius: 50%;
-
-  background: var(--accent-color);
-}
-
-/* ============================================================
    MAIN
 ============================================================ */
 
 .main {
-  min-height:
-    calc(100vh - 72px);
+  width: 100%;
+  min-height: calc(100vh - 72px);
 
   padding:
     34px
@@ -328,13 +227,15 @@
     background-color 0.25s ease;
 }
 
+/* ============================================================
+   PAGE HEADER
+============================================================ */
+
 .pageHeader {
   width: 100%;
-
   max-width: 1010px;
 
-  margin:
-    0 auto;
+  margin: 0 auto;
 }
 
 .pageHeader h1 {
@@ -343,9 +244,7 @@
   color: #17243b;
 
   font-size: 28px;
-
   line-height: 1.2;
-
   font-weight: 600;
 
   letter-spacing: -0.6px;
@@ -358,12 +257,22 @@
   color: #7d90ac;
 
   font-size: 12px;
-
   line-height: 1.5;
 }
 
+/* ============================================================
+   BACK TO SETTINGS
+   MATCHES GENERAL SETTINGS EXACTLY
+============================================================ */
+
 .backButton {
-  margin-top: 16px;
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-top: 19px;
 
   padding: 0;
 
@@ -371,17 +280,51 @@
 
   background: transparent;
 
-  color: var(--accent-color);
+  color: #168eff;
 
-  font-size: 11px;
+  text-decoration: none;
 
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
+
+  line-height: 1;
 
   cursor: pointer;
+
+  appearance: none;
+
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
 }
 
 .backButton:hover {
-  text-decoration: underline;
+  color: #0c78dd;
+
+  text-decoration: none;
+}
+
+.backButton:focus-visible {
+  outline:
+    2px solid
+    #168eff;
+
+  outline-offset: 4px;
+
+  border-radius: 3px;
+}
+
+.backArrow {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18px;
+
+  line-height: 1;
+
+  font-weight: 500;
 }
 
 /* ============================================================
@@ -390,7 +333,6 @@
 
 .contentLayout {
   width: 100%;
-
   max-width: 1010px;
 
   margin:
@@ -428,13 +370,15 @@
   color: #718bb0;
 
   font-size: 10px;
-
   font-weight: 700;
 
   letter-spacing: 2px;
-
   line-height: 1.2;
 }
+
+/* ============================================================
+   SETTINGS CARD
+============================================================ */
 
 .settingsCard {
   width: 100%;
@@ -459,6 +403,10 @@
     box-shadow 0.25s ease;
 }
 
+/* ============================================================
+   SECTION HEADER
+============================================================ */
+
 .sectionHeader {
   min-height: 70px;
 
@@ -476,7 +424,6 @@
   color: #17243b;
 
   font-size: 14px;
-
   font-weight: 700;
 
   line-height: 1.3;
@@ -489,7 +436,6 @@
   color: #8193ad;
 
   font-size: 9px;
-
   line-height: 1.4;
 }
 
@@ -549,7 +495,8 @@
 }
 
 .selectionCardSelected {
-  border-color: var(--accent-color);
+  border-color:
+    var(--accent-color);
 
   background:
     color-mix(
@@ -571,11 +518,9 @@
   position: absolute;
 
   top: 9px;
-
   left: 9px;
 
   width: 12px;
-
   height: 12px;
 
   border:
@@ -587,17 +532,16 @@
   display: flex;
 
   align-items: center;
-
   justify-content: center;
 }
 
 .radioSelected {
-  border-color: var(--accent-color);
+  border-color:
+    var(--accent-color);
 }
 
 .radioDot {
   width: 6px;
-
   height: 6px;
 
   border-radius: 50%;
@@ -609,7 +553,6 @@
   display: flex;
 
   align-items: center;
-
   justify-content: center;
 }
 
@@ -617,7 +560,6 @@
   color: #1b2941;
 
   font-size: 10px;
-
   font-weight: 700;
 
   line-height: 1.3;
@@ -653,7 +595,6 @@
 
 .colorButton {
   width: 25px;
-
   height: 25px;
 
   padding: 0;
@@ -667,7 +608,6 @@
   display: flex;
 
   align-items: center;
-
   justify-content: center;
 
   color: #ffffff;
@@ -688,13 +628,16 @@
 .colorButtonSelected {
   box-shadow:
     0 0 0 2px #ffffff,
-    0 0 0 3px var(--accent-color);
+    0 0 0 3px
+      var(--accent-color);
 }
 
-.themeDark .colorButtonSelected {
+.themeDark
+  .colorButtonSelected {
   box-shadow:
     0 0 0 2px #0d1d35,
-    0 0 0 3px var(--accent-color);
+    0 0 0 3px
+      var(--accent-color);
 }
 
 .colorButton span {
@@ -702,7 +645,7 @@
 }
 
 /* ============================================================
-   REDUCE MOTION
+   REDUCE MOTION CARD
 ============================================================ */
 
 .motionRow {
@@ -730,7 +673,6 @@
   color: #17243b;
 
   font-size: 13px;
-
   font-weight: 700;
 
   line-height: 1.3;
@@ -755,7 +697,6 @@
 
 .toggle {
   width: 42px;
-
   height: 24px;
 
   padding: 2px;
@@ -779,7 +720,6 @@
 
 .toggleKnob {
   width: 20px;
-
   height: 20px;
 
   border-radius: 50%;
@@ -894,7 +834,6 @@
   color: #17243b;
 
   font-size: 16px;
-
   font-weight: 700;
 
   line-height: 1.2;
@@ -992,7 +931,6 @@
   color: #17243b;
 
   font-size: 9px;
-
   font-weight: 700;
 }
 
@@ -1020,7 +958,6 @@
 
 .previewActivityIcon {
   width: 25px;
-
   height: 25px;
 
   border-radius: 6px;
@@ -1028,13 +965,11 @@
   display: flex;
 
   align-items: center;
-
   justify-content: center;
 
   flex-shrink: 0;
 
   font-size: 10px;
-
   font-weight: 700;
 }
 
@@ -1050,7 +985,6 @@
   color: #1b2941;
 
   font-size: 8px;
-
   font-weight: 700;
 
   line-height: 1.25;
@@ -1094,18 +1028,21 @@
 
 .previewEmpty > span {
   width: 25px;
-
   height: 25px;
 
   border-radius: 6px;
 
   background:
-    rgba(22, 142, 255, 0.10);
+    rgba(
+      22,
+      142,
+      255,
+      0.1
+    );
 
   display: flex;
 
   align-items: center;
-
   justify-content: center;
 
   font-size: 11px;
@@ -1137,26 +1074,33 @@
    PREVIEW DARK MODE
 ============================================================ */
 
-.previewDark .previewCard {
+.previewDark
+  .previewCard {
   background: #0d1d35;
 
   border-color: #263c58;
 }
 
-.previewDark .previewBody {
+.previewDark
+  .previewBody {
   background: #0d1d35;
 }
 
-.previewDark .previewBody h3,
-.previewDark .previewBody h4 {
+.previewDark
+  .previewBody h3,
+.previewDark
+  .previewBody h4 {
   color: #eef5ff;
 }
 
-.previewDark .previewBody > p {
+.previewDark
+  .previewBody > p {
   color: #91a6c1;
 }
 
-.previewDark .previewStats > div {
+.previewDark
+  .previewStats
+  > div {
   background: #112640;
 
   border-color: #29405d;
@@ -1164,31 +1108,46 @@
   box-shadow: none;
 }
 
-.previewDark .previewStats span {
+.previewDark
+  .previewStats
+  span {
   color: #91a6c1;
 }
 
-.previewDark .previewStats strong {
+.previewDark
+  .previewStats
+  strong {
   color: #eef5ff;
 }
 
-.previewDark .previewActivity {
+.previewDark
+  .previewActivity {
   border-color: #243951;
 }
 
-.previewDark .previewActivity strong {
+.previewDark
+  .previewActivity
+  strong {
   color: #eef5ff;
 }
 
-.previewDark .previewActivity div span {
+.previewDark
+  .previewActivity
+  div
+  span {
   color: #91a6c1;
 }
 
-.previewDark .previewEmpty strong {
+.previewDark
+  .previewEmpty
+  strong {
   color: #eef5ff;
 }
 
-.previewDark .previewEmpty div span {
+.previewDark
+  .previewEmpty
+  div
+  span {
   color: #91a6c1;
 }
 
@@ -1196,323 +1155,136 @@
    DENSITY
 ============================================================ */
 
-.densitycomfortable .selectionCard {
+.densitycomfortable
+  .selectionCard {
   min-height: 119px;
 }
 
-.densitycomfortable .sectionHeader {
+.densitycomfortable
+  .sectionHeader {
   min-height: 70px;
 }
 
-.densitycomfortable .motionRow {
+.densitycomfortable
+  .motionRow {
   min-height: 93px;
 }
 
-.densitycompact .selectionCard {
+.densitycompact
+  .selectionCard {
   min-height: 98px;
 
   padding-top: 9px;
-
   padding-bottom: 8px;
 }
 
-.densitycompact .sectionHeader {
+.densitycompact
+  .sectionHeader {
   min-height: 60px;
 
   padding-top: 12px;
-
   padding-bottom: 12px;
 }
 
-.densitycompact .appearanceSection {
+.densitycompact
+  .appearanceSection {
   margin-bottom: 14px;
 }
 
-.densitycompact .motionRow {
+.densitycompact
+  .motionRow {
   min-height: 76px;
 
   padding-top: 10px;
-
   padding-bottom: 10px;
 }
 
-.densitycompact .previewActivity {
+.densitycompact
+  .previewActivity {
   min-height: 38px;
 }
 
-.densitycompact .previewStats > div {
+.densitycompact
+  .previewStats
+  > div {
   padding-top: 7px;
-
   padding-bottom: 7px;
 }
 
-.densitydense .selectionCard {
+.densitydense
+  .selectionCard {
   min-height: 78px;
 
   padding-top: 6px;
-
   padding-bottom: 6px;
 }
 
-.densitydense .selectionIcon {
+.densitydense
+  .selectionIcon {
   margin-bottom: 3px;
 }
 
-.densitydense .selectionCard strong {
+.densitydense
+  .selectionCard
+  strong {
   font-size: 9px;
 }
 
-.densitydense .selectionCard small {
+.densitydense
+  .selectionCard
+  small {
   font-size: 7px;
 }
 
-.densitydense .sectionHeader {
+.densitydense
+  .sectionHeader {
   min-height: 51px;
 
   padding-top: 8px;
-
   padding-bottom: 8px;
 }
 
-.densitydense .appearanceSection {
+.densitydense
+  .appearanceSection {
   margin-bottom: 9px;
 }
 
-.densitydense .motionRow {
+.densitydense
+  .motionRow {
   min-height: 62px;
 
   padding-top: 7px;
-
   padding-bottom: 7px;
 }
 
-.densitydense .previewActivity {
+.densitydense
+  .previewActivity {
   min-height: 31px;
 }
 
-.densitydense .previewStats > div {
+.densitydense
+  .previewStats
+  > div {
   padding-top: 5px;
-
   padding-bottom: 5px;
 }
 
 /* ============================================================
-   MOBILE HEADER
-============================================================ */
-
-.mobileHeader {
-  display: none;
-}
-
-/* ============================================================
-   MOBILE MENU
-============================================================ */
-
-.mobileMenu {
-  display: none;
-}
-
-/* ============================================================
-   MOBILE BOTTOM NAV
-============================================================ */
-
-.mobileBottomNav {
-  display: none;
-}
-
-/* ============================================================
-   LOADING
-============================================================ */
-
-.loading {
-  min-height: 100vh;
-
-  background: #06152f;
-
-  color: #ffffff;
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  justify-content: center;
-
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-}
-
-.loadingBrand {
-  display: flex;
-
-  align-items: center;
-
-  gap: 9px;
-
-  color: #ffffff;
-
-  font-size: 22px;
-
-  font-weight: 700;
-
-  letter-spacing: -0.3px;
-}
-
-.loadingBrand strong {
-  color: #168eff;
-}
-
-.loadingDiamond {
-  color: #168eff;
-
-  font-size: 24px;
-
-  line-height: 1;
-}
-
-.loading p {
-  margin:
-    13px 0 0;
-
-  color: #8ea4c3;
-
-  font-size: 12px;
-}
-
-/* ============================================================
    MOBILE
+   AppShell owns the mobile header and bottom navigation.
 ============================================================ */
 
 @media (max-width: 700px) {
-  .topBar {
-    display: none;
-  }
-
   .main {
-    min-height: 100vh;
+    min-height: auto;
 
     padding:
       0
       0
       88px;
+
+    background: #ffffff;
   }
-
-  /* ----------------------------------------------------------
-     MOBILE HEADER
-  ---------------------------------------------------------- */
-
-  .mobileHeader {
-    position: sticky;
-
-    top: 0;
-
-    height: 70px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    padding:
-      0 18px;
-
-    background: #06152f;
-
-    border-bottom:
-      1px solid
-      #193650;
-
-    z-index: 100;
-  }
-
-  .menuButton,
-  .mobileBell {
-    position: relative;
-
-    width: 40px;
-
-    height: 40px;
-
-    padding: 0;
-
-    border: 0;
-
-    background: transparent;
-
-    color: #ffffff;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    cursor: pointer;
-  }
-
-  .mobileBell .icon {
-    color: #f2b500;
-  }
-
-  .mobileLogo {
-    border: 0;
-
-    background: transparent;
-
-    color: #ffffff;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    padding: 0;
-
-    font-size: 17px;
-
-    font-weight: 700;
-
-    cursor: pointer;
-  }
-
-  .mobileLogo strong {
-    color: var(--accent-color);
-  }
-
-  .mobileDiamond {
-    color: var(--accent-color);
-
-    font-size: 21px;
-
-    line-height: 1;
-  }
-
-  .mobileBellDot {
-    position: absolute;
-
-    top: 4px;
-
-    right: 2px;
-
-    width: 7px;
-
-    height: 7px;
-
-    border-radius: 50%;
-
-    background: var(--accent-color);
-  }
-
-  /* ----------------------------------------------------------
-     PAGE HEADER
-  ---------------------------------------------------------- */
 
   .pageHeader {
     padding:
@@ -1538,19 +1310,21 @@
   }
 
   .backButton {
-    margin-top: 15px;
+    margin-top: 17px;
 
-    font-size: 11px;
+    font-size: 12px;
   }
 
-  /* ----------------------------------------------------------
-     CONTENT
-  ---------------------------------------------------------- */
+  .backArrow {
+    font-size: 17px;
+  }
 
   .contentLayout {
     display: flex;
 
     flex-direction: column;
+
+    width: 100%;
 
     padding:
       0
@@ -1581,10 +1355,6 @@
     letter-spacing: 2px;
   }
 
-  /* ----------------------------------------------------------
-     SECTION HEADER
-  ---------------------------------------------------------- */
-
   .sectionHeader {
     min-height: 76px;
 
@@ -1603,10 +1373,6 @@
 
     font-size: 10px;
   }
-
-  /* ----------------------------------------------------------
-     SELECTION GRID
-  ---------------------------------------------------------- */
 
   .selectionGrid {
     gap: 7px;
@@ -1638,21 +1404,15 @@
     font-size: 7px;
   }
 
-  /* ----------------------------------------------------------
-     DENSITY MOBILE EFFECTS
-  ---------------------------------------------------------- */
-
-  .densitycompact .selectionCard {
+  .densitycompact
+    .selectionCard {
     min-height: 94px;
   }
 
-  .densitydense .selectionCard {
+  .densitydense
+    .selectionCard {
     min-height: 76px;
   }
-
-  /* ----------------------------------------------------------
-     ACCENT COLORS
-  ---------------------------------------------------------- */
 
   .colorRow {
     gap: 17px;
@@ -1665,13 +1425,8 @@
 
   .colorButton {
     width: 25px;
-
     height: 25px;
   }
-
-  /* ----------------------------------------------------------
-     MOTION
-  ---------------------------------------------------------- */
 
   .motionRow {
     min-height: 94px;
@@ -1688,10 +1443,6 @@
   .motionText p {
     font-size: 9px;
   }
-
-  /* ----------------------------------------------------------
-     PREVIEW
-  ---------------------------------------------------------- */
 
   .previewSection {
     position: static;
@@ -1716,237 +1467,9 @@
 
   .previewBody {
     padding:
-      17px 14px 14px;
-  }
-
-  /* ----------------------------------------------------------
-     MOBILE MENU
-  ---------------------------------------------------------- */
-
-  .mobileMenu {
-    position: fixed;
-
-    inset: 0;
-
-    display: block;
-
-    padding:
-      25px
-      22px;
-
-    background: #06152f;
-
-    color: #ffffff;
-
-    z-index: 300;
-
-    overflow-y: auto;
-  }
-
-  .mobileMenuTop {
-    display: flex;
-
-    align-items: flex-start;
-
-    justify-content: space-between;
-  }
-
-  .mobileMenuLogo {
-    border: 0;
-
-    padding: 0;
-
-    background: transparent;
-
-    color: #ffffff;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    font-size: 18px;
-
-    cursor: pointer;
-  }
-
-  .mobileMenuLogo > span {
-    color: var(--accent-color);
-
-    font-size: 22px;
-  }
-
-  .mobileMenuLogo b {
-    color: var(--accent-color);
-  }
-
-  .mobileMenuSubtitle {
-    margin:
-      12px
-      0
-      0;
-
-    color: #8ea4c3;
-
-    font-size: 10px;
-
-    line-height: 1.45;
-  }
-
-  .closeButton {
-    width: 40px;
-
-    height: 40px;
-
-    border: 0;
-
-    background: transparent;
-
-    color: #ffffff;
-
-    font-size: 31px;
-
-    font-weight: 200;
-
-    cursor: pointer;
-  }
-
-  .mobileMenuNav {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 6px;
-
-    margin-top: 45px;
-  }
-
-  .mobileMenuNav button,
-  .mobileMenuItem {
-    width: 100%;
-
-    height: 48px;
-
-    border: 0;
-
-    border-radius: 7px;
-
-    background: transparent;
-
-    color: #aebed4;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 14px;
-
-    padding:
-      0
-      14px;
-
-    font-size: 14px;
-
-    text-align: left;
-
-    cursor: pointer;
-  }
-
-  .mobileMenuNav button:hover,
-  .mobileMenuItem:hover {
-    background:
-      rgba(22, 142, 255, 0.12);
-
-    color: #ffffff;
-  }
-
-  .mobileMenuLabel {
-    margin:
-      32px
+      17px
       14px
-      8px;
-
-    color: #6f87a9;
-
-    font-size: 9px;
-
-    font-weight: 700;
-
-    letter-spacing: 1.5px;
-  }
-
-  .mobileMenuItem {
-    margin-bottom: 4px;
-  }
-
-  .logoutItem {
-    color: #ff8b91 !important;
-
-    margin-top: 10px;
-  }
-
-  /* ----------------------------------------------------------
-     MOBILE BOTTOM NAV
-  ---------------------------------------------------------- */
-
-  .mobileBottomNav {
-    position: fixed;
-
-    left: 0;
-
-    right: 0;
-
-    bottom: 0;
-
-    height: 74px;
-
-    display: grid;
-
-    grid-template-columns:
-      repeat(5, 1fr);
-
-    background:
-      rgba(3, 18, 40, 0.98);
-
-    border-top:
-      1px solid
-      #193650;
-
-    backdrop-filter:
-      blur(15px);
-
-    z-index: 150;
-  }
-
-  .mobileBottomNav button {
-    border: 0;
-
-    background: transparent;
-
-    color: #7990ad;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 4px;
-
-    font-size: 8px;
-
-    cursor: pointer;
-  }
-
-  .mobileBottomNav button .icon {
-    font-size: 20px;
-  }
-
-  .mobileBottomNav .bottomActive {
-    color: var(--accent-color);
+      14px;
   }
 }
 
@@ -1955,25 +1478,13 @@
 ============================================================ */
 
 @media (max-width: 380px) {
-  .mobileHeader {
-    padding:
-      0
-      14px;
-  }
-
-  .mobileLogo {
-    font-size: 15px;
-  }
-
   .pageHeader {
     padding-left: 22px;
-
     padding-right: 22px;
   }
 
   .contentLayout {
     padding-left: 22px;
-
     padding-right: 22px;
   }
 
@@ -1989,7 +1500,6 @@
     gap: 5px;
 
     padding-left: 13px;
-
     padding-right: 13px;
   }
 
@@ -2007,7 +1517,6 @@
 
   .colorRow {
     padding-left: 13px;
-
     padding-right: 13px;
 
     gap: 14px;
@@ -2015,7 +1524,6 @@
 
   .motionRow {
     padding-left: 13px;
-
     padding-right: 13px;
   }
 }

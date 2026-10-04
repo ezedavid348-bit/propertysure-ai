@@ -1,0 +1,378 @@
+import { generateEmbeddings } from "./embeddings";
+import { supabaseServer } from "./supabase-server";
+import {
+  createKnowledgeDocument,
+  prepareKnowledgeForStorage,
+} from "./knowledge-base";
+
+import type {
+  KnowledgeDocument,
+  PropertyDocumentType,
+  KnowledgeSourceType,
+} from "./types";
+
+/**
+ * ============================================================
+ * PROPERTYSure AI
+ * KNOWLEDGE INGESTION
+ * ============================================================
+ *
+ * This module takes trusted knowledge and prepares it for
+ * semantic retrieval.
+ *
+ * Flow:
+ *
+ * Knowledge document
+ *      ↓
+ * Store document
+ *      ↓
+ * Split content into chunks
+ *      ↓
+ * Generate embeddings
+ *      ↓
+ * Store chunks + embeddings
+ *
+ * IMPORTANT:
+ *
+ * This does NOT automatically trust customer uploads.
+ *
+ * The caller must explicitly provide the appropriate
+ * knowledge source and approval status.
+ * ============================================================
+ */
+
+const KNOWLEDGE_DOCUMENTS_TABLE =
+  "ai_knowledge_documents";
+
+const KNOWLEDGE_CHUNKS_TABLE =
+  "ai_knowledge_chunks";
+
+/**
+ * ============================================================
+ * TEXT CHUNKING
+ * ============================================================
+ *
+ * Splits long document text into smaller pieces so that
+ * semantic search can find specific sections of knowledge.
+ */
+export function splitKnowledgeText(
+  text: string,
+  chunkSize = 1200,
+  overlap = 200,
+): string[] {
+  const cleanedText = text
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .trim();
+
+  if (!cleanedText) {
+    return [];
+  }
+
+  if (chunkSize <= 0) {
+    throw new Error(
+      "Chunk size must be greater than zero.",
+    );
+  }
+
+  if (overlap < 0 || overlap >= chunkSize) {
+    throw new Error(
+      "Chunk overlap must be smaller than chunk size.",
+    );
+  }
+
+  const chunks: string[] = [];
+
+  let start = 0;
+
+  while (start < cleanedText.length) {
+    const end = Math.min(
+      start + chunkSize,
+      cleanedText.length,
+    );
+
+    const chunk =
+      cleanedText.slice(start, end).trim();
+
+    if (chunk) {
+      chunks.push(chunk);
+    }
+
+    if (end >= cleanedText.length) {
+      break;
+    }
+
+    start =
+      end - overlap;
+  }
+
+  return chunks;
+}
+
+/**
+ * ============================================================
+ * INGEST KNOWLEDGE DOCUMENT
+ * ============================================================
+ *
+ * Saves the knowledge document and creates searchable
+ * vector chunks.
+ */
+export async function ingestKnowledgeDocument(
+  input: {
+    title: string;
+    documentType: PropertyDocumentType;
+    sourceType: KnowledgeSourceType;
+
+    content: string;
+
+    description?: string;
+
+    sourcePath?: string;
+    sourceUrl?: string;
+
+    metadata?: Record<string, unknown>;
+
+    approvalStatus?:
+      | "pending"
+      | "approved"
+      | "rejected";
+  },
+) {
+  if (!input.content.trim()) {
+    throw new Error(
+      "Knowledge document content is required.",
+    );
+  }
+
+  /**
+   * Create the application-level knowledge object.
+   */
+  const knowledgeDocument =
+    createKnowledgeDocument({
+      title: input.title,
+
+      documentType:
+        input.documentType,
+
+      sourceType:
+        input.sourceType,
+
+      description:
+        input.description,
+
+      content:
+        input.content,
+
+      sourcePath:
+        input.sourcePath,
+
+      sourceUrl:
+        input.sourceUrl,
+
+      metadata:
+        input.metadata,
+    });
+
+  /**
+   * Respect an explicitly supplied approval status.
+   *
+   * New knowledge defaults to pending.
+   */
+  const documentToStore: KnowledgeDocument = {
+    ...knowledgeDocument,
+
+    approvalStatus:
+      input.approvalStatus ??
+      knowledgeDocument.approvalStatus,
+  };
+
+  /**
+   * Validate before storage.
+   */
+  const preparedDocument =
+    prepareKnowledgeForStorage(
+      documentToStore,
+    );
+
+  /**
+   * Store the main knowledge document.
+   */
+  const { data: storedDocument, error:
+    documentError } =
+    await supabaseServer
+      .from(
+        KNOWLEDGE_DOCUMENTS_TABLE,
+      )
+      .insert({
+        title:
+          preparedDocument.title,
+
+        document_type:
+          preparedDocument.documentType,
+
+        source_type:
+          preparedDocument.sourceType,
+
+        approval_status:
+          preparedDocument.approvalStatus,
+
+        description:
+          preparedDocument.description ??
+          null,
+
+        content:
+          preparedDocument.content ??
+          null,
+
+        source_path:
+          preparedDocument.sourcePath ??
+          null,
+
+        source_url:
+          preparedDocument.sourceUrl ??
+          null,
+
+        metadata:
+          preparedDocument.metadata ??
+          {},
+
+        created_at:
+          preparedDocument.createdAt ??
+          new Date().toISOString(),
+
+        updated_at:
+          preparedDocument.updatedAt ??
+          new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+
+  if (documentError) {
+    console.error(
+      "PropertySure AI knowledge document ingestion error:",
+      documentError,
+    );
+
+    throw new Error(
+      `Failed to store knowledge document: ${documentError.message}`,
+    );
+  }
+
+  if (!storedDocument?.id) {
+    throw new Error(
+      "Knowledge document was stored without an ID.",
+    );
+  }
+
+  /**
+   * Split the document into searchable pieces.
+   */
+  const chunks =
+    splitKnowledgeText(
+      input.content,
+    );
+
+  if (chunks.length === 0) {
+    throw new Error(
+      "Knowledge document produced no searchable chunks.",
+    );
+  }
+
+  /**
+   * Generate embeddings for all chunks.
+   */
+  const embeddings =
+    await generateEmbeddings(
+      chunks,
+    );
+
+  if (
+    embeddings.length !==
+    chunks.length
+  ) {
+    throw new Error(
+      "Embedding count does not match chunk count.",
+    );
+  }
+
+  /**
+   * Prepare rows for Supabase.
+   */
+  const chunkRows = chunks.map(
+    (content, index) => ({
+      knowledge_document_id:
+        storedDocument.id,
+
+      content,
+
+      chunk_index:
+        index,
+
+      embedding:
+        embeddings[index],
+
+      metadata: {
+        documentType:
+          input.documentType,
+
+        sourceType:
+          input.sourceType,
+
+        title:
+          input.title,
+      },
+    }),
+  );
+
+  /**
+   * Store the searchable chunks.
+   */
+  const { data: storedChunks,
+    error: chunkError } =
+    await supabaseServer
+      .from(
+        KNOWLEDGE_CHUNKS_TABLE,
+      )
+      .insert(chunkRows)
+      .select(
+        "id, knowledge_document_id, chunk_index",
+      );
+
+  if (chunkError) {
+    console.error(
+      "PropertySure AI knowledge chunk ingestion error:",
+      chunkError,
+    );
+
+    /**
+     * Clean up the parent document if chunk storage fails.
+     */
+    await supabaseServer
+      .from(
+        KNOWLEDGE_DOCUMENTS_TABLE,
+      )
+      .delete()
+      .eq(
+        "id",
+        storedDocument.id,
+      );
+
+    throw new Error(
+      `Failed to store knowledge chunks: ${chunkError.message}`,
+    );
+  }
+
+  return {
+    success: true,
+
+    knowledgeDocumentId:
+      storedDocument.id,
+
+    chunkCount:
+      storedChunks?.length ??
+      chunks.length,
+
+    approvalStatus:
+      preparedDocument.approvalStatus,
+  };
+}

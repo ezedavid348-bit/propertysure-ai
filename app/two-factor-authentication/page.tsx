@@ -6,8 +6,17 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
+
 import { supabase } from "../lib/supabase";
+
+import AppShell from "../AppShell/AppShell";
+import LoadingScreen from "../AppShell/LoadingScreen";
+
 import styles from "./two-factor.module.css";
+
+/* ============================================================
+   TYPES
+============================================================ */
 
 type MFAFactor = {
   id: string;
@@ -26,126 +35,23 @@ type EnrollmentData = {
   friendlyName: string;
 };
 
-function getInitials(name: string) {
-  const cleaned = name.trim();
-
-  if (!cleaned) {
-    return "U";
-  }
-
-  const parts = cleaned
-    .split(/\s+/)
-    .filter(Boolean);
-
-  if (parts.length === 1) {
-    return parts[0]
-      .slice(0, 2)
-      .toUpperCase();
-  }
-
-  return (
-    parts[0][0] +
-    parts[parts.length - 1][0]
-  ).toUpperCase();
-}
-
-function getDisplayName(
-  user: {
-    user_metadata?: Record<
-      string,
-      unknown
-    >;
-    email?: string;
-  } | null
-) {
-  if (!user) {
-    return "Account Holder";
-  }
-
-  const metadata =
-    user.user_metadata || {};
-
-  const possibleNames = [
-    metadata.full_name,
-    metadata.fullName,
-    metadata.name,
-    metadata.display_name,
-    metadata.displayName,
-  ];
-
-  for (const value of possibleNames) {
-    if (
-      typeof value === "string" &&
-      value.trim()
-    ) {
-      return value.trim();
-    }
-  }
-
-  if (user.email) {
-    const emailName =
-      user.email.split("@")[0];
-
-    if (emailName) {
-      return emailName;
-    }
-  }
-
-  return "Account Holder";
-}
-
-function getPlanName(
-  user: {
-    user_metadata?: Record<
-      string,
-      unknown
-    >;
-  } | null
-) {
-  if (!user) {
-    return "Free Plan";
-  }
-
-  const metadata =
-    user.user_metadata || {};
-
-  const possiblePlans = [
-    metadata.plan,
-    metadata.plan_name,
-    metadata.planName,
-    metadata.subscription_plan,
-    metadata.subscriptionPlan,
-  ];
-
-  for (const value of possiblePlans) {
-    if (
-      typeof value === "string" &&
-      value.trim()
-    ) {
-      return value.trim();
-    }
-  }
-
-  return "Free Plan";
-}
+/* ============================================================
+   PAGE
+============================================================ */
 
 export default function TwoFactorAuthenticationPage() {
   const router = useRouter();
 
+  /* ==========================================================
+     PAGE LOADING
+  ========================================================== */
+
   const [loading, setLoading] =
     useState(true);
 
-  const [userName, setUserName] =
-    useState("Account Holder");
-
-  const [planName, setPlanName] =
-    useState("Free Plan");
-
-  const [userEmail, setUserEmail] =
-    useState("");
-
-  const [userInitials, setUserInitials] =
-    useState("U");
+  /* ==========================================================
+     MFA STATE
+  ========================================================== */
 
   const [factors, setFactors] =
     useState<MFAFactor[]>([]);
@@ -168,6 +74,10 @@ export default function TwoFactorAuthenticationPage() {
   const [disabling, setDisabling] =
     useState(false);
 
+  /* ==========================================================
+     MESSAGES
+  ========================================================== */
+
   const [errorMessage, setErrorMessage] =
     useState("");
 
@@ -177,82 +87,41 @@ export default function TwoFactorAuthenticationPage() {
   const [showSecret, setShowSecret] =
     useState(false);
 
-  /*
-  ============================================================
-  LOAD USER
-  ============================================================
-  */
+  /* ==========================================================
+     LOAD MFA FACTORS
+  ========================================================== */
 
   useEffect(() => {
     let mounted = true;
 
-    async function loadUser() {
+    async function loadSecurityData() {
       try {
         setLoading(true);
+        setLoadingFactors(true);
+
+        /*
+         * Make sure the user is authenticated.
+         */
 
         const {
-          data,
-          error,
+          data: userData,
+          error: userError,
         } =
           await supabase.auth.getUser();
 
-        if (error) {
-          throw error;
+        if (userError) {
+          throw userError;
         }
 
-        if (!data.user) {
+        if (!userData.user) {
           router.replace("/signin");
           return;
         }
 
-        if (!mounted) {
-          return;
-        }
+        /*
+         * Load MFA factors.
+         */
 
-        const name =
-          getDisplayName(data.user);
-
-        setUserName(name);
-
-        setUserInitials(
-          getInitials(name)
-        );
-
-        setUserEmail(
-          data.user.email || ""
-        );
-
-        setPlanName(
-          getPlanName(data.user)
-        );
-
-        await loadFactors();
-      } catch (error) {
-        console.error(
-          "2FA USER LOAD ERROR:",
-          error
-        );
-
-        if (!mounted) {
-          return;
-        }
-
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Could not load your security settings."
-        );
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    async function loadFactors() {
-      setLoadingFactors(true);
-
-      try {
         const {
           data,
           error,
@@ -287,7 +156,7 @@ export default function TwoFactorAuthenticationPage() {
         ]);
       } catch (error) {
         console.error(
-          "2FA FACTOR LOAD ERROR:",
+          "2FA LOAD ERROR:",
           error
         );
 
@@ -298,27 +167,26 @@ export default function TwoFactorAuthenticationPage() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "Could not load your two-factor authentication status."
+            : "Could not load your security settings."
         );
       } finally {
         if (mounted) {
           setLoadingFactors(false);
+          setLoading(false);
         }
       }
     }
 
-    loadUser();
+    loadSecurityData();
 
     return () => {
       mounted = false;
     };
   }, [router]);
 
-  /*
-  ============================================================
-  FACTOR STATUS
-  ============================================================
-  */
+  /* ==========================================================
+     FACTOR STATUS
+  ========================================================== */
 
   const verifiedTotpFactors =
     useMemo(
@@ -350,46 +218,31 @@ export default function TwoFactorAuthenticationPage() {
     verifiedTotpFactors.length >
     0;
 
-  /*
-  ============================================================
-  NAVIGATION
-  ============================================================
-  */
+  /* ==========================================================
+     BACK TO SECURITY & PRIVACY
+  ========================================================== */
 
   function goBackToSecurity() {
-    router.push("/security");
-  }
-
-  function goToAccount() {
-    router.push("/account");
-  }
-
-  function goToNotifications() {
     router.push(
-      "/account/notifications"
+      "/settings/security"
     );
   }
 
-  /*
-  ============================================================
-  START TOTP ENROLLMENT
-  ============================================================
-  */
+  /* ==========================================================
+     START TOTP ENROLLMENT
+  ========================================================== */
 
   async function startEnrollment() {
     setErrorMessage("");
     setSuccessMessage("");
     setVerificationCode("");
     setShowSecret(false);
-
     setLoadingEnrollment(true);
 
     try {
       /*
-      --------------------------------------------------------
-      If there is an old unverified factor, remove it first.
-      --------------------------------------------------------
-      */
+       * Remove previous unverified factors.
+       */
 
       for (const factor of unverifiedTotpFactors) {
         const {
@@ -411,10 +264,8 @@ export default function TwoFactorAuthenticationPage() {
       }
 
       /*
-      --------------------------------------------------------
-      Create a real TOTP factor through Supabase.
-      --------------------------------------------------------
-      */
+       * Create a new Supabase TOTP factor.
+       */
 
       const {
         data,
@@ -469,11 +320,9 @@ export default function TwoFactorAuthenticationPage() {
     }
   }
 
-  /*
-  ============================================================
-  VERIFY TOTP
-  ============================================================
-  */
+  /* ==========================================================
+     VERIFY TOTP ENROLLMENT
+  ========================================================== */
 
   async function verifyEnrollment() {
     setErrorMessage("");
@@ -488,6 +337,7 @@ export default function TwoFactorAuthenticationPage() {
       setErrorMessage(
         "Please enter the 6-digit code from your authenticator app."
       );
+
       return;
     }
 
@@ -495,6 +345,7 @@ export default function TwoFactorAuthenticationPage() {
       setErrorMessage(
         "The authenticator setup session is no longer available. Please start again."
       );
+
       return;
     }
 
@@ -502,10 +353,8 @@ export default function TwoFactorAuthenticationPage() {
 
     try {
       /*
-      --------------------------------------------------------
-      Create a challenge for the newly enrolled factor.
-      --------------------------------------------------------
-      */
+       * Create challenge.
+       */
 
       const {
         data: challengeData,
@@ -529,10 +378,8 @@ export default function TwoFactorAuthenticationPage() {
       }
 
       /*
-      --------------------------------------------------------
-      Verify the authenticator code.
-      --------------------------------------------------------
-      */
+       * Verify code.
+       */
 
       const {
         error: verifyError,
@@ -552,10 +399,8 @@ export default function TwoFactorAuthenticationPage() {
       }
 
       /*
-      --------------------------------------------------------
-      Refresh session after successful MFA enrollment.
-      --------------------------------------------------------
-      */
+       * Refresh Supabase session.
+       */
 
       await supabase.auth.refreshSession();
 
@@ -584,11 +429,9 @@ export default function TwoFactorAuthenticationPage() {
     }
   }
 
-  /*
-  ============================================================
-  REFRESH FACTORS
-  ============================================================
-  */
+  /* ==========================================================
+     REFRESH MFA FACTORS
+  ========================================================== */
 
   async function refreshFactors() {
     try {
@@ -628,11 +471,9 @@ export default function TwoFactorAuthenticationPage() {
     }
   }
 
-  /*
-  ============================================================
-  DISABLE 2FA
-  ============================================================
-  */
+  /* ==========================================================
+     DISABLE 2FA
+  ========================================================== */
 
   async function disableTwoFactor() {
     if (
@@ -695,11 +536,9 @@ export default function TwoFactorAuthenticationPage() {
     }
   }
 
-  /*
-  ============================================================
-  CANCEL ENROLLMENT
-  ============================================================
-  */
+  /* ==========================================================
+     CANCEL ENROLLMENT
+  ========================================================== */
 
   async function cancelEnrollment() {
     if (enrollment) {
@@ -724,403 +563,40 @@ export default function TwoFactorAuthenticationPage() {
     setErrorMessage("");
   }
 
-  /*
-  ============================================================
-  LOADING
-  ============================================================
-  */
+  /* ==========================================================
+     SHARED APP-SHELL LOADING SCREEN
+  ========================================================== */
 
   if (loading) {
     return (
-      <main
-        className={
-          styles.loadingPage
-        }
-      >
-        <div
-          className={
-            styles.loadingLogo
-          }
-        >
-          ◆
-        </div>
-
-        <div
-          className={
-            styles.loadingBrand
-          }
-        >
-          PropertySure
-          <strong> AI</strong>
-        </div>
-
-        <div
-          className={
-            styles.loadingSpinner
-          }
-        />
-
-        <p>
-          Loading security settings...
-        </p>
-      </main>
+      <LoadingScreen />
     );
   }
 
-  /*
-  ============================================================
-  PAGE
-  ============================================================
-  */
+  /* ==========================================================
+     PAGE
+  ========================================================== */
 
   return (
-    <main
-      className={
-        styles.page
-      }
+    <AppShell
+      activePath="/settings"
+      headerPath="/settings"
     >
-      {/* =====================================================
-          SIDEBAR
-      ===================================================== */}
-
-      <aside
+      <main
         className={
-          styles.sidebar
+          styles.page
         }
       >
-        <button
-          type="button"
-          className={
-            styles.brandButton
-          }
-          onClick={
-            goToAccount
-          }
-        >
-          <div
-            className={
-              styles.brandName
-            }
-          >
-            <span
-              className={
-                styles.brandDiamond
-              }
-            >
-              ◆
-            </span>
-
-            <span>
-              PropertySure
-              <strong> AI</strong>
-            </span>
-          </div>
-
-          <div
-            className={
-              styles.brandSubtitle
-            }
-          >
-            AI-Powered Property
-            <br />
-            Due Diligence
-          </div>
-        </button>
-
-        <nav
-          className={
-            styles.sidebarNav
-          }
-        >
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/dashboard"
-              )
-            }
-          >
-            <span>▦</span>
-            Dashboard
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/verify"
-              )
-            }
-          >
-            <span>⇧</span>
-            Verify Property
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/my-properties"
-              )
-            }
-          >
-            <span>⌂</span>
-            My Properties
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/verification-history"
-              )
-            }
-          >
-            <span>◷</span>
-            Verification History
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/fraud-watch"
-              )
-            }
-          >
-            <span>◇</span>
-            Fraud Watch
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/reports"
-              )
-            }
-          >
-            <span>▤</span>
-            Reports
-          </button>
-        </nav>
-
         <div
           className={
-            styles.accountLabel
+            styles.content
           }
         >
-          ACCOUNT
-        </div>
+          {/* ==================================================
+              TITLE
+          ================================================== */}
 
-        <button
-          type="button"
-          className={
-            styles.accountNav
-          }
-          onClick={
-            goToAccount
-          }
-        >
-          <span>◯</span>
-          Account
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.settingsNav
-          }
-          onClick={() =>
-            router.push(
-              "/settings"
-            )
-          }
-        >
-          <span>⚙</span>
-          Settings
-        </button>
-
-        <div
-          className={
-            styles.helpBox
-          }
-        >
-          <h3>
-            Need Help?
-          </h3>
-
-          <p>
-            Our support team is ready
-            to assist you.
-          </p>
-
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/account"
-              )
-            }
-          >
-            Contact Support
-          </button>
-        </div>
-
-        <button
-          type="button"
-          className={
-            styles.sidebarUser
-          }
-          onClick={
-            goToAccount
-          }
-        >
-          <div
-            className={
-              styles.userAvatar
-            }
-          >
-            {userInitials}
-          </div>
-
-          <div
-            className={
-              styles.sidebarUserInfo
-            }
-          >
-            <strong>
-              {userName}
-            </strong>
-
-            <span>
-              {planName}
-            </span>
-          </div>
-
-          <span
-            className={
-              styles.userChevron
-            }
-          >
-            ⌄
-          </span>
-        </button>
-      </aside>
-
-      {/* =====================================================
-          MAIN
-      ===================================================== */}
-
-      <section
-        className={
-          styles.main
-        }
-      >
-        {/* ===================================================
-            TOP BAR
-        =================================================== */}
-
-        <header
-          className={
-            styles.topbar
-          }
-        >
-          <button
-            type="button"
-            className={
-              styles.backButton
-            }
-            onClick={
-              goBackToSecurity
-            }
-          >
-            <span>←</span>
-            Back to Security
-          </button>
-
-          <div
-            className={
-              styles.topbarRight
-            }
-          >
-            {/* =================================================
-                SAME NOTIFICATION BELL AS SECURITY PAGE
-            ================================================= */}
-
-            <button
-              type="button"
-              className={
-                styles.notificationButton
-              }
-              aria-label="Notifications"
-              onClick={
-                goToNotifications
-              }
-            >
-              <span
-                className={
-                  styles.notificationBell
-                }
-              >
-                🔔
-              </span>
-
-              <i />
-            </button>
-
-            <button
-              type="button"
-              className={
-                styles.topProfile
-              }
-              onClick={
-                goToAccount
-              }
-            >
-              <div
-                className={
-                  styles.topAvatar
-                }
-              >
-                {userInitials}
-              </div>
-
-              <div
-                className={
-                  styles.topProfileInfo
-                }
-              >
-                <strong>
-                  {userName}
-                </strong>
-
-                <span>
-                  {planName}
-                </span>
-              </div>
-
-              <span
-                className={
-                  styles.profileChevron
-                }
-              >
-                ⌄
-              </span>
-            </button>
-          </div>
-        </header>
-
-        {/* ===================================================
-            PAGE CONTENT
-        =================================================== */}
-
-        <div
-          className={
-            styles.pageContent
-          }
-        >
-          <div
+          <section
             className={
               styles.pageIntro
             }
@@ -1133,11 +609,34 @@ export default function TwoFactorAuthenticationPage() {
               Add an extra layer of
               protection to your account.
             </p>
-          </div>
 
-          {/* =================================================
-              ERROR / SUCCESS
-          ================================================= */}
+            {/* BACK BUTTON IS NOW BELOW THE
+                TITLE AND DESCRIPTION */}
+
+            <button
+              type="button"
+              className={
+                styles.backButton
+              }
+              onClick={
+                goBackToSecurity
+              }
+            >
+              <span
+                className={
+                  styles.backArrow
+                }
+              >
+                ←
+              </span>
+
+              Back to Security &amp; Privacy
+            </button>
+          </section>
+
+          {/* ==================================================
+              ERROR
+          ================================================== */}
 
           {errorMessage && (
             <div
@@ -1163,6 +662,10 @@ export default function TwoFactorAuthenticationPage() {
             </div>
           )}
 
+          {/* ==================================================
+              SUCCESS
+          ================================================== */}
+
           {successMessage && (
             <div
               className={
@@ -1187,9 +690,9 @@ export default function TwoFactorAuthenticationPage() {
             </div>
           )}
 
-          {/* =================================================
+          {/* ==================================================
               ENROLLMENT PANEL
-          ================================================= */}
+          ================================================== */}
 
           {enrollment ? (
             <section
@@ -1238,6 +741,8 @@ export default function TwoFactorAuthenticationPage() {
                   styles.enrollmentBody
                 }
               >
+                {/* QR */}
+
                 <div
                   className={
                     styles.qrSection
@@ -1269,6 +774,8 @@ export default function TwoFactorAuthenticationPage() {
                     code.
                   </p>
                 </div>
+
+                {/* SETUP STEPS */}
 
                 <div
                   className={
@@ -1347,6 +854,8 @@ export default function TwoFactorAuthenticationPage() {
                     </div>
                   </div>
 
+                  {/* SECRET */}
+
                   <div
                     className={
                       styles.secretSection
@@ -1404,6 +913,8 @@ export default function TwoFactorAuthenticationPage() {
                   </div>
                 </div>
               </div>
+
+              {/* VERIFICATION */}
 
               <div
                 className={
@@ -1483,6 +994,8 @@ export default function TwoFactorAuthenticationPage() {
                 </p>
               </div>
 
+              {/* CANCEL */}
+
               <div
                 className={
                   styles.enrollmentActions
@@ -1506,9 +1019,9 @@ export default function TwoFactorAuthenticationPage() {
             </section>
           ) : (
             <>
-              {/* ============================================
-                  STATUS CARD
-              ============================================ */}
+              {/* =================================================
+                  STATUS
+              ================================================= */}
 
               <section
                 className={
@@ -1585,9 +1098,9 @@ export default function TwoFactorAuthenticationPage() {
                 )}
               </section>
 
-              {/* ============================================
+              {/* =================================================
                   INFORMATION GRID
-              ============================================ */}
+              ================================================= */}
 
               <div
                 className={
@@ -1714,7 +1227,7 @@ export default function TwoFactorAuthenticationPage() {
                   </div>
                 </section>
 
-                {/* SUPPORTED METHODS */}
+                {/* RIGHT SIDE */}
 
                 <div
                   className={
@@ -1821,9 +1334,9 @@ export default function TwoFactorAuthenticationPage() {
                 </div>
               </div>
 
-              {/* ============================================
+              {/* =================================================
                   IMPORTANT
-              ============================================ */}
+              ================================================= */}
 
               <section
                 className={
@@ -1866,7 +1379,7 @@ export default function TwoFactorAuthenticationPage() {
             </>
           )}
         </div>
-      </section>
-    </main>
+      </main>
+    </AppShell>
   );
 }

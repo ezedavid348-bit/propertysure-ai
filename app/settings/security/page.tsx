@@ -4,106 +4,17 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "./security.module.css";
+
 import { supabase } from "../../lib/supabase";
-
-/* =========================================================
-   MASTER MENU ICON
-========================================================= */
-
-function MenuIcon() {
-  return (
-    <span
-      className={styles["security-master-menu-icon"]}
-      aria-hidden="true"
-    >
-      ☰
-    </span>
-  );
-}
-
-/* =========================================================
-   MASTER NATIVE NOTIFICATION BELL
-========================================================= */
-
-function NotificationBellIcon() {
-  return (
-    <span
-      className={styles["security-master-bell"]}
-      role="img"
-      aria-label="Notifications"
-    >
-      🔔️
-    </span>
-  );
-}
-
-/* =========================================================
-   MASTER BOTTOM NAV ICONS
-========================================================= */
-
-function DashboardNavIcon() {
-  return (
-    <span
-      className={styles["security-master-nav-icon"]}
-      aria-hidden="true"
-    >
-      ▦
-    </span>
-  );
-}
-
-function VerifyNavIcon() {
-  return (
-    <span
-      className={styles["security-master-nav-icon"]}
-      aria-hidden="true"
-    >
-      ⇧
-    </span>
-  );
-}
-
-function PropertiesNavIcon() {
-  return (
-    <span
-      className={styles["security-master-nav-icon"]}
-      aria-hidden="true"
-    >
-      ⌂
-    </span>
-  );
-}
-
-function ReportsNavIcon() {
-  return (
-    <span
-      className={styles["security-master-nav-icon"]}
-      aria-hidden="true"
-    >
-      ▤
-    </span>
-  );
-}
-
-function AccountNavIcon() {
-  return (
-    <span
-      className={styles["security-master-nav-icon"]}
-      aria-hidden="true"
-    >
-      ◯
-    </span>
-  );
-}
+import AppShell from "../../AppShell/AppShell";
+import LoadingScreen from "../../AppShell/LoadingScreen";
 
 /* =========================================================
    SECURITY ICONS
-   ONLY THESE ICONS HAVE BEEN UPDATED
 ========================================================= */
 
 /* ---------------------------------------------------------
    PASSWORD
-   Clean professional padlock
 --------------------------------------------------------- */
 
 function LockIcon() {
@@ -152,7 +63,6 @@ function LockIcon() {
 
 /* ---------------------------------------------------------
    TWO-FACTOR AUTHENTICATION
-   Professional shield with check
 --------------------------------------------------------- */
 
 function ShieldIcon() {
@@ -184,7 +94,6 @@ function ShieldIcon() {
 
 /* ---------------------------------------------------------
    ACTIVE SESSIONS
-   Proper computer monitor / device icon
 --------------------------------------------------------- */
 
 function MonitorIcon() {
@@ -234,7 +143,6 @@ function MonitorIcon() {
 
 /* ---------------------------------------------------------
    EMAIL VERIFICATION
-   Real recognizable envelope
 --------------------------------------------------------- */
 
 function MailIcon() {
@@ -286,7 +194,6 @@ function MailIcon() {
 
 /* ---------------------------------------------------------
    PHONE NUMBER
-   Real telephone handset
 --------------------------------------------------------- */
 
 function PhoneIcon() {
@@ -311,7 +218,6 @@ function PhoneIcon() {
 
 /* ---------------------------------------------------------
    SECURITY NOTICE
-   Shield + lock combination
 --------------------------------------------------------- */
 
 function SecurityNoticeIcon() {
@@ -399,56 +305,6 @@ function StatusIcon({
 }
 
 /* =========================================================
-   BOTTOM NAVIGATION
-========================================================= */
-
-function BottomNavigation() {
-  return (
-    <nav className={styles["security-bottom-nav"]}>
-      <Link
-        href="/dashboard"
-        className={styles["security-nav-item"]}
-      >
-        <DashboardNavIcon />
-        <span>Dashboard</span>
-      </Link>
-
-      <Link
-        href="/verify"
-        className={styles["security-nav-item"]}
-      >
-        <VerifyNavIcon />
-        <span>Verify</span>
-      </Link>
-
-      <Link
-        href="/my-properties"
-        className={styles["security-nav-item"]}
-      >
-        <PropertiesNavIcon />
-        <span>Properties</span>
-      </Link>
-
-      <Link
-        href="/reports"
-        className={styles["security-nav-item"]}
-      >
-        <ReportsNavIcon />
-        <span>Reports</span>
-      </Link>
-
-      <Link
-        href="/account"
-        className={`${styles["security-nav-item"]} ${styles["security-nav-active"]}`}
-      >
-        <AccountNavIcon />
-        <span>Account</span>
-      </Link>
-    </nav>
-  );
-}
-
-/* =========================================================
    USER TYPE
 ========================================================= */
 
@@ -467,7 +323,6 @@ export default function SecurityPage() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const [user, setUser] = useState<SecurityUser>({
     email: "",
@@ -623,448 +478,108 @@ export default function SecurityPage() {
   ======================================================= */
 
   const navigateTo = (path: string) => {
-    setMenuOpen(false);
     router.push(path);
   };
 
   /* =======================================================
-     LOADING
+     SHARED LOADING SCREEN
   ======================================================= */
 
   if (loading) {
-    return (
-      <main className={styles["security-loading"]}>
-        <div
-          className={styles["security-loading-brand"]}
-        >
-          <span>◆</span>
-
-          <strong>
-            PropertySure
-            <em> AI</em>
-          </strong>
-        </div>
-
-        <p>
-          Loading security settings...
-        </p>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   return (
-    <main className={styles["security-page"]}>
+    <AppShell
+      activePath="/settings"
+      headerPath="/settings"
+    >
+      <main className={styles["security-page"]}>
+        <section className={styles["security-content"]}>
 
-      {/* ===================================================
-          MASTER HEADER
-      =================================================== */}
+          {/* =================================================
+              PAGE HEADER
+          ================================================= */}
 
-      <header className={styles["security-header"]}>
+          <header className={styles["security-page-header"]}>
+            <h1>
+              Security &amp; Privacy
+            </h1>
 
-        <button
-          type="button"
-          className={styles["security-menu-button"]}
-          aria-label="Open menu"
-          onClick={() => setMenuOpen(true)}
-        >
-          <MenuIcon />
-        </button>
-
-        <Link
-          href="/dashboard"
-          className={styles["security-brand"]}
-          aria-label="PropertySure AI Dashboard"
-        >
-          <span
-            className={
-              styles["security-brand-diamond"]
-            }
-            aria-hidden="true"
-          >
-            ◆
-          </span>
-
-          <span
-            className={styles["security-brand-text"]}
-          >
-            <span>PropertySure</span>{" "}
-            <span
+            <p
               className={
-                styles["security-brand-ai"]
+                styles["security-description"]
               }
             >
-              AI
-            </span>
-          </span>
-        </Link>
+              Manage your account security settings
+              and keep your information safe.
+            </p>
 
-        <button
-          type="button"
-          className={
-            styles["security-notification-button"]
-          }
-          aria-label="Notifications"
-          onClick={() =>
-            navigateTo(
-              "/settings/notifications"
-            )
-          }
-        >
-          <NotificationBellIcon />
-
-          <span
-            className={
-              styles["security-notification-dot"]
-            }
-          />
-        </button>
-      </header>
-
-      {/* ===================================================
-          MOBILE MENU
-      =================================================== */}
-
-      {menuOpen && (
-        <div
-          className={
-            styles["security-mobile-menu"]
-          }
-        >
-          <div
-            className={
-              styles[
-                "security-mobile-menu-header"
-              ]
-            }
-          >
             <Link
-              href="/dashboard"
+              href="/settings"
               className={
-                styles[
-                  "security-mobile-menu-brand"
-                ]
-              }
-              onClick={() =>
-                setMenuOpen(false)
+                styles["security-back-link"]
               }
             >
-              <span>◆</span>
-
-              <strong>
-                PropertySure
-                <em> AI</em>
-              </strong>
-            </Link>
-
-            <button
-              type="button"
-              className={
-                styles["security-mobile-close"]
-              }
-              onClick={() =>
-                setMenuOpen(false)
-              }
-              aria-label="Close menu"
-            >
-              ×
-            </button>
-          </div>
-
-          <div
-            className={
-              styles[
-                "security-mobile-menu-subtitle"
-              ]
-            }
-          >
-            AI-Powered Property Due Diligence
-          </div>
-
-          <nav
-            className={
-              styles[
-                "security-mobile-menu-nav"
-              ]
-            }
-          >
-            <button
-              type="button"
-              onClick={() =>
-                navigateTo("/dashboard")
-              }
-            >
-              <DashboardNavIcon />
-              <span>Dashboard</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                navigateTo("/verify")
-              }
-            >
-              <VerifyNavIcon />
-              <span>Verify Property</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                navigateTo("/my-properties")
-              }
-            >
-              <PropertiesNavIcon />
-              <span>My Properties</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                navigateTo(
-                  "/verification-history"
-                )
-              }
-            >
-              <span>◷</span>
-              <span>
-                Verification History
+              <span
+                className={
+                  styles["security-back-arrow"]
+                }
+                aria-hidden="true"
+              >
+                ←
               </span>
-            </button>
 
-            <button
-              type="button"
-              onClick={() =>
-                navigateTo("/fraud-watch")
-              }
-            >
-              <span>◇</span>
-              <span>Fraud Watch</span>
-            </button>
+              <span>
+                Back to Settings
+              </span>
+            </Link>
+          </header>
 
-            <button
-              type="button"
-              onClick={() =>
-                navigateTo("/reports")
-              }
-            >
-              <ReportsNavIcon />
-              <span>Reports</span>
-            </button>
+          {/* =================================================
+              AUTHENTICATION
+          ================================================= */}
 
-            <div
-              className={
-                styles[
-                  "security-mobile-account-label"
-                ]
-              }
-            >
-              ACCOUNT
-            </div>
-
-            <button
-              type="button"
-              onClick={() =>
-                navigateTo("/account")
-              }
-            >
-              <AccountNavIcon />
-              <span>Account</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                navigateTo("/settings")
-              }
-            >
-              <span>⚙</span>
-              <span>Settings</span>
-            </button>
-          </nav>
-        </div>
-      )}
-
-      {/* ===================================================
-          CONTENT
-      =================================================== */}
-
-      <section
-        className={styles["security-content"]}
-      >
-        <h1>
-          Security &amp; Privacy
-        </h1>
-
-        <p
-          className={
-            styles["security-description"]
-          }
-        >
-          Manage your account security settings
-          and keep your information safe.
-        </p>
-
-        <Link
-          href="/settings"
-          className={
-            styles["security-back-link"]
-          }
-        >
-          <span
+          <section
             className={
-              styles["security-back-arrow"]
-            }
-          >
-            ‹
-          </span>
-
-          <span>Back to Settings</span>
-        </Link>
-
-        {/* =================================================
-            AUTHENTICATION
-        ================================================= */}
-
-        <section
-          className={
-            styles["security-card"]
-          }
-        >
-          <div
-            className={
-              styles["security-section-label"]
-            }
-          >
-            AUTHENTICATION
-          </div>
-
-          {/* PASSWORD */}
-
-          <div
-            className={
-              styles["security-setting-row"]
+              styles["security-card"]
             }
           >
             <div
-              className={`${styles["security-icon-box"]} ${styles["security-icon-blue"]}`}
+              className={
+                styles["security-section-label"]
+              }
             >
-              <LockIcon />
+              AUTHENTICATION
             </div>
+
+            {/* PASSWORD */}
 
             <div
               className={
-                styles[
-                  "security-setting-content"
-                ]
+                styles["security-setting-row"]
               }
             >
-              <h2>Password</h2>
+              <div
+                className={`${styles["security-icon-box"]} ${styles["security-icon-blue"]}`}
+              >
+                <LockIcon />
+              </div>
 
-              <p>
-                Keep your account password
-                secure.
-              </p>
-            </div>
+              <div
+                className={
+                  styles[
+                    "security-setting-content"
+                  ]
+                }
+              >
+                <h2>Password</h2>
 
-            <button
-              type="button"
-              className={
-                styles[
-                  "security-action-button"
-                ]
-              }
-              onClick={() =>
-                navigateTo(
-                  "/change-password"
-                )
-              }
-            >
-              <span>Change Password</span>
-              <ChevronIcon />
-            </button>
-          </div>
-
-          <div
-            className={
-              styles["security-row-divider"]
-            }
-          />
-
-          {/* TWO FACTOR */}
-
-          <div
-            className={
-              styles["security-setting-row"]
-            }
-          >
-            <div
-              className={`${styles["security-icon-box"]} ${styles["security-icon-green"]}`}
-            >
-              <ShieldIcon />
-            </div>
-
-            <div
-              className={
-                styles[
-                  "security-setting-content"
-                ]
-              }
-            >
-              <h2>
-                Two-Factor Authentication
-              </h2>
-
-              <p>
-                {twoFactor.loading
-                  ? "Checking your account protection..."
-                  : twoFactor.enabled
-                    ? twoFactor.method
-                      ? `Protected with ${twoFactor.method}.`
-                      : "Your account has an active second factor."
-                    : "Add an extra layer of protection to your account."}
-              </p>
-            </div>
-
-            <div
-              className={
-                styles[
-                  "security-status-action"
-                ]
-              }
-            >
-              {!twoFactor.loading && (
-                <div
-                  className={
-                    twoFactor.enabled
-                      ? `${styles["security-status"]} ${styles["security-status-enabled"]}`
-                      : `${styles["security-status"]} ${styles["security-status-warning"]}`
-                  }
-                >
-                  <StatusIcon
-                    enabled={
-                      twoFactor.enabled
-                    }
-                  />
-
-                  <span>
-                    {twoFactor.enabled
-                      ? "Enabled"
-                      : "Not enabled"}
-                  </span>
-                </div>
-              )}
-
-              {twoFactor.loading && (
-                <div
-                  className={
-                    styles[
-                      "security-loading-status"
-                    ]
-                  }
-                >
-                  Checking...
-                </div>
-              )}
+                <p>
+                  Keep your account password
+                  secure.
+                </p>
+              </div>
 
               <button
                 type="button"
@@ -1075,281 +590,392 @@ export default function SecurityPage() {
                 }
                 onClick={() =>
                   navigateTo(
-                    "/two-factor-authentication"
+                    "/change-password"
                   )
                 }
               >
                 <span>
-                  {twoFactor.enabled
-                    ? "Manage 2FA"
-                    : "Set Up 2FA"}
+                  Change Password
                 </span>
 
                 <ChevronIcon />
               </button>
             </div>
-          </div>
 
-          <div
+            <div
+              className={
+                styles["security-row-divider"]
+              }
+            />
+
+            {/* TWO FACTOR */}
+
+            <div
+              className={
+                styles["security-setting-row"]
+              }
+            >
+              <div
+                className={`${styles["security-icon-box"]} ${styles["security-icon-green"]}`}
+              >
+                <ShieldIcon />
+              </div>
+
+              <div
+                className={
+                  styles[
+                    "security-setting-content"
+                  ]
+                }
+              >
+                <h2>
+                  Two-Factor Authentication
+                </h2>
+
+                <p>
+                  {twoFactor.loading
+                    ? "Checking your account protection..."
+                    : twoFactor.enabled
+                      ? twoFactor.method
+                        ? `Protected with ${twoFactor.method}.`
+                        : "Your account has an active second factor."
+                      : "Add an extra layer of protection to your account."}
+                </p>
+              </div>
+
+              <div
+                className={
+                  styles[
+                    "security-status-action"
+                  ]
+                }
+              >
+                {!twoFactor.loading && (
+                  <div
+                    className={
+                      twoFactor.enabled
+                        ? `${styles["security-status"]} ${styles["security-status-enabled"]}`
+                        : `${styles["security-status"]} ${styles["security-status-warning"]}`
+                    }
+                  >
+                    <StatusIcon
+                      enabled={
+                        twoFactor.enabled
+                      }
+                    />
+
+                    <span>
+                      {twoFactor.enabled
+                        ? "Enabled"
+                        : "Not enabled"}
+                    </span>
+                  </div>
+                )}
+
+                {twoFactor.loading && (
+                  <div
+                    className={
+                      styles[
+                        "security-loading-status"
+                      ]
+                    }
+                  >
+                    Checking...
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  className={
+                    styles[
+                      "security-action-button"
+                    ]
+                  }
+                  onClick={() =>
+                    navigateTo(
+                      "/two-factor-authentication"
+                    )
+                  }
+                >
+                  <span>
+                    {twoFactor.enabled
+                      ? "Manage 2FA"
+                      : "Set Up 2FA"}
+                  </span>
+
+                  <ChevronIcon />
+                </button>
+              </div>
+            </div>
+
+            <div
+              className={
+                styles["security-row-divider"]
+              }
+            />
+
+            {/* ACTIVE SESSIONS */}
+
+            <div
+              className={
+                styles["security-setting-row"]
+              }
+            >
+              <div
+                className={`${styles["security-icon-box"]} ${styles["security-icon-purple"]}`}
+              >
+                <MonitorIcon />
+              </div>
+
+              <div
+                className={
+                  styles[
+                    "security-setting-content"
+                  ]
+                }
+              >
+                <h2>
+                  Active Sessions
+                </h2>
+
+                <p>
+                  View and manage devices
+                  currently signed in to your
+                  account.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className={
+                  styles[
+                    "security-action-button"
+                  ]
+                }
+                onClick={() =>
+                  navigateTo(
+                    "/active-sessions"
+                  )
+                }
+              >
+                <span>
+                  View Sessions
+                </span>
+
+                <ChevronIcon />
+              </button>
+            </div>
+          </section>
+
+          {/* =================================================
+              ACCOUNT SECURITY
+          ================================================= */}
+
+          <section
             className={
-              styles["security-row-divider"]
-            }
-          />
-
-          {/* ACTIVE SESSIONS */}
-
-          <div
-            className={
-              styles["security-setting-row"]
+              styles["security-card"]
             }
           >
             <div
-              className={`${styles["security-icon-box"]} ${styles["security-icon-purple"]}`}
+              className={
+                styles["security-section-label"]
+              }
             >
-              <MonitorIcon />
+              ACCOUNT SECURITY
             </div>
+
+            {/* EMAIL */}
 
             <div
               className={
-                styles[
-                  "security-setting-content"
-                ]
+                styles["security-setting-row"]
               }
             >
-              <h2>Active Sessions</h2>
+              <div
+                className={`${styles["security-icon-box"]} ${styles["security-icon-green"]}`}
+              >
+                <MailIcon />
+              </div>
 
-              <p>
-                View and manage devices
-                currently signed in to your
-                account.
-              </p>
-            </div>
+              <div
+                className={
+                  styles[
+                    "security-setting-content"
+                  ]
+                }
+              >
+                <h2>
+                  Email Verification
+                </h2>
 
-            <button
-              type="button"
-              className={
-                styles[
-                  "security-action-button"
-                ]
-              }
-              onClick={() =>
-                navigateTo(
-                  "/active-sessions"
-                )
-              }
-            >
-              <span>View Sessions</span>
-              <ChevronIcon />
-            </button>
-          </div>
-        </section>
+                <p>
+                  {user.email ||
+                    "No email address found."}
+                </p>
+              </div>
 
-        {/* =================================================
-            ACCOUNT SECURITY
-        ================================================= */}
-
-        <section
-          className={
-            styles["security-card"]
-          }
-        >
-          <div
-            className={
-              styles["security-section-label"]
-            }
-          >
-            ACCOUNT SECURITY
-          </div>
-
-          {/* EMAIL */}
-
-          <div
-            className={
-              styles["security-setting-row"]
-            }
-          >
-            <div
-              className={`${styles["security-icon-box"]} ${styles["security-icon-green"]}`}
-            >
-              <MailIcon />
-            </div>
-
-            <div
-              className={
-                styles[
-                  "security-setting-content"
-                ]
-              }
-            >
-              <h2>
-                Email Verification
-              </h2>
-
-              <p>
-                {user.email ||
-                  "No email address found."}
-              </p>
-            </div>
-
-            <div
-              className={
-                user.emailVerified
-                  ? `${styles["security-status"]} ${styles["security-status-enabled"]}`
-                  : `${styles["security-status"]} ${styles["security-status-warning"]}`
-              }
-            >
-              <StatusIcon
-                enabled={
+              <div
+                className={
                   user.emailVerified
+                    ? `${styles["security-status"]} ${styles["security-status-enabled"]}`
+                    : `${styles["security-status"]} ${styles["security-status-warning"]}`
                 }
-              />
+              >
+                <StatusIcon
+                  enabled={
+                    user.emailVerified
+                  }
+                />
 
-              <span>
-                {user.emailVerified
-                  ? "Verified"
-                  : "Not verified"}
-              </span>
+                <span>
+                  {user.emailVerified
+                    ? "Verified"
+                    : "Not verified"}
+                </span>
+              </div>
             </div>
-          </div>
 
-          <div
+            <div
+              className={
+                styles["security-row-divider"]
+              }
+            />
+
+            {/* PHONE */}
+
+            <div
+              className={
+                styles["security-setting-row"]
+              }
+            >
+              <div
+                className={`${styles["security-icon-box"]} ${styles["security-icon-yellow"]}`}
+              >
+                <PhoneIcon />
+              </div>
+
+              <div
+                className={
+                  styles[
+                    "security-setting-content"
+                  ]
+                }
+              >
+                <h2>
+                  Phone Number
+                </h2>
+
+                <p>
+                  {user.phone
+                    ? user.phone
+                    : "No phone number has been added to your account."}
+                </p>
+              </div>
+
+              <div
+                className={
+                  styles["security-row-end"]
+                }
+              >
+                <div
+                  className={
+                    user.phoneVerified
+                      ? `${styles["security-status"]} ${styles["security-status-enabled"]}`
+                      : `${styles["security-status"]} ${styles["security-status-warning"]}`
+                  }
+                >
+                  <StatusIcon
+                    enabled={
+                      user.phoneVerified
+                    }
+                  />
+
+                  <span>
+                    {user.phoneVerified
+                      ? "Verified"
+                      : user.phone
+                        ? "Not verified"
+                        : "Not added"}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className={
+                    styles[
+                      "security-action-button"
+                    ]
+                  }
+                  onClick={() =>
+                    navigateTo(
+                      "/account/phone-number"
+                    )
+                  }
+                >
+                  <span>
+                    {user.phone
+                      ? user.phoneVerified
+                        ? "Manage Phone"
+                        : "Verify Phone"
+                      : "Add Phone Number"}
+                  </span>
+
+                  <ChevronIcon />
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* =================================================
+              SECURITY NOTICE
+          ================================================= */}
+
+          <section
             className={
-              styles["security-row-divider"]
-            }
-          />
-
-          {/* PHONE */}
-
-          <div
-            className={
-              styles["security-setting-row"]
+              styles["security-notice"]
             }
           >
             <div
-              className={`${styles["security-icon-box"]} ${styles["security-icon-yellow"]}`}
+              className={
+                styles[
+                  "security-notice-icon"
+                ]
+              }
             >
-              <PhoneIcon />
+              <SecurityNoticeIcon />
             </div>
 
             <div
               className={
                 styles[
-                  "security-setting-content"
+                  "security-notice-content"
                 ]
               }
             >
-              <h2>Phone Number</h2>
+              <h3>
+                Your security is important to us
+              </h3>
 
               <p>
-                {user.phone
-                  ? user.phone
-                  : "No phone number has been added to your account."}
+                We use industry-standard
+                encryption to protect your data
+                and keep your account secure.
               </p>
             </div>
 
             <div
               className={
-                user.phoneVerified
-                  ? `${styles["security-status"]} ${styles["security-status-enabled"]}`
-                  : `${styles["security-status"]} ${styles["security-status-warning"]}`
-              }
-            >
-              <StatusIcon
-                enabled={
-                  user.phoneVerified
-                }
-              />
-
-              <span>
-                {user.phoneVerified
-                  ? "Verified"
-                  : user.phone
-                    ? "Not verified"
-                    : "Not added"}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              className={
                 styles[
-                  "security-action-button"
+                  "security-notice-watermark"
                 ]
               }
-              onClick={() =>
-                navigateTo(
-                  "/account/phone-number"
-                )
-              }
+              aria-hidden="true"
             >
-              <span>
-                {user.phone
-                  ? user.phoneVerified
-                    ? "Manage Phone"
-                    : "Verify Phone"
-                  : "Add Phone Number"}
-              </span>
-
-              <ChevronIcon />
-            </button>
-          </div>
+              <ShieldIcon />
+            </div>
+          </section>
         </section>
-
-        {/* =================================================
-            SECURITY NOTICE
-        ================================================= */}
-
-        <section
-          className={
-            styles["security-notice"]
-          }
-        >
-          <div
-            className={
-              styles[
-                "security-notice-icon"
-              ]
-            }
-          >
-            <SecurityNoticeIcon />
-          </div>
-
-          <div
-            className={
-              styles[
-                "security-notice-content"
-              ]
-            }
-          >
-            <h3>
-              Your security is important to us
-            </h3>
-
-            <p>
-              We use industry-standard
-              encryption to protect your data
-              and keep your account secure.
-            </p>
-          </div>
-
-          <div
-            className={
-              styles[
-                "security-notice-watermark"
-              ]
-            }
-            aria-hidden="true"
-          >
-            <ShieldIcon />
-          </div>
-        </section>
-      </section>
-
-      {/* ===================================================
-          MOBILE BOTTOM NAV
-      =================================================== */}
-
-      <BottomNavigation />
-    </main>
+      </main>
+    </AppShell>
   );
 }

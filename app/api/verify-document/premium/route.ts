@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import {
+  searchKnowledge,
+  type PropertyDocumentType,
+} from "@/app/lib/ai";
 
 export const dynamic = "force-dynamic";
 
@@ -821,6 +825,158 @@ async function callOpenAI(
 
 /*
  * ============================================================
+ * PROPERTYsure AI APPROVED KNOWLEDGE
+ * ============================================================
+ *
+ * Only approved PropertySure AI knowledge is retrieved.
+ *
+ * Customer documents are NOT automatically added to the
+ * knowledge base.
+ *
+ * If retrieval fails, Premium continues its normal analysis.
+ * ============================================================
+ */
+
+function formatKnowledgeContext(
+  references: any[],
+): string {
+  if (
+    !references ||
+    references.length === 0
+  ) {
+    return `
+No approved PropertySure AI knowledge references were retrieved
+for this document.
+
+Do not invent missing standards, facts, or document characteristics.
+Continue using the supplied document and the existing Premium verification rules.
+`;
+  }
+
+  return references
+    .slice(0, 10)
+    .map(
+      (reference, index) => {
+        const title =
+          reference?.title ||
+          `Approved knowledge reference ${index + 1}`;
+
+        const sourceType =
+          reference?.sourceType ||
+          reference?.source_type ||
+          "approved-reference";
+
+        const referenceDocumentType =
+          reference?.documentType ||
+          reference?.document_type ||
+          "general";
+
+        const similarity =
+          typeof reference?.similarity ===
+          "number"
+            ? reference.similarity.toFixed(
+                3,
+              )
+            : "unknown";
+
+        const content =
+          reference?.content ||
+          reference?.description ||
+          "";
+
+        return `
+REFERENCE ${index + 1}
+Title: ${title}
+Source type: ${sourceType}
+Document type: ${referenceDocumentType}
+Similarity: ${similarity}
+
+Reference content:
+${content}
+`;
+      },
+    )
+    .join("\n");
+}
+
+async function retrieveApprovedKnowledge(
+  documentType?: string,
+  additionalText = "",
+) {
+  try {
+    return await searchKnowledge(
+      {
+        /*
+         * The document package currently stores documentType as
+         * string | undefined.
+         *
+         * searchKnowledge expects the controlled
+         * PropertyDocumentType union.
+         *
+         * We narrow the value at this integration boundary
+         * without changing the existing document package type
+         * or the rest of the Premium engine.
+         */
+        documentType:
+          documentType as
+            | PropertyDocumentType
+            | undefined,
+
+        keywords: [
+          "Nigeria",
+          "property document",
+          documentType ||
+            "property document",
+          "premium verification",
+          "ownership",
+          "title",
+          "survey",
+          "property",
+          "fraud",
+          "manipulation",
+        ],
+
+        text: [
+          "Nigerian property document verification",
+          documentType
+            ? `document type: ${documentType}`
+            : "property document package",
+          "document structure",
+          "ownership information",
+          "title information",
+          "property identifiers",
+          "survey and plot information",
+          "location and land size",
+          "fraud indicators",
+          "manipulation indicators",
+          "cross-document consistency",
+          additionalText,
+        ]
+          .filter(Boolean)
+          .join("\n"),
+      },
+      {
+        limit: 10,
+        minimumSimilarity: 0.5,
+      },
+    );
+  } catch (error) {
+    /*
+     * Knowledge retrieval is an enhancement to the Premium
+     * engine. A temporary retrieval failure must not prevent
+     * the customer's documents from being analyzed.
+     */
+    console.error(
+      "PREMIUM KNOWLEDGE RETRIEVAL ERROR:",
+      error,
+    );
+
+    return [];
+  }
+}
+
+/*
+ * ============================================================
  * DOCUMENT ANALYSIS
  * ============================================================
  */
@@ -846,6 +1002,35 @@ async function analyzeDocument(
   const dataUrl =
     `data:${actualMimeType};base64,${bytes.toString("base64")}`;
 
+  /*
+   * ==========================================================
+   * NEW:
+   * Retrieve approved PropertySure AI knowledge BEFORE the
+   * existing Premium document analysis.
+   * ==========================================================
+   */
+
+  const knowledgeReferences =
+    await retrieveApprovedKnowledge(
+      documentType,
+      [
+        fileName,
+        documentType,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    );
+
+  const knowledgeContext =
+    formatKnowledgeContext(
+      knowledgeReferences,
+    );
+
+  console.log(
+    "PREMIUM KNOWLEDGE REFERENCES:",
+    knowledgeReferences.length,
+  );
+
   const prompt = `
 You are PropertySure AI's Premium property-document verification engine.
 
@@ -853,6 +1038,33 @@ Analyze the ACTUAL supplied Nigerian property document as part of a premium mult
 
 Document type from package review:
 ${documentType || "Unknown"}
+
+============================================================
+APPROVED PROPERTYsure AI KNOWLEDGE
+============================================================
+
+The following information comes ONLY from PropertySure AI
+knowledge that has already passed the internal approval process.
+
+${knowledgeContext}
+
+IMPORTANT KNOWLEDGE RULES:
+
+- Use approved knowledge as supporting context only.
+- Similarity to an approved reference does NOT prove authenticity.
+- A matching layout does NOT prove government issuance.
+- A matching stamp does NOT prove government issuance.
+- A matching signature does NOT prove government issuance.
+- An approved example is NOT proof that the customer's document is genuine.
+- Do not copy facts from a reference into the customer's document.
+- Do not assume information exists in the customer's document when it is not visible.
+- Do not invent missing information.
+- If an approved reference differs from the customer's document, describe the observable difference.
+- Approved knowledge may help identify expected structures, terminology, document fields, patterns, anomalies, ownership/title indicators, and fraud indicators.
+
+============================================================
+END APPROVED PROPERTYsure AI KNOWLEDGE
+============================================================
 
 Inspect for:
 
@@ -910,6 +1122,8 @@ Rules:
 - Use null when a check cannot reasonably be assessed.
 - Never invent names, dates, locations, plot numbers, title references or land sizes.
 - A clean-looking document is NOT proof of authenticity.
+- Use approved knowledge to support pattern recognition and document assessment, not to declare authenticity.
+- If approved knowledge conflicts with the visible customer document, report the observable discrepancy rather than forcing a match.
 `;
 
   const content:
@@ -1158,8 +1372,61 @@ async function analyzePackage(
       }),
     );
 
+  /*
+   * ==========================================================
+   * NEW:
+   * Retrieve approved PropertySure AI knowledge for the
+   * cross-document/package analysis.
+   *
+   * No document-type filter is used here because this analysis
+   * compares the package as a whole.
+   * ==========================================================
+   */
+
+  const packageKnowledgeReferences =
+    await retrieveApprovedKnowledge(
+      undefined,
+      JSON.stringify(
+        packageData,
+        null,
+        2,
+      ).slice(0, 12000),
+    );
+
+  const packageKnowledgeContext =
+    formatKnowledgeContext(
+      packageKnowledgeReferences,
+    );
+
+  console.log(
+    "PREMIUM PACKAGE KNOWLEDGE REFERENCES:",
+    packageKnowledgeReferences.length,
+  );
+
   const prompt = `
 You are PropertySure AI's Premium cross-document property due-diligence engine.
+
+============================================================
+APPROVED PROPERTYsure AI KNOWLEDGE
+============================================================
+
+The following information comes ONLY from PropertySure AI
+knowledge that has already passed the internal approval process.
+
+${packageKnowledgeContext}
+
+IMPORTANT KNOWLEDGE RULES:
+
+- Use approved knowledge as supporting context only.
+- Approved references are patterns and contextual evidence, not proof of authenticity.
+- Do not copy ownership, title, location, registration or property facts from references into the customer package.
+- Do not assume a customer document is genuine because it resembles an approved example.
+- Use the approved knowledge to help identify expected structures, terminology, relationships, inconsistencies and fraud indicators.
+- If the package differs from an approved reference, describe the observable difference only when supported by the supplied package.
+
+============================================================
+END APPROVED PROPERTYsure AI KNOWLEDGE
+============================================================
 
 Analyze the following document package as ONE property transaction.
 

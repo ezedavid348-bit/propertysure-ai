@@ -6,46 +6,14 @@ import {
   useMemo,
   useState,
 } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+
 import { supabase } from "../lib/supabase";
+import AppShell from "../AppShell/AppShell";
+import LoadingScreen from "../AppShell/LoadingScreen";
+
 import styles from "./password.module.css";
-
-/*
-============================================================
-ICON SYSTEM
-============================================================
-*/
-
-type IconName =
-  | "bell"
-  | "arrow"
-  | "chevron";
-
-function Icon({
-  name,
-  size = 20,
-}: {
-  name: IconName;
-  size?: number;
-}) {
-  const icons: Record<IconName, string> = {
-    bell: "🔔",
-    arrow: "←",
-    chevron: "⌄",
-  };
-
-  return (
-    <span
-      className={styles.icon}
-      style={{
-        fontSize: `${size}px`,
-      }}
-      aria-hidden="true"
-    >
-      {icons[name]}
-    </span>
-  );
-}
 
 /*
 ============================================================
@@ -165,6 +133,179 @@ function getPasswordError(
 
 /*
 ============================================================
+PASSWORD ICONS
+============================================================
+*/
+
+function LockIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <rect
+        x="4"
+        y="10"
+        width="16"
+        height="11"
+        rx="2.5"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
+
+      <path
+        d="M7.5 10V7.5C7.5 5.57 9.07 4 11 4H13C14.93 4 16.5 5.57 16.5 7.5V10"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+
+      <circle
+        cx="12"
+        cy="15"
+        r="1.2"
+        fill="currentColor"
+      />
+
+      <path
+        d="M12 16.2V18"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function EyeIcon({
+  visible,
+}: {
+  visible: boolean;
+}) {
+  if (visible) {
+    return (
+      <svg
+        width="19"
+        height="19"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M2.5 12C4.6 7.8 8 5.5 12 5.5C16 5.5 19.4 7.8 21.5 12C19.4 16.2 16 18.5 12 18.5C8 18.5 4.6 16.2 2.5 12Z"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinejoin="round"
+        />
+
+        <circle
+          cx="12"
+          cy="12"
+          r="3"
+          stroke="currentColor"
+          strokeWidth="1.7"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      width="19"
+      height="19"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M3 3L21 21"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M10.6 5.7C11.06 5.57 11.53 5.5 12 5.5C16 5.5 19.4 7.8 21.5 12C20.78 13.45 19.82 14.7 18.68 15.7"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M6.1 8.1C4.63 9.06 3.4 10.38 2.5 12C4.6 16.2 8 18.5 12 18.5C13.13 18.5 14.21 18.32 15.22 17.97"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 3L19 5.6V10.4C19 14.9 16.1 18.4 12 20C7.9 18.4 5 14.9 5 10.4V5.6L12 3Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+
+      <path
+        d="M8.7 11.7L10.8 13.8L15.5 9.3"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function TipsIcon() {
+  return (
+    <svg
+      width="23"
+      height="23"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M9 18H15"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M9.5 21H14.5"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M8.2 14.7C7.05 13.75 6.3 12.32 6.3 10.7C6.3 7.55 8.85 5 12 5C15.15 5 17.7 7.55 17.7 10.7C17.7 12.32 16.95 13.75 15.8 14.7C15.2 15.2 15 15.7 15 16.5H9C9 15.7 8.8 15.2 8.2 14.7Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/*
+============================================================
 CHANGE PASSWORD PAGE
 ============================================================
 */
@@ -179,15 +320,6 @@ export default function ChangePasswordPage() {
   */
 
   const [email, setEmail] = useState("");
-
-  const [fullName, setFullName] =
-    useState("User");
-
-  const [initial, setInitial] =
-    useState("U");
-
-  const [plan, setPlan] =
-    useState("Free Plan");
 
   /*
   ============================================================
@@ -261,8 +393,7 @@ export default function ChangePasswordPage() {
         const {
           data,
           error,
-        } =
-          await supabase.auth.getUser();
+        } = await supabase.auth.getUser();
 
         if (error) {
           throw error;
@@ -277,89 +408,10 @@ export default function ChangePasswordPage() {
           return;
         }
 
-        const authUser =
-          data.user;
+        const authUser = data.user;
 
-        const metadata =
-          authUser.user_metadata || {};
-
-        /*
-        --------------------------------------------------------
-        EMAIL
-        --------------------------------------------------------
-        */
-
-        const userEmail =
-          authUser.email || "";
-
-        setEmail(userEmail);
-
-        /*
-        --------------------------------------------------------
-        NAME
-        --------------------------------------------------------
-        */
-
-        const metadataName =
-          metadata.full_name ||
-          metadata.name ||
-          metadata.display_name ||
-          "";
-
-        const fallbackName =
-          userEmail
-            ? userEmail
-                .split("@")[0]
-                .replace(
-                  /[._-]+/g,
-                  " "
-                )
-                .replace(
-                  /\b\w/g,
-                  (letter: string) =>
-                    letter.toUpperCase()
-                )
-            : "User";
-
-        const resolvedName =
-          String(metadataName).trim() ||
-          fallbackName;
-
-        setFullName(
-          resolvedName
-        );
-
-        /*
-        --------------------------------------------------------
-        INITIAL
-        --------------------------------------------------------
-        */
-
-        const resolvedInitial =
-          resolvedName
-            .trim()
-            .charAt(0)
-            .toUpperCase() ||
-          "U";
-
-        setInitial(
-          resolvedInitial
-        );
-
-        /*
-        --------------------------------------------------------
-        PLAN
-        --------------------------------------------------------
-        */
-
-        const metadataPlan =
-          metadata.plan ||
-          metadata.subscription_plan ||
-          metadata.account_plan ||
-          "Free Plan";
-
-        setPlan(
-          String(metadataPlan)
+        setEmail(
+          authUser.email || ""
         );
       } catch (error) {
         console.error(
@@ -397,16 +449,8 @@ export default function ChangePasswordPage() {
   */
 
   function goBackToSecurity() {
-    router.push("/security");
-  }
-
-  function goToAccount() {
-    router.push("/account");
-  }
-
-  function goToNotifications() {
     router.push(
-      "/account/notifications"
+      "/settings/security"
     );
   }
 
@@ -434,6 +478,7 @@ export default function ChangePasswordPage() {
       setErrorMessage(
         "Please enter your current password."
       );
+
       return;
     }
 
@@ -452,6 +497,7 @@ export default function ChangePasswordPage() {
       setErrorMessage(
         passwordError
       );
+
       return;
     }
 
@@ -468,6 +514,7 @@ export default function ChangePasswordPage() {
       setErrorMessage(
         "New password and confirmation password do not match."
       );
+
       return;
     }
 
@@ -484,6 +531,7 @@ export default function ChangePasswordPage() {
       setErrorMessage(
         "Your new password must be different from your current password."
       );
+
       return;
     }
 
@@ -497,6 +545,7 @@ export default function ChangePasswordPage() {
       setErrorMessage(
         "We could not determine the email address for this account."
       );
+
       return;
     }
 
@@ -565,7 +614,9 @@ export default function ChangePasswordPage() {
       );
 
       window.setTimeout(() => {
-        router.push("/security");
+        router.push(
+          "/settings/security"
+        );
       }, 1800);
     } catch (error) {
       console.error(
@@ -585,45 +636,12 @@ export default function ChangePasswordPage() {
 
   /*
   ============================================================
-  LOADING
+  SHARED LOADING SCREEN
   ============================================================
   */
 
   if (loading) {
-    return (
-      <main
-        className={
-          styles.loadingPage
-        }
-      >
-        <div
-          className={
-            styles.loadingLogo
-          }
-        >
-          ◆
-        </div>
-
-        <div
-          className={
-            styles.loadingBrand
-          }
-        >
-          PropertySure
-          <strong> AI</strong>
-        </div>
-
-        <div
-          className={
-            styles.loadingSpinner
-          }
-        />
-
-        <p>
-          Loading security settings...
-        </p>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   /*
@@ -633,916 +651,640 @@ export default function ChangePasswordPage() {
   */
 
   return (
-    <main
-      className={
-        styles.page
-      }
+    <AppShell
+      activePath="/settings"
+      headerPath="/settings"
     >
-      {/* ====================================================
-          SIDEBAR
-      ==================================================== */}
+      <main className={styles.page}>
+        <section className={styles.content}>
 
-      <aside
-        className={
-          styles.sidebar
-        }
-      >
-        <button
-          type="button"
-          className={
-            styles.brandButton
-          }
-          onClick={
-            goToAccount
-          }
-        >
-          <div
-            className={
-              styles.brandName
-            }
-          >
-            <span
-              className={
-                styles.brandDiamond
-              }
-            >
-              ◆
-            </span>
-
-            <span>
-              PropertySure
-              <strong> AI</strong>
-            </span>
-          </div>
-
-          <div
-            className={
-              styles.brandSubtitle
-            }
-          >
-            AI-Powered Property
-            <br />
-            Due Diligence
-          </div>
-        </button>
-
-        <nav
-          className={
-            styles.sidebarNav
-          }
-        >
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/dashboard"
-              )
-            }
-          >
-            <span>⌂</span>
-            Dashboard
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/verify"
-              )
-            }
-          >
-            <span>⇧</span>
-            Verify Property
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/my-properties"
-              )
-            }
-          >
-            <span>⌂</span>
-            My Properties
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/verification-history"
-              )
-            }
-          >
-            <span>◷</span>
-            Verification History
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/fraud-watch"
-              )
-            }
-          >
-            <span>◇</span>
-            Fraud Watch
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/reports"
-              )
-            }
-          >
-            <span>▤</span>
-            Reports
-          </button>
-        </nav>
-
-        <div
-          className={
-            styles.accountLabel
-          }
-        >
-          ACCOUNT
-        </div>
-
-        <button
-          type="button"
-          className={
-            styles.accountNav
-          }
-          onClick={
-            goToAccount
-          }
-        >
-          <span>◉</span>
-          Account
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.settingsNav
-          }
-          onClick={() =>
-            router.push(
-              "/settings"
-            )
-          }
-        >
-          <span>⚙</span>
-          Settings
-        </button>
-
-        {/* SUPPORT */}
-
-        <div
-          className={
-            styles.helpBox
-          }
-        >
-          <h3>
-            Need Help?
-          </h3>
-
-          <p>
-            Our support team is ready
-            to assist you.
-          </p>
-
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/account"
-              )
-            }
-          >
-            Contact Support
-          </button>
-        </div>
-
-        {/* USER */}
-
-        <button
-          type="button"
-          className={
-            styles.sidebarUser
-          }
-          onClick={
-            goToAccount
-          }
-        >
-          <div
-            className={
-              styles.userAvatar
-            }
-          >
-            {initial}
-          </div>
-
-          <div
-            className={
-              styles.sidebarUserInfo
-            }
-          >
-            <strong>
-              {fullName}
-            </strong>
-
-            <span>
-              {plan}
-            </span>
-          </div>
-
-          <span
-            className={
-              styles.userChevron
-            }
-          >
-            ⌄
-          </span>
-        </button>
-      </aside>
-
-      {/* ====================================================
-          MAIN
-      ==================================================== */}
-
-      <section
-        className={
-          styles.main
-        }
-      >
-        {/* ==================================================
-            TOP BAR
-        ================================================== */}
-
-        <header
-          className={
-            styles.topbar
-          }
-        >
-          <button
-            type="button"
-            className={
-              styles.backButton
-            }
-            onClick={
-              goBackToSecurity
-            }
-          >
-            <Icon
-              name="arrow"
-              size={18}
-            />
-
-            <span>
-              Back to Security
-            </span>
-          </button>
-
-          <div
-            className={
-              styles.topbarRight
-            }
-          >
-            {/* =================================================
-                SAME NOTIFICATION BELL STYLE
-                USED BY SECURITY PAGE
-            ================================================= */}
-
-            <button
-              type="button"
-              className={
-                styles.notificationButton
-              }
-              aria-label="Notifications"
-              onClick={
-                goToNotifications
-              }
-            >
-              <Icon
-                name="bell"
-                size={18}
-              />
-
-              <span
-                className={
-                  styles.notificationDot
-                }
-              />
-            </button>
-
-            {/* =================================================
-                DYNAMIC USER PROFILE
-            ================================================= */}
-
-            <button
-              type="button"
-              className={
-                styles.topProfile
-              }
-              onClick={
-                goToAccount
-              }
-            >
-              <div
-                className={
-                  styles.topAvatar
-                }
-              >
-                {initial}
-              </div>
-
-              <div
-                className={
-                  styles.topUserText
-                }
-              >
-                <strong>
-                  {fullName}
-                </strong>
-
-                <span>
-                  {plan}
-                </span>
-              </div>
-
-              <span
-                className={
-                  styles.topProfileChevron
-                }
-              >
-                ⌄
-              </span>
-            </button>
-          </div>
-        </header>
-
-        {/* ==================================================
-            PAGE INTRO
-        ================================================== */}
-
-        <div
-          className={
-            styles.pageIntro
-          }
-        >
-          <h1>
-            Change Password
-          </h1>
-
-          <p>
-            Update your password to keep
-            your PropertySure AI account
-            secure.
-          </p>
-        </div>
-
-        {/* ==================================================
-            ERROR
-        ================================================== */}
-
-        {errorMessage && (
-          <div
-            className={
-              styles.errorMessage
-            }
-          >
-            <span>!</span>
-
-            <div>
-              {errorMessage}
-            </div>
-
-            <button
-              type="button"
-              onClick={() =>
-                setErrorMessage("")
-              }
-              aria-label="Close error"
-            >
-              ×
-            </button>
-          </div>
-        )}
-
-        {/* ==================================================
-            SUCCESS
-        ================================================== */}
-
-        {successMessage && (
-          <div
-            className={
-              styles.successMessage
-            }
-          >
-            <span>✓</span>
-
-            <div>
-              {successMessage}
-            </div>
-          </div>
-        )}
-
-        {/* ==================================================
-            CONTENT GRID
-        ================================================== */}
-
-        <div
-          className={
-            styles.contentGrid
-          }
-        >
           {/* ==================================================
-              PASSWORD FORM
+              PAGE INTRO
           ================================================== */}
 
-          <form
+          <header
             className={
-              styles.passwordCard
-            }
-            onSubmit={
-              handleSubmit
+              styles.pageIntro
             }
           >
-            {/* CURRENT PASSWORD */}
+            <h1>
+              Change Password
+            </h1>
 
-            <div
+            <p>
+              Update your password to keep
+              your PropertySure AI account
+              secure.
+            </p>
+
+            <Link
+              href="/settings/security"
               className={
-                styles.fieldGroup
+                styles.backLink
               }
             >
-              <label
-                htmlFor="currentPassword"
-              >
-                Current Password
-              </label>
-
-              <div
+              <span
                 className={
-                  styles.passwordInput
+                  styles.backArrow
+                }
+                aria-hidden="true"
+              >
+                ←
+              </span>
+
+              <span>
+                Back to Security &amp; Privacy
+              </span>
+            </Link>
+          </header>
+
+          {/* ==================================================
+              ERROR
+          ================================================== */}
+
+          {errorMessage && (
+            <div
+              className={
+                styles.errorMessage
+              }
+              role="alert"
+            >
+              <span
+                className={
+                  styles.messageIcon
                 }
               >
-                <span
-                  className={
-                    styles.lockIcon
-                  }
-                >
-                  ♙
-                </span>
+                !
+              </span>
 
-                <input
-                  id="currentPassword"
-                  type={
-                    showCurrentPassword
-                      ? "text"
-                      : "password"
-                  }
-                  value={
-                    currentPassword
-                  }
-                  onChange={(event) =>
-                    setCurrentPassword(
-                      event.target.value
-                    )
-                  }
-                  placeholder="Enter your current password"
-                  autoComplete="current-password"
-                  disabled={
-                    submitting
-                  }
-                />
-
-                <button
-                  type="button"
-                  className={
-                    styles.eyeButton
-                  }
-                  onClick={() =>
-                    setShowCurrentPassword(
-                      (value) =>
-                        !value
-                    )
-                  }
-                  aria-label={
-                    showCurrentPassword
-                      ? "Hide current password"
-                      : "Show current password"
-                  }
-                >
-                  {showCurrentPassword
-                    ? "◉"
-                    : "◌"}
-                </button>
+              <div>
+                {errorMessage}
               </div>
 
-              <p
-                className={
-                  styles.fieldHelp
+              <button
+                type="button"
+                onClick={() =>
+                  setErrorMessage("")
                 }
+                aria-label="Close error"
               >
-                For security, please enter
-                your current password.
-              </p>
+                ×
+              </button>
             </div>
+          )}
 
-            {/* NEW PASSWORD */}
+          {/* ==================================================
+              SUCCESS
+          ================================================== */}
 
+          {successMessage && (
             <div
               className={
-                styles.fieldGroup
+                styles.successMessage
+              }
+              role="status"
+            >
+              <span
+                className={
+                  styles.messageIcon
+                }
+              >
+                ✓
+              </span>
+
+              <div>
+                {successMessage}
+              </div>
+            </div>
+          )}
+
+          {/* ==================================================
+              CONTENT
+          ================================================== */}
+
+          <div
+            className={
+              styles.contentGrid
+            }
+          >
+            {/* ==============================================
+                PASSWORD FORM
+            ============================================== */}
+
+            <form
+              className={
+                styles.passwordCard
+              }
+              onSubmit={
+                handleSubmit
               }
             >
-              <label
-                htmlFor="newPassword"
-              >
-                New Password
-              </label>
+              {/* CURRENT PASSWORD */}
 
               <div
                 className={
-                  styles.passwordInput
+                  styles.fieldGroup
                 }
               >
-                <span
-                  className={
-                    styles.lockIcon
-                  }
+                <label
+                  htmlFor="currentPassword"
                 >
-                  ♙
-                </span>
+                  Current Password
+                </label>
 
-                <input
-                  id="newPassword"
-                  type={
-                    showNewPassword
-                      ? "text"
-                      : "password"
-                  }
-                  value={
-                    newPassword
-                  }
-                  onChange={(event) =>
-                    setNewPassword(
-                      event.target.value
-                    )
-                  }
-                  placeholder="Enter your new password"
-                  autoComplete="new-password"
-                  disabled={
-                    submitting
-                  }
-                />
-
-                <button
-                  type="button"
-                  className={
-                    styles.eyeButton
-                  }
-                  onClick={() =>
-                    setShowNewPassword(
-                      (value) =>
-                        !value
-                    )
-                  }
-                  aria-label={
-                    showNewPassword
-                      ? "Hide new password"
-                      : "Show new password"
-                  }
-                >
-                  {showNewPassword
-                    ? "◉"
-                    : "◌"}
-                </button>
-              </div>
-
-              {/* PASSWORD STRENGTH */}
-
-              <div
-                className={
-                  styles.strengthRow
-                }
-              >
                 <div
                   className={
-                    styles.strengthBars
+                    styles.passwordInput
                   }
                 >
-                  {[
-                    1,
-                    2,
-                    3,
-                    4,
-                    5,
-                    6,
-                  ].map(
-                    (bar) => (
-                      <span
-                        key={bar}
-                        className={
-                          bar <=
-                          passwordStrength.score
-                            ? styles.strengthActive
-                            : styles.strengthInactive
+                  <span
+                    className={
+                      styles.lockIcon
+                    }
+                  >
+                    <LockIcon />
+                  </span>
+
+                  <input
+                    id="currentPassword"
+                    type={
+                      showCurrentPassword
+                        ? "text"
+                        : "password"
+                    }
+                    value={
+                      currentPassword
+                    }
+                    onChange={(event) =>
+                      setCurrentPassword(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Enter your current password"
+                    autoComplete="current-password"
+                    disabled={
+                      submitting
+                    }
+                  />
+
+                  <button
+                    type="button"
+                    className={
+                      styles.eyeButton
+                    }
+                    onClick={() =>
+                      setShowCurrentPassword(
+                        (value) =>
+                          !value
+                      )
+                    }
+                    aria-label={
+                      showCurrentPassword
+                        ? "Hide current password"
+                        : "Show current password"
+                    }
+                  >
+                    <EyeIcon
+                      visible={
+                        showCurrentPassword
+                      }
+                    />
+                  </button>
+                </div>
+
+                <p
+                  className={
+                    styles.fieldHelp
+                  }
+                >
+                  For security, please enter
+                  your current password.
+                </p>
+              </div>
+
+              {/* NEW PASSWORD */}
+
+              <div
+                className={
+                  styles.fieldGroup
+                }
+              >
+                <label
+                  htmlFor="newPassword"
+                >
+                  New Password
+                </label>
+
+                <div
+                  className={
+                    styles.passwordInput
+                  }
+                >
+                  <span
+                    className={
+                      styles.lockIcon
+                    }
+                  >
+                    <LockIcon />
+                  </span>
+
+                  <input
+                    id="newPassword"
+                    type={
+                      showNewPassword
+                        ? "text"
+                        : "password"
+                    }
+                    value={
+                      newPassword
+                    }
+                    onChange={(event) =>
+                      setNewPassword(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Enter your new password"
+                    autoComplete="new-password"
+                    disabled={
+                      submitting
+                    }
+                  />
+
+                  <button
+                    type="button"
+                    className={
+                      styles.eyeButton
+                    }
+                    onClick={() =>
+                      setShowNewPassword(
+                        (value) =>
+                          !value
+                      )
+                    }
+                    aria-label={
+                      showNewPassword
+                        ? "Hide new password"
+                        : "Show new password"
+                    }
+                  >
+                    <EyeIcon
+                      visible={
+                        showNewPassword
+                      }
+                    />
+                  </button>
+                </div>
+
+                <div
+                  className={
+                    styles.strengthRow
+                  }
+                >
+                  <div
+                    className={
+                      styles.strengthBars
+                    }
+                  >
+                    {[
+                      1,
+                      2,
+                      3,
+                      4,
+                      5,
+                      6,
+                    ].map(
+                      (bar) => (
+                        <span
+                          key={bar}
+                          className={
+                            bar <=
+                            passwordStrength.score
+                              ? styles.strengthActive
+                              : styles.strengthInactive
+                          }
+                        />
+                      )
+                    )}
+                  </div>
+
+                  {passwordStrength.label && (
+                    <span
+                      className={`${styles.strengthLabel} ${
+                        passwordStrength.score >=
+                        5
+                          ? styles.strengthGood
+                          : passwordStrength.score >=
+                              3
+                            ? styles.strengthFair
+                            : styles.strengthWeak
+                      }`}
+                    >
+                      Password strength:{" "}
+                      <strong>
+                        {
+                          passwordStrength.label
                         }
-                      />
-                    )
+                      </strong>
+                    </span>
                   )}
                 </div>
 
-                {passwordStrength.label && (
-                  <span
-                    className={`${styles.strengthLabel} ${
-                      passwordStrength.score >=
-                      5
-                        ? styles.strengthGood
-                        : passwordStrength.score >=
-                            3
-                          ? styles.strengthFair
-                          : styles.strengthWeak
-                    }`}
-                  >
-                    Password strength:{" "}
-                    <strong>
-                      {
-                        passwordStrength.label
-                      }
-                    </strong>
-                  </span>
-                )}
+                <p
+                  className={
+                    styles.fieldHelp
+                  }
+                >
+                  Use at least 8 characters
+                  with a mix of letters,
+                  numbers, and symbols.
+                </p>
               </div>
 
-              <p
-                className={
-                  styles.fieldHelp
-                }
-              >
-                Use at least 8 characters
-                with a mix of letters,
-                numbers, and symbols.
-              </p>
-            </div>
-
-            {/* CONFIRM PASSWORD */}
-
-            <div
-              className={
-                styles.fieldGroup
-              }
-            >
-              <label
-                htmlFor="confirmPassword"
-              >
-                Confirm New Password
-              </label>
+              {/* CONFIRM PASSWORD */}
 
               <div
                 className={
-                  styles.passwordInput
+                  styles.fieldGroup
                 }
               >
-                <span
+                <label
+                  htmlFor="confirmPassword"
+                >
+                  Confirm New Password
+                </label>
+
+                <div
                   className={
-                    styles.lockIcon
+                    styles.passwordInput
                   }
                 >
-                  ♙
-                </span>
+                  <span
+                    className={
+                      styles.lockIcon
+                    }
+                  >
+                    <LockIcon />
+                  </span>
 
-                <input
-                  id="confirmPassword"
-                  type={
-                    showConfirmPassword
-                      ? "text"
-                      : "password"
-                  }
-                  value={
-                    confirmPassword
-                  }
-                  onChange={(event) =>
-                    setConfirmPassword(
-                      event.target.value
-                    )
-                  }
-                  placeholder="Confirm your new password"
-                  autoComplete="new-password"
-                  disabled={
-                    submitting
-                  }
-                />
+                  <input
+                    id="confirmPassword"
+                    type={
+                      showConfirmPassword
+                        ? "text"
+                        : "password"
+                    }
+                    value={
+                      confirmPassword
+                    }
+                    onChange={(event) =>
+                      setConfirmPassword(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Confirm your new password"
+                    autoComplete="new-password"
+                    disabled={
+                      submitting
+                    }
+                  />
 
+                  <button
+                    type="button"
+                    className={
+                      styles.eyeButton
+                    }
+                    onClick={() =>
+                      setShowConfirmPassword(
+                        (value) =>
+                          !value
+                      )
+                    }
+                    aria-label={
+                      showConfirmPassword
+                        ? "Hide confirmation password"
+                        : "Show confirmation password"
+                    }
+                  >
+                    <EyeIcon
+                      visible={
+                        showConfirmPassword
+                      }
+                    />
+                  </button>
+                </div>
+
+                <p
+                  className={
+                    styles.fieldHelp
+                  }
+                >
+                  Re-enter your new password
+                  to confirm.
+                </p>
+
+                {confirmPassword &&
+                  newPassword !==
+                    confirmPassword && (
+                    <p
+                      className={
+                        styles.matchError
+                      }
+                    >
+                      Passwords do not match.
+                    </p>
+                  )}
+
+                {confirmPassword &&
+                  newPassword ===
+                    confirmPassword &&
+                  newPassword.length > 0 && (
+                    <p
+                      className={
+                        styles.matchSuccess
+                      }
+                    >
+                      ✓ Passwords match.
+                    </p>
+                  )}
+              </div>
+
+              {/* FORM ACTIONS */}
+
+              <div
+                className={
+                  styles.formActions
+                }
+              >
                 <button
                   type="button"
                   className={
-                    styles.eyeButton
+                    styles.cancelButton
                   }
-                  onClick={() =>
-                    setShowConfirmPassword(
-                      (value) =>
-                        !value
-                    )
+                  onClick={
+                    goBackToSecurity
                   }
-                  aria-label={
-                    showConfirmPassword
-                      ? "Hide confirmation password"
-                      : "Show confirmation password"
+                  disabled={
+                    submitting
                   }
                 >
-                  {showConfirmPassword
-                    ? "◉"
-                    : "◌"}
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className={
+                    styles.updateButton
+                  }
+                  disabled={
+                    submitting
+                  }
+                >
+                  {submitting ? (
+                    <>
+                      <span
+                        className={
+                          styles.buttonSpinner
+                        }
+                      />
+
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <LockIcon />
+
+                      <span>
+                        Update Password
+                      </span>
+                    </>
+                  )}
                 </button>
               </div>
+            </form>
 
-              <p
-                className={
-                  styles.fieldHelp
-                }
-              >
-                Re-enter your new password
-                to confirm.
-              </p>
+            {/* ==============================================
+                RIGHT COLUMN
+            ============================================== */}
 
-              {confirmPassword &&
-                newPassword !==
-                  confirmPassword && (
-                  <p
-                    className={
-                      styles.matchError
-                    }
-                  >
-                    Passwords do not match.
-                  </p>
-                )}
-
-              {confirmPassword &&
-                newPassword ===
-                  confirmPassword &&
-                newPassword.length > 0 && (
-                  <p
-                    className={
-                      styles.matchSuccess
-                    }
-                  >
-                    ✓ Passwords match.
-                  </p>
-                )}
-            </div>
-
-            {/* FORM ACTIONS */}
-
-            <div
+            <aside
               className={
-                styles.formActions
+                styles.rightColumn
               }
             >
-              <button
-                type="button"
+              {/* PASSWORD TIPS */}
+
+              <section
                 className={
-                  styles.cancelButton
-                }
-                onClick={
-                  goBackToSecurity
-                }
-                disabled={
-                  submitting
-                }
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                className={
-                  styles.updateButton
-                }
-                disabled={
-                  submitting
-                }
-              >
-                {submitting ? (
-                  <>
-                    <span
-                      className={
-                        styles.buttonSpinner
-                      }
-                    />
-
-                    Updating...
-                  </>
-                ) : (
-                  <>
-                    <span>
-                      ♙
-                    </span>
-
-                    Update Password
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-
-          {/* ==================================================
-              RIGHT COLUMN
-          ================================================== */}
-
-          <aside
-            className={
-              styles.rightColumn
-            }
-          >
-            <section
-              className={
-                styles.tipsCard
-              }
-            >
-              <div
-                className={
-                  styles.tipsHeader
+                  styles.tipsCard
                 }
               >
                 <div
                   className={
-                    styles.tipsIcon
+                    styles.tipsHeader
                   }
                 >
-                  ♢
+                  <div
+                    className={
+                      styles.tipsIcon
+                    }
+                  >
+                    <TipsIcon />
+                  </div>
+
+                  <h2>
+                    Password Tips
+                  </h2>
                 </div>
 
-                <h2>
-                  Password Tips
-                </h2>
-              </div>
+                <ul>
+                  <li>
+                    <span>
+                      ✓
+                    </span>
 
-              <ul>
-                <li>
-                  <span>✓</span>
-                  Use at least 8 characters
-                </li>
+                    <span>
+                      Use at least 8 characters
+                    </span>
+                  </li>
 
-                <li>
-                  <span>✓</span>
-                  Include uppercase and
-                  lowercase letters
-                </li>
+                  <li>
+                    <span>
+                      ✓
+                    </span>
 
-                <li>
-                  <span>✓</span>
-                  Include numbers and
-                  special characters
-                </li>
+                    <span>
+                      Include uppercase and
+                      lowercase letters
+                    </span>
+                  </li>
 
-                <li>
-                  <span>✓</span>
-                  Avoid using personal
-                  information
-                </li>
+                  <li>
+                    <span>
+                      ✓
+                    </span>
 
-                <li>
-                  <span>✓</span>
-                  Choose a strong, unique
-                  password
-                </li>
-              </ul>
-            </section>
+                    <span>
+                      Include numbers and
+                      special characters
+                    </span>
+                  </li>
 
-            <section
-              className={
-                styles.securityCard
-              }
-            >
-              <div
+                  <li>
+                    <span>
+                      ✓
+                    </span>
+
+                    <span>
+                      Avoid using personal
+                      information
+                    </span>
+                  </li>
+
+                  <li>
+                    <span>
+                      ✓
+                    </span>
+
+                    <span>
+                      Choose a strong, unique
+                      password
+                    </span>
+                  </li>
+                </ul>
+              </section>
+
+              {/* SECURITY CARD */}
+
+              <section
                 className={
-                  styles.securityIcon
+                  styles.securityCard
                 }
               >
-                ♙
-              </div>
+                <div
+                  className={
+                    styles.securityIcon
+                  }
+                >
+                  <ShieldIcon />
+                </div>
 
-              <h2>
-                Keep your account secure
-              </h2>
+                <div>
+                  <h2>
+                    Keep your account secure
+                  </h2>
 
-              <p>
-                A strong password helps
-                protect your account and
-                personal data from
-                unauthorized access.
-              </p>
-            </section>
-          </aside>
-        </div>
-      </section>
-    </main>
+                  <p>
+                    A strong password helps
+                    protect your account and
+                    personal data from
+                    unauthorized access.
+                  </p>
+                </div>
+              </section>
+            </aside>
+          </div>
+        </section>
+      </main>
+    </AppShell>
   );
 }

@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import {
+  searchKnowledge,
+  type PropertyDocumentType,
+} from "@/app/lib/ai";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +21,7 @@ export const dynamic = "force-dynamic";
  * - GPS/location consistency when usable GPS data exists
  * - Structured risk assessment
  * - Professional recommendation
+ * - Approved PropertySure AI knowledge retrieval
  *
  * IMPORTANT:
  *
@@ -627,6 +632,174 @@ function normalizeLocationStatus(
 
 /*
  * ============================================================
+ * APPROVED KNOWLEDGE RETRIEVAL
+ * ============================================================
+ *
+ * PropertySure AI does NOT automatically learn from customer
+ * documents.
+ *
+ * This function retrieves relevant approved knowledge from the
+ * PropertySure AI knowledge system.
+ *
+ * If retrieval fails, verification continues normally.
+ * ============================================================
+ */
+
+function formatKnowledgeContext(
+  references: any[],
+): string {
+  if (
+    !Array.isArray(references) ||
+    references.length === 0
+  ) {
+    return "No approved PropertySure AI knowledge reference was retrieved for this document.";
+  }
+
+  return references
+    .slice(0, 10)
+    .map(
+      (
+        reference,
+        index,
+      ) => {
+        const title =
+          asString(
+            reference?.title,
+            `Reference ${index + 1}`,
+          );
+
+        const referenceDocumentType =
+          asString(
+            reference?.documentType,
+            "General property-document reference",
+          );
+
+        const sourceType =
+          asString(
+            reference?.sourceType,
+            "approved knowledge",
+          );
+
+        const content =
+          asString(
+            reference?.content,
+            reference?.description ||
+              reference?.text ||
+              "No reference content available.",
+          );
+
+        const similarity =
+          numberValue(
+            reference?.similarity,
+          );
+
+        const similarityText =
+          similarity !== null
+            ? `Similarity score: ${similarity.toFixed(
+                3,
+              )}.`
+            : "";
+
+        return `
+REFERENCE ${index + 1}
+Title: ${title}
+Document Type: ${referenceDocumentType}
+Source Type: ${sourceType}
+${similarityText}
+
+Reference Content:
+${content}
+`;
+      },
+    )
+    .join("\n------------------------------\n");
+}
+
+async function retrieveApprovedKnowledge(
+  documentType?: string,
+) {
+  try {
+    const references =
+      await searchKnowledge(
+        {
+          /*
+           * searchKnowledge expects PropertyDocumentType | undefined.
+           *
+           * The documentType coming from the stored document package
+           * is currently typed as string | undefined, so we narrow it
+           * here at the integration boundary instead of changing the
+           * existing Professional document package structure.
+           */
+          documentType:
+            documentType as
+              | PropertyDocumentType
+              | undefined,
+
+          keywords: [
+            "Nigeria",
+            "property document",
+            documentType ||
+              "property document",
+            "professional verification",
+            "ownership",
+            "title",
+            "property information",
+            "fraud",
+            "manipulation",
+            "document structure",
+          ],
+
+          /*
+           * FIX:
+           *
+           * searchKnowledge expects the text property.
+           * rawText is not part of its input type.
+           */
+          text: [
+            "Nigerian property document verification",
+            documentType
+              ? `document type: ${documentType}`
+              : "property document",
+            "professional property due diligence",
+            "document structure",
+            "ownership information",
+            "title references",
+            "property identifiers",
+            "fraud indicators",
+            "manipulation indicators",
+            "cross-document consistency",
+          ].join("\n"),
+        },
+        {
+          limit: 10,
+          minimumSimilarity: 0.5,
+        },
+      );
+
+    return Array.isArray(
+      references,
+    )
+      ? references
+      : [];
+  } catch (error) {
+    console.error(
+      "PROFESSIONAL KNOWLEDGE RETRIEVAL ERROR:",
+      error,
+    );
+
+    /*
+     * Knowledge retrieval is supplementary.
+     *
+     * A retrieval failure must never prevent the Professional
+     * verification engine from analyzing the customer's
+     * document.
+     */
+    return [];
+  }
+}
+
+/*
+ * ============================================================
  * OPENAI RESPONSE PARSING
  * ============================================================
  */
@@ -817,6 +990,27 @@ async function analyzeDocument(
   const dataUrl =
     `data:${actualMimeType};base64,${bytes.toString("base64")}`;
 
+  /*
+   * ----------------------------------------------------------
+   * RETRIEVE APPROVED PROPERTYSURE AI KNOWLEDGE
+   * ----------------------------------------------------------
+   *
+   * This is supporting reference context only.
+   *
+   * It does not establish authenticity or legal validity.
+   * ----------------------------------------------------------
+   */
+
+  const knowledgeReferences =
+    await retrieveApprovedKnowledge(
+      documentType,
+    );
+
+  const knowledgeContext =
+    formatKnowledgeContext(
+      knowledgeReferences,
+    );
+
   const prompt = `
 You are PropertySure AI's Professional property-document verification engine.
 
@@ -825,7 +1019,39 @@ Analyze the ACTUAL supplied Nigerian property document as part of a professional
 Document type from package review:
 ${documentType || "Unknown"}
 
-Inspect for:
+============================================================
+APPROVED PROPERTYSURE AI KNOWLEDGE
+============================================================
+
+The following material comes from PropertySure AI's approved
+knowledge system.
+
+Use it ONLY as supporting reference context for the analysis.
+
+IMPORTANT:
+
+- Similarity to a reference document does NOT prove authenticity.
+- Similarity to an approved example does NOT prove authenticity.
+- Similarity in layout, wording, stamp appearance, signature
+  placement, formatting or structure does NOT prove authenticity.
+- Do NOT copy names, dates, title numbers, property identifiers,
+  addresses, survey numbers, registration numbers or other facts
+  from a reference into the customer's document.
+- Do NOT treat reference material as government confirmation.
+- Do NOT treat reference material as legal evidence.
+- If the customer's document differs from a reference, describe
+  the observable difference rather than assuming fraud.
+- If information is missing from the customer's document, say
+  that it is missing or inconclusive.
+- Never invent information to make the document match a reference.
+
+${knowledgeContext}
+
+============================================================
+END APPROVED KNOWLEDGE
+============================================================
+
+Inspect the ACTUAL CUSTOMER DOCUMENT for:
 
 - internal consistency
 - title and ownership information
@@ -839,7 +1065,11 @@ Inspect for:
 - contradictions
 - document completeness
 
-DO NOT claim:
+Use the approved knowledge above only to help recognize
+document structures, patterns, terminology, expected fields,
+known verification considerations and potential warning signs.
+
+Do NOT claim:
 
 - government registry confirmation
 - legal ownership confirmation
@@ -848,6 +1078,8 @@ DO NOT claim:
 - surveyor certification
 - lawyer's legal opinion
 - authenticity solely because the document looks official
+- authenticity solely because the document resembles an
+  approved reference document
 
 Return JSON only:
 
@@ -881,6 +1113,10 @@ Rules:
 - Use null when a check cannot reasonably be assessed.
 - Never invent names, dates, locations, plot numbers, title references or land sizes.
 - A clean-looking document is NOT proof of authenticity.
+- A match with a reference document is NOT proof of authenticity.
+- A mismatch with a reference document is NOT automatically proof of fraud.
+- Clearly distinguish observable document characteristics from
+  conclusions or risk signals.
 `;
 
   const content:
@@ -1147,6 +1383,20 @@ Compare where present:
 - relationships between documents
 - ownership consistency
 - title consistency
+
+The individual documents may have been analyzed using
+PropertySure AI's approved knowledge references.
+
+Those references are supporting analytical context only.
+
+Do NOT assume that a document is authentic because it resembles
+a reference document.
+
+Do NOT treat similarity to a known document, template,
+format, stamp, signature style or wording as independent proof
+of authenticity.
+
+Do NOT copy facts from reference material into this package.
 
 GPS information:
 

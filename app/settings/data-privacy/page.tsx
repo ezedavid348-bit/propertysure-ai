@@ -1,13 +1,52 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useState,
-  type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./data-privacy.module.css";
+
+import AppShell from "../../AppShell/AppShell";
+import LoadingScreen from "../../AppShell/LoadingScreen";
 import { supabase } from "../../lib/supabase";
+
+import styles from "./data-privacy.module.css";
+
+/*
+============================================================
+TYPES
+============================================================
+*/
+
+type PrivacyPreferences = {
+  documentRetention: boolean;
+  verificationHistory: boolean;
+  serviceImprovement: boolean;
+  thirdPartyProcessing: boolean;
+};
+
+type ModalType =
+  | "documents"
+  | "history"
+  | "account"
+  | "export"
+  | null;
+
+/*
+============================================================
+CONSTANTS
+============================================================
+*/
+
+const STORAGE_BUCKET = "property-documents";
+
+const DEFAULT_PRIVACY_PREFERENCES: PrivacyPreferences = {
+  documentRetention: true,
+  verificationHistory: true,
+  serviceImprovement: true,
+  thirdPartyProcessing: false,
+};
 
 /*
 ============================================================
@@ -16,65 +55,46 @@ ICON SYSTEM
 */
 
 type IconName =
-  | "dashboard"
-  | "verify"
-  | "properties"
-  | "history"
-  | "fraud"
-  | "reports"
-  | "account"
-  | "settings"
-  | "bell"
   | "document"
   | "database"
-  | "historyData"
+  | "history"
   | "download"
   | "trash"
   | "shield"
   | "lock"
   | "chevron"
-  | "menu"
-  | "logout"
-  | "back";
+  | "back"
+  | "check"
+  | "close"
+  | "warning";
 
 function Icon({
   name,
-  size,
-  className = "",
+  size = 20,
 }: {
   name: IconName;
   size?: number;
-  className?: string;
 }) {
   const icons: Record<IconName, string> = {
-    dashboard: "▦",
-    verify: "⇧",
-    properties: "⌂",
-    history: "◷",
-    fraud: "◈",
-    reports: "▤",
-    account: "◯",
-    settings: "⚙",
-    bell: "🔔",
-
     document: "▤",
     database: "▦",
-    historyData: "◷",
+    history: "◷",
     download: "↓",
     trash: "⌫",
     shield: "◇",
     lock: "▣",
     chevron: "›",
-    menu: "☰",
-    logout: "↪",
-    back: "‹",
+    back: "←",
+    check: "✓",
+    close: "×",
+    warning: "!",
   };
 
   return (
     <span
-      className={`${styles.icon} ${className}`}
+      className={styles.icon}
       style={{
-        fontSize: size ? `${size}px` : undefined,
+        fontSize: `${size}px`,
       }}
       aria-hidden="true"
     >
@@ -85,163 +105,68 @@ function Icon({
 
 /*
 ============================================================
-MOBILE NAVIGATION
+HELPERS
 ============================================================
 */
 
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: "dashboard" as IconName,
-  },
-  {
-    label: "Verify Property",
-    href: "/verify",
-    icon: "verify" as IconName,
-  },
-  {
-    label: "My Properties",
-    href: "/my-properties",
-    icon: "properties" as IconName,
-  },
-  {
-    label: "Verification History",
-    href: "/verification-history",
-    icon: "history" as IconName,
-  },
-  {
-    label: "Fraud Watch",
-    href: "/fraud-watch",
-    icon: "fraud" as IconName,
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-    icon: "reports" as IconName,
-  },
-];
+function asPrivacyPreferences(
+  value: unknown,
+): PrivacyPreferences {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value)
+  ) {
+    return DEFAULT_PRIVACY_PREFERENCES;
+  }
 
-/*
-============================================================
-TOGGLE
-============================================================
-*/
+  const source =
+    value as Partial<PrivacyPreferences>;
 
-function Toggle({
-  enabled,
-  onChange,
-  label,
-}: {
-  enabled: boolean;
-  onChange: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      className={`${styles.toggle} ${
-        enabled ? styles.toggleOn : ""
-      }`}
-      onClick={onChange}
-      aria-label={label}
-      aria-pressed={enabled}
-    >
-      <span />
-    </button>
-  );
+  return {
+    documentRetention:
+      typeof source.documentRetention ===
+      "boolean"
+        ? source.documentRetention
+        : DEFAULT_PRIVACY_PREFERENCES.documentRetention,
+
+    verificationHistory:
+      typeof source.verificationHistory ===
+      "boolean"
+        ? source.verificationHistory
+        : DEFAULT_PRIVACY_PREFERENCES.verificationHistory,
+
+    serviceImprovement:
+      typeof source.serviceImprovement ===
+      "boolean"
+        ? source.serviceImprovement
+        : DEFAULT_PRIVACY_PREFERENCES.serviceImprovement,
+
+    thirdPartyProcessing:
+      typeof source.thirdPartyProcessing ===
+      "boolean"
+        ? source.thirdPartyProcessing
+        : DEFAULT_PRIVACY_PREFERENCES.thirdPartyProcessing,
+  };
 }
 
-/*
-============================================================
-SETTING ROW
-============================================================
-*/
+function chunkArray<T>(
+  items: T[],
+  size: number,
+): T[][] {
+  const chunks: T[][] = [];
 
-function SettingRow({
-  icon,
-  title,
-  description,
-  children,
-  color = "blue",
-}: {
-  icon: IconName;
-  title: string;
-  description: string;
-  children: ReactNode;
-  color?: string;
-}) {
-  return (
-    <div className={styles.settingRow}>
-      <div
-        className={`${styles.settingIcon} ${styles[color]}`}
-      >
-        <Icon name={icon} size={18} />
-      </div>
+  for (
+    let index = 0;
+    index < items.length;
+    index += size
+  ) {
+    chunks.push(
+      items.slice(index, index + size),
+    );
+  }
 
-      <div className={styles.settingText}>
-        <div className={styles.settingTitle}>
-          {title}
-        </div>
-
-        <div className={styles.settingDescription}>
-          {description}
-        </div>
-      </div>
-
-      <div className={styles.settingControl}>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-/*
-============================================================
-ACTION ROW
-============================================================
-*/
-
-function ActionRow({
-  icon = "trash",
-  title,
-  description,
-  buttonLabel,
-  onClick,
-}: {
-  icon?: IconName;
-  title: string;
-  description: string;
-  buttonLabel: string;
-  onClick: () => void;
-}) {
-  return (
-    <div className={styles.actionRow}>
-      <div
-        className={`${styles.settingIcon} ${styles.gray}`}
-      >
-        <Icon name={icon} size={18} />
-      </div>
-
-      <div className={styles.settingText}>
-        <div className={styles.settingTitle}>
-          {title}
-        </div>
-
-        <div className={styles.settingDescription}>
-          {description}
-        </div>
-      </div>
-
-      <button
-        type="button"
-        className={styles.outlineDanger}
-        onClick={onClick}
-      >
-        {buttonLabel}
-      </button>
-    </div>
-  );
+  return chunks;
 }
 
 /*
@@ -253,54 +178,30 @@ PAGE
 export default function DataPrivacyPage() {
   const router = useRouter();
 
-  const [menuOpen, setMenuOpen] = useState(false);
-
   const [loadingUser, setLoadingUser] =
     useState(true);
 
-  const [documentRetention, setDocumentRetention] =
-    useState(true);
+  const [preferences, setPreferences] =
+    useState<PrivacyPreferences>(
+      DEFAULT_PRIVACY_PREFERENCES,
+    );
 
-  const [verificationHistory, setVerificationHistory] =
-    useState(true);
+  const [savingPreference, setSavingPreference] =
+    useState<keyof PrivacyPreferences | null>(
+      null,
+    );
 
-  const [serviceImprovement, setServiceImprovement] =
-    useState(true);
+  const [modal, setModal] =
+    useState<ModalType>(null);
 
-  const [thirdPartyProcessing, setThirdPartyProcessing] =
+  const [processingAction, setProcessingAction] =
     useState(false);
 
-  /*
-  ============================================================
-  DELETE MODAL
-  ============================================================
-  */
+  const [errorMessage, setErrorMessage] =
+    useState("");
 
-  const [deleteModal, setDeleteModal] =
-    useState<
-      "documents" | "history" | "account" | null
-    >(null);
-
-  /*
-  ============================================================
-  EXPORT MODAL
-
-  confirm = first confirmation screen
-  success = request successfully submitted
-  null    = closed
-  ============================================================
-  */
-
-  const [exportModal, setExportModal] =
-    useState<
-      "confirm" | "success" | null
-    >(null);
-
-  const [user, setUser] = useState({
-    fullName: "User",
-    initial: "U",
-    plan: "Free Plan",
-  });
+  const [successMessage, setSuccessMessage] =
+    useState("");
 
   /*
   ============================================================
@@ -312,24 +213,20 @@ export default function DataPrivacyPage() {
     let mounted = true;
 
     const loadUser = async () => {
-      try {
-        setLoadingUser(true);
+      setLoadingUser(true);
+      setErrorMessage("");
 
+      try {
         const {
-          data: { user: authUser },
+          data: { user },
           error,
         } = await supabase.auth.getUser();
 
         if (error) {
-          console.error(
-            "Could not load authenticated user:",
-            error
-          );
-
-          return;
+          throw error;
         }
 
-        if (!authUser) {
+        if (!user) {
           router.replace("/signin");
           return;
         }
@@ -339,53 +236,24 @@ export default function DataPrivacyPage() {
         }
 
         const metadata =
-          authUser.user_metadata || {};
+          user.user_metadata || {};
 
-        const metadataName =
-          metadata.full_name ||
-          metadata.name ||
-          metadata.display_name ||
-          "";
-
-        const email = authUser.email || "";
-
-        const fallbackName = email
-          ? email
-              .split("@")[0]
-              .replace(/[._-]+/g, " ")
-              .replace(
-                /\b\w/g,
-                (letter: string) =>
-                  letter.toUpperCase()
-              )
-          : "User";
-
-        const fullName =
-          String(metadataName).trim() ||
-          fallbackName;
-
-        const initial =
-          fullName
-            .trim()
-            .charAt(0)
-            .toUpperCase() || "U";
-
-        const metadataPlan =
-          metadata.plan ||
-          metadata.subscription_plan ||
-          metadata.account_plan ||
-          "Free Plan";
-
-        setUser({
-          fullName,
-          initial,
-          plan: String(metadataPlan),
-        });
+        setPreferences(
+          asPrivacyPreferences(
+            metadata.privacy_preferences,
+          ),
+        );
       } catch (error) {
         console.error(
-          "Privacy page user loading error:",
-          error
+          "DATA PRIVACY LOAD ERROR:",
+          error,
         );
+
+        if (mounted) {
+          setErrorMessage(
+            "Unable to load your privacy preferences.",
+          );
+        }
       } finally {
         if (mounted) {
           setLoadingUser(false);
@@ -393,7 +261,7 @@ export default function DataPrivacyPage() {
       }
     };
 
-    loadUser();
+    void loadUser();
 
     return () => {
       mounted = false;
@@ -402,91 +270,448 @@ export default function DataPrivacyPage() {
 
   /*
   ============================================================
-  NAVIGATION
+  UPDATE PRIVACY PREFERENCE
   ============================================================
   */
 
-  const navigateTo = (path: string) => {
-    setMenuOpen(false);
-    router.push(path);
-  };
+  const updatePreference = async (
+    key: keyof PrivacyPreferences,
+  ) => {
+    if (savingPreference) {
+      return;
+    }
 
-  const openNotifications = () => {
-    setMenuOpen(false);
+    setErrorMessage("");
+    setSuccessMessage("");
 
-    router.push(
-      "/settings/notifications"
-    );
-  };
+    const nextPreferences = {
+      ...preferences,
+      [key]: !preferences[key],
+    };
 
-  const signOut = async () => {
+    setPreferences(nextPreferences);
+    setSavingPreference(key);
+
     try {
-      await supabase.auth.signOut();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-      router.replace("/signin");
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user) {
+        router.replace("/signin");
+        return;
+      }
+
+      const existingMetadata =
+        user.user_metadata || {};
+
+      const {
+        error: updateError,
+      } = await supabase.auth.updateUser({
+        data: {
+          ...existingMetadata,
+          privacy_preferences:
+            nextPreferences,
+        },
+      });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      setSuccessMessage(
+        "Privacy preference updated.",
+      );
     } catch (error) {
       console.error(
-        "Sign out error:",
-        error
+        "PRIVACY PREFERENCE UPDATE ERROR:",
+        error,
       );
+
+      setPreferences(preferences);
+
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to save this privacy preference.",
+      );
+    } finally {
+      setSavingPreference(null);
     }
   };
 
   /*
   ============================================================
-  DATA ACTIONS
+  STORAGE FILE COLLECTION
   ============================================================
   */
 
+  const collectStoredFiles = useCallback(
+    async (
+      folderPath: string,
+    ): Promise<string[]> => {
+      const paths: string[] = [];
+
+      const {
+        data,
+        error,
+      } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .list(folderPath, {
+          limit: 1000,
+          offset: 0,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      for (const item of data || []) {
+        if (!item?.name) {
+          continue;
+        }
+
+        const itemPath = folderPath
+          ? `${folderPath}/${item.name}`
+          : item.name;
+
+        /*
+         * Supabase Storage folders have no file id.
+         * Actual files have an id.
+         */
+        if (item.id) {
+          paths.push(itemPath);
+        } else {
+          const nestedFiles =
+            await collectStoredFiles(
+              itemPath,
+            );
+
+          paths.push(...nestedFiles);
+        }
+      }
+
+      return paths;
+    },
+    [],
+  );
+
   /*
-  ------------------------------------------------------------
-  OPEN EXPORT CONFIRMATION
-  ------------------------------------------------------------
+  ============================================================
+  DELETE STORED DOCUMENTS
+  ============================================================
   */
 
-  const handleExportData = () => {
-    setExportModal("confirm");
+  const deleteStoredDocuments =
+    async () => {
+      if (processingAction) {
+        return;
+      }
+
+      setProcessingAction(true);
+      setErrorMessage("");
+      setSuccessMessage("");
+
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError) {
+          throw userError;
+        }
+
+        if (!user) {
+          router.replace("/signin");
+          return;
+        }
+
+        const rootPath =
+          `${user.id}/verification-uploads`;
+
+        const filePaths =
+          await collectStoredFiles(
+            rootPath,
+          );
+
+        if (filePaths.length === 0) {
+          setSuccessMessage(
+            "There are no stored property documents to delete.",
+          );
+
+          setModal(null);
+          return;
+        }
+
+        /*
+         * Supabase Storage remove operations
+         * are processed in batches.
+         */
+        const batches = chunkArray(
+          filePaths,
+          1000,
+        );
+
+        for (const batch of batches) {
+          const {
+            error: deleteError,
+          } = await supabase.storage
+            .from(STORAGE_BUCKET)
+            .remove(batch);
+
+          if (deleteError) {
+            throw deleteError;
+          }
+        }
+
+        setSuccessMessage(
+          "Stored property documents have been deleted.",
+        );
+
+        setModal(null);
+      } catch (error) {
+        console.error(
+          "DELETE STORED DOCUMENTS ERROR:",
+          error,
+        );
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to delete the stored property documents.",
+        );
+      } finally {
+        setProcessingAction(false);
+      }
+    };
+
+  /*
+  ============================================================
+  CLEAR VERIFICATION HISTORY
+  ============================================================
+  */
+
+  const clearVerificationHistory =
+    async () => {
+      if (processingAction) {
+        return;
+      }
+
+      setProcessingAction(true);
+      setErrorMessage("");
+      setSuccessMessage("");
+
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError) {
+          throw userError;
+        }
+
+        if (!user) {
+          router.replace("/signin");
+          return;
+        }
+
+        const {
+          error: deleteError,
+        } = await supabase
+          .from("verifications")
+          .delete()
+          .eq("user_id", user.id);
+
+        if (deleteError) {
+          throw deleteError;
+        }
+
+        setSuccessMessage(
+          "Your verification history has been cleared.",
+        );
+
+        setModal(null);
+      } catch (error) {
+        console.error(
+          "CLEAR VERIFICATION HISTORY ERROR:",
+          error,
+        );
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to clear your verification history.",
+        );
+      } finally {
+        setProcessingAction(false);
+      }
+    };
+
+  /*
+  ============================================================
+  EXPORT USER DATA
+  ============================================================
+  */
+
+  const exportUserData = async () => {
+    if (processingAction) {
+      return;
+    }
+
+    setProcessingAction(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user) {
+        router.replace("/signin");
+        return;
+      }
+
+      const {
+        data: verifications,
+        error: verificationError,
+      } = await supabase
+        .from("verifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", {
+          ascending: false,
+        });
+
+      if (verificationError) {
+        throw verificationError;
+      }
+
+      const metadata = {
+        ...(user.user_metadata || {}),
+      };
+
+      /*
+       * Do not include session tokens,
+       * access tokens or refresh tokens.
+       */
+      delete metadata.access_token;
+      delete metadata.refresh_token;
+
+      const exportPayload = {
+        exported_at:
+          new Date().toISOString(),
+
+        product:
+          "PropertySure AI",
+
+        account: {
+          id: user.id,
+          email: user.email || null,
+          phone: user.phone || null,
+          created_at:
+            user.created_at || null,
+          email_confirmed_at:
+            user.email_confirmed_at ||
+            null,
+          last_sign_in_at:
+            user.last_sign_in_at ||
+            null,
+          metadata,
+        },
+
+        privacy_preferences:
+          preferences,
+
+        verification_records:
+          verifications || [],
+
+        note:
+          "Uploaded document files are not included in this JSON export.",
+      };
+
+      const json = JSON.stringify(
+        exportPayload,
+        null,
+        2,
+      );
+
+      const blob = new Blob(
+        [json],
+        {
+          type: "application/json",
+        },
+      );
+
+      const url =
+        URL.createObjectURL(blob);
+
+      const anchor =
+        document.createElement("a");
+
+      const date =
+        new Date()
+          .toISOString()
+          .slice(0, 10);
+
+      anchor.href = url;
+
+      anchor.download =
+        `propertysure-data-export-${date}.json`;
+
+      document.body.appendChild(anchor);
+
+      anchor.click();
+
+      anchor.remove();
+
+      URL.revokeObjectURL(url);
+
+      setSuccessMessage(
+        "Your data export has been downloaded.",
+      );
+
+      setModal(null);
+    } catch (error) {
+      console.error(
+        "DATA EXPORT ERROR:",
+        error,
+      );
+
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to export your data.",
+      );
+    } finally {
+      setProcessingAction(false);
+    }
   };
 
   /*
-  ------------------------------------------------------------
-  CONFIRM EXPORT REQUEST
-
-  This currently confirms the request in the UI only.
-  The real export backend can be connected later.
-  ------------------------------------------------------------
+  ============================================================
+  CLOSE MODAL
+  ============================================================
   */
 
-  const confirmExportRequest = () => {
-    setExportModal("success");
-  };
-
-  /*
-  ------------------------------------------------------------
-  DELETE ACTIONS
-  ------------------------------------------------------------
-  */
-
-  const handleDeleteAction = () => {
-    if (deleteModal === "documents") {
-      alert(
-        "Document deletion will be processed here."
-      );
+  const closeModal = () => {
+    if (processingAction) {
+      return;
     }
 
-    if (deleteModal === "history") {
-      alert(
-        "Verification history deletion will be processed here."
-      );
-    }
-
-    if (deleteModal === "account") {
-      alert(
-        "Account deletion will be processed through the secure account deletion process."
-      );
-    }
-
-    setDeleteModal(null);
+    setModal(null);
   };
 
   /*
@@ -496,284 +721,35 @@ export default function DataPrivacyPage() {
   */
 
   if (loadingUser) {
-    return (
-      <main className={styles.loading}>
-        <div className={styles.loadingBrand}>
-          <span className={styles.loadingLogo}>
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </div>
-
-        <div className={styles.loadingText}>
-          Loading your privacy settings...
-        </div>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
+  /*
+  ============================================================
+  PAGE
+  ============================================================
+  */
+
   return (
-    <main className={styles.page}>
-      {/* =====================================================
-          DESKTOP TOP HEADER
-      ===================================================== */}
+    <AppShell
+      activePath="/settings"
+      headerPath="/settings"
+    >
+      <main className={styles.page}>
+        <div className={styles.content}>
+          {/* ==================================================
+              PAGE INTRO
+          ================================================== */}
 
-      <header className={styles.desktopTopHeader}>
-        <button
-          type="button"
-          className={styles.desktopBrand}
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-          aria-label="PropertySure AI Dashboard"
-        >
-          <span
-            className={
-              styles.desktopBrandDiamond
-            }
+          <section
+            className={styles.pageIntro}
           >
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={styles.desktopNotification}
-          onClick={openNotifications}
-          aria-label="Notifications"
-        >
-          <Icon
-            name="bell"
-            size={17}
-          />
-
-          <span
-            className={
-              styles.desktopNotificationDot
-            }
-          />
-        </button>
-      </header>
-
-      {/* =====================================================
-          MOBILE HEADER
-      ===================================================== */}
-
-      <header className={styles.mobileHeader}>
-        <button
-          type="button"
-          className={styles.menuButton}
-          onClick={() => setMenuOpen(true)}
-          aria-label="Open navigation"
-        >
-          <Icon name="menu" size={24} />
-        </button>
-
-        <button
-          type="button"
-          className={styles.mobileLogoButton}
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <span
-            className={
-              styles.mobileLogoDiamond
-            }
-          >
-            ◆
-          </span>
-
-          <span>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={styles.mobileBell}
-          onClick={openNotifications}
-          aria-label="Notifications"
-        >
-          <Icon name="bell" size={17} />
-
-          <span
-            className={
-              styles.mobileNotificationDot
-            }
-          />
-        </button>
-      </header>
-
-      {/* =====================================================
-          MOBILE MENU
-      ===================================================== */}
-
-      {menuOpen && (
-        <div className={styles.mobileMenu}>
-          <div className={styles.mobileMenuHeader}>
-            <div>
-              <button
-                type="button"
-                className={styles.mobileMenuLogo}
-                onClick={() =>
-                  navigateTo("/dashboard")
-                }
-              >
-                <span>◆</span>
-
-                <div>
-                  PropertySure
-                  <strong> AI</strong>
-                </div>
-              </button>
-
-              <div
-                className={
-                  styles.mobileMenuSubtitle
-                }
-              >
-                AI-Powered Property
-                Due Diligence
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className={styles.closeMenu}
-              onClick={() =>
-                setMenuOpen(false)
-              }
-              aria-label="Close navigation"
-            >
-              ×
-            </button>
-          </div>
-
-          <nav
-            className={styles.mobileMenuNav}
-          >
-            {navItems.map((item) => (
-              <button
-                key={item.href}
-                type="button"
-                className={styles.mobileNavItem}
-                onClick={() =>
-                  navigateTo(item.href)
-                }
-              >
-                <span
-                  className={styles.navIcon}
-                >
-                  <Icon
-                    name={item.icon}
-                    size={18}
-                  />
-                </span>
-
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </nav>
-
-          <div
-            className={
-              styles.mobileAccountLabel
-            }
-          >
-            ACCOUNT
-          </div>
-
-          <button
-            type="button"
-            className={styles.mobileNavItem}
-            onClick={() =>
-              navigateTo("/account")
-            }
-          >
-            <span
-              className={styles.navIcon}
-            >
-              <Icon
-                name="account"
-                size={18}
-              />
-            </span>
-
-            <span>Account</span>
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.mobileNavItem} ${styles.mobileNavActive}`}
-            onClick={() =>
-              navigateTo("/settings")
-            }
-          >
-            <span
-              className={styles.navIcon}
-            >
-              <Icon
-                name="settings"
-                size={18}
-              />
-            </span>
-
-            <span>Settings</span>
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.mobileNavItem} ${styles.logoutItem}`}
-            onClick={signOut}
-          >
-            <span
-              className={styles.navIcon}
-            >
-              <Icon
-                name="logout"
-                size={18}
-              />
-            </span>
-
-            <span>Sign Out</span>
-          </button>
-        </div>
-      )}
-
-      {/* =====================================================
-          MAIN CONTENT
-      ===================================================== */}
-
-      <section className={styles.main}>
-        {/* ===================================================
-            DESKTOP PAGE HEADER
-        =================================================== */}
-
-        <header
-          className={styles.desktopPageHeader}
-        >
-          <div
-            className={
-              styles.desktopPageHeaderInner
-            }
-          >
-            <h1>Data & Privacy</h1>
+            <h1>Data &amp; Privacy</h1>
 
             <p>
-              Manage how your data is
-              stored, used, and
-              controlled within
+              Manage how your information
+              is stored, retained, used,
+              and controlled within
               PropertySure AI.
             </p>
 
@@ -781,416 +757,192 @@ export default function DataPrivacyPage() {
               type="button"
               className={styles.backButton}
               onClick={() =>
-                navigateTo("/settings")
+                router.push("/settings")
               }
             >
-              <Icon
-                name="back"
-                size={20}
-              />
+              <span
+                className={styles.backArrow}
+                aria-hidden="true"
+              >
+                ←
+              </span>
 
               <span>
                 Back to Settings
               </span>
             </button>
-          </div>
-        </header>
+          </section>
 
-        {/* ===================================================
-            DESKTOP CONTENT
-        =================================================== */}
+          {/* ==================================================
+              STATUS MESSAGES
+          ================================================== */}
 
-        <div className={styles.contentGrid}>
-          <div className={styles.settingsContent}>
-            {/* =================================================
-                YOUR DATA
-            ================================================= */}
-
-            <section className={styles.card}>
-              <div
+          {errorMessage && (
+            <div
+              className={styles.errorMessage}
+              role="alert"
+            >
+              <span
                 className={
-                  styles.sectionHeader
+                  styles.messageIcon
                 }
               >
-                <h2>Your Data</h2>
+                !
+              </span>
 
-                <p>
-                  Understand the information
-                  PropertySure AI stores as
-                  part of your account and
-                  property verification
-                  activity.
-                </p>
-              </div>
+              <span>
+                {errorMessage}
+              </span>
 
-              <div
+              <button
+                type="button"
+                onClick={() =>
+                  setErrorMessage("")
+                }
+                aria-label="Dismiss error"
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {successMessage && (
+            <div
+              className={
+                styles.successMessage
+              }
+              role="status"
+            >
+              <span
                 className={
-                  styles.dataOverview
+                  styles.messageIcon
                 }
               >
-                <div className={styles.dataItem}>
-                  <div
-                    className={`${styles.dataIcon} ${styles.blue}`}
-                  >
-                    <Icon
-                      name="document"
-                      size={18}
-                    />
-                  </div>
+                ✓
+              </span>
 
-                  <div>
-                    <strong>
-                      Property Documents
-                    </strong>
+              <span>
+                {successMessage}
+              </span>
 
-                    <span>
-                      Documents you submit
-                      for verification.
-                    </span>
-                  </div>
-                </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setSuccessMessage("")
+                }
+                aria-label="Dismiss message"
+              >
+                ×
+              </button>
+            </div>
+          )}
 
-                <div className={styles.dataItem}>
-                  <div
-                    className={`${styles.dataIcon} ${styles.green}`}
-                  >
-                    <Icon
-                      name="reports"
-                      size={18}
-                    />
-                  </div>
+          {/* ==================================================
+              DOCUMENT STORAGE
+          ================================================== */}
 
-                  <div>
-                    <strong>
-                      Verification Reports
-                    </strong>
-
-                    <span>
-                      Reports generated from
-                      your verification
-                      requests.
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles.dataItem}>
-                  <div
-                    className={`${styles.dataIcon} ${styles.purple}`}
-                  >
-                    <Icon
-                      name="properties"
-                      size={18}
-                    />
-                  </div>
-
-                  <div>
-                    <strong>
-                      Property Information
-                    </strong>
-
-                    <span>
-                      Information associated
-                      with properties you
-                      verify.
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles.dataItem}>
-                  <div
-                    className={`${styles.dataIcon} ${styles.yellow}`}
-                  >
-                    <Icon
-                      name="account"
-                      size={18}
-                    />
-                  </div>
-
-                  <div>
-                    <strong>
-                      Account Information
-                    </strong>
-
-                    <span>
-                      Information associated
-                      with your PropertySure
-                      account.
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* =================================================
-                DOCUMENT STORAGE
-            ================================================= */}
-
-            <section className={styles.card}>
+          <section
+            className={styles.sectionCard}
+          >
+            <div
+              className={styles.sectionHeader}
+            >
               <div
                 className={
-                  styles.sectionHeader
+                  styles.sectionIcon
                 }
               >
-                <h2>Document Storage</h2>
-
-                <p>
-                  Control how long
-                  documents submitted for
-                  verification remain
-                  available.
-                </p>
-              </div>
-
-              <div
-                className={
-                  styles.settingsRows
-                }
-              >
-                <SettingRow
-                  icon="database"
-                  title="Document Retention"
-                  description="Keep submitted property documents available in your verification records."
-                  color="blue"
-                >
-                  <Toggle
-                    enabled={
-                      documentRetention
-                    }
-                    onChange={() =>
-                      setDocumentRetention(
-                        (value) => !value
-                      )
-                    }
-                    label="Toggle document retention"
-                  />
-                </SettingRow>
-
-                <ActionRow
-                  title="Delete Stored Documents"
-                  description="Permanently remove documents stored in your account."
-                  buttonLabel="Delete Documents"
-                  onClick={() =>
-                    setDeleteModal(
-                      "documents"
-                    )
-                  }
+                <Icon
+                  name="database"
+                  size={21}
                 />
               </div>
-            </section>
 
-            {/* =================================================
-                VERIFICATION HISTORY
-            ================================================= */}
-
-            <section className={styles.card}>
-              <div
-                className={
-                  styles.sectionHeader
-                }
-              >
+              <div>
                 <h2>
-                  Verification History
+                  Document Storage
                 </h2>
 
                 <p>
-                  Control how your previous
-                  property verification
-                  activity is retained.
+                  Control whether submitted
+                  property documents are
+                  intended to remain available
+                  after verification.
                 </p>
               </div>
+            </div>
+
+            <div
+              className={styles.settingList}
+            >
+              {/* DOCUMENT RETENTION */}
 
               <div
                 className={
-                  styles.settingsRows
+                  styles.settingRow
                 }
-              >
-                <SettingRow
-                  icon="historyData"
-                  title="Keep Verification History"
-                  description="Keep completed verification records available in your account."
-                  color="cyan"
-                >
-                  <Toggle
-                    enabled={
-                      verificationHistory
-                    }
-                    onChange={() =>
-                      setVerificationHistory(
-                        (value) => !value
-                      )
-                    }
-                    label="Toggle verification history"
-                  />
-                </SettingRow>
-
-                <ActionRow
-                  title="Clear Verification History"
-                  description="Remove your previous verification records from your account."
-                  buttonLabel="Clear History"
-                  onClick={() =>
-                    setDeleteModal("history")
-                  }
-                />
-              </div>
-            </section>
-
-            {/* =================================================
-                PRIVACY PREFERENCES
-            ================================================= */}
-
-            <section className={styles.card}>
-              <div
-                className={
-                  styles.sectionHeader
-                }
-              >
-                <h2>
-                  Privacy Preferences
-                </h2>
-
-                <p>
-                  Choose how PropertySure AI
-                  may use information to
-                  improve the service.
-                </p>
-              </div>
-
-              <div
-                className={
-                  styles.settingsRows
-                }
-              >
-                <SettingRow
-                  icon="shield"
-                  title="Service Improvement"
-                  description="Allow information about how you use PropertySure AI to help improve the service."
-                  color="green"
-                >
-                  <Toggle
-                    enabled={
-                      serviceImprovement
-                    }
-                    onChange={() =>
-                      setServiceImprovement(
-                        (value) => !value
-                      )
-                    }
-                    label="Toggle service improvement"
-                  />
-                </SettingRow>
-
-                <SettingRow
-                  icon="lock"
-                  title="Third-Party Processing"
-                  description="Allow approved third-party services to process information when required to provide verification services."
-                  color="purple"
-                >
-                  <Toggle
-                    enabled={
-                      thirdPartyProcessing
-                    }
-                    onChange={() =>
-                      setThirdPartyProcessing(
-                        (value) => !value
-                      )
-                    }
-                    label="Toggle third-party processing"
-                  />
-                </SettingRow>
-              </div>
-            </section>
-
-            {/* =================================================
-                EXPORT DATA
-            ================================================= */}
-
-            <section className={styles.card}>
-              <div
-                className={
-                  styles.sectionHeader
-                }
-              >
-                <h2>Export Your Data</h2>
-
-                <p>
-                  Request a copy of
-                  information associated
-                  with your PropertySure AI
-                  account.
-                </p>
-              </div>
-
-              <div
-                className={styles.exportBox}
               >
                 <div
-                  className={`${styles.exportIcon} ${styles.blue}`}
+                  className={
+                    styles.settingIcon
+                  }
                 >
                   <Icon
-                    name="download"
+                    name="document"
                     size={20}
                   />
                 </div>
 
                 <div
-                  className={styles.exportText}
+                  className={
+                    styles.settingText
+                  }
                 >
                   <strong>
-                    Request Data Export
+                    Document Retention
                   </strong>
 
                   <span>
-                    Your export can include
-                    your account,
-                    verification history,
-                    and available property
-                    data.
+                    Keep submitted property
+                    documents available in
+                    your verification records.
                   </span>
                 </div>
 
                 <button
                   type="button"
-                  className={
-                    styles.exportButton
+                  className={`${styles.toggle} ${
+                    preferences.documentRetention
+                      ? styles.toggleOn
+                      : ""
+                  }`}
+                  onClick={() =>
+                    void updatePreference(
+                      "documentRetention",
+                    )
                   }
-                  onClick={
-                    handleExportData
+                  disabled={
+                    savingPreference !==
+                    null
+                  }
+                  aria-label="Toggle document retention"
+                  aria-pressed={
+                    preferences.documentRetention
                   }
                 >
-                  Request Export
+                  <span />
                 </button>
               </div>
-            </section>
 
-            {/* =================================================
-                DANGER ZONE
-            ================================================= */}
+              {/* DELETE DOCUMENTS */}
 
-            <section
-              className={
-                styles.dangerCard
-              }
-            >
               <div
                 className={
-                  styles.sectionHeader
+                  styles.settingRow
                 }
               >
-                <h2>Danger Zone</h2>
-
-                <p>
-                  Irreversible and
-                  sensitive actions.
-                </p>
-              </div>
-
-              <div
-                className={styles.dangerRow}
-              >
                 <div
-                  className={
-                    styles.dangerIcon
-                  }
+                  className={`${styles.settingIcon} ${styles.dangerIcon}`}
                 >
                   <Icon
                     name="trash"
@@ -1200,1000 +952,864 @@ export default function DataPrivacyPage() {
 
                 <div
                   className={
-                    styles.dangerText
+                    styles.settingText
                   }
                 >
                   <strong>
-                    Delete Account
+                    Delete Stored Documents
                   </strong>
 
                   <span>
-                    Permanently delete your
-                    PropertySure AI account
-                    and associated data.
+                    Permanently remove property
+                    document files currently
+                    stored in your account.
                   </span>
                 </div>
 
                 <button
                   type="button"
                   className={
-                    styles.deleteButton
+                    styles.outlineDangerButton
                   }
                   onClick={() =>
-                    setDeleteModal(
-                      "account"
-                    )
+                    setModal("documents")
                   }
                 >
-                  Delete My Account
+                  Delete Documents
                 </button>
               </div>
-            </section>
+            </div>
+          </section>
 
-            {/* =================================================
-                PRIVACY NOTICE
-            ================================================= */}
+          {/* ==================================================
+              VERIFICATION HISTORY
+          ================================================== */}
 
+          <section
+            className={styles.sectionCard}
+          >
             <div
-              className={
-                styles.saveNotice
-              }
+              className={styles.sectionHeader}
             >
               <div
                 className={
-                  styles.saveIcon
+                  styles.sectionIcon
+                }
+              >
+                <Icon
+                  name="history"
+                  size={21}
+                />
+              </div>
+
+              <div>
+                <h2>
+                  Verification History
+                </h2>
+
+                <p>
+                  Control how completed
+                  verification records remain
+                  available in your account.
+                </p>
+              </div>
+            </div>
+
+            <div
+              className={styles.settingList}
+            >
+              {/* KEEP HISTORY */}
+
+              <div
+                className={
+                  styles.settingRow
+                }
+              >
+                <div
+                  className={
+                    styles.settingIcon
+                  }
+                >
+                  <Icon
+                    name="history"
+                    size={20}
+                  />
+                </div>
+
+                <div
+                  className={
+                    styles.settingText
+                  }
+                >
+                  <strong>
+                    Keep Verification History
+                  </strong>
+
+                  <span>
+                    Keep completed verification
+                    records available in your
+                    account.
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className={`${styles.toggle} ${
+                    preferences.verificationHistory
+                      ? styles.toggleOn
+                      : ""
+                  }`}
+                  onClick={() =>
+                    void updatePreference(
+                      "verificationHistory",
+                    )
+                  }
+                  disabled={
+                    savingPreference !==
+                    null
+                  }
+                  aria-label="Toggle verification history"
+                  aria-pressed={
+                    preferences.verificationHistory
+                  }
+                >
+                  <span />
+                </button>
+              </div>
+
+              {/* CLEAR HISTORY */}
+
+              <div
+                className={
+                  styles.settingRow
+                }
+              >
+                <div
+                  className={`${styles.settingIcon} ${styles.dangerIcon}`}
+                >
+                  <Icon
+                    name="trash"
+                    size={20}
+                  />
+                </div>
+
+                <div
+                  className={
+                    styles.settingText
+                  }
+                >
+                  <strong>
+                    Clear Verification History
+                  </strong>
+
+                  <span>
+                    Permanently remove your
+                    previous verification
+                    history.
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className={
+                    styles.outlineDangerButton
+                  }
+                  onClick={() =>
+                    setModal("history")
+                  }
+                >
+                  Clear History
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* ==================================================
+              PRIVACY PREFERENCES
+          ================================================== */}
+
+          <section
+            className={styles.sectionCard}
+          >
+            <div
+              className={styles.sectionHeader}
+            >
+              <div
+                className={
+                  styles.sectionIcon
                 }
               >
                 <Icon
                   name="shield"
-                  size={20}
+                  size={21}
                 />
               </div>
 
               <div>
-                <strong>
-                  Your privacy settings
-                  are automatically saved
-                </strong>
+                <h2>
+                  Privacy Preferences
+                </h2>
 
                 <p>
-                  Changes to your privacy
-                  preferences are saved
-                  automatically.
+                  Control how information may
+                  be used to operate and improve
+                  PropertySure AI.
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* ===================================================
-            MOBILE CONTENT
-        =================================================== */}
-
-        <div className={styles.mobileContent}>
-          <div
-            className={
-              styles.mobilePageHeader
-            }
-          >
-            <button
-              type="button"
-              className={
-                styles.mobileBackButton
-              }
-              onClick={() =>
-                navigateTo("/settings")
-              }
-            >
-              <Icon
-                name="back"
-                size={20}
-              />
-
-              <span>Settings</span>
-            </button>
 
             <div
-              className={
-                styles.mobileEyebrow
-              }
+              className={styles.settingList}
             >
-              DATA & PRIVACY
-            </div>
-
-            <h1>Data & Privacy</h1>
-
-            <p>
-              Manage how your data is
-              stored, used, and
-              controlled.
-            </p>
-          </div>
-
-          {/* =================================================
-              MOBILE YOUR DATA
-          ================================================= */}
-
-          <div
-            className={
-              styles.mobileSectionLabel
-            }
-          >
-            YOUR DATA
-          </div>
-
-          <section
-            className={
-              styles.mobileCard
-            }
-          >
-            <div
-              className={
-                styles.mobileDataItem
-              }
-            >
-              <div
-                className={`${styles.dataIcon} ${styles.blue}`}
-              >
-                <Icon
-                  name="document"
-                  size={18}
-                />
-              </div>
-
-              <div>
-                <strong>
-                  Property Documents
-                </strong>
-
-                <span>
-                  Documents submitted for
-                  verification.
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.mobileDataItem
-              }
-            >
-              <div
-                className={`${styles.dataIcon} ${styles.green}`}
-              >
-                <Icon
-                  name="reports"
-                  size={18}
-                />
-              </div>
-
-              <div>
-                <strong>
-                  Verification Reports
-                </strong>
-
-                <span>
-                  Reports generated from
-                  your verification
-                  requests.
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.mobileDataItem
-              }
-            >
-              <div
-                className={`${styles.dataIcon} ${styles.purple}`}
-              >
-                <Icon
-                  name="properties"
-                  size={18}
-                />
-              </div>
-
-              <div>
-                <strong>
-                  Property Information
-                </strong>
-
-                <span>
-                  Information connected to
-                  verified properties.
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.mobileDataItem
-              }
-            >
-              <div
-                className={`${styles.dataIcon} ${styles.yellow}`}
-              >
-                <Icon
-                  name="account"
-                  size={18}
-                />
-              </div>
-
-              <div>
-                <strong>
-                  Account Information
-                </strong>
-
-                <span>
-                  Information associated
-                  with your PropertySure
-                  account.
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* =================================================
-              MOBILE DOCUMENT STORAGE
-          ================================================= */}
-
-          <div
-            className={
-              styles.mobileSectionLabel
-            }
-          >
-            DOCUMENT STORAGE
-          </div>
-
-          <section
-            className={
-              styles.mobileCard
-            }
-          >
-            <SettingRow
-              icon="database"
-              title="Document Retention"
-              description="Keep submitted property documents available."
-              color="blue"
-            >
-              <Toggle
-                enabled={
-                  documentRetention
-                }
-                onChange={() =>
-                  setDocumentRetention(
-                    (value) => !value
-                  )
-                }
-                label="Toggle document retention"
-              />
-            </SettingRow>
-
-            <div
-              className={
-                styles.mobileActionRow
-              }
-            >
-              <div
-                className={`${styles.settingIcon} ${styles.gray}`}
-              >
-                <Icon
-                  name="trash"
-                  size={18}
-                />
-              </div>
+              {/* SERVICE IMPROVEMENT */}
 
               <div
                 className={
-                  styles.settingText
+                  styles.settingRow
                 }
               >
                 <div
                   className={
-                    styles.settingTitle
+                    styles.settingIcon
                   }
                 >
-                  Delete Stored Documents
+                  <Icon
+                    name="database"
+                    size={20}
+                  />
                 </div>
 
                 <div
                   className={
-                    styles.settingDescription
+                    styles.settingText
                   }
                 >
-                  Permanently remove
-                  documents stored in
-                  your account.
+                  <strong>
+                    Service Improvement
+                  </strong>
+
+                  <span>
+                    Allow information about how
+                    you use PropertySure AI to
+                    help improve the service.
+                  </span>
                 </div>
+
+                <button
+                  type="button"
+                  className={`${styles.toggle} ${
+                    preferences.serviceImprovement
+                      ? styles.toggleOn
+                      : ""
+                  }`}
+                  onClick={() =>
+                    void updatePreference(
+                      "serviceImprovement",
+                    )
+                  }
+                  disabled={
+                    savingPreference !==
+                    null
+                  }
+                  aria-label="Toggle service improvement"
+                  aria-pressed={
+                    preferences.serviceImprovement
+                  }
+                >
+                  <span />
+                </button>
               </div>
 
-              <button
-                type="button"
+              {/* THIRD PARTY PROCESSING */}
+
+              <div
                 className={
-                  styles.mobileActionButton
-                }
-                onClick={() =>
-                  setDeleteModal(
-                    "documents"
-                  )
+                  styles.settingRow
                 }
               >
-                Delete
-              </button>
+                <div
+                  className={
+                    styles.settingIcon
+                  }
+                >
+                  <Icon
+                    name="shield"
+                    size={20}
+                  />
+                </div>
+
+                <div
+                  className={
+                    styles.settingText
+                  }
+                >
+                  <strong>
+                    Third-Party Processing
+                  </strong>
+
+                  <span>
+                    Allow approved service
+                    providers to process
+                    information when required
+                    for document analysis or
+                    external verification
+                    services.
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className={`${styles.toggle} ${
+                    preferences.thirdPartyProcessing
+                      ? styles.toggleOn
+                      : ""
+                  }`}
+                  onClick={() =>
+                    void updatePreference(
+                      "thirdPartyProcessing",
+                    )
+                  }
+                  disabled={
+                    savingPreference !==
+                    null
+                  }
+                  aria-label="Toggle third-party processing"
+                  aria-pressed={
+                    preferences.thirdPartyProcessing
+                  }
+                >
+                  <span />
+                </button>
+              </div>
             </div>
           </section>
 
-          {/* =================================================
-              MOBILE VERIFICATION HISTORY
-          ================================================= */}
-
-          <div
-            className={
-              styles.mobileSectionLabel
-            }
-          >
-            VERIFICATION HISTORY
-          </div>
+          {/* ==================================================
+              EXPORT YOUR DATA
+          ================================================== */}
 
           <section
-            className={
-              styles.mobileCard
-            }
-          >
-            <SettingRow
-              icon="historyData"
-              title="Keep Verification History"
-              description="Keep completed verification records."
-              color="cyan"
-            >
-              <Toggle
-                enabled={
-                  verificationHistory
-                }
-                onChange={() =>
-                  setVerificationHistory(
-                    (value) => !value
-                  )
-                }
-                label="Toggle verification history"
-              />
-            </SettingRow>
-
-            <div
-              className={
-                styles.mobileActionRow
-              }
-            >
-              <div
-                className={`${styles.settingIcon} ${styles.gray}`}
-              >
-                <Icon
-                  name="trash"
-                  size={18}
-                />
-              </div>
-
-              <div
-                className={
-                  styles.settingText
-                }
-              >
-                <div
-                  className={
-                    styles.settingTitle
-                  }
-                >
-                  Clear Verification
-                  History
-                </div>
-
-                <div
-                  className={
-                    styles.settingDescription
-                  }
-                >
-                  Remove your previous
-                  verification records
-                  from your account.
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className={
-                  styles.mobileActionButton
-                }
-                onClick={() =>
-                  setDeleteModal(
-                    "history"
-                  )
-                }
-              >
-                Clear
-              </button>
-            </div>
-          </section>
-
-          {/* =================================================
-              MOBILE PRIVACY CONTROLS
-          ================================================= */}
-
-          <div
-            className={
-              styles.mobileSectionLabel
-            }
-          >
-            PRIVACY CONTROLS
-          </div>
-
-          <section
-            className={
-              styles.mobileCard
-            }
-          >
-            <SettingRow
-              icon="shield"
-              title="Service Improvement"
-              description="Help improve PropertySure AI."
-              color="green"
-            >
-              <Toggle
-                enabled={
-                  serviceImprovement
-                }
-                onChange={() =>
-                  setServiceImprovement(
-                    (value) => !value
-                  )
-                }
-                label="Toggle service improvement"
-              />
-            </SettingRow>
-
-            <SettingRow
-              icon="lock"
-              title="Third-Party Processing"
-              description="Allow approved services when required."
-              color="purple"
-            >
-              <Toggle
-                enabled={
-                  thirdPartyProcessing
-                }
-                onChange={() =>
-                  setThirdPartyProcessing(
-                    (value) => !value
-                  )
-                }
-                label="Toggle third-party processing"
-              />
-            </SettingRow>
-          </section>
-
-          {/* =================================================
-              MOBILE EXPORT
-          ================================================= */}
-
-          <div
-            className={
-              styles.mobileSectionLabel
-            }
-          >
-            YOUR INFORMATION
-          </div>
-
-          <section
-            className={
-              styles.mobileCard
-            }
+            className={styles.sectionCard}
           >
             <div
-              className={
-                styles.mobileExport
-              }
+              className={styles.sectionHeader}
             >
               <div
-                className={`${styles.dataIcon} ${styles.blue}`}
+                className={
+                  styles.sectionIcon
+                }
               >
                 <Icon
                   name="download"
-                  size={19}
+                  size={21}
                 />
               </div>
 
-              <div
-                className={
-                  styles.mobileExportText
-                }
-              >
+              <div>
+                <h2>
+                  Export Your Data
+                </h2>
+
+                <p>
+                  Download a copy of the
+                  information associated with
+                  your PropertySure AI account.
+                </p>
+              </div>
+            </div>
+
+            <div
+              className={
+                styles.singleActionRow
+              }
+            >
+              <div>
                 <strong>
-                  Request Data Export
+                  Download Data Export
                 </strong>
 
                 <span>
-                  Request a copy of your
-                  available account data.
+                  Your export contains your
+                  account metadata, privacy
+                  preferences and verification
+                  records. Uploaded document
+                  files are not included.
                 </span>
               </div>
-            </div>
 
-            <button
-              type="button"
-              className={
-                styles.mobileExportButton
-              }
-              onClick={
-                handleExportData
-              }
-            >
-              Request Data Export
-            </button>
-          </section>
-
-          {/* =================================================
-              MOBILE DANGER
-          ================================================= */}
-
-          <section
-            className={
-              styles.mobileDanger
-            }
-          >
-            <div
-              className={
-                styles.sectionHeader
-              }
-            >
-              <h2>Danger Zone</h2>
-
-              <p>
-                Irreversible and
-                sensitive actions.
-              </p>
-            </div>
-
-            <div
-              className={
-                styles.mobileDangerInfo
-              }
-            >
-              <div
+              <button
+                type="button"
                 className={
-                  styles.dangerIcon
+                  styles.primaryButton
+                }
+                onClick={() =>
+                  setModal("export")
                 }
               >
                 <Icon
-                  name="trash"
-                  size={20}
+                  name="download"
+                  size={17}
+                />
+
+                <span>
+                  Export Data
+                </span>
+              </button>
+            </div>
+          </section>
+
+          {/* ==================================================
+              DANGER ZONE
+          ================================================== */}
+
+          <section
+            className={`${styles.sectionCard} ${styles.dangerCard}`}
+          >
+            <div
+              className={styles.sectionHeader}
+            >
+              <div
+                className={`${styles.sectionIcon} ${styles.dangerSectionIcon}`}
+              >
+                <Icon
+                  name="warning"
+                  size={21}
                 />
               </div>
 
-              <div
-                className={
-                  styles.dangerText
-                }
-              >
+              <div>
+                <h2>
+                  Danger Zone
+                </h2>
+
+                <p>
+                  Actions in this section may
+                  permanently affect your
+                  account data.
+                </p>
+              </div>
+            </div>
+
+            <div
+              className={
+                styles.singleActionRow
+              }
+            >
+              <div>
                 <strong>
                   Delete Account
                 </strong>
 
                 <span>
                   Permanently delete your
-                  account and associated
-                  data.
+                  PropertySure AI account and
+                  associated data.
                 </span>
               </div>
-            </div>
 
-            <button
-              type="button"
-              className={
-                styles.mobileDeleteButton
-              }
-              onClick={() =>
-                setDeleteModal("account")
-              }
-            >
-              Delete My Account
-            </button>
+              <button
+                type="button"
+                className={
+                  styles.outlineDangerButton
+                }
+                onClick={() =>
+                  setModal("account")
+                }
+              >
+                Delete Account
+              </button>
+            </div>
           </section>
 
-          {/* =================================================
-              MOBILE PRIVACY NOTICE
-          ================================================= */}
+          {/* ==================================================
+              PRIVACY NOTICE
+          ================================================== */}
 
-          <div
-            className={
-              styles.mobilePrivacyNotice
-            }
-          >
-            <Icon
-              name="shield"
-              size={18}
-            />
-
-            <div>
-              <strong>
-                Your privacy settings are
-                automatically saved.
-              </strong>
-
-              <span>
-                Changes are saved
-                automatically.
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* =====================================================
-          MOBILE BOTTOM NAV
-      ===================================================== */}
-
-      <nav
-        className={
-          styles.mobileBottomNav
-        }
-      >
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <Icon
-            name="dashboard"
-            size={20}
-          />
-
-          <span>Dashboard</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/verify")
-          }
-        >
-          <Icon
-            name="verify"
-            size={20}
-          />
-
-          <span>Verify</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/my-properties")
-          }
-        >
-          <Icon
-            name="properties"
-            size={20}
-          />
-
-          <span>Properties</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/reports")
-          }
-        >
-          <Icon
-            name="reports"
-            size={20}
-          />
-
-          <span>Reports</span>
-        </button>
-
-        <button
-          type="button"
-          className={styles.activeBottom}
-          onClick={() =>
-            navigateTo("/settings")
-          }
-        >
-          <Icon
-            name="settings"
-            size={20}
-          />
-
-          <span>Settings</span>
-        </button>
-      </nav>
-
-      {/* =====================================================
-          DELETE MODAL
-      ===================================================== */}
-
-      {deleteModal && (
-        <div
-          className={
-            styles.modalBackdrop
-          }
-          onClick={() =>
-            setDeleteModal(null)
-          }
-        >
-          <div
-            className={styles.modal}
-            onClick={(event) =>
-              event.stopPropagation()
-            }
+          <section
+            className={styles.privacyCard}
           >
             <div
-              className={
-                styles.modalIcon
-              }
+              className={styles.privacyIcon}
             >
               <Icon
-                name="trash"
-                size={25}
+                name="lock"
+                size={24}
               />
             </div>
 
-            <h3>
-              {deleteModal ===
-              "documents"
-                ? "Delete stored documents?"
-                : deleteModal ===
-                  "history"
-                ? "Clear verification history?"
-                : "Delete your account?"}
-            </h3>
-
-            <p>
-              {deleteModal ===
-              "documents"
-                ? "This will permanently remove the selected stored documents from your account."
-                : deleteModal ===
-                  "history"
-                ? "This will permanently remove your previous verification history."
-                : "This action is permanent. Your PropertySure AI account and associated data may be deleted and cannot be recovered."}
-            </p>
-
             <div
-              className={
-                styles.modalActions
+              className={styles.privacyText}
+            >
+              <h3>
+                Your privacy is important
+                to us
+              </h3>
+
+              <p>
+                PropertySure AI uses your
+                information to provide property
+                verification services, maintain
+                your account and operate the
+                platform. You can manage the
+                preferences available on this
+                page at any time.
+              </p>
+            </div>
+          </section>
+        </div>
+
+        {/* ==================================================
+            CONFIRMATION MODAL
+        ================================================== */}
+
+        {modal && (
+          <div
+            className={styles.modalOverlay}
+            role="presentation"
+            onMouseDown={(event) => {
+              if (
+                event.target ===
+                event.currentTarget
+              ) {
+                closeModal();
               }
+            }}
+          >
+            <div
+              className={styles.modal}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="privacy-modal-title"
             >
               <button
                 type="button"
-                className={
-                  styles.cancelButton
+                className={styles.modalClose}
+                onClick={closeModal}
+                disabled={
+                  processingAction
                 }
-                onClick={() =>
-                  setDeleteModal(null)
-                }
+                aria-label="Close dialog"
               >
-                Cancel
+                <Icon
+                  name="close"
+                  size={22}
+                />
               </button>
 
-              <button
-                type="button"
-                className={
-                  styles.confirmDelete
-                }
-                onClick={
-                  handleDeleteAction
-                }
-              >
-                {deleteModal ===
-                "account"
-                  ? "Delete Account"
-                  : "Confirm Delete"}
-              </button>
+              {modal ===
+                "export" && (
+                <>
+                  <div
+                    className={`${styles.modalIcon} ${styles.modalIconBlue}`}
+                  >
+                    <Icon
+                      name="download"
+                      size={24}
+                    />
+                  </div>
+
+                  <h2
+                    id="privacy-modal-title"
+                  >
+                    Export Your Data
+                  </h2>
+
+                  <p>
+                    A JSON file containing
+                    your account information,
+                    privacy preferences and
+                    verification records will
+                    be downloaded to your
+                    device.
+                  </p>
+
+                  <div
+                    className={
+                      styles.modalActions
+                    }
+                  >
+                    <button
+                      type="button"
+                      className={
+                        styles.modalCancel
+                      }
+                      onClick={
+                        closeModal
+                      }
+                      disabled={
+                        processingAction
+                      }
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="button"
+                      className={
+                        styles.modalPrimary
+                      }
+                      onClick={() =>
+                        void exportUserData()
+                      }
+                      disabled={
+                        processingAction
+                      }
+                    >
+                      {processingAction
+                        ? "Preparing..."
+                        : "Download Data Export"}
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {modal ===
+                "documents" && (
+                <>
+                  <div
+                    className={`${styles.modalIcon} ${styles.modalIconDanger}`}
+                  >
+                    <Icon
+                      name="trash"
+                      size={24}
+                    />
+                  </div>
+
+                  <h2
+                    id="privacy-modal-title"
+                  >
+                    Delete Stored Documents?
+                  </h2>
+
+                  <p>
+                    This will permanently
+                    remove property document
+                    files currently stored in
+                    your account. Your
+                    verification history is
+                    not deleted by this action.
+                  </p>
+
+                  <div
+                    className={
+                      styles.modalWarning
+                    }
+                  >
+                    <Icon
+                      name="warning"
+                      size={17}
+                    />
+
+                    <span>
+                      This action cannot be
+                      undone.
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      styles.modalActions
+                    }
+                  >
+                    <button
+                      type="button"
+                      className={
+                        styles.modalCancel
+                      }
+                      onClick={
+                        closeModal
+                      }
+                      disabled={
+                        processingAction
+                      }
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="button"
+                      className={
+                        styles.modalDanger
+                      }
+                      onClick={() =>
+                        void deleteStoredDocuments()
+                      }
+                      disabled={
+                        processingAction
+                      }
+                    >
+                      {processingAction
+                        ? "Deleting..."
+                        : "Delete Documents"}
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {modal ===
+                "history" && (
+                <>
+                  <div
+                    className={`${styles.modalIcon} ${styles.modalIconDanger}`}
+                  >
+                    <Icon
+                      name="history"
+                      size={24}
+                    />
+                  </div>
+
+                  <h2
+                    id="privacy-modal-title"
+                  >
+                    Clear Verification History?
+                  </h2>
+
+                  <p>
+                    This will permanently
+                    remove your previous
+                    verification records from
+                    your account.
+                  </p>
+
+                  <div
+                    className={
+                      styles.modalWarning
+                    }
+                  >
+                    <Icon
+                      name="warning"
+                      size={17}
+                    />
+
+                    <span>
+                      Stored document files
+                      are not deleted by this
+                      action.
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      styles.modalActions
+                    }
+                  >
+                    <button
+                      type="button"
+                      className={
+                        styles.modalCancel
+                      }
+                      onClick={
+                        closeModal
+                      }
+                      disabled={
+                        processingAction
+                      }
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="button"
+                      className={
+                        styles.modalDanger
+                      }
+                      onClick={() =>
+                        void clearVerificationHistory()
+                      }
+                      disabled={
+                        processingAction
+                      }
+                    >
+                      {processingAction
+                        ? "Clearing..."
+                        : "Clear History"}
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {modal ===
+                "account" && (
+                <>
+                  <div
+                    className={`${styles.modalIcon} ${styles.modalIconDanger}`}
+                  >
+                    <Icon
+                      name="warning"
+                      size={24}
+                    />
+                  </div>
+
+                  <h2
+                    id="privacy-modal-title"
+                  >
+                    Delete Account
+                  </h2>
+
+                  <p>
+                    Account deletion requires
+                    secure server-side account
+                    administration. This action
+                    is not performed directly
+                    from the browser.
+                  </p>
+
+                  <div
+                    className={
+                      styles.modalInfo
+                    }
+                  >
+                    <Icon
+                      name="shield"
+                      size={18}
+                    />
+
+                    <span>
+                      Contact PropertySure AI
+                      support to request
+                      permanent account
+                      deletion.
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      styles.modalActions
+                    }
+                  >
+                    <button
+                      type="button"
+                      className={
+                        styles.modalCancel
+                      }
+                      onClick={
+                        closeModal
+                      }
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="button"
+                      className={
+                        styles.modalPrimary
+                      }
+                      onClick={() => {
+                        closeModal();
+                        router.push(
+                          "/settings/support-help",
+                        );
+                      }}
+                    >
+                      Contact Support
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* =====================================================
-          EXPORT DATA MODAL
-      ===================================================== */}
-
-      {exportModal && (
-        <div
-          className={
-            styles.modalBackdrop
-          }
-          onClick={() =>
-            setExportModal(null)
-          }
-        >
-          <div
-            className={styles.modal}
-            onClick={(event) =>
-              event.stopPropagation()
-            }
-          >
-            {exportModal === "confirm" ? (
-              <>
-                <div
-                  className={
-                    styles.saveIcon
-                  }
-                >
-                  <Icon
-                    name="download"
-                    size={22}
-                  />
-                </div>
-
-                <h3>
-                  Request Your Data Export
-                </h3>
-
-                <p>
-                  Request a copy of the
-                  information associated
-                  with your PropertySure AI
-                  account.
-                </p>
-
-                <div
-                  style={{
-                    marginTop: "16px",
-                    padding: "13px",
-                    borderRadius: "8px",
-                    background:
-                      "#f6f9fc",
-                    border:
-                      "1px solid #e1e8f0",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#18253a",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      marginBottom:
-                        "8px",
-                    }}
-                  >
-                    Your export may include:
-                  </div>
-
-                  <div
-                    style={{
-                      color: "#71849e",
-                      fontSize: "9px",
-                      lineHeight: 1.7,
-                    }}
-                  >
-                    • Account information
-                    <br />
-                    • Property information
-                    <br />
-                    • Verification history
-                    <br />
-                    • Verification reports
-                    <br />
-                    • Other available
-                    account data
-                  </div>
-                </div>
-
-                <p
-                  style={{
-                    marginTop: "12px",
-                  }}
-                >
-                  Your information will be
-                  prepared securely. You
-                  will be notified when the
-                  export is ready.
-                </p>
-
-                <div
-                  className={
-                    styles.modalActions
-                  }
-                >
-                  <button
-                    type="button"
-                    className={
-                      styles.cancelButton
-                    }
-                    onClick={() =>
-                      setExportModal(null)
-                    }
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="button"
-                    className={
-                      styles.exportButton
-                    }
-                    onClick={
-                      confirmExportRequest
-                    }
-                  >
-                    Request Data Export
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div
-                  className={
-                    styles.saveIcon
-                  }
-                >
-                  <Icon
-                    name="shield"
-                    size={22}
-                  />
-                </div>
-
-                <h3>
-                  Export Request Received
-                </h3>
-
-                <p>
-                  Your data export request
-                  has been received
-                  successfully.
-                </p>
-
-                <div
-                  style={{
-                    marginTop: "16px",
-                    padding: "13px",
-                    borderRadius: "8px",
-                    background:
-                      "#f6f9fc",
-                    border:
-                      "1px solid #e1e8f0",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#18253a",
-                      fontSize: "10px",
-                      fontWeight: 600,
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    We will prepare the
-                    available data associated
-                    with your account and
-                    notify you when your export
-                    is ready.
-                  </div>
-                </div>
-
-                <div
-                  className={
-                    styles.modalActions
-                  }
-                >
-                  <button
-                    type="button"
-                    className={
-                      styles.exportButton
-                    }
-                    onClick={() =>
-                      setExportModal(null)
-                    }
-                  >
-                    Done
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </main>
+        )}
+      </main>
+    </AppShell>
   );
 }

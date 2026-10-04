@@ -9,6 +9,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
+import AppShell from "../../../AppShell/AppShell";
 import LoadingScreen from "../../../AppShell/LoadingScreen";
 
 type DocumentType =
@@ -17,23 +18,7 @@ type DocumentType =
   | "drivers-license"
   | "passport";
 
-type IconName =
-  | "dashboard"
-  | "verify"
-  | "properties"
-  | "history"
-  | "fraud"
-  | "reports"
-  | "account"
-  | "settings"
-  | "bell"
-  | "menu"
-  | "arrow"
-  | "chevron"
-  | "upload"
-  | "info"
-  | "lock"
-  | "check";
+type IconName = "arrow";
 
 const DOCUMENT_NAMES: Record<DocumentType, string> = {
   nin: "NIN / National Identification Number",
@@ -53,6 +38,10 @@ const ALLOWED_FILE_TYPES = [
 const INITIAL_LOADING_TIME = 700;
 const NAVIGATION_LOADING_TIME = 700;
 
+/* ============================================================
+   ICON
+============================================================ */
+
 function Icon({
   name,
   size = 20,
@@ -61,22 +50,7 @@ function Icon({
   size?: number;
 }) {
   const icons: Record<IconName, string> = {
-    dashboard: "▦",
-    verify: "⇧",
-    properties: "⌂",
-    history: "◷",
-    fraud: "◇",
-    reports: "▤",
-    account: "◯",
-    settings: "⚙",
-    bell: "🔔",
-    menu: "☰",
     arrow: "←",
-    chevron: "›",
-    upload: "⇧",
-    info: "ⓘ",
-    lock: "🔒",
-    check: "✓",
   };
 
   return (
@@ -92,38 +66,9 @@ function Icon({
   );
 }
 
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: "dashboard" as IconName,
-  },
-  {
-    label: "Verify Property",
-    href: "/verify",
-    icon: "verify" as IconName,
-  },
-  {
-    label: "My Properties",
-    href: "/my-properties",
-    icon: "properties" as IconName,
-  },
-  {
-    label: "Verification History",
-    href: "/verification-history",
-    icon: "history" as IconName,
-  },
-  {
-    label: "Fraud Watch",
-    href: "/fraud-watch",
-    icon: "fraud" as IconName,
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-    icon: "reports" as IconName,
-  },
-];
+/* ============================================================
+   PAGE
+============================================================ */
 
 export default function DocumentUploadPage() {
   const router = useRouter();
@@ -134,27 +79,29 @@ export default function DocumentUploadPage() {
   const navigationTimeoutRef =
     useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [menuOpen, setMenuOpen] = useState(false);
-
   const [selectedDocument, setSelectedDocument] =
     useState<DocumentType>("nin");
 
   const [selectedFile, setSelectedFile] =
     useState<File | null>(null);
 
-  const [dragActive, setDragActive] = useState(false);
+  const [dragActive, setDragActive] =
+    useState(false);
 
-  const [error, setError] = useState("");
+  const [error, setError] =
+    useState("");
 
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] =
+    useState(false);
 
   /*
-    The page starts in loading state.
-
-    This guarantees that the shared LoadingScreen is rendered
-    immediately on the first client render.
+  ============================================================
+  PAGE LOADING
+  ============================================================
   */
-  const [loading, setLoading] = useState(true);
+
+  const [loading, setLoading] =
+    useState(true);
 
   /* ============================================================
      INITIALIZE PAGE
@@ -181,17 +128,14 @@ export default function DocumentUploadPage() {
       }
     } catch {
       /*
-        If sessionStorage is unavailable, the page simply
-        continues with the default NIN document.
+        If sessionStorage is unavailable,
+        continue with the default NIN document.
       */
     }
 
     /*
-      Keep the shared loading screen visible long enough
-      for the user to actually see it.
-
-      This is intentionally the same shared LoadingScreen
-      used throughout PropertySure AI.
+      Keep the shared loading screen visible
+      long enough for the user to see it.
     */
     loadingTimeoutRef.current =
       setTimeout(() => {
@@ -230,23 +174,18 @@ export default function DocumentUploadPage() {
   }
 
   /* ============================================================
-     NAVIGATION
-  ============================================================ */
-
-  const navigateTo = (path: string) => {
-    setMenuOpen(false);
-    router.push(path);
-  };
-
-  /* ============================================================
      FILE VALIDATION
   ============================================================ */
 
-  const validateFile = (file: File): boolean => {
+  const validateFile = (
+    file: File,
+  ): boolean => {
     setError("");
 
     const validType =
-      ALLOWED_FILE_TYPES.includes(file.type);
+      ALLOWED_FILE_TYPES.includes(
+        file.type,
+      );
 
     if (!validType) {
       setError(
@@ -271,7 +210,9 @@ export default function DocumentUploadPage() {
      FILE SELECTION
   ============================================================ */
 
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = (
+    file: File,
+  ) => {
     if (!validateFile(file)) {
       return;
     }
@@ -339,8 +280,7 @@ export default function DocumentUploadPage() {
 
   /* ============================================================
      CONTINUE
-     
-     Step 2 → Step 3
+     STEP 2 → STEP 3
   ============================================================ */
 
   const handleContinue = () => {
@@ -352,7 +292,10 @@ export default function DocumentUploadPage() {
       return;
     }
 
-    if (typeof window !== "undefined") {
+    if (
+      typeof window !==
+      "undefined"
+    ) {
       sessionStorage.setItem(
         "propertysure_kyc_file_name",
         selectedFile.name,
@@ -367,23 +310,20 @@ export default function DocumentUploadPage() {
     /*
       Clear any previous navigation timer.
     */
-    if (navigationTimeoutRef.current) {
+    if (
+      navigationTimeoutRef.current
+    ) {
       clearTimeout(
         navigationTimeoutRef.current,
       );
     }
 
     /*
-      Turn on the shared LoadingScreen first.
+      Show the shared LoadingScreen
+      before Step 3 opens.
     */
     setUploading(true);
 
-    /*
-      Give React time to paint the LoadingScreen.
-
-      The user will see the same PropertySure AI loading
-      screen before Step 3 opens.
-    */
     navigationTimeoutRef.current =
       setTimeout(() => {
         router.push(
@@ -397,541 +337,63 @@ export default function DocumentUploadPage() {
   ============================================================ */
 
   const documentName =
-    DOCUMENT_NAMES[selectedDocument] ||
-    DOCUMENT_NAMES.nin;
+    DOCUMENT_NAMES[
+      selectedDocument
+    ] || DOCUMENT_NAMES.nin;
 
   const documentBadge =
     selectedDocument === "nin"
       ? "NIN"
-      : selectedDocument === "national-id"
+      : selectedDocument ===
+          "national-id"
         ? "ID"
-        : selectedDocument === "drivers-license"
+        : selectedDocument ===
+            "drivers-license"
           ? "DL"
           : "PASS";
 
+  /* ============================================================
+     PAGE
+  ============================================================ */
+
   return (
-    <main className={styles.page}>
-      {/* ======================================================
-          HEADER
-      ====================================================== */}
-
-      <header
-        className={styles.mobileHeader}
-      >
-        <button
-          type="button"
-          className={styles.menuButton}
-          onClick={() =>
-            setMenuOpen(true)
-          }
-          aria-label="Open navigation"
-        >
-          <Icon
-            name="menu"
-            size={23}
-          />
-        </button>
-
-        <button
-          type="button"
-          className={
-            styles.mobileLogoButton
-          }
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-          aria-label="PropertySure AI Dashboard"
-        >
-          <span
-            className={
-              styles.mobileLogoDiamond
-            }
-          >
-            ◆
-          </span>
-
-          <span
-            className={
-              styles.mobileBrandName
-            }
-          >
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={styles.mobileBell}
-          onClick={() =>
-            navigateTo(
-              "/account/notifications",
-            )
-          }
-          aria-label="Notifications"
-        >
-          <Icon
-            name="bell"
-            size={17}
-          />
-
-          <span
-            className={
-              styles.mobileNotificationDot
-            }
-          />
-        </button>
-      </header>
-
-      {/* ======================================================
-          MOBILE MENU
-      ====================================================== */}
-
-      {menuOpen && (
-        <div
-          className={
-            styles.mobileMenu
-          }
+    <AppShell
+      activePath="/account"
+      headerPath="/account"
+    >
+      <main className={styles.page}>
+        <section
+          className={styles.main}
         >
           <div
-            className={
-              styles.mobileMenuHeader
-            }
+            className={styles.content}
           >
-            <button
-              type="button"
-              className={
-                styles.mobileMenuLogo
-              }
-              onClick={() =>
-                navigateTo("/dashboard")
-              }
-            >
-              <span>
-                ◆
-              </span>
-
-              <div>
-                PropertySure
-                <strong>
-                  {" "}AI
-                </strong>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              className={
-                styles.closeMenu
-              }
-              onClick={() =>
-                setMenuOpen(false)
-              }
-              aria-label="Close navigation"
-            >
-              ×
-            </button>
-          </div>
-
-          <div
-            className={
-              styles.mobileMenuSubtitle
-            }
-          >
-            AI-Powered Property Due
-            Diligence
-          </div>
-
-          <nav
-            className={
-              styles.mobileMenuNav
-            }
-          >
-            {navItems.map(
-              (item) => (
-                <button
-                  key={item.href}
-                  type="button"
-                  className={
-                    styles.mobileNavItem
-                  }
-                  onClick={() =>
-                    navigateTo(
-                      item.href,
-                    )
-                  }
-                >
-                  <span
-                    className={
-                      styles.navIcon
-                    }
-                  >
-                    <Icon
-                      name={
-                        item.icon
-                      }
-                      size={18}
-                    />
-                  </span>
-
-                  <span>
-                    {item.label}
-                  </span>
-                </button>
-              ),
-            )}
-          </nav>
-
-          <div
-            className={
-              styles.mobileAccountLabel
-            }
-          >
-            ACCOUNT
-          </div>
-
-          <button
-            type="button"
-            className={
-              styles.mobileNavItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/account",
-              )
-            }
-          >
-            <span
-              className={
-                styles.navIcon
-              }
-            >
-              <Icon
-                name="account"
-                size={18}
-              />
-            </span>
-
-            <span>
-              Account
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className={
-              styles.mobileNavItem
-            }
-            onClick={() =>
-              navigateTo(
-                "/settings",
-              )
-            }
-          >
-            <span
-              className={
-                styles.navIcon
-              }
-            >
-              <Icon
-                name="settings"
-                size={18}
-              />
-            </span>
-
-            <span>
-              Settings
-            </span>
-          </button>
-        </div>
-      )}
-
-      {/* ======================================================
-          MAIN
-      ====================================================== */}
-
-      <section
-        className={styles.main}
-      >
-        <div
-          className={styles.content}
-        >
-          {/* ==================================================
-              PAGE INTRO
-          ================================================== */}
-
-          <div
-            className={
-              styles.pageIntro
-            }
-          >
-            <h1>
-              Identity Verification
-            </h1>
-
-            <p>
-              Complete the steps below to verify your
-              identity and secure your account.
-            </p>
-
-            <button
-              type="button"
-              className={
-                styles.backLink
-              }
-              onClick={() =>
-                router.push(
-                  "/account/identity-verification",
-                )
-              }
-            >
-              <Icon
-                name="arrow"
-                size={18}
-              />
-
-              <span>
-                Back to Identity Document
-              </span>
-            </button>
+            {/* ==================================================
+                PAGE INTRO
+            ================================================== */}
 
             <div
               className={
-                styles.statusBadge
+                styles.pageIntro
               }
             >
-              <span
-                className={
-                  styles.statusDiamond
-                }
-              >
-                ◇
-              </span>
+              <h1>
+                Identity Verification
+              </h1>
 
-              <span>
-                Not Verified
-              </span>
-            </div>
-          </div>
+              <p>
+                Complete the steps below to verify your
+                identity and secure your account.
+              </p>
 
-          {/* ==================================================
-              FIVE STEP PROGRESS
-          ================================================== */}
-
-          <div
-            className={styles.steps}
-          >
-            <StepItem>
-              <Step
-                number={1}
-                label={
-                  <>
-                    Identity
-                    <br />
-                    Document
-                  </>
-                }
-                completed
-              />
-
-              <StepLine
-                active
-              />
-            </StepItem>
-
-            <StepItem>
-              <Step
-                number={2}
-                label={
-                  <>
-                    Document
-                    <br />
-                    Upload
-                  </>
-                }
-                active
-              />
-
-              <StepLine
-                active
-              />
-            </StepItem>
-
-            <StepItem>
-              <Step
-                number={3}
-                label={
-                  <>
-                    Information
-                    <br />
-                    Confirmation
-                  </>
-                }
-              />
-
-              <StepLine />
-            </StepItem>
-
-            <StepItem>
-              <Step
-                number={4}
-                label={
-                  <>
-                    Selfie
-                    <br />
-                    Verification
-                  </>
-                }
-              />
-
-              <StepLine />
-            </StepItem>
-
-            <StepItem last>
-              <Step
-                number={5}
-                label={
-                  <>
-                    Review &
-                    <br />
-                    Submit
-                  </>
-                }
-              />
-            </StepItem>
-          </div>
-
-          {/* ==================================================
-              VERIFICATION CARD
-          ================================================== */}
-
-          <section
-            className={
-              styles.verificationCard
-            }
-          >
-            <div
-              className={
-                styles.cardHeader
-              }
-            >
-              <div
-                className={
-                  styles.cardHeaderIcon
-                }
-              >
-                <UploadCloudIcon />
-              </div>
-
-              <div
-                className={
-                  styles.cardHeaderText
-                }
-              >
-                <h2>
-                  Step 2: Document Upload
-                </h2>
-
-                <p>
-                  Upload a clear photo of your selected
-                  identity document.
-                </p>
-              </div>
-            </div>
-
-            <div
-              className={
-                styles.divider
-              }
-            />
-
-            {/* =================================================
-                DOCUMENT REQUIREMENTS
-            ================================================= */}
-
-            <div
-              className={
-                styles.requirementsBox
-              }
-            >
-              <div
-                className={
-                  styles.infoIcon
-                }
-              >
-                <InfoIcon />
-              </div>
-
-              <div
-                className={
-                  styles.requirementsContent
-                }
-              >
-                <h3>
-                  Make sure your document is:
-                </h3>
-
-                <div
-                  className={
-                    styles.requirementsGrid
-                  }
-                >
-                  <Requirement>
-                    Clear and in focus
-                  </Requirement>
-
-                  <Requirement>
-                    Not blurry or cropped
-                  </Requirement>
-
-                  <Requirement>
-                    All corners visible
-                  </Requirement>
-
-                  <Requirement>
-                    Not expired
-                  </Requirement>
-                </div>
-              </div>
-            </div>
-
-            {/* =================================================
-                SELECTED DOCUMENT
-            ================================================= */}
-
-            <div
-              className={
-                styles.sectionLabel
-              }
-            >
-              Selected document
-            </div>
-
-            <div
-              className={
-                styles.selectedDocument
-              }
-            >
-              <div
-                className={
-                  styles.ninBadge
-                }
-              >
-                {documentBadge}
-              </div>
-
-              <div
-                className={
-                  styles.selectedDocumentName
-                }
-              >
-                {documentName}
-              </div>
+              {/* ==================================================
+                  BACK TO IDENTITY DOCUMENT
+              ================================================== */}
 
               <button
                 type="button"
                 className={
-                  styles.changeButton
+                  styles.backLink
                 }
                 onClick={() =>
                   router.push(
@@ -939,311 +401,471 @@ export default function DocumentUploadPage() {
                   )
                 }
               >
-                Change
-              </button>
-            </div>
-
-            {/* =================================================
-                UPLOAD DOCUMENT
-            ================================================= */}
-
-            <div
-              className={
-                styles.sectionLabel
-              }
-            >
-              Upload document
-            </div>
-
-            <div
-              className={`${styles.uploadArea} ${
-                dragActive
-                  ? styles.uploadAreaActive
-                  : ""
-              } ${
-                selectedFile
-                  ? styles.uploadAreaSelected
-                  : ""
-              }`}
-              onDragOver={
-                handleDragOver
-              }
-              onDragLeave={
-                handleDragLeave
-              }
-              onDrop={
-                handleDrop
-              }
-            >
-              <div
-                className={
-                  styles.uploadIconCircle
-                }
-              >
-                <UploadIcon />
-              </div>
-
-              {selectedFile ? (
-                <>
-                  <div
-                    className={
-                      styles.fileName
-                    }
-                  >
-                    {selectedFile.name}
-                  </div>
-
-                  <div
-                    className={
-                      styles.fileSize
-                    }
-                  >
-                    {(
-                      selectedFile.size /
-                      1024 /
-                      1024
-                    ).toFixed(2)}{" "}
-                    MB
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div
-                    className={
-                      styles.dragText
-                    }
-                  >
-                    Drag and drop your document here
-                  </div>
-
-                  <div
-                    className={
-                      styles.orText
-                    }
-                  >
-                    or
-                  </div>
-                </>
-              )}
-
-              <label
-                className={
-                  styles.chooseFileButton
-                }
-              >
-                <UploadSmallIcon />
-
-                <span>
-                  {selectedFile
-                    ? "Choose Another File"
-                    : "Choose File"}
-                </span>
-
-                <input
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                  onChange={
-                    handleFileChange
-                  }
-                  hidden
+                <Icon
+                  name="arrow"
+                  size={18}
                 />
-              </label>
-
-              <div
-                className={
-                  styles.fileTypes
-                }
-              >
-                JPG, PNG or PDF
 
                 <span>
-                  •
+                  Back to Identity Document
                 </span>
+              </button>
 
-                Max size 5MB
-              </div>
-            </div>
+              {/* ==================================================
+                  STATUS
+              ================================================== */}
 
-            {/* =================================================
-                ERROR
-            ================================================= */}
-
-            {error && (
               <div
                 className={
-                  styles.errorMessage
+                  styles.statusBadge
                 }
               >
-                {error}
-              </div>
-            )}
-
-            {/* =================================================
-                SECURITY
-            ================================================= */}
-
-            <div
-              className={
-                styles.securityBox
-              }
-            >
-              <div
-                className={
-                  styles.securityLock
-                }
-              >
-                <LockIcon />
-              </div>
-
-              <p>
-                Your document is encrypted and securely
-                stored. We never share your data with third
-                parties.
-              </p>
-            </div>
-
-            {/* =================================================
-                CONTINUE
-            ================================================= */}
-
-            <div
-              className={
-                styles.continueRow
-              }
-            >
-              <button
-                type="button"
-                className={
-                  styles.continueButton
-                }
-                onClick={
-                  handleContinue
-                }
-                disabled={
-                  !selectedFile ||
-                  uploading
-                }
-              >
-                <span>
-                  Continue
-                </span>
-
                 <span
                   className={
-                    styles.continueArrow
+                    styles.statusDiamond
                   }
                 >
-                  →
+                  ◇
                 </span>
-              </button>
+
+                <span>
+                  Not Verified
+                </span>
+              </div>
             </div>
-          </section>
-        </div>
-      </section>
 
-      {/* ======================================================
-          MOBILE BOTTOM NAV
-      ====================================================== */}
+            {/* ==================================================
+                FIVE STEP PROGRESS
+            ================================================== */}
 
-      <nav
-        className={
-          styles.mobileBottomNav
-        }
-      >
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/dashboard",
-            )
-          }
-        >
-          <Icon
-            name="dashboard"
-            size={20}
-          />
+            <div
+              className={styles.steps}
+            >
+              <StepItem>
+                <Step
+                  number={1}
+                  label={
+                    <>
+                      Identity
+                      <br />
+                      Document
+                    </>
+                  }
+                  completed
+                />
 
-          <span>
-            Dashboard
-          </span>
-        </button>
+                <StepLine
+                  active
+                />
+              </StepItem>
 
-        <button
-          type="button"
-          className={
-            styles.activeBottom
-          }
-          onClick={() =>
-            navigateTo(
-              "/verify",
-            )
-          }
-        >
-          <Icon
-            name="verify"
-            size={20}
-          />
+              <StepItem>
+                <Step
+                  number={2}
+                  label={
+                    <>
+                      Document
+                      <br />
+                      Upload
+                    </>
+                  }
+                  active
+                />
 
-          <span>
-            Verify
-          </span>
-        </button>
+                <StepLine
+                  active
+                />
+              </StepItem>
 
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/my-properties",
-            )
-          }
-        >
-          <Icon
-            name="properties"
-            size={20}
-          />
+              <StepItem>
+                <Step
+                  number={3}
+                  label={
+                    <>
+                      Information
+                      <br />
+                      Confirmation
+                    </>
+                  }
+                />
 
-          <span>
-            Properties
-          </span>
-        </button>
+                <StepLine />
+              </StepItem>
 
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/reports",
-            )
-          }
-        >
-          <Icon
-            name="reports"
-            size={20}
-          />
+              <StepItem>
+                <Step
+                  number={4}
+                  label={
+                    <>
+                      Selfie
+                      <br />
+                      Verification
+                    </>
+                  }
+                />
 
-          <span>
-            Reports
-          </span>
-        </button>
+                <StepLine />
+              </StepItem>
 
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo(
-              "/account",
-            )
-          }
-        >
-          <Icon
-            name="account"
-            size={20}
-          />
+              <StepItem last>
+                <Step
+                  number={5}
+                  label={
+                    <>
+                      Review &
+                      <br />
+                      Submit
+                    </>
+                  }
+                />
+              </StepItem>
+            </div>
 
-          <span>
-            Account
-          </span>
-        </button>
-      </nav>
-    </main>
+            {/* ==================================================
+                VERIFICATION CARD
+            ================================================== */}
+
+            <section
+              className={
+                styles.verificationCard
+              }
+            >
+              {/* =================================================
+                  CARD HEADER
+              ================================================= */}
+
+              <div
+                className={
+                  styles.cardHeader
+                }
+              >
+                <div
+                  className={
+                    styles.cardHeaderIcon
+                  }
+                >
+                  <UploadCloudIcon />
+                </div>
+
+                <div
+                  className={
+                    styles.cardHeaderText
+                  }
+                >
+                  <h2>
+                    Step 2: Document Upload
+                  </h2>
+
+                  <p>
+                    Upload a clear photo of your selected
+                    identity document.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className={
+                  styles.divider
+                }
+              />
+
+              {/* =================================================
+                  DOCUMENT REQUIREMENTS
+              ================================================= */}
+
+              <div
+                className={
+                  styles.requirementsBox
+                }
+              >
+                <div
+                  className={
+                    styles.infoIcon
+                  }
+                >
+                  <InfoIcon />
+                </div>
+
+                <div
+                  className={
+                    styles.requirementsContent
+                  }
+                >
+                  <h3>
+                    Make sure your document is:
+                  </h3>
+
+                  <div
+                    className={
+                      styles.requirementsGrid
+                    }
+                  >
+                    <Requirement>
+                      Clear and in focus
+                    </Requirement>
+
+                    <Requirement>
+                      Not blurry or cropped
+                    </Requirement>
+
+                    <Requirement>
+                      All corners visible
+                    </Requirement>
+
+                    <Requirement>
+                      Not expired
+                    </Requirement>
+                  </div>
+                </div>
+              </div>
+
+              {/* =================================================
+                  SELECTED DOCUMENT
+              ================================================= */}
+
+              <div
+                className={
+                  styles.sectionLabel
+                }
+              >
+                Selected document
+              </div>
+
+              <div
+                className={
+                  styles.selectedDocument
+                }
+              >
+                <div
+                  className={
+                    styles.ninBadge
+                  }
+                >
+                  {documentBadge}
+                </div>
+
+                <div
+                  className={
+                    styles.selectedDocumentName
+                  }
+                >
+                  {documentName}
+                </div>
+
+                <button
+                  type="button"
+                  className={
+                    styles.changeButton
+                  }
+                  onClick={() =>
+                    router.push(
+                      "/account/identity-verification",
+                    )
+                  }
+                >
+                  Change
+                </button>
+              </div>
+
+              {/* =================================================
+                  UPLOAD DOCUMENT
+              ================================================= */}
+
+              <div
+                className={
+                  styles.sectionLabel
+                }
+              >
+                Upload document
+              </div>
+
+              <div
+                className={`${styles.uploadArea} ${
+                  dragActive
+                    ? styles.uploadAreaActive
+                    : ""
+                } ${
+                  selectedFile
+                    ? styles.uploadAreaSelected
+                    : ""
+                }`}
+                onDragOver={
+                  handleDragOver
+                }
+                onDragLeave={
+                  handleDragLeave
+                }
+                onDrop={
+                  handleDrop
+                }
+              >
+                <div
+                  className={
+                    styles.uploadIconCircle
+                  }
+                >
+                  <UploadIcon />
+                </div>
+
+                {selectedFile ? (
+                  <>
+                    <div
+                      className={
+                        styles.fileName
+                      }
+                    >
+                      {selectedFile.name}
+                    </div>
+
+                    <div
+                      className={
+                        styles.fileSize
+                      }
+                    >
+                      {(
+                        selectedFile.size /
+                        1024 /
+                        1024
+                      ).toFixed(2)}{" "}
+                      MB
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div
+                      className={
+                        styles.dragText
+                      }
+                    >
+                      Drag and drop your document here
+                    </div>
+
+                    <div
+                      className={
+                        styles.orText
+                      }
+                    >
+                      or
+                    </div>
+                  </>
+                )}
+
+                <label
+                  className={
+                    styles.chooseFileButton
+                  }
+                >
+                  <UploadSmallIcon />
+
+                  <span>
+                    {selectedFile
+                      ? "Choose Another File"
+                      : "Choose File"}
+                  </span>
+
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                    onChange={
+                      handleFileChange
+                    }
+                    hidden
+                  />
+                </label>
+
+                <div
+                  className={
+                    styles.fileTypes
+                  }
+                >
+                  JPG, PNG or PDF
+
+                  <span>
+                    •
+                  </span>
+
+                  Max size 5MB
+                </div>
+              </div>
+
+              {/* =================================================
+                  ERROR
+              ================================================= */}
+
+              {error && (
+                <div
+                  className={
+                    styles.errorMessage
+                  }
+                >
+                  {error}
+                </div>
+              )}
+
+              {/* =================================================
+                  SECURITY
+              ================================================= */}
+
+              <div
+                className={
+                  styles.securityBox
+                }
+              >
+                <div
+                  className={
+                    styles.securityLock
+                  }
+                >
+                  <LockIcon />
+                </div>
+
+                <p>
+                  Your document is encrypted and securely
+                  stored. We never share your data with third
+                  parties.
+                </p>
+              </div>
+
+              {/* =================================================
+                  CONTINUE
+              ================================================= */}
+
+              <div
+                className={
+                  styles.continueRow
+                }
+              >
+                <button
+                  type="button"
+                  className={
+                    styles.continueButton
+                  }
+                  onClick={
+                    handleContinue
+                  }
+                  disabled={
+                    !selectedFile ||
+                    uploading
+                  }
+                >
+                  <span>
+                    Continue
+                  </span>
+
+                  <span
+                    className={
+                      styles.continueArrow
+                    }
+                  >
+                    →
+                  </span>
+                </button>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </AppShell>
   );
 }
 

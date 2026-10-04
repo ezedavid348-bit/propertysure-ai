@@ -35,14 +35,14 @@
    VERIFICATION NAVIGATION
    ============================================================ */
 
-/*
- * The Back link and 7-step verification workflow are rendered
- * by the shared VerificationNavigation component.
- *
- * The Review page does not create a separate Back button or
- * separate workflow so that every verification page remains
- * visually uniform.
- */
+ /*
+  * The Back link and 7-step verification workflow are rendered
+  * by the shared VerificationNavigation component.
+  *
+  * The Review page does not create a separate Back button or
+  * separate workflow so that every verification page remains
+  * visually uniform.
+  */
 
 /* ============================================================
    INTRO
@@ -59,29 +59,14 @@
   text-align: center;
 }
 
-/*
- * Hidden intentionally:
- * The Review page no longer shows the
- * "DOCUMENT PACKAGE REVIEW" badge.
- */
 .reviewBadge {
   display: none;
 }
 
-/*
- * Hidden intentionally:
- * The Review page no longer shows
- * "Review Your Documents".
- */
 .intro h1 {
   display: none;
 }
 
-/*
- * Keep the explanatory paragraph.
- * It now becomes the main introductory
- * text at the top of the page.
- */
 .intro p {
   max-width: 650px;
 
@@ -99,11 +84,6 @@
    SUMMARY
    ============================================================ */
 
-/*
- * Hidden intentionally:
- * The "Property Document Package" summary
- * card has been removed from the Review page.
- */
 .summaryCard {
   display: none;
 }
@@ -537,10 +517,44 @@
   overflow: visible !important;
 }
 
+/* ============================================================
+   AI CLASSIFICATION PROCESSING
+   ============================================================ */
+
 .classificationProcessing {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
   color: #168eff !important;
 
   font-weight: 700;
+
+  white-space: normal !important;
+}
+
+.classificationSpinner {
+  width: 11px;
+  height: 11px;
+
+  flex:
+    0 0 11px;
+
+  display: inline-block;
+
+  border:
+    2px solid
+    rgba(22, 142, 255, 0.18);
+
+  border-top-color:
+    #168eff;
+
+  border-radius: 50%;
+
+  animation:
+    miniSpin 0.75s linear infinite;
 }
 
 .classificationSuccess {
@@ -1593,19 +1607,11 @@
       16px 14px 36px;
   }
 
-  /* ----------------------------------------------------------
-     INTRO
-     ---------------------------------------------------------- */
-
   .intro {
     padding:
       13px 0 18px;
   }
 
-  /*
-   * The badge and heading are hidden globally,
-   * so only the explanatory paragraph remains.
-   */
   .reviewBadge {
     display: none;
   }
@@ -1623,17 +1629,9 @@
     line-height: 1.65;
   }
 
-  /* ----------------------------------------------------------
-     SUMMARY
-     ---------------------------------------------------------- */
-
   .summaryCard {
     display: none;
   }
-
-  /* ----------------------------------------------------------
-     DOCUMENT SECTION
-     ---------------------------------------------------------- */
 
   .documentsSection {
     margin-top: 14px;
@@ -1657,10 +1655,6 @@
     width: 29px;
     height: 29px;
   }
-
-  /* ----------------------------------------------------------
-     DOCUMENT CARD
-     ---------------------------------------------------------- */
 
   .documentMainButton {
     padding: 12px;
@@ -1708,16 +1702,28 @@
       normal !important;
   }
 
+  .classificationProcessing {
+    gap: 5px;
+
+    font-size: 7px;
+  }
+
+  .classificationSpinner {
+    width: 9px;
+    height: 9px;
+
+    flex:
+      0 0 9px;
+
+    border-width: 2px;
+  }
+
   .documentArrow {
     align-self:
       center;
 
     font-size: 22px;
   }
-
-  /* ----------------------------------------------------------
-     DOCUMENT ACTIONS
-     ---------------------------------------------------------- */
 
   .documentActions {
     padding:
@@ -1754,28 +1760,16 @@
     visibility: visible;
   }
 
-  /* ----------------------------------------------------------
-     ADD DOCUMENT
-     ---------------------------------------------------------- */
-
   .addDocumentButton {
     min-height: 46px;
 
     font-size: 9px;
   }
 
-  /* ----------------------------------------------------------
-     MESSAGES
-     ---------------------------------------------------------- */
-
   .successMessage,
   .inlineError {
     font-size: 8px;
   }
-
-  /* ----------------------------------------------------------
-     NEXT CARD
-     ---------------------------------------------------------- */
 
   .nextCard {
     padding: 13px;
@@ -1797,10 +1791,6 @@
   .nextCard p {
     font-size: 8px;
   }
-
-  /* ----------------------------------------------------------
-     BOTTOM ACTIONS
-     ---------------------------------------------------------- */
 
   .actions {
     grid-template-columns:
@@ -1846,10 +1836,6 @@
   .securityNote span {
     font-size: 7px;
   }
-
-  /* ----------------------------------------------------------
-     PREVIEW
-     ---------------------------------------------------------- */
 
   .modalOverlay {
     padding:

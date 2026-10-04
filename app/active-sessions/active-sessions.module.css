@@ -1,7 +1,6 @@
 .page {
-  min-height: 100vh;
   width: 100%;
-  display: flex;
+  min-height: 100%;
   background: #ffffff;
   color: #101827;
   font-family:
@@ -38,369 +37,6 @@
 }
 
 /* =========================================================
-   LOADING
-========================================================= */
-
-.loading {
-  min-height: 100vh;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  background:
-    linear-gradient(
-      180deg,
-      #031229 0%,
-      #061b3b 100%
-    );
-  color: #ffffff;
-}
-
-.loadingBrand {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
-}
-
-.loadingBrand strong {
-  color: #168eff;
-}
-
-.loadingLogo {
-  color: #168eff;
-  font-size: 28px;
-  line-height: 1;
-}
-
-.loadingText {
-  color: #9eb1c9;
-  font-size: 13px;
-}
-
-/* =========================================================
-   SIDEBAR
-========================================================= */
-
-.sidebar {
-  width: 285px;
-  min-width: 285px;
-  min-height: 100vh;
-  padding: 30px 20px 20px;
-  background:
-    linear-gradient(
-      180deg,
-      #031229 0%,
-      #061b3b 100%
-    );
-  color: #ffffff;
-  display: flex;
-  flex-direction: column;
-  border-right:
-    1px solid
-    rgba(24, 142, 255, 0.12);
-}
-
-.brandButton {
-  border: 0;
-  background: transparent;
-  color: white;
-  padding: 0;
-  text-align: left;
-  cursor: pointer;
-}
-
-.brandName {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
-  white-space: nowrap;
-}
-
-.brandName strong {
-  color: #168eff;
-}
-
-.brandLogoDiamond {
-  color: #168eff;
-  font-size: 26px;
-}
-
-.brandSubtitle {
-  margin-top: 10px;
-  padding-left: 3px;
-  color: #9eb1c9;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.sidebarNav {
-  margin-top: 40px;
-}
-
-.navItem {
-  width: 100%;
-  min-height: 50px;
-  margin-bottom: 5px;
-  padding: 0 14px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: #b9c8dc;
-  font-size: 14px;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
-}
-
-.navItem:hover {
-  background: rgba(26, 119, 220, 0.14);
-  color: white;
-}
-
-.navIcon {
-  width: 20px;
-  min-width: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #8db9e9;
-}
-
-.accountLabel {
-  color: #607897;
-  font-size: 10px;
-  letter-spacing: 1.6px;
-  margin: 28px 14px 10px;
-}
-
-/* =========================================================
-   SUPPORT
-========================================================= */
-
-.helpBox {
-  margin-top: auto;
-  padding: 18px;
-  border:
-    1px solid
-    rgba(95, 157, 222, 0.25);
-  border-radius: 10px;
-  background:
-    rgba(10, 51, 103, 0.28);
-}
-
-.helpTitle {
-  font-size: 15px;
-  font-weight: 700;
-  margin-bottom: 9px;
-}
-
-.helpText {
-  color: #91a7c2;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.supportButton {
-  width: 100%;
-  height: 40px;
-  margin-top: 15px;
-  border:
-    1px solid
-    #168eff;
-  border-radius: 7px;
-  background: transparent;
-  color: #48a7ff;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* =========================================================
-   USER
-========================================================= */
-
-.sidebarUser {
-  width: 100%;
-  min-height: 68px;
-  margin-top: 20px;
-  padding: 8px 5px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 0;
-  border-top:
-    1px solid
-    rgba(255, 255, 255, 0.1);
-  background: transparent;
-  color: white;
-  text-align: left;
-  cursor: pointer;
-}
-
-.avatar,
-.topAvatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #147de2;
-  color: white;
-  font-weight: 700;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-  font-size: 13px;
-}
-
-.userInfo {
-  min-width: 0;
-  flex: 1;
-}
-
-.userName {
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.userPlan {
-  margin-top: 3px;
-  color: #8ca1bc;
-  font-size: 11px;
-}
-
-.userChevron {
-  color: #a7b9cf;
-  font-size: 18px;
-}
-
-/* =========================================================
-   MAIN
-========================================================= */
-
-.main {
-  flex: 1;
-  min-width: 0;
-  min-height: 100vh;
-  background: #ffffff;
-  overflow-x: hidden;
-}
-
-/* =========================================================
-   TOP BAR
-========================================================= */
-
-.topBar {
-  height: 70px;
-  padding: 0 30px 0 35px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom:
-    1px solid
-    #e5eaf0;
-  background: #ffffff;
-}
-
-.topBarTitle {
-  color: #111827;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.topBarRight {
-  display: flex;
-  align-items: center;
-  gap: 17px;
-}
-
-.topNotification {
-  width: 40px;
-  height: 40px;
-  border: 0;
-  background: transparent;
-  color: #334155;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.topNotification .icon {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 20px !important;
-}
-
-.topNotificationDot {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  top: 5px;
-  right: 6px;
-  border-radius: 50%;
-  background: #168eff;
-  border: 2px solid white;
-}
-
-.topUser {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 0;
-  background: transparent;
-  color: #111827;
-  cursor: pointer;
-  padding: 3px;
-}
-
-.topAvatar {
-  width: 38px;
-  height: 38px;
-  font-size: 12px;
-}
-
-.topUserText {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.topUserText strong {
-  color: #111827;
-  font-size: 12px;
-}
-
-.topUserText span {
-  margin-top: 2px;
-  color: #64748b;
-  font-size: 10px;
-}
-
-.topChevron {
-  color: #64748b;
-  font-size: 17px;
-}
-
-/* =========================================================
    CONTENT
 ========================================================= */
 
@@ -410,6 +46,10 @@
   margin: 0 auto;
   padding: 35px 42px 55px;
 }
+
+/* =========================================================
+   PAGE INTRO
+========================================================= */
 
 .pageIntro h1 {
   margin: 0;
@@ -427,19 +67,63 @@
   line-height: 1.5;
 }
 
-.backLink {
+/* =========================================================
+   BACK TO SECURITY
+
+   Same visual style as the Security / Change Password
+   back button.
+========================================================= */
+
+.backButton {
+  margin-top: 20px;
+  padding: 0;
+
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  margin-top: 25px;
+  gap: 6px;
+
+  border: none;
+  background: transparent;
+
   color: #168eff;
-  text-decoration: none;
+
+  font-family: inherit;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
+  line-height: 1.3;
+
+  cursor: pointer;
+
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
 }
 
-.backLink:hover {
-  text-decoration: underline;
+.backButton:hover {
+  color: #0878df;
+  background: transparent;
+  text-decoration: none;
+  transform: translateX(-1px);
+}
+
+.backButton:focus-visible {
+  outline: 3px solid rgba(22, 142, 255, 0.18);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.backButton:active {
+  transform: translateX(0);
+}
+
+.backArrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 400;
 }
 
 /* =========================================================
@@ -825,22 +509,15 @@
   white-space: nowrap;
 }
 
-/* =========================================================
-   MOBILE
-========================================================= */
-
-.mobileHeader,
-.mobileMenu,
-.mobileBottomNav {
-  display: none;
+.changePasswordButton:hover {
+  background: #f4f9ff;
 }
 
-@media (max-width: 1050px) {
-  .sidebar {
-    width: 220px;
-    min-width: 220px;
-  }
+/* =========================================================
+   RESPONSIVE
+========================================================= */
 
+@media (max-width: 1050px) {
   .content {
     padding: 30px 25px 45px;
   }
@@ -867,182 +544,8 @@
 
 @media (max-width: 700px) {
   .page {
-    display: block;
-    padding-bottom: 74px;
-  }
-
-  .sidebar {
-    display: none;
-  }
-
-  .main {
     width: 100%;
-    min-height: calc(100vh - 74px);
-  }
-
-  .mobileHeader {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    height: 68px;
-    padding: 0 12px;
-    display: grid;
-    grid-template-columns:
-      42px
-      minmax(0, 1fr)
-      42px;
-    align-items: center;
-    background: #ffffff;
-    border-bottom:
-      1px solid
-      #e5eaf0;
-  }
-
-  .menuButton,
-  .mobileBell {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 0;
-    background: transparent;
-    color: #1e293b;
-    cursor: pointer;
-  }
-
-  .mobileBell {
-    position: relative;
-  }
-
-  .mobileBell .icon {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 19px !important;
-  }
-
-  .mobileLogoButton {
-    min-width: 0;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    border: 0;
-    background: transparent;
-    color: #111827;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .mobileLogoButton strong {
-    color: #168eff;
-  }
-
-  .mobileLogoDiamond {
-    color: #168eff;
-    font-size: 22px;
-  }
-
-  .mobileNotificationDot {
-    position: absolute;
-    width: 7px;
-    height: 7px;
-    top: 5px;
-    right: 5px;
-    border-radius: 50%;
-    background: #168eff;
-    border: 2px solid white;
-  }
-
-  /* MOBILE MENU */
-
-  .mobileMenu {
-    position: fixed;
-    inset: 0;
-    z-index: 300;
-    display: block;
-    padding: 22px;
-    background: #031229;
-    color: white;
-    overflow-y: auto;
-  }
-
-  .mobileMenuHeader {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-
-  .mobileMenuLogo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: 0;
-    background: transparent;
-    color: white;
-    font-size: 20px;
-    font-weight: 700;
-  }
-
-  .mobileMenuLogo > span {
-    color: #168eff;
-    font-size: 25px;
-  }
-
-  .mobileMenuLogo strong {
-    color: #168eff;
-  }
-
-  .closeMenu {
-    border: 0;
-    background: transparent;
-    color: white;
-    font-size: 30px;
-    cursor: pointer;
-  }
-
-  .mobileMenuSubtitle {
-    margin-top: 9px;
-    color: #91a7c2;
-    font-size: 11px;
-  }
-
-  .mobileMenuNav {
-    margin-top: 30px;
-  }
-
-  .mobileNavItem {
-    width: 100%;
-    min-height: 50px;
-    margin-bottom: 5px;
-    padding: 0 14px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    border: 0;
-    border-radius: 9px;
-    background: transparent;
-    color: #b9c8dc;
-    font-size: 14px;
-    text-align: left;
-  }
-
-  .mobileAccountLabel {
-    color: #607897;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    margin: 25px 14px 10px;
-  }
-
-  .logoutItem {
-    color: #ff7d86;
-  }
-
-  /* CONTENT */
-
-  .topBar {
-    display: none;
+    min-height: 100%;
   }
 
   .content {
@@ -1052,20 +555,34 @@
 
   .pageIntro h1 {
     font-size: 27px;
+    line-height: 1.18;
   }
 
   .pageIntro p {
     font-size: 12px;
+    line-height: 1.5;
   }
 
-  .backLink {
+  /* =======================================================
+     BACK TO SECURITY
+  ======================================================= */
+
+  .backButton {
     margin-top: 20px;
+    font-size: 13px;
   }
 
-  /* SECURITY BANNER */
+  .backArrow {
+    font-size: 18px;
+  }
+
+  /* =======================================================
+     SECURITY BANNER
+  ======================================================= */
 
   .securityBanner {
     min-height: auto;
+    margin-top: 22px;
     padding: 17px;
     gap: 12px;
   }
@@ -1088,7 +605,9 @@
     display: none;
   }
 
-  /* CURRENT SESSION */
+  /* =======================================================
+     CURRENT SESSION
+  ======================================================= */
 
   .currentSessionCard {
     margin-top: 18px;
@@ -1142,7 +661,13 @@
     grid-column: 1 / -1;
   }
 
-  /* OTHER */
+  /* =======================================================
+     OTHER SESSIONS
+  ======================================================= */
+
+  .otherSessionsCard {
+    margin-top: 18px;
+  }
 
   .otherSessionsHeader {
     min-height: 52px;
@@ -1176,7 +701,9 @@
     font-size: 9px;
   }
 
-  /* LOST ACCESS */
+  /* =======================================================
+     LOST ACCESS
+  ======================================================= */
 
   .lostAccessCard {
     padding: 16px;
@@ -1208,47 +735,6 @@
     margin-left: 57px;
     height: 40px;
   }
-
-  /* BOTTOM NAV */
-
-  .mobileBottomNav {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 150;
-    height: 74px;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    background: #031229;
-    border-top:
-      1px solid
-      rgba(255, 255, 255, 0.1);
-  }
-
-  .mobileBottomNav button {
-    flex: 1;
-    height: 100%;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: #7d93ae;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    cursor: pointer;
-  }
-
-  .mobileBottomNav button span {
-    font-size: 8px;
-  }
-
-  .mobileBottomNav .activeBottom {
-    color: #168eff;
-  }
 }
 
 /* =========================================================
@@ -1265,7 +751,19 @@
     font-size: 25px;
   }
 
+  .pageIntro p {
+    font-size: 11px;
+  }
+
   .securityBannerText h2 {
     font-size: 13px;
+  }
+
+  .backButton {
+    font-size: 13px;
+  }
+
+  .backArrow {
+    font-size: 18px;
   }
 }

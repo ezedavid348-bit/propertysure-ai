@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
+import AppShell from "../../AppShell/AppShell";
 import LoadingScreen from "../../AppShell/LoadingScreen";
 
 type DocumentType =
@@ -18,129 +19,39 @@ type DocumentOption = {
   icon: "nin" | "id" | "car" | "passport";
 };
 
-type IconName =
-  | "dashboard"
-  | "verify"
-  | "properties"
-  | "history"
-  | "fraud"
-  | "reports"
-  | "account"
-  | "settings"
-  | "bell"
-  | "menu"
-  | "arrow"
-  | "chevron";
-
 const DOCUMENT_OPTIONS: DocumentOption[] = [
   {
     id: "nin",
     title: "NIN / National Identification Number",
-    description:
-      "Use your NIN or an accepted NIN document.",
+    description: "Use your NIN or an accepted NIN document.",
     icon: "nin",
   },
   {
     id: "national-id",
     title: "National Identity Card",
-    description:
-      "Government-issued National ID card.",
+    description: "Government-issued National ID card.",
     icon: "id",
   },
   {
     id: "drivers-license",
     title: "Driver’s Licence",
-    description:
-      "Valid driver’s licence issued by FRSC.",
+    description: "Valid driver’s licence issued by FRSC.",
     icon: "car",
   },
   {
     id: "passport",
     title: "International Passport",
-    description:
-      "Passport issued by your country of citizenship.",
+    description: "Passport issued by your country of citizenship.",
     icon: "passport",
   },
 ];
 
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: "dashboard" as IconName,
-  },
-  {
-    label: "Verify Property",
-    href: "/verify",
-    icon: "verify" as IconName,
-  },
-  {
-    label: "My Properties",
-    href: "/my-properties",
-    icon: "properties" as IconName,
-  },
-  {
-    label: "Verification History",
-    href: "/verification-history",
-    icon: "history" as IconName,
-  },
-  {
-    label: "Fraud Watch",
-    href: "/fraud-watch",
-    icon: "fraud" as IconName,
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-    icon: "reports" as IconName,
-  },
-];
-
-function Icon({
-  name,
-  size = 20,
-}: {
-  name: IconName;
-  size?: number;
-}) {
-  const icons: Record<IconName, string> = {
-    dashboard: "▦",
-    verify: "⇧",
-    properties: "⌂",
-    history: "◷",
-    fraud: "◇",
-    reports: "▤",
-    account: "◯",
-    settings: "⚙",
-    bell: "🔔",
-    menu: "☰",
-    arrow: "←",
-    chevron: "›",
-  };
-
-  return (
-    <span
-      className={styles.icon}
-      style={{
-        fontSize: `${size}px`,
-      }}
-      aria-hidden="true"
-    >
-      {icons[name]}
-    </span>
-  );
-}
-
 export default function IdentityVerificationPage() {
   const router = useRouter();
 
-  /*
-  ============================================================
-  PAGE LOADING
-  ============================================================
-  */
-
   const [loading, setLoading] = useState(true);
+  const [selectedDocument, setSelectedDocument] =
+    useState<DocumentType | null>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -152,56 +63,35 @@ export default function IdentityVerificationPage() {
     };
   }, []);
 
-  const [selectedDocument, setSelectedDocument] =
-    useState<DocumentType | null>(null);
-
-  const [menuOpen, setMenuOpen] =
-    useState(false);
-
   /*
-  ============================================================
-  GENERAL NAVIGATION
-  ============================================================
-  */
-
-  const navigateTo = (path: string) => {
-    setMenuOpen(false);
-    router.push(path);
-  };
-
-  /*
-  ============================================================
-  ACCOUNT NAVIGATION
-  ============================================================
-
-  Always perform a fresh navigation when returning to Account.
-  This prevents an older cached Account page from being shown
-  after leaving the KYC flow.
-  ============================================================
-  */
+   * ============================================================
+   * BACK TO ACCOUNT
+   * ============================================================
+   *
+   * Use a fresh navigation so the Account page is loaded cleanly.
+   */
 
   const navigateToAccount = () => {
-    setMenuOpen(false);
     window.location.href = "/account";
   };
 
   /*
-  ============================================================
-  DOCUMENT SELECTION
-  ============================================================
-  */
+   * ============================================================
+   * DOCUMENT SELECTION
+   * ============================================================
+   */
 
   const handleDocumentSelect = (
-    documentType: DocumentType
+    documentType: DocumentType,
   ) => {
     setSelectedDocument(documentType);
   };
 
   /*
-  ============================================================
-  CONTINUE
-  ============================================================
-  */
+   * ============================================================
+   * CONTINUE
+   * ============================================================
+   */
 
   const handleContinue = () => {
     if (!selectedDocument) {
@@ -211,648 +101,437 @@ export default function IdentityVerificationPage() {
     if (typeof window !== "undefined") {
       sessionStorage.setItem(
         "propertysure_kyc_document_type",
-        selectedDocument
+        selectedDocument,
       );
     }
 
     router.push(
-      "/account/identity-verification/upload"
+      "/account/identity-verification/upload",
     );
   };
 
   /*
-  ============================================================
-  SHARED LOADING SCREEN
-  ============================================================
-  */
+   * ============================================================
+   * LOADING
+   * ============================================================
+   *
+   * LoadingScreen is intentionally rendered OUTSIDE AppShell.
+   *
+   * This allows it to cover the entire viewport instead of
+   * leaving the AppShell mobile header and bottom navigation
+   * visible underneath it.
+   */
 
   if (loading) {
     return <LoadingScreen />;
   }
 
+  /*
+   * ============================================================
+   * PAGE
+   * ============================================================
+   *
+   * AppShell supplies:
+   *
+   * - Desktop sidebar
+   * - Desktop top header
+   * - Mobile header
+   * - Mobile navigation
+   * - Account active navigation state
+   *
+   * The Identity Verification content itself remains unchanged.
+   */
+
   return (
-    <main className={styles.page}>
-      {/* =====================================================
-          MOBILE HEADER
-      ===================================================== */}
+    <AppShell
+      activePath="/account"
+      headerPath="/account"
+    >
+      <main className={styles.page}>
+        <section className={styles.main}>
+          <div className={styles.content}>
+            {/* =================================================
+                PAGE INTRO
+            ================================================== */}
 
-      <header className={styles.mobileHeader}>
-        <button
-          type="button"
-          className={styles.menuButton}
-          onClick={() => setMenuOpen(true)}
-          aria-label="Open navigation"
-        >
-          <Icon name="menu" size={24} />
-        </button>
+            <div className={styles.pageIntro}>
+              <h1>Identity Verification</h1>
 
-        <button
-          type="button"
-          className={styles.mobileLogoButton}
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-          aria-label="PropertySure AI Dashboard"
-        >
-          <span
-            className={styles.mobileLogoDiamond}
-          >
-            ◆
-          </span>
+              <p>
+                Complete the steps below to verify your
+                identity and secure your account.
+              </p>
 
-          <span className={styles.mobileBrandName}>
-            PropertySure
-            <strong> AI</strong>
-          </span>
-        </button>
+              {/* =================================================
+                  BACK TO ACCOUNT
+              ================================================== */}
 
-        <button
-          type="button"
-          className={styles.mobileBell}
-          onClick={() =>
-            navigateTo(
-              "/account/notifications"
-            )
-          }
-          aria-label="Notifications"
-        >
-          <Icon name="bell" size={17} />
-
-          <span
-            className={
-              styles.mobileNotificationDot
-            }
-          />
-        </button>
-      </header>
-
-      {/* =====================================================
-          MOBILE MENU
-      ===================================================== */}
-
-      {menuOpen && (
-        <div className={styles.mobileMenu}>
-          <div
-            className={
-              styles.mobileMenuHeader
-            }
-          >
-            <button
-              type="button"
-              className={
-                styles.mobileMenuLogo
-              }
-              onClick={() =>
-                navigateTo("/dashboard")
-              }
-            >
-              <span>◆</span>
-
-              <div>
-                PropertySure
-                <strong> AI</strong>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              className={
-                styles.closeMenu
-              }
-              onClick={() =>
-                setMenuOpen(false)
-              }
-              aria-label="Close navigation"
-            >
-              ×
-            </button>
-          </div>
-
-          <div
-            className={
-              styles.mobileMenuSubtitle
-            }
-          >
-            AI-Powered Property Due
-            Diligence
-          </div>
-
-          <nav
-            className={
-              styles.mobileMenuNav
-            }
-          >
-            {navItems.map((item) => (
               <button
-                key={item.href}
                 type="button"
+                className={styles.backLink}
+                onClick={navigateToAccount}
+              >
+                <span
+                  className={styles.icon}
+                  style={{
+                    fontSize: "18px",
+                  }}
+                  aria-hidden="true"
+                >
+                  ←
+                </span>
+
+                <span>
+                  Back to Account
+                </span>
+              </button>
+
+              {/* =================================================
+                  STATUS
+              ================================================== */}
+
+              <div
                 className={
-                  styles.mobileNavItem
-                }
-                onClick={() =>
-                  navigateTo(item.href)
+                  styles.statusBadge
                 }
               >
                 <span
                   className={
-                    styles.navIcon
+                    styles.statusDiamond
                   }
                 >
-                  <Icon
-                    name={item.icon}
-                    size={18}
-                  />
+                  ◇
                 </span>
 
                 <span>
-                  {item.label}
+                  Not Verified
                 </span>
-              </button>
-            ))}
-          </nav>
-
-          <div
-            className={
-              styles.mobileAccountLabel
-            }
-          >
-            ACCOUNT
-          </div>
-
-          <button
-            type="button"
-            className={
-              styles.mobileNavItem
-            }
-            onClick={
-              navigateToAccount
-            }
-          >
-            <span
-              className={
-                styles.navIcon
-              }
-            >
-              <Icon
-                name="account"
-                size={18}
-              />
-            </span>
-
-            <span>Account</span>
-          </button>
-
-          <button
-            type="button"
-            className={
-              styles.mobileNavItem
-            }
-            onClick={() =>
-              navigateTo("/settings")
-            }
-          >
-            <span
-              className={
-                styles.navIcon
-              }
-            >
-              <Icon
-                name="settings"
-                size={18}
-              />
-            </span>
-
-            <span>Settings</span>
-          </button>
-        </div>
-      )}
-
-      {/* =====================================================
-          MAIN
-      ===================================================== */}
-
-      <section className={styles.main}>
-        <div className={styles.content}>
-          {/* =================================================
-              PAGE INTRO
-          ================================================= */}
-
-          <div className={styles.pageIntro}>
-            <h1>Identity Verification</h1>
-
-            <p>
-              Complete the steps below to verify your
-              identity and secure your account.
-            </p>
-
-            {/* =================================================
-                BACK TO ACCOUNT
-            ================================================= */}
-
-            <button
-              type="button"
-              className={styles.backLink}
-              onClick={
-                navigateToAccount
-              }
-            >
-              <Icon
-                name="arrow"
-                size={18}
-              />
-
-              <span>
-                Back to Account
-              </span>
-            </button>
-
-            {/* =================================================
-                STATUS — BELOW BACK TO ACCOUNT
-            ================================================= */}
-
-            <div className={styles.statusBadge}>
-              <span
-                className={
-                  styles.statusDiamond
-                }
-              >
-                ◇
-              </span>
-
-              <span>Not Verified</span>
-            </div>
-          </div>
-
-          {/* =================================================
-              PROGRESS STEPS
-          ================================================= */}
-
-          <div className={styles.steps}>
-            <Step
-              number={1}
-              label={
-                <>
-                  Identity
-                  <br />
-                  Document
-                </>
-              }
-              active
-            />
-
-            <StepLine />
-
-            <Step
-              number={2}
-              label={
-                <>
-                  Document
-                  <br />
-                  Upload
-                </>
-              }
-            />
-
-            <StepLine />
-
-            <Step
-              number={3}
-              label={
-                <>
-                  Information
-                  <br />
-                  Confirmation
-                </>
-              }
-            />
-
-            <StepLine />
-
-            <Step
-              number={4}
-              label={
-                <>
-                  Selfie
-                  <br />
-                  Verification
-                </>
-              }
-            />
-
-            <StepLine />
-
-            <Step
-              number={5}
-              label={
-                <>
-                  Review &
-                  <br />
-                  Submit
-                </>
-              }
-            />
-          </div>
-
-          {/* =================================================
-              MAIN VERIFICATION CARD
-          ================================================= */}
-
-          <section
-            className={
-              styles.verificationCard
-            }
-          >
-            <div className={styles.cardHeader}>
-              <div
-                className={
-                  styles.cardHeaderIcon
-                }
-              >
-                <IdCardIcon />
-              </div>
-
-              <div
-                className={
-                  styles.cardHeaderText
-                }
-              >
-                <h2>
-                  Step 1: Identity Document
-                </h2>
-
-                <p>
-                  Select the type of identity document
-                  you will use for verification.
-                </p>
               </div>
             </div>
 
-            <div className={styles.divider} />
+            {/* =================================================
+                PROGRESS STEPS
+            ================================================== */}
+
+            <div className={styles.steps}>
+              <Step
+                number={1}
+                label={
+                  <>
+                    Identity
+                    <br />
+                    Document
+                  </>
+                }
+                active
+              />
+
+              <StepLine />
+
+              <Step
+                number={2}
+                label={
+                  <>
+                    Document
+                    <br />
+                    Upload
+                  </>
+                }
+              />
+
+              <StepLine />
+
+              <Step
+                number={3}
+                label={
+                  <>
+                    Information
+                    <br />
+                    Confirmation
+                  </>
+                }
+              />
+
+              <StepLine />
+
+              <Step
+                number={4}
+                label={
+                  <>
+                    Selfie
+                    <br />
+                    Verification
+                  </>
+                }
+              />
+
+              <StepLine />
+
+              <Step
+                number={5}
+                label={
+                  <>
+                    Review &
+                    <br />
+                    Submit
+                  </>
+                }
+              />
+            </div>
 
             {/* =================================================
-                DOCUMENT OPTIONS
-            ================================================= */}
+                MAIN VERIFICATION CARD
+            ================================================== */}
 
-            <div
+            <section
               className={
-                styles.documentSection
+                styles.verificationCard
               }
             >
-              <h3>
-                Accepted identity documents
-              </h3>
+              {/* =================================================
+                  CARD HEADER
+              ================================================== */}
 
               <div
                 className={
-                  styles.documentGrid
+                  styles.cardHeader
                 }
               >
-                {DOCUMENT_OPTIONS.map(
-                  (document) => {
-                    const isSelected =
-                      selectedDocument ===
-                      document.id;
-
-                    return (
-                      <button
-                        key={document.id}
-                        type="button"
-                        className={`${styles.documentOption} ${
-                          isSelected
-                            ? styles.documentOptionSelected
-                            : ""
-                        }`}
-                        onClick={() =>
-                          handleDocumentSelect(
-                            document.id
-                          )
-                        }
-                        aria-pressed={
-                          isSelected
-                        }
-                      >
-                        <div
-                          className={`${styles.documentIcon} ${
-                            styles[
-                              `documentIcon_${document.icon}`
-                            ]
-                          }`}
-                        >
-                          {document.icon ===
-                            "nin" && (
-                            <span>NIN</span>
-                          )}
-
-                          {document.icon ===
-                            "id" && (
-                            <IdCardIcon />
-                          )}
-
-                          {document.icon ===
-                            "car" && (
-                            <CarIcon />
-                          )}
-
-                          {document.icon ===
-                            "passport" && (
-                            <PassportIcon />
-                          )}
-                        </div>
-
-                        <div
-                          className={
-                            styles.documentText
-                          }
-                        >
-                          <strong>
-                            {document.title}
-                          </strong>
-
-                          <span>
-                            {document.description}
-                          </span>
-                        </div>
-
-                        <span
-                          className={
-                            styles.documentArrow
-                          }
-                        >
-                          {isSelected ? (
-                            <CheckIcon />
-                          ) : (
-                            <Icon
-                              name="chevron"
-                              size={21}
-                            />
-                          )}
-                        </span>
-                      </button>
-                    );
+                <div
+                  className={
+                    styles.cardHeaderIcon
                   }
-                )}
+                >
+                  <IdCardIcon />
+                </div>
+
+                <div
+                  className={
+                    styles.cardHeaderText
+                  }
+                >
+                  <h2>
+                    Step 1: Identity Document
+                  </h2>
+
+                  <p>
+                    Select the type of identity
+                    document you will use for
+                    verification.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            {/* =================================================
-                SECURITY
-            ================================================= */}
+              <div
+                className={styles.divider}
+              />
 
-            <div
-              className={
-                styles.securityBox
-              }
-            >
+              {/* =================================================
+                  DOCUMENT SECTION
+              ================================================== */}
+
               <div
                 className={
-                  styles.securityIcon
+                  styles.documentSection
                 }
               >
-                <ShieldIcon />
-              </div>
-
-              <div>
                 <h3>
-                  We take your security seriously
+                  Accepted identity documents
                 </h3>
 
-                <p>
-                  Your document will be encrypted
-                  and securely processed. We never
-                  share your data with third parties.
-                </p>
+                <div
+                  className={
+                    styles.documentGrid
+                  }
+                >
+                  {DOCUMENT_OPTIONS.map(
+                    (document) => {
+                      const isSelected =
+                        selectedDocument ===
+                        document.id;
+
+                      return (
+                        <button
+                          key={document.id}
+                          type="button"
+                          className={`${styles.documentOption} ${
+                            isSelected
+                              ? styles.documentOptionSelected
+                              : ""
+                          }`}
+                          onClick={() =>
+                            handleDocumentSelect(
+                              document.id,
+                            )
+                          }
+                          aria-pressed={
+                            isSelected
+                          }
+                        >
+                          {/* DOCUMENT ICON */}
+
+                          <div
+                            className={`${styles.documentIcon} ${
+                              styles[
+                                `documentIcon_${document.icon}`
+                              ]
+                            }`}
+                          >
+                            {document.icon ===
+                              "nin" && (
+                              <span>
+                                NIN
+                              </span>
+                            )}
+
+                            {document.icon ===
+                              "id" && (
+                              <IdCardIcon />
+                            )}
+
+                            {document.icon ===
+                              "car" && (
+                              <CarIcon />
+                            )}
+
+                            {document.icon ===
+                              "passport" && (
+                              <PassportIcon />
+                            )}
+                          </div>
+
+                          {/* DOCUMENT TEXT */}
+
+                          <div
+                            className={
+                              styles.documentText
+                            }
+                          >
+                            <strong>
+                              {document.title}
+                            </strong>
+
+                            <span>
+                              {
+                                document.description
+                              }
+                            </span>
+                          </div>
+
+                          {/* DOCUMENT ARROW */}
+
+                          <span
+                            className={
+                              styles.documentArrow
+                            }
+                          >
+                            {isSelected ? (
+                              <CheckIcon />
+                            ) : (
+                              <span
+                                className={
+                                  styles.icon
+                                }
+                                style={{
+                                  fontSize:
+                                    "21px",
+                                }}
+                                aria-hidden="true"
+                              >
+                                ›
+                              </span>
+                            )}
+                          </span>
+                        </button>
+                      );
+                    },
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* =================================================
-                CONTINUE
-            ================================================= */}
+              {/* =================================================
+                  SECURITY
+              ================================================== */}
 
-            <button
-              type="button"
-              className={`${styles.continueButton} ${
-                !selectedDocument
-                  ? styles.continueDisabled
-                  : ""
-              }`}
-              onClick={handleContinue}
-              disabled={!selectedDocument}
-            >
-              <span
+              <div
                 className={
-                  styles.buttonDiamond
+                  styles.securityBox
                 }
               >
-                ◇
-              </span>
+                <div
+                  className={
+                    styles.securityIcon
+                  }
+                >
+                  <ShieldIcon />
+                </div>
 
-              <span>Continue</span>
-            </button>
+                <div>
+                  <h3>
+                    We take your security seriously
+                  </h3>
 
-            {/* =================================================
-                PRIVACY
-            ================================================= */}
+                  <p>
+                    Your document will be
+                    encrypted and securely
+                    processed. We never share
+                    your data with third parties.
+                  </p>
+                </div>
+              </div>
 
-            <div
-              className={
-                styles.privacyBox
-              }
-            >
-              <LockIcon />
+              {/* =================================================
+                  CONTINUE
+              ================================================== */}
 
-              <p>
-                Your information is encrypted and
-                securely stored. We never share your
-                data with third parties.
-              </p>
-            </div>
-          </section>
-        </div>
-      </section>
+              <button
+                type="button"
+                className={`${styles.continueButton} ${
+                  !selectedDocument
+                    ? styles.continueDisabled
+                    : ""
+                }`}
+                onClick={handleContinue}
+                disabled={
+                  !selectedDocument
+                }
+              >
+                <span
+                  className={
+                    styles.buttonDiamond
+                  }
+                >
+                  ◇
+                </span>
 
-      {/* =====================================================
-          MOBILE BOTTOM NAV
-      ===================================================== */}
+                <span>
+                  Continue
+                </span>
+              </button>
 
-      <nav
-        className={
-          styles.mobileBottomNav
-        }
-      >
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/dashboard")
-          }
-        >
-          <Icon
-            name="dashboard"
-            size={20}
-          />
+              {/* =================================================
+                  PRIVACY
+              ================================================== */}
 
-          <span>Dashboard</span>
-        </button>
+              <div
+                className={
+                  styles.privacyBox
+                }
+              >
+                <LockIcon />
 
-        <button
-          type="button"
-          className={
-            styles.activeBottom
-          }
-          onClick={() =>
-            navigateTo("/verify")
-          }
-        >
-          <Icon
-            name="verify"
-            size={20}
-          />
-
-          <span>Verify</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/my-properties")
-          }
-        >
-          <Icon
-            name="properties"
-            size={20}
-          />
-
-          <span>Properties</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigateTo("/reports")
-          }
-        >
-          <Icon
-            name="reports"
-            size={20}
-          />
-
-          <span>Reports</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={
-            navigateToAccount
-          }
-        >
-          <Icon
-            name="account"
-            size={20}
-          />
-
-          <span>Account</span>
-        </button>
-      </nav>
-    </main>
+                <p>
+                  Your information is
+                  encrypted and securely
+                  stored. We never share your
+                  data with third parties.
+                </p>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </AppShell>
   );
 }
 
@@ -872,7 +551,9 @@ function Step({
   return (
     <div
       className={`${styles.step} ${
-        active ? styles.stepActive : ""
+        active
+          ? styles.stepActive
+          : ""
       }`}
     >
       <div
@@ -885,21 +566,31 @@ function Step({
         {number}
       </div>
 
-      <div className={styles.stepLabel}>
+      <div
+        className={
+          styles.stepLabel
+        }
+      >
         {label}
       </div>
     </div>
   );
 }
 
+/* ============================================================
+   STEP LINE
+============================================================ */
+
 function StepLine() {
   return (
-    <div className={styles.stepLine} />
+    <div
+      className={styles.stepLine}
+    />
   );
 }
 
 /* ============================================================
-   ID CARD
+   ID CARD ICON
 ============================================================ */
 
 function IdCardIcon() {
@@ -923,7 +614,11 @@ function IdCardIcon() {
         rx="2"
       />
 
-      <circle cx="8" cy="11" r="2" />
+      <circle
+        cx="8"
+        cy="11"
+        r="2"
+      />
 
       <path d="M5.5 16c.7-1.5 1.6-2.2 2.5-2.2s1.8.7 2.5 2.2" />
 
@@ -935,7 +630,7 @@ function IdCardIcon() {
 }
 
 /* ============================================================
-   CAR
+   CAR ICON
 ============================================================ */
 
 function CarIcon() {
@@ -952,18 +647,32 @@ function CarIcon() {
       aria-hidden="true"
     >
       <path d="M5 17h14" />
+
       <path d="M6 17v2" />
+
       <path d="M18 17v2" />
+
       <path d="M4 14l1.5-5h13L20 14" />
+
       <path d="M6 14h12" />
-      <circle cx="7" cy="15" r="1" />
-      <circle cx="17" cy="15" r="1" />
+
+      <circle
+        cx="7"
+        cy="15"
+        r="1"
+      />
+
+      <circle
+        cx="17"
+        cy="15"
+        r="1"
+      />
     </svg>
   );
 }
 
 /* ============================================================
-   PASSPORT
+   PASSPORT ICON
 ============================================================ */
 
 function PassportIcon() {
@@ -987,7 +696,11 @@ function PassportIcon() {
         rx="2"
       />
 
-      <circle cx="12" cy="10" r="3" />
+      <circle
+        cx="12"
+        cy="10"
+        r="3"
+      />
 
       <path d="M8.5 16h7" />
 
@@ -997,7 +710,7 @@ function PassportIcon() {
 }
 
 /* ============================================================
-   SHIELD
+   SHIELD ICON
 ============================================================ */
 
 function ShieldIcon() {
@@ -1021,7 +734,7 @@ function ShieldIcon() {
 }
 
 /* ============================================================
-   LOCK
+   LOCK ICON
 ============================================================ */
 
 function LockIcon() {
@@ -1051,7 +764,7 @@ function LockIcon() {
 }
 
 /* ============================================================
-   CHECK
+   CHECK ICON
 ============================================================ */
 
 function CheckIcon() {
