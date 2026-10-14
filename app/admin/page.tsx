@@ -326,6 +326,14 @@ export default function AdminPage() {
             stat="LIVE"
             statLabel="Support"
           />
+
+          <AdminCard
+            title="AI Knowledge"
+            description="Review, approve, and manage the knowledge used by PropertySure AI's verification engine."
+            status="Open AI knowledge"
+            onClick={() => router.push("/admin/ai-knowledge")}
+            active
+          />
         </section>
 
         <section

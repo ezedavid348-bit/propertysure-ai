@@ -1,8 +1,9 @@
+
 .resultPage {
-  min-height: 100vh;
+  min-height: 0;
   background: #f7faff;
   color: #10264a;
-  padding-bottom: 48px;
+  padding-bottom: 0;
 }
 
 .hero {
@@ -1022,9 +1023,7 @@
   background: #0959d5;
 }
 
-/* ============================================================
-   DOCUMENT DETAILS MODAL
-============================================================ */
+/* DOCUMENT DETAILS MODAL */
 
 .modalBackdrop {
   position: fixed;
@@ -1634,7 +1633,6 @@
 
 /* ==============================================================
    ESSENTIAL RESULT — PROPERTY LOCATION & GPS ANALYSIS
-   Added without changing the existing Result Page components.
    ==============================================================
 */
 
@@ -1820,7 +1818,9 @@
   font-size: 9px;
   font-weight: 800;
   text-decoration: none;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .locationMapLink:hover {
@@ -1898,11 +1898,10 @@
   }
 }
 
-
 /* ============================================================
    PREMIUM PROPERTY LOCATION MAP
-   GPS remains a secondary geographic verification signal.
    ============================================================ */
+
 .locationMapPanel {
   margin-top: 16px;
   overflow: hidden;
@@ -1911,6 +1910,7 @@
   background: #f5f8fc;
   box-shadow: 0 8px 24px rgba(30, 65, 105, 0.06);
 }
+
 .locationMapHeader {
   display: flex;
   align-items: center;
@@ -1920,6 +1920,7 @@
   border-bottom: 1px solid #e5ecf5;
   background: #ffffff;
 }
+
 .locationMapHeader > div > span {
   display: block;
   margin-bottom: 4px;
@@ -1928,42 +1929,140 @@
   font-weight: 800;
   letter-spacing: 0.08em;
 }
-.locationMapHeader strong { display: block; color: #19385e; font-size: 12px; }
-.locationCoordinateBadge {
-  display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px;
-  border: 1px solid #d9e6f5; border-radius: 7px; background: #f4f8fd;
-  color: #355777; font-size: 9px; font-weight: 800; white-space: nowrap;
-}
-.locationMapFrame { position: relative; height: 300px; overflow: hidden; background: #eaf1f8; }
-.locationMapFrame iframe { width: 100%; height: 100%; display: block; border: 0; }
-.locationMapOverlay {
-  position: absolute; left: 14px; bottom: 14px; display: flex; align-items: center; gap: 9px;
-  max-width: calc(100% - 28px); padding: 9px 11px; border: 1px solid rgba(255,255,255,.9);
-  border-radius: 9px; background: rgba(255,255,255,.94);
-  box-shadow: 0 7px 22px rgba(19,49,82,.15); backdrop-filter: blur(5px); pointer-events: none;
-}
-.locationMapOverlay > span {
-  width: 25px; height: 25px; display: grid; place-items: center; flex: 0 0 25px;
-  border-radius: 7px; background: #eaf4ff; color: #1268f3; font-size: 13px; font-weight: 800;
-}
-.locationMapOverlay strong, .locationMapOverlay small { display: block; }
-.locationMapOverlay strong { color: #19385e; font-size: 9px; }
-.locationMapOverlay small { margin-top: 2px; color: #6d8099; font-size: 8px; }
-.locationMapFooter {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 13px;
-  border-top: 1px solid #e5ecf5; background: #ffffff;
-}
-.locationMapFooter > span { color: #71839c; font-size: 8.5px; line-height: 1.4; }
-.locationMapFooter .locationMapLink { flex: 0 0 auto; margin: 0; }
-@media (max-width: 800px) { .locationMapFrame { height: 270px; } }
-@media (max-width: 520px) {
-  .locationMapHeader, .locationMapFooter { align-items: flex-start; flex-direction: column; }
-  .locationCoordinateBadge { white-space: normal; }
-  .locationMapFrame { height: 245px; }
-  .locationMapOverlay { left: 10px; bottom: 10px; max-width: calc(100% - 20px); }
-  .locationMapFooter .locationMapLink { width: 100%; justify-content: center; }
+
+.locationMapHeader strong {
+  display: block;
+  color: #19385e;
+  font-size: 12px;
 }
 
+.locationCoordinateBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid #d9e6f5;
+  border-radius: 7px;
+  background: #f4f8fd;
+  color: #355777;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.locationMapFrame {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+  background: #eaf1f8;
+}
+
+.locationMapFrame iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+}
+
+.locationMapOverlay {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: calc(100% - 28px);
+  padding: 9px 11px;
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 9px;
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 7px 22px rgba(19,49,82,.15);
+  backdrop-filter: blur(5px);
+  pointer-events: none;
+}
+
+.locationMapOverlay > span {
+  width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 25px;
+  border-radius: 7px;
+  background: #eaf4ff;
+  color: #1268f3;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.locationMapOverlay strong,
+.locationMapOverlay small {
+  display: block;
+}
+
+.locationMapOverlay strong {
+  color: #19385e;
+  font-size: 9px;
+}
+
+.locationMapOverlay small {
+  margin-top: 2px;
+  color: #6d8099;
+  font-size: 8px;
+}
+
+.locationMapFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 13px;
+  border-top: 1px solid #e5ecf5;
+  background: #ffffff;
+}
+
+.locationMapFooter > span {
+  color: #71839c;
+  font-size: 8.5px;
+  line-height: 1.4;
+}
+
+.locationMapFooter .locationMapLink {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+@media (max-width: 800px) {
+  .locationMapFrame {
+    height: 270px;
+  }
+}
+
+@media (max-width: 520px) {
+  .locationMapHeader,
+  .locationMapFooter {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .locationCoordinateBadge {
+    white-space: normal;
+  }
+
+  .locationMapFrame {
+    height: 245px;
+  }
+
+  .locationMapOverlay {
+    left: 10px;
+    bottom: 10px;
+    max-width: calc(100% - 20px);
+  }
+
+  .locationMapFooter .locationMapLink {
+    width: 100%;
+    justify-content: center;
+  }
+}
 
 .locationMapUnavailable {
   min-height: 300px;
@@ -1973,7 +2072,11 @@
   gap: 16px;
   padding: 32px;
   background:
-    linear-gradient(135deg, rgba(238, 244, 250, 0.98), rgba(248, 250, 253, 0.98));
+    linear-gradient(
+      135deg,
+      rgba(238, 244, 250, 0.98),
+      rgba(248, 250, 253, 0.98)
+    );
   border-top: 1px solid #e3ebf4;
   color: #52657a;
 }
@@ -2016,8 +2119,6 @@
 
 /* ============================================================
    PROFESSIONAL REPORT
-   The Essential Result page is the visual source of truth.
-   These additions only style Professional-specific content.
    ============================================================ */
 
 .professionalFindingGrid {
@@ -2203,7 +2304,10 @@
   border-radius: 12px;
   background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
   box-shadow: 0 3px 12px rgba(27, 54, 91, 0.035);
-  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
 .professionalIssueRow:hover {
@@ -2280,11 +2384,7 @@
   }
 }
 
-
-/* ============================================================
-   PROFESSIONAL ANALYSIS SUMMARY
-   Clearer executive-level presentation for Professional reports.
-============================================================ */
+/* PROFESSIONAL ANALYSIS SUMMARY */
 
 .analysisInsightGrid {
   display: grid;
@@ -2343,14 +2443,14 @@
 
 /* ============================================================
    PREMIUM REPORT FOOTER
-============================================================ */
+   ============================================================ */
 
 .footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 22px;
-  margin: 28px 24px 24px;
+  margin: 28px 24px 0;
   padding: 20px 22px;
   border: 1px solid #dce5ef;
   border-radius: 13px;
@@ -2422,7 +2522,8 @@
   }
 }
 
-/* Premium Professional Report refinements */
+/* PREMIUM PROFESSIONAL REPORT REFINEMENTS */
+
 .heroWatermark {
   right: 28px;
   top: 50%;
@@ -2581,8 +2682,6 @@
   font-weight: 900;
 }
 
-/* Professional Guidance uses the same dynamic severity language as the
-   Executive Assessment: high risk is an immediate visual warning. */
 .guidanceHigh {
   background: #c72d2d;
   color: #ffffff;
@@ -2695,8 +2794,11 @@
   margin-left: 5px;
 }
 
+/* UPDATED FOOTER SPACING */
+
 .footer {
   margin-top: 30px;
+  margin-bottom: 0;
   padding: 24px 26px;
   border: 1px solid #dfe7f2;
   border-radius: 16px;
@@ -2765,10 +2867,8 @@
   color: #a8791d !important;
 }
 
+/* PROFESSIONAL SUMMARY REFINEMENTS */
 
-/* ============================================================
-   PROFESSIONAL SUMMARY REFINEMENTS
-   ============================================================ */
 .summaryAssessmentHeader > span {
   color: #3157b8;
 }
@@ -2793,17 +2893,18 @@
   background: currentColor;
 }
 
-/* currentColor cannot be used for the icon background while preserving the
-   text color, so the icon receives its tone through the risk state below. */
 .summaryAssessmentHeader > strong.riskHigh .summaryRiskIcon {
   background: #c72d2d;
 }
+
 .summaryAssessmentHeader > strong.riskMedium .summaryRiskIcon {
   background: #b77900;
 }
+
 .summaryAssessmentHeader > strong.riskLow .summaryRiskIcon {
   background: #099b4c;
 }
+
 .summaryAssessmentHeader > strong.riskUnknown .summaryRiskIcon {
   background: #60738f;
 }
@@ -2829,15 +2930,41 @@
   color: #b77900 !important;
 }
 
-.serviceCountVerified strong { color: #079c50 !important; }
-.serviceCountAttention strong { color: #cf3838 !important; }
-.serviceCountPending strong { color: #a8791d !important; }
-.serviceCountNeutral strong { color: #60738f !important; }
+.serviceCountVerified strong {
+  color: #079c50 !important;
+}
 
-.serviceCountVerified { border-color: #d9eee2 !important; background: #fbfffd !important; }
-.serviceCountAttention { border-color: #f1dada !important; background: #fffafa !important; }
-.serviceCountPending { border-color: #eee2c5 !important; background: #fffdf7 !important; }
-.serviceCountNeutral { border-color: #e1e7ef !important; background: #fbfcfe !important; }
+.serviceCountAttention strong {
+  color: #cf3838 !important;
+}
+
+.serviceCountPending strong {
+  color: #a8791d !important;
+}
+
+.serviceCountNeutral strong {
+  color: #60738f !important;
+}
+
+.serviceCountVerified {
+  border-color: #d9eee2 !important;
+  background: #fbfffd !important;
+}
+
+.serviceCountAttention {
+  border-color: #f1dada !important;
+  background: #fffafa !important;
+}
+
+.serviceCountPending {
+  border-color: #eee2c5 !important;
+  background: #fffdf7 !important;
+}
+
+.serviceCountNeutral {
+  border-color: #e1e7ef !important;
+  background: #fbfcfe !important;
+}
 
 .summaryStats > div:nth-child(1) strong,
 .summaryStats > div:nth-child(2) strong,
@@ -2864,8 +2991,8 @@
   }
 }
 
+/* TAB PANEL */
 
-/* Tab panel layout used by the Professional report page. */
 .tabPanel {
   position: relative;
 }
@@ -2877,4 +3004,20 @@
 .checkText {
   min-width: 0;
   flex: 1 1 auto;
+}
+
+/* ============================================================
+   MOBILE RESULTS PAGE — FINAL BOTTOM SPACING
+   ============================================================ */
+
+@media (max-width: 767px) {
+  .resultPage {
+    min-height: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  .footer {
+    margin-bottom: 0;
+  }
 }

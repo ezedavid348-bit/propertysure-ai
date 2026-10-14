@@ -382,6 +382,120 @@ export default function VerifyPage() {
 
   /*
    * ============================================================
+   * GET AUTHENTICATED USER
+   * ============================================================
+   *
+   * IMPORTANT:
+   *
+   * There is NO anonymous authentication fallback.
+   *
+   * The exact authenticated Supabase user returned by
+   * auth.getUser() becomes the owner of:
+   *
+   * Upload
+   *   ↓
+   * Verification
+   *   ↓
+   * Review
+   *   ↓
+   * Select Plan
+   *   ↓
+   * Checkout
+   *   ↓
+   * Payment
+   *   ↓
+   * Processing
+   *   ↓
+   * Result
+   *
+   * This prevents the verification.user_id from being
+   * created under one Supabase identity while the payment
+   * and processing workflow use another identity.
+   */
+
+  async function getVerifiedUser() {
+    /*
+     * First inspect the current browser session.
+     *
+     * This is mainly useful for diagnostics and for
+     * confirming that a session exists before asking
+     * Supabase to validate the user.
+     */
+    const {
+      data: sessionData,
+      error: sessionError,
+    } =
+      await supabase.auth.getSession();
+
+    if (sessionError) {
+      console.error(
+        "SESSION CHECK ERROR:",
+        sessionError
+      );
+    }
+
+    if (
+      !sessionData?.session?.access_token
+    ) {
+      throw new Error(
+        "Your PropertySure AI session has expired. Please sign in again before starting a verification."
+      );
+    }
+
+    /*
+     * IMPORTANT:
+     *
+     * getUser() validates the authenticated user
+     * using the current Supabase session.
+     *
+     * We deliberately DO NOT fall back to
+     * sessionData.session.user here.
+     */
+    const {
+      data: userData,
+      error: userError,
+    } =
+      await supabase.auth.getUser(
+        sessionData.session.access_token
+      );
+
+    if (userError) {
+      console.error(
+        "AUTH USER CHECK ERROR:",
+        userError
+      );
+
+      throw new Error(
+        "Your PropertySure AI session could not be verified. Please sign in again."
+      );
+    }
+
+    const user =
+      userData?.user || null;
+
+    if (!user) {
+      throw new Error(
+        "You need to be signed in before starting a property verification. Please sign in and try again."
+      );
+    }
+
+    /*
+     * Anonymous users are NOT allowed to create
+     * verification records.
+     */
+    if (
+      user.is_anonymous === true
+    ) {
+      throw new Error(
+        "Your verification session is not linked to a registered account. Please sign in to your PropertySure AI account before uploading your documents."
+      );
+    }
+
+    return user;
+  }
+
+  /*
+   * ============================================================
    * VERIFICATION / SUPABASE UPLOAD
    * ============================================================
    */
@@ -402,54 +516,39 @@ export default function VerifyPage() {
 
     try {
       /*
-       * 1. Get existing session.
+       * ========================================================
+       * 1. REQUIRE A REAL AUTHENTICATED USER
+       * ========================================================
        */
-
-      let {
-        data: { session },
-        error: sessionError,
-      } =
-        await supabase.auth.getSession();
-
-      if (sessionError) {
-        console.warn(
-          "SESSION CHECK WARNING:",
-          sessionError
-        );
-      }
-
-      /*
-       * 2. Create anonymous session if needed.
-       */
-
-      if (!session?.user) {
-        const {
-          data: anonymousData,
-          error: anonymousError,
-        } =
-          await supabase.auth.signInAnonymously();
-
-        if (anonymousError) {
-          throw new Error(
-            `We could not start your secure verification session: ${anonymousError.message}`
-          );
-        }
-
-        session =
-          anonymousData.session;
-
-        if (!session?.user) {
-          throw new Error(
-            "We could not create a secure verification session. Please try again."
-          );
-        }
-      }
 
       const authUser =
-        session.user;
+        await getVerifiedUser();
+
+      console.log(
+        "============================================================"
+      );
+
+      console.log(
+        "VERIFICATION AUTH USER"
+      );
+
+      console.log({
+        userId: authUser.id,
+        email:
+          authUser.email || null,
+        isAnonymous:
+          authUser.is_anonymous ||
+          false,
+      });
+
+      console.log(
+        "============================================================"
+      );
 
       /*
-       * 3. Upload the complete document package.
+       * ========================================================
+       * 2. UPLOAD COMPLETE DOCUMENT PACKAGE
+       * ========================================================
        */
 
       const uploadedDocuments:
@@ -477,8 +576,25 @@ export default function VerifyPage() {
         const documentId =
           selectedDocument.id;
 
+        /*
+         * The storage path is explicitly tied to
+         * the verified authenticated user's ID.
+         */
         const filePath =
           `${authUser.id}/verification-uploads/${documentId}/${safeFileName}`;
+
+        console.log(
+          "Uploading document:",
+          {
+            documentNumber:
+              index + 1,
+            fileName:
+              originalFileName,
+            userId:
+              authUser.id,
+            filePath,
+          }
+        );
 
         const {
           error: storageError,
@@ -512,9 +628,8 @@ export default function VerifyPage() {
         );
 
         /*
-         * Confirm stored file can be accessed.
+         * Confirm the stored file can be accessed.
          */
-
         const {
           data: signedUrlData,
           error: signedUrlError,
@@ -564,7 +679,9 @@ export default function VerifyPage() {
       }
 
       /*
-       * 4. Initial findings.
+       * ========================================================
+       * 3. INITIAL FINDINGS
+       * ========================================================
        */
 
       const findings:
@@ -597,8 +714,36 @@ export default function VerifyPage() {
         uploadedDocuments[0];
 
       /*
-       * 5. Create verification record.
+       * ========================================================
+       * 4. CREATE VERIFICATION RECORD
+       * ========================================================
+       *
+       * CRITICAL:
+       *
+       * user_id MUST be the exact same authenticated
+       * user's ID used by Checkout and Processing.
        */
+
+      console.log(
+        "============================================================"
+      );
+
+      console.log(
+        "CREATING VERIFICATION RECORD"
+      );
+
+      console.log({
+        userId:
+          authUser.id,
+        documentName:
+          primaryDocument.name,
+        documentCount:
+          uploadedDocuments.length,
+      });
+
+      console.log(
+        "============================================================"
+      );
 
       const {
         data: verificationRecord,
@@ -629,7 +774,7 @@ export default function VerifyPage() {
 
             findings,
           })
-          .select("id")
+          .select("id, user_id")
           .single();
 
       if (verificationError) {
@@ -672,7 +817,60 @@ export default function VerifyPage() {
       }
 
       /*
-       * 6. Continue to Review.
+       * ========================================================
+       * 5. FINAL OWNERSHIP CHECK
+       * ========================================================
+       */
+
+      if (
+        verificationRecord.user_id !==
+        authUser.id
+      ) {
+        console.error(
+          "CRITICAL VERIFICATION OWNERSHIP MISMATCH:",
+          {
+            verificationId:
+              verificationRecord.id,
+            createdBy:
+              authUser.id,
+            databaseOwner:
+              verificationRecord.user_id,
+          }
+        );
+
+        throw new Error(
+          "Verification ownership could not be confirmed. Please do not continue with payment."
+        );
+      }
+
+      console.log(
+        "============================================================"
+      );
+
+      console.log(
+        "VERIFICATION CREATED SUCCESSFULLY"
+      );
+
+      console.log({
+        verificationId:
+          verificationRecord.id,
+        userId:
+          verificationRecord.user_id,
+        authenticatedUserId:
+          authUser.id,
+        ownershipConfirmed:
+          verificationRecord.user_id ===
+          authUser.id,
+      });
+
+      console.log(
+        "============================================================"
+      );
+
+      /*
+       * ========================================================
+       * 6. CONTINUE TO REVIEW
+       * ========================================================
        */
 
       window.location.href =
@@ -1246,8 +1444,6 @@ export default function VerifyPage() {
 
           {/* ==================================================
               UPLOAD PAGE ACTIONS
-              Kept here because Continue must first execute
-              the Supabase upload and create the verification.
           ================================================== */}
 
           <div

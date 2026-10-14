@@ -1,43 +1,54 @@
+
+/*
+ * ============================================================
+ * PROPERTYSURE AI — ESSENTIAL VERIFICATION ENGINE
+ * File: app/api/verify-document/essential/route.ts
+ * ============================================================
+ *
+ * Essential AI document verification with:
+ * - Paid verification validation
+ * - Multi-document assessment
+ * - Approved knowledge retrieval
+ * - Document manipulation analysis
+ * - Property and ownership-claim extraction
+ * - GPS coordinate extraction
+ * - Survey beacon extraction and conversion
+ * - Survey boundary reconstruction
+ * - Approximate plot dimensions and land-area analysis
+ * - Document-to-document geographic comparisons
+ * - GPS findings and map data storage
+ *
+ * IMPORTANT:
+ * All GPS and survey findings are based on uploaded
+ * documents. They are not independent proof of title,
+ * registry records, boundaries, or physical location.
+ * ============================================================
+ */
+
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+
 import {
   searchKnowledge,
   type PropertyDocumentType,
 } from "@/app/lib/ai";
 
-/*
- * ============================================================
- * PROPERTYSURE AI — ESSENTIAL VERIFICATION ENGINE
- * ============================================================
- *
- * Essential performs AI-based assessment of the submitted
- * property document package.
- *
- * IMPORTANT:
- * Essential does NOT independently authenticate a document.
- *
- * It can assess:
- * - visible/document structure
- * - internal consistency
- * - apparent manipulation indicators
- * - visible signature/stamp characteristics
- * - package/document completeness
- * - suspicious or synthetic-document indicators
- *
- * It does NOT perform:
- * - Government registry searches
- * - Ownership confirmation from government records
- * - Physical inspection
- * - GPS boundary verification
- * - Lawyer/litigation review
- *
- * Those belong to Professional/Premium.
- *
- * AUTHENTICITY RULE:
- * A document that merely looks official MUST NOT be represented
- * as government-authenticated or legally genuine.
- * ============================================================
- */
+import {
+  analyzeGPSDocuments,
+  normalizeGPSCoordinates,
+  normalizeDatum,
+  normalizeBeaconId,
+  isValidUTMZone,
+  isValidUTMHemisphere,
+  type CoordinateSystem,
+  type CoordinateReferenceDetails,
+  type ExtractedGPSData,
+  type GPSAnalysisResult,
+  type SurveyBeacon,
+  type UTMCoordinates,
+} from "@/app/lib/gps";
+
+export const runtime = "nodejs";
 
 type CheckValue = boolean | null;
 
@@ -56,6 +67,70 @@ type DocumentAssessmentStatus =
   | "attention_required"
   | "inconclusive";
 
+type PropertyDetails = {
+  location: string;
+  propertyType: string;
+  propertyDescription: string;
+  plotNumber: string;
+  blockNumber: string;
+  surveyNumber: string;
+  surveyReference: string;
+  landSize: string;
+};
+
+type DocumentParties = {
+  grantor: string;
+  grantee: string;
+  owner: string;
+  holder: string;
+  otherParties: string[];
+};
+
+type DocumentDates = {
+  documentDate: string;
+  executionDate: string;
+  registrationDate: string;
+};
+
+type ExtractedFields = {
+  documentTitle: string;
+  documentNumber: string;
+  issuingAuthority: string;
+  propertyDetails: PropertyDetails;
+  parties: DocumentParties;
+  dates: DocumentDates;
+};
+
+type DocumentGPSResult = ExtractedGPSData & {
+  referencePointId: string;
+  coordinateEvidence: string;
+  coordinatesExplicitlyStated: boolean;
+  boundarySequenceEvidence: string;
+};
+
+type EssentialGPSAnalysis = GPSAnalysisResult & {
+  comparisonSafety:
+    | "corresponding_reference_points"
+    | "reference_points_not_established"
+    | "insufficient_coordinates";
+
+  extractionMethod: "ai_document_content";
+  assessmentScope: "document_reported_geographic_analysis";
+  requiresIndependentSurveyVerification: true;
+  documentGPSResults: DocumentGPSResult[];
+  surveyDiagnostics: Array<{
+    sourceDocument: string;
+    beaconCount: number;
+    coordinateReferenceEstablished: boolean;
+    supportedWGS84UTM: boolean;
+    boundarySequenceEstablished: boolean;
+    boundarySequenceEvidence: string;
+    boundaryStatus: string;
+    measurementAvailable: boolean;
+    explanation: string;
+  }>;
+};
+
 type DocumentPackageItem = {
   name?: string;
   path?: string;
@@ -63,46 +138,84 @@ type DocumentPackageItem = {
   documentType?: string;
   documentTitleDetected?: string;
   nameDetected?: string;
+  [key: string]: unknown;
 };
 
 type DocumentAIResult = {
   documentName: string;
   documentType: string;
+  documentTitle: string;
   confidence: number;
   summary: string;
+
   assessmentStatus: DocumentAssessmentStatus;
   authenticityStatus: "not_independently_verified";
+
   checks: VerificationChecks;
-  syntheticDocumentRisk?: "low" | "medium" | "high" | "inconclusive";
-  manipulationIndicators?: string[];
+
+  syntheticDocumentRisk:
+    | "low"
+    | "medium"
+    | "high"
+    | "inconclusive";
+
+  manipulationIndicators: string[];
+
+  documentNumber: string;
+  issuingAuthority: string;
+
+  propertyDetails: PropertyDetails;
+  parties: DocumentParties;
+  dates: DocumentDates;
+  extractedFields: ExtractedFields;
+
+  propertyLocation: string;
+  propertyDescription: string;
+  propertyType: string;
+  plotNumber: string;
+  blockNumber: string;
+  surveyReference: string;
+  landSize: string;
+  ownerName: string;
+  holderName: string;
+
+  gps: DocumentGPSResult;
 };
 
 type VerificationFindings = {
+  [key: string]: unknown;
+
   document_package?: DocumentPackageItem[];
   document_count?: number;
   checks?: VerificationChecks;
+
+  property?: Record<string, unknown>;
+  ownership?: Record<string, unknown>;
+  gps_analysis?: EssentialGPSAnalysis;
+
   essential?: {
+    [key: string]: unknown;
     plan: "essential";
     completed_at?: string;
     document_results?: DocumentAIResult[];
     summary?: string;
-
-    /*
-     * This is deliberately explicit so downstream UI/API logic
-     * cannot mistake AI analysis for independent authentication.
-     */
-    authenticity_status?:
-      "not_independently_verified";
-
-    verification_scope?:
-      "ai_document_assessment_only";
+    gps_analysis?: EssentialGPSAnalysis;
+    authenticity_status?: "not_independently_verified";
+    verification_scope?: "ai_document_assessment_only";
   };
+
   processing?: {
     stage?: string;
     progress?: number;
     message?: string;
   };
 };
+
+/*
+ * ============================================================
+ * CONSTANTS
+ * ============================================================
+ */
 
 const STORAGE_BUCKET = "property-documents";
 
@@ -118,7 +231,7 @@ const EMPTY_CHECKS: VerificationChecks = {
 
 /*
  * ============================================================
- * HELPERS
+ * SUPABASE ADMIN
  * ============================================================
  */
 
@@ -136,21 +249,1151 @@ function getSupabaseAdmin() {
     );
   }
 
-  return createClient(
-    supabaseUrl,
-    supabaseSecret,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
+  return createClient(supabaseUrl, supabaseSecret, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
     },
-  );
+  });
 }
 
 /*
  * ============================================================
- * NORMALIZE DOCUMENT MIME TYPE
+ * GENERAL HELPERS
+ * ============================================================
+ */
+
+function asObject(
+  value: unknown,
+): Record<string, unknown> {
+  if (
+    value &&
+    typeof value === "object" &&
+    !Array.isArray(value)
+  ) {
+    return value as Record<string, unknown>;
+  }
+
+  return {};
+}
+
+function safeString(value: unknown): string {
+  return typeof value === "string"
+    ? value.trim()
+    : "";
+}
+
+function firstString(
+  ...values: unknown[]
+): string {
+  for (const value of values) {
+    const result = safeString(value);
+
+    if (result) {
+      return result;
+    }
+  }
+
+  return "";
+}
+
+function normalizeStringArray(
+  value: unknown,
+): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter(
+      (item): item is string =>
+        typeof item === "string",
+    )
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 40);
+}
+
+function uniqueStrings(
+  values: string[],
+): string[] {
+  return Array.from(
+    new Set(
+      values
+        .map((item) => item.trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function clamp(
+  value: number,
+  minimum: number,
+  maximum: number,
+): number {
+  return Math.max(
+    minimum,
+    Math.min(maximum, value),
+  );
+}
+
+function finiteNumber(
+  value: unknown,
+): number | null {
+  if (
+    typeof value === "number" &&
+    Number.isFinite(value)
+  ) {
+    return value;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const cleaned = value
+    .trim()
+    .replace(/,/g, "");
+
+  if (
+    !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(
+      cleaned,
+    )
+  ) {
+    return null;
+  }
+
+  const number = Number(cleaned);
+
+  return Number.isFinite(number)
+    ? number
+    : null;
+}
+
+function confidenceNumber(
+  value: unknown,
+): number | null {
+  const number = finiteNumber(value);
+
+  return number === null
+    ? null
+    : Math.round(clamp(number, 0, 100));
+}
+
+function normalizeCheckValue(
+  value: unknown,
+): CheckValue {
+  if (value === true) return true;
+  if (value === false) return false;
+
+  const text = safeString(value).toLowerCase();
+
+  if (
+    ["passed", "pass", "true", "yes"].includes(text)
+  ) {
+    return true;
+  }
+
+  if (
+    ["failed", "fail", "false", "no"].includes(text)
+  ) {
+    return false;
+  }
+
+  return null;
+}
+
+function normalizeSyntheticRisk(
+  value: unknown,
+): "low" | "medium" | "high" | "inconclusive" {
+  const text = safeString(value).toLowerCase();
+
+  if (
+    text === "low" ||
+    text === "medium" ||
+    text === "high"
+  ) {
+    return text;
+  }
+
+  return "inconclusive";
+}
+
+/*
+ * ============================================================
+ * PROPERTY INFORMATION
+ * ============================================================
+ */
+
+function normalizePropertyDetails(
+  value: unknown,
+): PropertyDetails {
+  const data = asObject(value);
+
+  return {
+    location: firstString(
+      data.location,
+      data.propertyLocation,
+      data.address,
+    ),
+
+    propertyType: firstString(
+      data.propertyType,
+      data.property_type,
+    ),
+
+    propertyDescription: firstString(
+      data.propertyDescription,
+      data.description,
+    ),
+
+    plotNumber: firstString(
+      data.plotNumber,
+      data.plot,
+    ),
+
+    blockNumber: firstString(
+      data.blockNumber,
+      data.block,
+    ),
+
+    surveyNumber: firstString(
+      data.surveyNumber,
+      data.survey_number,
+    ),
+
+    surveyReference: firstString(
+      data.surveyReference,
+      data.survey_number,
+      data.surveyNumber,
+    ),
+
+    landSize: firstString(
+      data.landSize,
+      data.land_size,
+      data.area,
+    ),
+  };
+}
+
+function normalizeParties(
+  value: unknown,
+): DocumentParties {
+  const data = asObject(value);
+
+  return {
+    grantor: firstString(
+      data.grantor,
+      data.assignor,
+    ),
+
+    grantee: firstString(
+      data.grantee,
+      data.assignee,
+    ),
+
+    owner: safeString(data.owner),
+
+    holder: firstString(
+      data.holder,
+      data.applicant,
+    ),
+
+    otherParties: normalizeStringArray(
+      data.otherParties,
+    ),
+  };
+}
+
+function normalizeDates(
+  value: unknown,
+): DocumentDates {
+  const data = asObject(value);
+
+  return {
+    documentDate: safeString(data.documentDate),
+    executionDate: safeString(data.executionDate),
+    registrationDate: safeString(data.registrationDate),
+  };
+}
+
+function normalizeExtractedFields(
+  value: unknown,
+): ExtractedFields {
+  const data = asObject(value);
+
+  return {
+    documentTitle: safeString(data.documentTitle),
+    documentNumber: safeString(data.documentNumber),
+    issuingAuthority: safeString(data.issuingAuthority),
+
+    propertyDetails: normalizePropertyDetails(
+      data.propertyDetails,
+    ),
+
+    parties: normalizeParties(data.parties),
+    dates: normalizeDates(data.dates),
+  };
+}
+
+/*
+ * ============================================================
+ * COORDINATE SYSTEM NORMALIZATION
+ * ============================================================
+ */
+
+function normalizeCoordinateSystem(
+  value: unknown,
+): CoordinateSystem {
+  const text = safeString(value)
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+
+  if (
+    text === "WGS84" ||
+    text === "WGS_84" ||
+    text === "WGS_1984"
+  ) {
+    return "WGS84";
+  }
+
+  if (
+    text === "MINNA_UTM" ||
+    text === "MINNA"
+  ) {
+    return "MINNA_UTM";
+  }
+
+  if (
+    text === "UTM" ||
+    text === "WGS84_UTM" ||
+    text === "WGS_84_UTM"
+  ) {
+    return "UTM";
+  }
+
+  return "UNKNOWN";
+}
+
+function normalizeHemisphere(
+  value: unknown,
+): "N" | "S" | null {
+  const text = safeString(value).toUpperCase();
+
+  if (
+    text === "N" ||
+    text === "NORTH" ||
+    text === "NORTHERN"
+  ) {
+    return "N";
+  }
+
+  if (
+    text === "S" ||
+    text === "SOUTH" ||
+    text === "SOUTHERN"
+  ) {
+    return "S";
+  }
+
+  return null;
+}
+
+function normalizeUTMZone(
+  value: unknown,
+): number | null {
+  const number = finiteNumber(value);
+
+  return number !== null &&
+    Number.isInteger(number) &&
+    isValidUTMZone(number)
+    ? number
+    : null;
+}
+
+/*
+ * ============================================================
+ * DOCUMENT-LEVEL UTM DATA
+ * ============================================================
+ *
+ * This represents an actual document-reported point.
+ * The coordinate-reference declaration is stored
+ * separately because a survey may identify the CRS
+ * without specifying a single representative point.
+ * ============================================================
+ */
+
+function normalizeUTMCoordinates(
+  value: unknown,
+): UTMCoordinates | null {
+  const data = asObject(value);
+
+  const easting = finiteNumber(data.easting);
+  const northing = finiteNumber(data.northing);
+
+  if (
+    easting === null ||
+    northing === null
+  ) {
+    return null;
+  }
+
+  return {
+    easting,
+    northing,
+
+    zone: normalizeUTMZone(data.zone),
+
+    hemisphere: normalizeHemisphere(
+      data.hemisphere,
+    ),
+
+    datum: firstString(
+      data.datum,
+      data.geodeticDatum,
+    ),
+  };
+}
+
+/*
+ * ============================================================
+ * COORDINATE REFERENCE EXTRACTION
+ * ============================================================
+ *
+ * IMPORTANT:
+ *
+ * WGS84 geographic coordinates and WGS84 UTM
+ * projected coordinates are different representations.
+ *
+ * A Survey Plan saying "WGS84 / UTM Zone 31N"
+ * must be classified as UTM for its beacon table.
+ *
+ * A datum reference alone does not establish the
+ * UTM zone, projection, or hemisphere.
+ * ============================================================
+ */
+
+function normalizeCoordinateReference(
+  value: unknown,
+): CoordinateReferenceDetails | null {
+  const data = asObject(value);
+
+  if (Object.keys(data).length === 0) {
+    return null;
+  }
+
+  let coordinateSystem =
+    normalizeCoordinateSystem(
+      data.coordinateSystem,
+    );
+
+  const datum = safeString(data.datum);
+  const projection = safeString(data.projection);
+
+  const utmZone = normalizeUTMZone(
+    data.utmZone ?? data.zone,
+  );
+
+  const hemisphere = normalizeHemisphere(
+    data.hemisphere,
+  );
+
+  const epsgCode = safeString(data.epsgCode);
+  const evidence = safeString(data.evidence);
+
+  /*
+   * "WGS84" describes the datum, whereas "UTM" describes
+   * the projected coordinate representation. AI sometimes
+   * labels an explicitly documented WGS84 / UTM survey
+   * reference as plain WGS84. Correct that classification
+   * only when independent structured UTM metadata confirms
+   * the projection. Do not infer a zone or hemisphere.
+   */
+  const projectionIsUTM =
+    /\bUTM\b/i.test(projection) ||
+    /\bUTM\s*(?:ZONE)?\s*\d{1,2}\s*[NS]\b/i.test(evidence);
+
+  if (
+    coordinateSystem === "WGS84" &&
+    normalizeDatum(datum) === "WGS84" &&
+    projectionIsUTM &&
+    isValidUTMZone(utmZone) &&
+    isValidUTMHemisphere(hemisphere)
+  ) {
+    coordinateSystem = "UTM";
+  }
+
+  /*
+   * Require actual document evidence.
+   *
+   * The model's boolean assertion alone is not
+   * sufficient to establish a source declaration.
+   */
+  const explicitlyStated =
+    data.explicitlyStated === true &&
+    evidence.length > 0;
+
+  return {
+    coordinateSystem,
+    datum,
+    projection,
+    utmZone,
+    hemisphere,
+    epsgCode,
+    explicitlyStated,
+    evidence,
+  };
+}
+
+/*
+ * ============================================================
+ * SURVEY BEACON EXTRACTION
+ * ============================================================
+ *
+ * Preserve original easting and northing.
+ *
+ * An individual beacon may omit its CRS metadata
+ * if the Survey Plan declares the CRS for the table.
+ *
+ * Do not manufacture beacon order.
+ * ============================================================
+ */
+
+function normalizeSurveyBeacons(
+  value: unknown,
+  sourceDocument: string,
+  reference: CoordinateReferenceDetails | null = null,
+): SurveyBeacon[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter(
+      (item) =>
+        item !== null &&
+        typeof item === "object" &&
+        !Array.isArray(item),
+    )
+    .slice(0, 40)
+    .map((raw) => {
+      const item = asObject(raw);
+
+      let system = normalizeCoordinateSystem(
+        item.coordinateSystem,
+      );
+
+      const hasProjectedPair =
+        finiteNumber(item.easting) !== null &&
+        finiteNumber(item.northing) !== null;
+
+      /*
+       * A beacon with easting/northing belongs to the
+       * explicitly declared UTM beacon table even when
+       * the model confuses the WGS84 datum for a geographic
+       * coordinate system. An explicit incompatible datum
+       * must not be silently overridden.
+       */
+      if (
+        hasProjectedPair &&
+        reference?.explicitlyStated === true &&
+        reference.coordinateSystem === "UTM" &&
+        (system === "UNKNOWN" ||
+          (system === "WGS84" &&
+            normalizeDatum(item.datum) !== "MINNA"))
+      ) {
+        system = "UTM";
+      }
+
+      const pair = normalizeGPSCoordinates(
+        item.latitude,
+        item.longitude,
+      );
+
+      const boundaryOrder = finiteNumber(
+        item.boundaryOrder,
+      );
+
+      return {
+        beaconId: normalizeBeaconId(
+          firstString(
+            item.beaconId,
+            item.beacon,
+            item.id,
+          ),
+        ),
+
+        latitude:
+          system === "WGS84" && pair
+            ? pair.latitude
+            : null,
+
+        longitude:
+          system === "WGS84" && pair
+            ? pair.longitude
+            : null,
+
+        easting: finiteNumber(item.easting),
+        northing: finiteNumber(item.northing),
+
+        coordinateSystem: system,
+        sourceDocument,
+
+        utmZone: normalizeUTMZone(
+          item.utmZone ?? item.zone,
+        ),
+
+        hemisphere: normalizeHemisphere(
+          item.hemisphere,
+        ),
+
+        datum: safeString(item.datum),
+
+        coordinateEvidence: firstString(
+          item.coordinateEvidence,
+          item.evidence,
+        ),
+
+        boundaryOrder:
+          boundaryOrder !== null &&
+          Number.isInteger(boundaryOrder) &&
+          boundaryOrder >= 1
+            ? boundaryOrder
+            : null,
+      };
+    })
+    .filter((beacon) => beacon.beaconId !== "");
+}
+
+/*
+ * ============================================================
+ * LAND AREA NORMALIZATION
+ * ============================================================
+ */
+
+type LandAreaUnit =
+  | "sqm"
+  | "hectares"
+  | "acres"
+  | "sqft"
+  | "unknown";
+
+function normalizeLandAreaUnit(
+  value: unknown,
+): LandAreaUnit {
+  const text = safeString(value)
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+
+  if (
+    [
+      "sqm",
+      "sq m",
+      "m2",
+      "m²",
+      "square metre",
+      "square metres",
+      "square meter",
+      "square meters",
+    ].includes(text)
+  ) {
+    return "sqm";
+  }
+
+  if (
+    [
+      "ha",
+      "hectare",
+      "hectares",
+    ].includes(text)
+  ) {
+    return "hectares";
+  }
+
+  if (
+    [
+      "acre",
+      "acres",
+    ].includes(text)
+  ) {
+    return "acres";
+  }
+
+  if (
+    [
+      "sqft",
+      "sq ft",
+      "ft2",
+      "ft²",
+      "square feet",
+      "square foot",
+    ].includes(text)
+  ) {
+    return "sqft";
+  }
+
+  return "unknown";
+}
+
+/*
+ * ============================================================
+ * NORMALIZE DOCUMENT GPS EXTRACTION
+ * ============================================================
+ */
+
+function normalizeDocumentGPS(
+  value: unknown,
+  sourceDocument: string,
+  fallbackAddress: string,
+): DocumentGPSResult {
+  const data = asObject(value);
+
+  const notes = normalizeStringArray(
+    data.extractionNotes,
+  );
+
+  let coordinateSystem =
+    normalizeCoordinateSystem(
+      data.coordinateSystem,
+    );
+
+  const coordinateReference =
+    normalizeCoordinateReference(
+      data.coordinateReference,
+    );
+
+  const utm = normalizeUTMCoordinates(
+    data.utm,
+  );
+
+  const surveyBeacons =
+    normalizeSurveyBeacons(
+      data.surveyBeacons,
+      sourceDocument,
+      coordinateReference,
+    );
+
+  /*
+   * Correct a projected system whose datum
+   * was explicitly identified as Minna.
+   */
+  const referenceDatum = normalizeDatum(
+    coordinateReference?.datum,
+  );
+
+  const utmDatum = normalizeDatum(
+    utm?.datum,
+  );
+
+  if (
+    coordinateSystem === "UTM" &&
+    (
+      referenceDatum === "MINNA" ||
+      utmDatum === "MINNA"
+    )
+  ) {
+    coordinateSystem = "MINNA_UTM";
+  }
+
+  /*
+   * Reject conflicting coordinate declarations.
+   */
+  if (
+    coordinateReference?.explicitlyStated &&
+    coordinateReference.coordinateSystem !== "UNKNOWN" &&
+    coordinateSystem !== "UNKNOWN" &&
+    coordinateSystem !==
+      coordinateReference.coordinateSystem &&
+    !(
+      coordinateSystem === "WGS84" &&
+      coordinateReference.coordinateSystem === "UTM"
+    )
+  ) {
+    notes.push(
+      "Document-level coordinate system and coordinate-reference metadata differ. Geographic interpretation requires review.",
+    );
+  }
+
+  /*
+   * The document may contain a WGS84 geographic
+   * position as well as WGS84 UTM beacon points.
+   *
+   * Preserve the geographic position only when its
+   * coordinate system is explicitly established.
+   */
+  const parsedPair =
+    normalizeGPSCoordinates(
+      data.latitude,
+      data.longitude,
+    );
+
+  const coordinatesExplicitlyStated =
+    data.coordinatesExplicitlyStated === true;
+
+  const geographicWGS84Established =
+    coordinateSystem === "WGS84" &&
+    coordinatesExplicitlyStated &&
+    (
+      coordinateReference?.explicitlyStated === true ||
+      safeString(data.coordinateEvidence).length > 0
+    );
+
+  const latitude =
+    geographicWGS84Established && parsedPair
+      ? parsedPair.latitude
+      : null;
+
+  const longitude =
+    geographicWGS84Established && parsedPair
+      ? parsedPair.longitude
+      : null;
+
+  if (
+    parsedPair &&
+    !geographicWGS84Established
+  ) {
+    notes.push(
+      "Latitude and longitude were found, but an explicit WGS84 geographic reference was not established for safe mapping.",
+    );
+  }
+
+  /*
+   * A boundary sequence is only accepted
+   * when the document visibly establishes
+   * the point order.
+   */
+  const boundarySequence =
+    normalizeStringArray(
+      data.boundarySequence,
+    ).map(normalizeBeaconId);
+
+  /*
+   * The model sometimes describes a fully evidenced traverse
+   * in extractionNotes but omits boundarySequenceEvidence or
+   * returns a contradictory boolean. Recover only explicit
+   * source-described edge chains, never alphabetical ordering.
+   */
+  const suppliedBoundaryEvidence = safeString(
+    data.boundarySequenceEvidence,
+  );
+
+  const orderedSequence = [...boundarySequence];
+  if (
+    orderedSequence.length > 3 &&
+    orderedSequence[0] === orderedSequence[orderedSequence.length - 1]
+  ) {
+    orderedSequence.pop();
+  }
+
+  const normalizedEdges = orderedSequence.map((id, index) => {
+    const next = orderedSequence[(index + 1) % orderedSequence.length];
+    return [id, next];
+  });
+
+  function describesActualTraverse(evidence: string): boolean {
+    if (!evidence || normalizedEdges.length < 3) return false;
+    const normalized = evidence.toUpperCase()
+      .replace(/[–—→]/g, "-")
+      .replace(/\s+/g, " ");
+    const explicitEdges = normalizedEdges.every(([a, b]) => {
+      return normalized.includes(`${a}-${b}`) || normalized.includes(`${a} - ${b}`);
+    });
+    return explicitEdges &&
+      /\b(?:TRAVERSE|BEARINGS|SIDES|DRAWING|BOUNDARY|PARCEL)\b/.test(normalized);
+  }
+
+  const documentedNote = notes.find(describesActualTraverse) || "";
+  const boundarySequenceEvidence =
+    describesActualTraverse(suppliedBoundaryEvidence)
+      ? suppliedBoundaryEvidence
+      : documentedNote;
+
+  const beaconIds = new Set(surveyBeacons.map((b) => b.beaconId));
+  const sequenceValid = orderedSequence.length >= 3 &&
+    new Set(orderedSequence).size === orderedSequence.length &&
+    orderedSequence.every((id) => beaconIds.has(id));
+
+  const boundarySequenceEstablished =
+    sequenceValid &&
+    boundarySequenceEvidence.length > 0 &&
+    (data.boundarySequenceEstablished === true || documentedNote.length > 0);
+
+  if (boundarySequenceEstablished && data.boundarySequenceEstablished !== true) {
+    notes.push(
+      "Boundary order established from a specifically described traverse in the document extraction notes; the original survey still requires independent review.",
+    );
+  }
+
+  if (
+    boundarySequence.length > 0 &&
+    !boundarySequenceEstablished
+  ) {
+    notes.push(
+      boundarySequenceEvidence.length === 0
+        ? "A boundary order was proposed, but the document-based evidence explaining that order is missing. The plot will not be drawn."
+        : "A proposed boundary sequence was not explicitly confirmed by the extraction. The plot will not be drawn.",
+    );
+  }
+
+  if (
+    surveyBeacons.length >= 3 &&
+    coordinateReference?.explicitlyStated !== true
+  ) {
+    notes.push(
+      "Survey beacons were found, but the source coordinate-reference declaration was not sufficiently supported. The plot cannot be mapped safely.",
+    );
+  }
+
+  const statedLandArea =
+    finiteNumber(
+      data.statedLandArea,
+    );
+
+  const statedLandAreaUnit =
+    normalizeLandAreaUnit(
+      data.statedLandAreaUnit,
+    );
+
+  /*
+   * A stated numeric area must have a unit.
+   * Never assume square metres.
+   */
+  if (
+    statedLandArea !== null &&
+    statedLandAreaUnit === "unknown"
+  ) {
+    notes.push(
+      "A land-area number was extracted without a supported unit. No numerical area comparison will be made.",
+    );
+  }
+
+  /*
+   * Keep the original document GPS classification.
+   *
+   * If beacon rows use WGS84 UTM, their specific
+   * reference is stored under coordinateReference.
+   */
+  return {
+    sourceDocument,
+
+    statedAddress: firstString(
+      data.statedAddress,
+      fallbackAddress,
+    ),
+
+    coordinateSystem,
+
+    latitude,
+    longitude,
+
+    utm,
+
+    surveyBeacons,
+
+    coordinateReference,
+
+    referencePointId: normalizeBeaconId(
+      data.referencePointId,
+    ),
+
+    coordinateEvidence: safeString(
+      data.coordinateEvidence,
+    ),
+
+    coordinatesExplicitlyStated,
+
+    extractionNotes: uniqueStrings(notes),
+
+    extractionConfidence: confidenceNumber(
+      data.extractionConfidence,
+    ),
+
+    statedLandArea:
+      statedLandArea !== null &&
+      statedLandArea > 0
+        ? statedLandArea
+        : null,
+
+    statedLandAreaUnit,
+
+    boundarySequence,
+
+    boundarySequenceEvidence,
+
+    boundarySequenceEstablished,
+  };
+}
+
+/*
+ * ============================================================
+ * PACKAGE GPS ANALYSIS
+ * ============================================================
+ *
+ * The GPS analysis remains separate from the
+ * Essential trust score.
+ *
+ * Inconclusive document locations do not disable
+ * an independently calculable survey boundary.
+ * ============================================================
+ */
+
+function buildPackageGPSAnalysis(
+  documentResults: DocumentAIResult[],
+): EssentialGPSAnalysis {
+  const gpsDocuments =
+    documentResults.map(
+      (document) => document.gps,
+    );
+
+  const calculated =
+    analyzeGPSDocuments(
+      gpsDocuments,
+      {
+        consistentThresholdMeters: 100,
+        mismatchThresholdMeters: 1000,
+        areaTolerancePercent: 2,
+        enableBoundaryLocationComparison: true,
+      },
+    );
+
+  const correspondingComparisons =
+    calculated.documentComparisons.filter(
+      (comparison) =>
+        comparison.correspondingPointsEstablished ===
+          true &&
+        comparison.distanceMeters !== null,
+    );
+
+  const coordinateDocumentCount =
+    gpsDocuments.filter(
+      (document) =>
+        document.latitude !== null &&
+        document.longitude !== null,
+    ).length;
+
+  let comparisonSafety:
+    EssentialGPSAnalysis["comparisonSafety"] =
+      "insufficient_coordinates";
+
+  if (correspondingComparisons.length > 0) {
+    comparisonSafety =
+      "corresponding_reference_points";
+  } else if (coordinateDocumentCount >= 2) {
+    comparisonSafety =
+      "reference_points_not_established";
+  }
+
+  /*
+   * Preserve an actionable explanation of WHY a submitted
+   * survey did or did not produce geometry. These diagnostic
+   * fields must never be interpreted as proof of legal title.
+   */
+  const surveyDiagnostics = gpsDocuments
+    .filter((document) => document.surveyBeacons.length > 0)
+    .map((document) => {
+     const reference = document.coordinateReference;
+
+const boundary = (calculated.surveyBoundaries ?? []).find(
+  (item) => item.sourceDocument === document.sourceDocument,
+);
+
+const measurement = (calculated.surveyMeasurements ?? []).find(
+  (item) => item.sourceDocument === document.sourceDocument,
+);
+      const supportedWGS84UTM =
+        reference?.explicitlyStated === true &&
+        reference.coordinateSystem === "UTM" &&
+        normalizeDatum(reference.datum) === "WGS84" &&
+        isValidUTMZone(reference.utmZone) &&
+        isValidUTMHemisphere(reference.hemisphere);
+      const measurementAvailable =
+        measurement?.geometryValid === true &&
+        measurement.calculatedAreaSquareMeters !== null;
+      const explanation =
+        boundary?.status === "available"
+          ? "Document-based survey geometry was calculated. Independent field or registry confirmation is still required."
+          : boundary?.limitations?.filter(Boolean).join(" ") ||
+            (!document.boundarySequenceEstablished
+              ? "The document did not sufficiently establish the boundary order."
+              : !supportedWGS84UTM
+                ? "The source does not establish a complete supported WGS84 UTM coordinate reference."
+                : "The supplied survey coordinates could not form a valid plot.");
+
+      return {
+        sourceDocument: document.sourceDocument,
+        beaconCount: document.surveyBeacons.length,
+        coordinateReferenceEstablished:
+          reference?.explicitlyStated === true,
+        supportedWGS84UTM,
+        boundarySequenceEstablished:
+          document.boundarySequenceEstablished === true,
+        boundarySequenceEvidence:
+          document.boundarySequenceEvidence,
+        boundaryStatus: boundary?.status || "not_available",
+        measurementAvailable,
+        explanation,
+      };
+    });
+
+  const findings = [
+    ...calculated.findings,
+  ];
+
+  const limitations = [
+    ...calculated.limitations,
+  ];
+
+  if (
+    comparisonSafety ===
+    "reference_points_not_established"
+  ) {
+    findings.push(
+      "Multiple geographic points were extracted, but their correspondence was not established. Distances alone cannot confirm whether the documents describe the same parcel.",
+    );
+
+    limitations.push(
+      "Different survey beacons and property reference points may legitimately occupy different positions.",
+    );
+  }
+
+  limitations.push(
+    "Calculated survey boundaries, dimensions and land areas are document-derived and have not been independently certified by a licensed surveyor.",
+  );
+
+  /*
+   * Preserve calculated map data.
+   *
+   * A valid survey polygon may be available even
+   * when document-to-document comparisons remain
+   * inconclusive.
+   */
+  return {
+    ...calculated,
+
+    findings: uniqueStrings(findings),
+
+    limitations: uniqueStrings(limitations),
+
+    comparisonSafety,
+
+    extractionMethod: "ai_document_content",
+
+    assessmentScope:
+      "document_reported_geographic_analysis",
+
+    requiresIndependentSurveyVerification: true,
+
+    documentGPSResults: gpsDocuments,
+
+    surveyDiagnostics,
+
+    independentlyVerified: false,
+  };
+}
+
+/*
+ * ============================================================
+ * DOCUMENT MIME TYPE
  * ============================================================
  */
 
@@ -160,107 +1403,55 @@ function normalizeMimeType(
   fileType?: string,
 ): string {
   const rawValue =
-    typeof value === "string"
-      ? value.trim().toLowerCase()
-      : "";
+    safeString(value).toLowerCase();
 
   const rawFileType =
-    typeof fileType === "string"
-      ? fileType.trim().toLowerCase()
-      : "";
+    safeString(fileType).toLowerCase();
 
   const rawFileName =
-    typeof fileName === "string"
-      ? fileName.trim().toLowerCase()
-      : "";
+    safeString(fileName).toLowerCase();
 
   if (
     rawValue === "application/pdf" ||
-    rawFileType === "application/pdf"
-  ) {
-    return "application/pdf";
-  }
-
-  if (
-    rawValue === "image/jpeg" ||
-    rawFileType === "image/jpeg"
-  ) {
-    return "image/jpeg";
-  }
-
-  if (
-    rawValue === "image/png" ||
-    rawFileType === "image/png"
-  ) {
-    return "image/png";
-  }
-
-  if (
-    rawValue === "jpeg" ||
-    rawValue === "jpg" ||
-    rawValue === ".jpeg" ||
-    rawValue === ".jpg"
-  ) {
-    return "image/jpeg";
-  }
-
-  if (
-    rawValue === "png" ||
-    rawValue === ".png"
-  ) {
-    return "image/png";
-  }
-
-  if (
-    rawValue === "pdf" ||
-    rawValue === ".pdf"
-  ) {
-    return "application/pdf";
-  }
-
-  if (
-    rawFileName.endsWith(".jpg") ||
-    rawFileName.endsWith(".jpeg")
-  ) {
-    return "image/jpeg";
-  }
-
-  if (
-    rawFileName.endsWith(".png")
-  ) {
-    return "image/png";
-  }
-
-  if (
+    rawFileType === "application/pdf" ||
     rawFileName.endsWith(".pdf")
   ) {
     return "application/pdf";
   }
 
   if (
-    rawFileType.startsWith("image/")
+    ["image/jpeg", "image/jpg"].includes(rawValue) ||
+    ["image/jpeg", "image/jpg"].includes(rawFileType) ||
+    rawFileName.endsWith(".jpeg") ||
+    rawFileName.endsWith(".jpg")
   ) {
-    return rawFileType;
+    return "image/jpeg";
   }
 
-  if (rawFileType) {
-    return rawFileType;
+  if (
+    rawValue === "image/png" ||
+    rawFileType === "image/png" ||
+    rawFileName.endsWith(".png")
+  ) {
+    return "image/png";
   }
 
-  return "application/octet-stream";
+  return (
+    rawFileType ||
+    "application/octet-stream"
+  );
 }
 
 /*
  * ============================================================
- * RESOLVE SUPABASE STORAGE PATH
+ * RESOLVE STORAGE PATH
  * ============================================================
  */
 
 function resolveStoragePath(
   value: string,
 ): string {
-  const trimmed =
-    value.trim();
+  const trimmed = value.trim();
 
   if (!trimmed) {
     return "";
@@ -274,27 +1465,21 @@ function resolveStoragePath(
   }
 
   try {
-    const url =
-      new URL(trimmed);
+    const url = new URL(trimmed);
 
     const marker =
       "/storage/v1/object/";
 
     const markerIndex =
-      url.pathname.indexOf(
-        marker,
-      );
+      url.pathname.indexOf(marker);
 
-    if (
-      markerIndex === -1
-    ) {
+    if (markerIndex < 0) {
       return trimmed;
     }
 
     const remainder =
       url.pathname.slice(
-        markerIndex +
-          marker.length,
+        markerIndex + marker.length,
       );
 
     const prefixes = [
@@ -304,119 +1489,48 @@ function resolveStoragePath(
       "download/",
     ];
 
-    for (
-      const prefix of prefixes
-    ) {
-      if (
-        remainder.startsWith(
-          prefix,
-        )
-      ) {
+    for (const prefix of prefixes) {
+      if (remainder.startsWith(prefix)) {
         return decodeURIComponent(
-          remainder.slice(
-            prefix.length,
-          ),
+          remainder.slice(prefix.length),
         );
       }
     }
 
-    return decodeURIComponent(
-      remainder,
-    );
+    return decodeURIComponent(remainder);
   } catch {
     return trimmed;
   }
 }
 
-function normalizeCheckValue(
-  value: unknown,
-): CheckValue {
-  if (value === true) {
-    return true;
-  }
-
-  if (value === false) {
-    return false;
-  }
-
-  if (
-    typeof value === "string"
-  ) {
-    const normalized =
-      value
-        .trim()
-        .toLowerCase();
-
-    if (
-      normalized === "passed" ||
-      normalized === "pass" ||
-      normalized === "true" ||
-      normalized === "yes"
-    ) {
-      return true;
-    }
-
-    if (
-      normalized === "failed" ||
-      normalized === "fail" ||
-      normalized === "false" ||
-      normalized === "no"
-    ) {
-      return false;
-    }
-  }
-
-  return null;
-}
-
-function clamp(
-  value: number,
-  minimum: number,
-  maximum: number,
-) {
-  return Math.max(
-    minimum,
-    Math.min(
-      maximum,
-      value,
-    ),
-  );
-}
+/*
+ * ============================================================
+ * TRUST SCORE — PRESERVED
+ * ============================================================
+ */
 
 function calculateTrustScore(
   checks: VerificationChecks,
-) {
+): number {
   const values =
-    Object.values(
-      checks,
-    ).filter(
-      (
-        value,
-      ): value is boolean =>
+    Object.values(checks).filter(
+      (value): value is boolean =>
         value !== null,
     );
 
-  if (
-    values.length === 0
-  ) {
+  if (values.length === 0) {
     return 0;
   }
 
   const passed =
     values.filter(
-      (value) =>
-        value === true,
+      (value) => value === true,
     ).length;
 
-  const score =
-    Math.round(
-      (passed /
-        values.length) *
-        100,
-    );
-
   return clamp(
-    score,
+    Math.round(
+      (passed / values.length) * 100,
+    ),
     0,
     100,
   );
@@ -426,117 +1540,89 @@ function calculateConfidence(
   documentResults: Array<{
     confidence?: number;
   }>,
-) {
+): number {
   const values =
     documentResults
-      .map((item) =>
-        Number(
-          item.confidence,
-        ),
+      .map(
+        (item) =>
+          Number(item.confidence),
       )
-      .filter((value) =>
-        Number.isFinite(
-          value,
-        ),
-      );
+      .filter(Number.isFinite);
 
-  if (
-    values.length === 0
-  ) {
+  if (values.length === 0) {
     return 0;
   }
 
   const average =
     values.reduce(
-      (sum, value) =>
-        sum + value,
+      (sum, value) => sum + value,
       0,
     ) / values.length;
 
   return Math.round(
-    clamp(
-      average,
-      0,
-      100,
-    ),
+    clamp(average, 0, 100),
+  );
+}
+
+function valuesContainFalse(
+  checks: VerificationChecks,
+): boolean {
+  return Object.values(checks).some(
+    (value) => value === false,
   );
 }
 
 function calculateRisk(
   trustScore: number,
   checks: VerificationChecks,
-) {
-  if (
-    valuesContainFalse(
-      checks,
-    )
-  ) {
-    if (
-      trustScore >= 80
-    ) {
-      return "medium";
-    }
-
-    return "high";
+): string {
+  if (valuesContainFalse(checks)) {
+    return trustScore >= 80
+      ? "medium"
+      : "high";
   }
 
-  const values =
-    Object.values(
-      checks,
-    );
+  const values = Object.values(checks);
 
   if (
     values.some(
-      (value) =>
-        value === null,
+      (value) => value === null,
     )
   ) {
-    if (
-      trustScore >= 80
-    ) {
-      return "medium";
-    }
-
-    return "incomplete";
+    return trustScore >= 80
+      ? "medium"
+      : "incomplete";
   }
 
-  /*
-   * Even a strong AI document assessment is not equivalent to
-   * independent authenticity verification. Therefore Essential
-   * should not assign "low" risk solely because the document
-   * looks good.
-   */
-  if (
-    trustScore >= 85
-  ) {
-    return "medium";
-  }
-
-  if (
-    trustScore >= 60
-  ) {
-    return "medium";
-  }
+  if (trustScore >= 85) return "medium";
+  if (trustScore >= 60) return "medium";
 
   return "high";
 }
 
-function valuesContainFalse(
+function deriveDocumentAssessment(
   checks: VerificationChecks,
-) {
-  return Object.values(
-    checks,
-  ).some(
-    (value) =>
-      value === false,
-  );
-}
+): DocumentAssessmentStatus {
+  const failed =
+    Object.values(checks).filter(
+      (value) => value === false,
+    ).length;
 
-/*
- * ============================================================
- * DERIVE ESSENTIAL FINAL REVIEW STATUS
- * ============================================================
- */
+  if (failed > 0) {
+    return "attention_required";
+  }
+
+  const assessed =
+    Object.values(checks).filter(
+      (value) => value !== null,
+    ).length;
+
+  if (assessed === 0) {
+    return "inconclusive";
+  }
+
+  return "no_significant_issues_detected";
+}
 
 function deriveEssentialReviewStatus(
   documentResults: DocumentAIResult[],
@@ -547,8 +1633,7 @@ function deriveEssentialReviewStatus(
       (result) =>
         result.assessmentStatus ===
           "attention_required" ||
-        result.syntheticDocumentRisk ===
-          "high",
+        result.syntheticDocumentRisk === "high",
     );
 
   const hasInconclusive =
@@ -558,15 +1643,10 @@ function deriveEssentialReviewStatus(
         "inconclusive",
     );
 
-  const hasFailedChecks =
-    valuesContainFalse(
-      checks,
-    );
-
   if (
     hasAttention ||
     hasInconclusive ||
-    hasFailedChecks
+    valuesContainFalse(checks)
   ) {
     return "flagged";
   }
@@ -576,47 +1656,7 @@ function deriveEssentialReviewStatus(
 
 /*
  * ============================================================
- * DERIVE DOCUMENT ASSESSMENT
- * ============================================================
- */
-
-function deriveDocumentAssessment(
-  checks: VerificationChecks,
-): DocumentAssessmentStatus {
-  const failedChecks =
-    Object.values(
-      checks,
-    ).filter(
-      (value) =>
-        value === false,
-    ).length;
-
-  if (
-    failedChecks > 0
-  ) {
-    return "attention_required";
-  }
-
-  const assessedChecks =
-    Object.values(
-      checks,
-    ).filter(
-      (value) =>
-        value !== null,
-    ).length;
-
-  if (
-    assessedChecks === 0
-  ) {
-    return "inconclusive";
-  }
-
-  return "no_significant_issues_detected";
-}
-
-/*
- * ============================================================
- * EXTRACT TEXT FROM OPENAI RESPONSES API RESPONSE
+ * OPENAI RESPONSE PARSING
  * ============================================================
  */
 
@@ -624,83 +1664,57 @@ function extractAIOutputText(
   payload: any,
 ): string {
   if (
-    typeof payload?.output_text ===
-      "string" &&
+    typeof payload?.output_text === "string" &&
     payload.output_text.trim()
-      .length > 0
   ) {
     return payload.output_text.trim();
   }
 
   const output =
-    Array.isArray(
-      payload?.output,
-    )
+    Array.isArray(payload?.output)
       ? payload.output
       : [];
 
   const textParts: string[] = [];
 
-  for (
-    const outputItem of output
-  ) {
+  for (const outputItem of output) {
     const content =
-      Array.isArray(
-        outputItem?.content,
-      )
+      Array.isArray(outputItem?.content)
         ? outputItem.content
         : [];
 
-    for (
-      const contentItem of content
-    ) {
+    for (const contentItem of content) {
       if (
-        typeof contentItem?.text ===
-        "string"
+        typeof contentItem?.text === "string"
       ) {
         const text =
           contentItem.text.trim();
 
         if (text) {
-          textParts.push(
-            text,
-          );
+          textParts.push(text);
         }
       } else if (
-        typeof contentItem?.text
-          ?.value ===
+        typeof contentItem?.text?.value ===
         "string"
       ) {
         const text =
           contentItem.text.value.trim();
 
         if (text) {
-          textParts.push(
-            text,
-          );
+          textParts.push(text);
         }
       }
     }
   }
 
-  return textParts
-    .join("\n")
-    .trim();
+  return textParts.join("\n").trim();
 }
-
-/*
- * ============================================================
- * EXTRACT JSON FROM AI RESPONSE
- * ============================================================
- */
 
 function parseAIJson(
   outputText: string,
-) {
+): any {
   try {
-    return JSON.parse(
-      outputText,
-    );
+    return JSON.parse(outputText);
   } catch {
     const match =
       outputText.match(
@@ -713,96 +1727,13 @@ function parseAIJson(
       );
     }
 
-    return JSON.parse(
-      match[0],
-    );
+    return JSON.parse(match[0]);
   }
 }
 
 /*
  * ============================================================
- * NORMALIZE AI STRING ARRAY
- * ============================================================
- */
-
-function normalizeStringArray(
-  value: unknown,
-): string[] {
-  if (
-    !Array.isArray(value)
-  ) {
-    return [];
-  }
-
-  return value
-    .filter(
-      (item) =>
-        typeof item ===
-        "string",
-    )
-    .map(
-      (item) =>
-        item.trim(),
-    )
-    .filter(
-      (item) =>
-        item.length > 0,
-    )
-    .slice(
-      0,
-      12,
-    );
-}
-
-/*
- * ============================================================
- * NORMALIZE SYNTHETIC DOCUMENT RISK
- * ============================================================
- */
-
-function normalizeSyntheticRisk(
-  value: unknown,
-):
-  | "low"
-  | "medium"
-  | "high"
-  | "inconclusive" {
-  if (
-    typeof value !==
-    "string"
-  ) {
-    return "inconclusive";
-  }
-
-  const normalized =
-    value
-      .trim()
-      .toLowerCase();
-
-  if (
-    normalized === "low" ||
-    normalized === "medium" ||
-    normalized === "high"
-  ) {
-    return normalized;
-  }
-
-  return "inconclusive";
-}
-
-/*
- * ============================================================
- * PROPERTYsure AI APPROVED KNOWLEDGE
- * ============================================================
- *
- * This is the new integration.
- *
- * Only approved knowledge is retrieved.
- *
- * Customer documents are NOT automatically added to the
- * knowledge base.
- *
- * If retrieval fails, Essential continues its normal analysis.
+ * APPROVED KNOWLEDGE RETRIEVAL
  * ============================================================
  */
 
@@ -813,59 +1744,51 @@ function formatKnowledgeContext(
     !references ||
     references.length === 0
   ) {
-    return `
-No approved PropertySure AI knowledge references were retrieved
-for this document.
-
-Do not invent missing standards, facts, or document characteristics.
-Continue using the supplied document and the existing verification rules.
-`;
+    return [
+      "No approved PropertySure AI knowledge",
+      "references were retrieved.",
+      "Do not invent missing standards or facts.",
+      "Analyze the supplied document directly.",
+    ].join("\n");
   }
 
   return references
     .slice(0, 10)
-    .map(
-      (reference, index) => {
-        const title =
-          reference?.title ||
-          `Approved knowledge reference ${index + 1}`;
+    .map((reference, index) => {
+      const title =
+        reference?.title ||
+        `Approved knowledge reference ${index + 1}`;
 
-        const sourceType =
-          reference?.sourceType ||
-          reference?.source_type ||
-          "approved-reference";
+      const sourceType =
+        reference?.sourceType ||
+        reference?.source_type ||
+        "approved-reference";
 
-        const referenceDocumentType =
-          reference?.documentType ||
-          reference?.document_type ||
-          "general";
+      const referenceDocumentType =
+        reference?.documentType ||
+        reference?.document_type ||
+        "general";
 
-        const similarity =
-          typeof reference?.similarity ===
-          "number"
-            ? reference.similarity.toFixed(
-                3,
-              )
-            : "unknown";
+      const similarity =
+        typeof reference?.similarity === "number"
+          ? reference.similarity.toFixed(3)
+          : "unknown";
 
-        const content =
-          reference?.content ||
-          reference?.description ||
-          "";
+      const content =
+        reference?.content ||
+        reference?.description ||
+        "";
 
-        return `
-REFERENCE ${index + 1}
-Title: ${title}
-Source type: ${sourceType}
-Document type: ${referenceDocumentType}
-Similarity: ${similarity}
-
-Reference content:
-${content}
-`;
-      },
-    )
-    .join("\n");
+      return [
+        `REFERENCE ${index + 1}`,
+        `Title: ${title}`,
+        `Source type: ${sourceType}`,
+        `Document type: ${referenceDocumentType}`,
+        `Similarity: ${similarity}`,
+        `Reference content: ${content}`,
+      ].join("\n");
+    })
+    .join("\n\n");
 }
 
 async function retrieveApprovedKnowledge(
@@ -874,17 +1797,6 @@ async function retrieveApprovedKnowledge(
   try {
     return await searchKnowledge(
       {
-        /*
-         * The document package currently stores documentType as
-         * string | undefined.
-         *
-         * searchKnowledge expects the controlled
-         * PropertyDocumentType union.
-         *
-         * We narrow the value at this integration boundary
-         * without changing the existing document package type
-         * or the rest of the Essential engine.
-         */
         documentType:
           documentType as
             | PropertyDocumentType
@@ -893,17 +1805,12 @@ async function retrieveApprovedKnowledge(
         keywords: [
           "Nigeria",
           "property document",
-          documentType ||
-            "property document",
+          documentType || "property document",
           "verification",
           "fraud",
           "manipulation",
         ],
 
-        /*
-         * IMPORTANT:
-         * searchKnowledge expects "text", not "rawText".
-         */
         text: [
           "Nigerian property document verification",
           documentType
@@ -922,11 +1829,6 @@ async function retrieveApprovedKnowledge(
       },
     );
   } catch (error) {
-    /*
-     * Knowledge retrieval is an enhancement to the Essential
-     * engine. A temporary retrieval failure must not prevent
-     * the customer's document from being analyzed.
-     */
     console.error(
       "ESSENTIAL KNOWLEDGE RETRIEVAL ERROR:",
       error,
@@ -938,7 +1840,7 @@ async function retrieveApprovedKnowledge(
 
 /*
  * ============================================================
- * ANALYZE ONE DOCUMENT
+ * DOCUMENT AI ANALYSIS
  * ============================================================
  */
 
@@ -957,15 +1859,12 @@ async function analyzeDocument(
     );
   }
 
-  const bytes =
-    Buffer.from(
-      await file.arrayBuffer(),
-    );
+  const bytes = Buffer.from(
+    await file.arrayBuffer(),
+  );
 
   const base64 =
-    bytes.toString(
-      "base64",
-    );
+    bytes.toString("base64");
 
   const actualMimeType =
     normalizeMimeType(
@@ -976,14 +1875,6 @@ async function analyzeDocument(
 
   const dataUrl =
     `data:${actualMimeType};base64,${base64}`;
-
-  /*
-   * ==========================================================
-   * NEW:
-   * Retrieve approved PropertySure AI knowledge BEFORE the
-   * existing document analysis.
-   * ==========================================================
-   */
 
   const knowledgeReferences =
     await retrieveApprovedKnowledge(
@@ -1002,216 +1893,732 @@ async function analyzeDocument(
 
   /*
    * ==========================================================
-   * EXISTING ESSENTIAL PROMPT + APPROVED KNOWLEDGE CONTEXT
+   * OPENAI EXTRACTION PROMPT
    * ==========================================================
    */
 
   const prompt = `
-You are PropertySure AI's Essential property-document verification engine.
+You are PropertySure AI's Essential Nigerian property-document
+verification and geographic extraction engine.
 
-Analyze the ACTUAL CONTENT and visible appearance of the supplied Nigerian property document.
+Analyze the ACTUAL CONTENT and visible appearance of the
+uploaded document.
 
-The filename is metadata only. Never use the filename as proof of authenticity or document identity.
+The filename is metadata only. It is never evidence
+of document authenticity.
 
-Document type identified during package review:
+Previously identified document type:
 ${documentType || "Unknown"}
 
 ============================================================
-APPROVED PROPERTYsure AI KNOWLEDGE
+APPROVED PROPERTYSURE AI KNOWLEDGE
 ============================================================
-
-The following information comes ONLY from PropertySure AI
-knowledge that has already passed the internal approval process.
 
 ${knowledgeContext}
 
-IMPORTANT KNOWLEDGE RULES:
+KNOWLEDGE SAFETY:
 
-- Use approved knowledge as supporting context only.
-- Similarity to an approved reference does NOT prove authenticity.
-- A matching layout does NOT prove government issuance.
-- A matching stamp does NOT prove government issuance.
-- A matching signature does NOT prove government issuance.
-- An approved example is NOT proof that the customer's document is genuine.
-- Do not copy facts from a reference into the customer's document.
-- Do not assume information exists in the customer's document when it is not visible.
-- Do not invent missing information.
-- If an approved reference differs from the customer's document, describe the observable difference.
-- Approved knowledge may help identify expected structures, terminology, document fields, patterns, anomalies, and fraud indicators.
+- Knowledge references provide supporting context only.
+- Similarity to a reference does not prove authenticity.
+- Do not copy facts from references into customer results.
+- Do not use synthetic or unverified references as fraud proof.
+- Do not invent registry verification.
+- Only extract customer details from the uploaded document.
 
 ============================================================
-END APPROVED PROPERTYsure AI KNOWLEDGE
+AUTHENTICITY LIMITATIONS
 ============================================================
 
-============================================================
-CRITICAL AUTHENTICITY RULE
-============================================================
+Essential performs AI document assessment only.
 
-A document can be professionally designed, visually convincing,
-internally consistent, and still be completely fabricated.
+Never claim that:
 
-Therefore:
+- Government issuance was confirmed.
+- Legal ownership was independently verified.
+- Registry ownership records were checked.
+- Title validity was established.
+- Litigation clearance was completed.
+- Physical inspection was performed.
+- Survey boundaries were officially registered or verified.
+- Survey beacon coordinates were physically confirmed.
+- A government survey database was accessed.
 
-- Do NOT conclude that the document is genuine merely because it looks official.
-- Do NOT treat a government-looking logo, seal, stamp, signature, letterhead, numbering format, or layout as proof of issuance.
-- Do NOT claim that a government authority issued the document unless independent government records were supplied and actually verified.
-- Do NOT claim ownership is legally confirmed.
-- Do NOT claim the document exists in a government registry.
-- Do NOT claim litigation clearance.
-- Do NOT claim physical inspection.
-- Do NOT claim GPS/boundary confirmation.
-
-Essential is an AI document assessment, NOT independent authentication.
+A document may look genuine and still be fabricated.
 
 ============================================================
-ADVERSARIAL / FRAUD ANALYSIS
+DOCUMENT MANIPULATION ANALYSIS
 ============================================================
 
-Actively inspect the supplied document for characteristics that
-could indicate fabrication, editing, compositing, synthetic
-generation, or suspicious reconstruction.
+Examine the supplied document for:
 
-Look for, where visible and reasonably assessable:
+- Inconsistent fonts and typography.
+- Suspicious text alignment or spacing.
+- Pasted or digitally composited text.
+- Inconsistent rendering between elements.
+- Suspiciously reconstructed stamps and seals.
+- Suspicious signature appearance.
+- Repeated visual elements.
+- Altered or overwritten values.
+- Contradictory names, dates, numbers and locations.
+- Unusual logos, borders or document formatting.
+- Internally inconsistent survey references.
+- Visible signs of digital reconstruction.
+- Missing or incomplete document sections.
 
-- inconsistent fonts, typography, or text rendering
-- inconsistent spacing or alignment
-- pasted/composited text
-- inconsistent image quality between document elements
-- suspiciously clean or digitally reconstructed stamps/seals
-- suspicious signature placement or rendering
-- repeated visual elements
-- inconsistent dates, numbers, names, plot references, locations,
-  parcel identifiers, or other document data
-- formatting that does not match the apparent document type
-- altered or overwritten values
-- unnatural borders, tables, logos, seals, or signatures
-- suspicious document numbering patterns
-- contradictory information within the document
-- contradictory information between visible sections
-- signs that an apparently official document may have been
-  digitally fabricated or reconstructed
+Describe specific concerns where visible.
+
+Visual suspicion is not forensic proof of forgery.
+
+============================================================
+DOCUMENT CHECKS
+============================================================
+
+Return true, false or null for:
+
+documentStructure:
+Assess visible document structure and formatting.
+
+dataConsistency:
+Assess internal consistency of visible data.
+
+signatureValid:
+Assess signature presentation only.
+Do not claim forensic signature authentication.
+
+stampValid:
+Assess visible stamp or seal presentation only.
+Do not claim government authentication.
+
+noForgery:
+Assess visible manipulation or reconstruction indicators.
+
+noDuplicate:
+Assess suspicious repeated elements inside the document.
+Do not claim a historical duplicate database search.
+
+documentCompleteness:
+Assess apparent completeness of the submitted document.
+
+============================================================
+STRUCTURED DOCUMENT EXTRACTION
+============================================================
+
+Extract only clearly readable document information.
+
+If a textual value is unavailable, return "".
+
+documentTitle:
+Visible document heading.
+
+documentNumber:
+Visible certificate or registration number.
+
+issuingAuthority:
+Named issuing authority, when present.
+
+propertyDetails.location:
+Written property address or location.
+
+propertyDetails.propertyType:
+Explicitly stated type or use.
+
+propertyDetails.propertyDescription:
+Visible parcel description.
+
+propertyDetails.plotNumber:
+Plot identifier.
+
+propertyDetails.blockNumber:
+Block identifier.
+
+propertyDetails.surveyNumber:
+Survey number.
+
+propertyDetails.surveyReference:
+Complete survey reference.
+
+propertyDetails.landSize:
+Stated land size including units.
+
+PARTIES:
+
+grantor:
+Person or company transferring an interest.
+
+grantee:
+Person or company receiving an interest.
+
+owner:
+Only when explicitly named as owner.
+
+holder:
+Named certificate holder or applicant.
+
+otherParties:
+Other explicitly named people or organizations.
+
+DATES:
+
+documentDate:
+Visible document date.
+
+executionDate:
+Date executed or signed.
+
+registrationDate:
+Visible registration date.
+
+A grantor or grantee is not automatically a legally
+verified owner.
+
+A Deed of Assignment does not independently establish
+that a transfer was validly registered.
+
+============================================================
+ADVANCED GPS AND SURVEY INFORMATION EXTRACTION
+============================================================
+
+Perform geographic DATA EXTRACTION from actual
+document content.
+
+Look for:
+
+- Latitude and longitude.
+- Decimal geographic coordinates.
+- Degrees, minutes and seconds.
+- UTM easting and northing.
+- UTM zone and hemisphere.
+- Datum and coordinate-reference declarations.
+- EPSG codes.
+- Survey coordinate tables.
+- Survey beacon identifiers.
+- Beacon ordering or boundary traverse descriptions.
+- Boundary closure notation.
+- Survey side lengths.
+- Stated land area and units.
+- Visible coordinate evidence.
+
+Never invent missing coordinates.
+
+Never geocode an address or infer GPS coordinates
+from general knowledge of a Nigerian city.
+
+Never copy geographic coordinates from retrieved
+knowledge references.
+
+Never assume that Nigerian survey coordinates
+use WGS84.
+
+Some Nigerian survey plans use Minna datum
+or other local coordinate systems.
+
+Never interpret UTM easting and northing
+as latitude and longitude.
+
+============================================================
+COORDINATE SYSTEM CLASSIFICATION
+============================================================
+
+Allowed values:
+
+"WGS84"
+"UTM"
+"MINNA_UTM"
+"UNKNOWN"
+
+"WGS84":
+Use for explicitly established WGS84
+geographic latitude and longitude.
+
+"UTM":
+Use for identifiable UTM projected coordinates.
+The datum, zone and hemisphere must be
+recorded separately.
+
+"MINNA_UTM":
+Use for explicitly identified Minna UTM coordinates.
+
+"UNKNOWN":
+Use when the coordinate reference system
+cannot be established.
 
 IMPORTANT:
 
-Absence of visible manipulation is NOT proof of authenticity.
+A document containing "WGS84 / UTM Zone 31N"
+has a WGS84 DATUM with a UTM PROJECTION.
 
-If there are suspicious indicators, explain them specifically in
-the summary and return them in manipulationIndicators.
+Its easting and northing belong to coordinateSystem
+"UTM", not geographic coordinateSystem "WGS84".
+
+A document may contain BOTH a stated WGS84
+latitude/longitude and a UTM beacon table.
+
+In that situation, preserve the geographic location
+and separately describe the projected coordinate
+reference for the beacon table.
+
+Do not merge these different coordinate representations.
 
 ============================================================
-CHECK DEFINITIONS
+COORDINATE REFERENCE METADATA
 ============================================================
 
-1. documentStructure
+Return gps.coordinateReference as an object.
 
-Does the document have a coherent structure, expected sections,
-headings, fields and formatting for its apparent document type?
+coordinateSystem:
+"WGS84", "UTM", "MINNA_UTM" or "UNKNOWN".
 
-2. dataConsistency
+datum:
+Exact visible datum, or "" if missing.
 
-Are important names, dates, property references, locations, plot
-numbers and other visible details internally consistent?
+projection:
+Visible projection name, or "" if missing.
 
-3. signatureValid
+utmZone:
+An integer 1–60 if explicitly supported by
+the document's coordinate-system declaration.
+Otherwise null.
 
-This does NOT mean legally authenticated.
+hemisphere:
+"N", "S" or null.
 
-Return true only if a visible signature/signature area is present
-and there are reasonable document-level indicators supporting that
-the signature section is properly presented.
+epsgCode:
+Visible EPSG designation, or "".
 
-If there is no visible signature or it cannot reasonably be
-assessed, return null.
+explicitlyStated:
+true only when the document visibly establishes
+the reported coordinate reference.
 
-4. stampValid
+evidence:
+A short description or transcription of the
+visible line or heading establishing the reference.
 
-This does NOT mean government-authenticated.
+IMPORTANT:
 
-Return true only if visible stamps, seals or official markings are
-present and their presentation is reasonably consistent with the
-document.
+Do not mark explicitlyStated true based only on
+geographic plausibility or the model's assumptions.
 
-If there is no visible stamp/seal or it cannot reasonably be
-assessed, return null.
+Do not infer a missing zone from a Nigerian address.
 
-5. noForgery
+Do not infer a missing hemisphere merely because
+the property is claimed to be in Nigeria.
 
-This is specifically about visible/content-based indicators of
-manipulation, alteration, fabrication, compositing, or suspicious
-digital reconstruction.
+A survey plan may state one common coordinate
+reference for all its beacon coordinates.
 
-Return true only when there is reasonable evidence that no
-significant visible manipulation indicators are present.
+If so, record the shared reference under
+gps.coordinateReference.
 
-Return false when there are meaningful suspicious indicators.
+Individual beacon rows do not need to repeat
+that reference.
 
-If the document quality prevents reasonable assessment, return null.
+============================================================
+DOCUMENT-LEVEL GPS LOCATION
+============================================================
 
-6. noDuplicate
+gps.latitude and gps.longitude:
 
-Does this document appear internally duplicated or suspiciously
-repeated?
+Use only when clearly reported as a geographic
+coordinate pair in the actual document and the
+geographic reference is supported.
 
-7. documentCompleteness
+Do not automatically use the latitude and longitude
+of beacon A as the property's reference location.
 
-Based only on the package information available to this request,
-does the submitted package appear reasonably complete for the
-documents actually provided?
+gps.utm:
 
-Do not invent missing government records.
+Use only for an actual separately identifiable
+document-level UTM reference point.
+
+Do not create a document-level UTM reference point
+from an arbitrary survey beacon.
+
+If the document contains only a beacon table,
+preserve the beacons in surveyBeacons and use
+null document-level easting/northing.
+
+gps.referencePointId:
+
+Use only when the geographic point is explicitly
+identified with a meaningful source reference.
+
+Examples:
+
+"PB123"
+"BEACON A1"
+"CONTROL POINT 2"
+
+Do not invent a reference identifier.
+
+Do not use generic identifiers such as:
+
+"property"
+"plot"
+"land"
+"survey"
+
+gps.coordinateEvidence:
+
+Describe the visible text or table from which the
+document-level geographic coordinate was extracted.
+
+gps.coordinatesExplicitlyStated:
+
+true only when the relevant geographic values
+are actually stated in the submitted document.
+
+============================================================
+SURVEY BEACON EXTRACTION
+============================================================
+
+Extract all readable identified survey beacons,
+up to 40.
+
+For each beacon return:
+
+beaconId:
+Exact visible beacon label.
+
+latitude:
+Directly stated geographic latitude, or null.
+
+longitude:
+Directly stated geographic longitude, or null.
+
+easting:
+Original numeric easting, or null.
+
+northing:
+Original numeric northing, or null.
+
+coordinateSystem:
+The system used by the beacon record.
+Use "UTM" for a UTM beacon table.
+
+utmZone:
+Only when explicitly stated for that beacon,
+or null if stated at the document level.
+
+hemisphere:
+Only when explicitly stated for that beacon,
+or null if stated at the document level.
+
+datum:
+Visible beacon-specific datum, or "" if
+defined only at the document level.
+
+coordinateEvidence:
+Visible beacon table entry or supporting heading.
+
+boundaryOrder:
+Only an explicitly established positive integer
+indicating that beacon's boundary sequence position.
+Otherwise null.
+
+Preserve all original survey coordinate values.
+
+Do not change original easting/northing during
+geographic conversion.
+
+Do not fabricate missing beacons.
+
+============================================================
+SURVEY BOUNDARY SEQUENCE
+============================================================
+
+Return gps.boundarySequence as an array of beacon IDs.
+
+Examples:
+
+["A", "B", "C", "D"]
+
+or
+
+["PB123", "PB124", "PB125", "PB126"]
+
+Only return this ordered sequence when the original
+survey plan establishes the traverse or parcel
+boundary order.
+
+Valid evidence may include:
+
+- A clear drawn boundary with identified corners.
+- A readable traverse sequence.
+- Boundary sides explicitly joining named beacons.
+- Explicit point-order annotations.
+
+IMPORTANT:
+
+A table listing beacons A, B, C and D does NOT,
+by itself, establish that the boundary runs
+A -> B -> C -> D -> A.
+
+When the plan contains a parcel drawing or a sides-and-bearings
+traverse table establishing A-B, B-C, C-D, D-A, report the
+explicit ordered sequence and identify THAT evidence clearly
+in boundarySequenceEvidence. Do not withhold clear visible
+traverse evidence, but do not fabricate it from alphabetic order.
+
+The structured fields must agree with your evidence description.
+If the source clearly shows A-B, B-C, C-D, D-A in a
+sides-and-bearings table or identified boundary drawing,
+set boundarySequenceEstablished to true and provide the exact
+visible traverse in boundarySequenceEvidence. Do not describe
+an established traverse in extractionNotes while simultaneously
+marking its structured flag false. If source evidence is uncertain,
+return false and explain why rather than guessing.
+
+Never assume alphabetical order.
+
+Never create a polygon by sorting beacon IDs.
+
+If the boundary order is unclear:
+
+boundarySequence = []
+boundarySequenceEstablished = false
+boundarySequenceEvidence = ""
+
+If the document clearly establishes the order:
+
+boundarySequence = ordered beacon IDs
+boundarySequenceEstablished = true
+boundarySequenceEvidence = visible evidence explaining
+how the point order was established.
+
+A final repeated first beacon may be included when
+the document explicitly describes polygon closure.
+
+============================================================
+STATED LAND AREA
+============================================================
+
+Return:
+
+gps.statedLandArea:
+Positive numeric area when explicitly shown.
+
+gps.statedLandAreaUnit:
+One of:
+
+"sqm"
+"hectares"
+"acres"
+"sqft"
+"unknown"
+
+Never guess land-size units.
+
+If the area is unreadable, use null.
+
+If the numeric area is visible but units are
+not established, return "unknown".
+
+The land-size number should originate from
+the document, not from estimated GPS coordinates.
+
+============================================================
+GEOGRAPHIC EXTRACTION ACCURACY
+============================================================
+
+gps.extractionConfidence:
+
+0–100 confidence in reading/extracting
+geographic data.
+
+This is NOT confidence that the survey is genuine.
+
+gps.extractionNotes:
+
+Concise warnings about unreadable, ambiguous,
+missing or unsupported geographic data.
+
+Include ambiguity between geographic and
+projected coordinates.
+
+Include uncertainty about beacon sequence.
+
+Include unclear datum, UTM zone or hemisphere.
+
+============================================================
+PROPERTY VERIFICATION LIMITATIONS
+============================================================
+
+A mathematical UTM conversion does not establish
+registered survey accuracy.
+
+A reconstructed boundary is only a document-derived
+geometric representation.
+
+A calculated parcel area is not a certified ground
+survey measurement.
+
+Two documents with nearby GPS coordinates are not
+automatically records of the same legal parcel.
+
+A GPS mismatch alone does not prove forgery.
+
+A map marker does not prove ownership.
+
+No external government registry was checked.
+
+============================================================
+OWNERSHIP AND DOCUMENT SAFETY
+============================================================
+
+Do not assume that:
+
+- A grantor is a verified owner.
+- A grantee is a verified current owner.
+- A certificate holder has valid current title.
+- A signed deed is automatically registered.
+- A matching survey number proves authenticity.
+- A coordinate match proves parcel registration.
 
 ============================================================
 CONFIDENCE
 ============================================================
 
-"confidence" is the AI's confidence in the QUALITY OF ITS OWN
-DOCUMENT ANALYSIS.
-
-It is NOT:
-
-- probability that the document is genuine
-- probability that the document was issued by government
-- probability that ownership is valid
-- probability that the property is safe to buy
-
-A visually convincing fake can receive high analysis confidence
-if the AI is confident about what it sees. Do not convert
-confidence into authenticity.
+confidence is the AI's confidence in its
+document assessment, not the probability
+that the document is authentic.
 
 ============================================================
 REQUIRED JSON
 ============================================================
 
-Return JSON only:
+Return exactly one valid JSON object.
+
+Follow this structure:
 
 {
-  "documentType": "string",
-  "documentTitle": "string",
+  "documentType": "",
+  "documentTitle": "",
   "confidence": 0,
-  "summary": "string",
-  "syntheticDocumentRisk": "low",
+  "summary": "",
+  "syntheticDocumentRisk": "inconclusive",
   "manipulationIndicators": [],
+
   "checks": {
-    "documentStructure": true,
-    "dataConsistency": true,
+    "documentStructure": null,
+    "dataConsistency": null,
     "signatureValid": null,
     "stampValid": null,
-    "noForgery": true,
-    "noDuplicate": true,
+    "noForgery": null,
+    "noDuplicate": null,
     "documentCompleteness": null
+  },
+
+  "documentNumber": "",
+  "issuingAuthority": "",
+
+  "propertyDetails": {
+    "location": "",
+    "propertyType": "",
+    "propertyDescription": "",
+    "plotNumber": "",
+    "blockNumber": "",
+    "surveyNumber": "",
+    "surveyReference": "",
+    "landSize": ""
+  },
+
+  "parties": {
+    "grantor": "",
+    "grantee": "",
+    "owner": "",
+    "holder": "",
+    "otherParties": []
+  },
+
+  "dates": {
+    "documentDate": "",
+    "executionDate": "",
+    "registrationDate": ""
+  },
+
+  "gps": {
+    "statedAddress": "",
+    "coordinateSystem": "UNKNOWN",
+    "latitude": null,
+    "longitude": null,
+
+    "utm": {
+      "easting": null,
+      "northing": null,
+      "zone": null,
+      "hemisphere": null,
+      "datum": ""
+    },
+
+    "coordinateReference": {
+      "coordinateSystem": "UNKNOWN",
+      "datum": "",
+      "projection": "",
+      "utmZone": null,
+      "hemisphere": null,
+      "epsgCode": "",
+      "explicitlyStated": false,
+      "evidence": ""
+    },
+
+    "surveyBeacons": [],
+
+    "boundarySequence": [],
+    "boundarySequenceEstablished": false,
+    "boundarySequenceEvidence": "",
+
+    "statedLandArea": null,
+    "statedLandAreaUnit": "unknown",
+
+    "referencePointId": "",
+    "coordinateEvidence": "",
+    "coordinatesExplicitlyStated": false,
+
+    "extractionNotes": [],
+    "extractionConfidence": null
   }
 }
 
-Rules:
+Each surveyBeacons item must follow:
+
+{
+  "beaconId": "",
+  "latitude": null,
+  "longitude": null,
+  "easting": null,
+  "northing": null,
+  "coordinateSystem": "UNKNOWN",
+  "utmZone": null,
+  "hemisphere": null,
+  "datum": "",
+  "coordinateEvidence": "",
+  "boundaryOrder": null
+}
+
+RULES:
 
 - confidence must be an integer from 0 to 100.
-- syntheticDocumentRisk must be "low", "medium", "high", or "inconclusive".
-- manipulationIndicators must be an array of concise strings.
-- Do not invent facts that are not visible in the document.
-- If an issue is visible, describe it specifically.
-- Never state that the document is genuine merely because it appears authentic.
-- Never state that government authenticity has been confirmed.
+- syntheticDocumentRisk must be low, medium, high,
+  or inconclusive.
+- Missing text must be "".
+- Missing numeric GPS fields must be null.
+- Missing UTM zone must be null.
+- Missing hemisphere must be null.
+- Unknown datum must be "".
+- Missing survey beacons must be [].
+- Missing boundary sequence must be [].
+- Unknown land-area unit must be "unknown".
+- Do not invent geographic values.
+- Do not invent boundary order.
+- Do not claim independent government verification.
+- Return JSON only.
 `;
+
+  /*
+   * ==========================================================
+   * BUILD OPENAI INPUT
+   * ==========================================================
+   */
 
   const content: Array<
     Record<string, unknown>
@@ -1228,28 +2635,25 @@ Rules:
   ) {
     content.push({
       type: "input_file",
+
       filename:
         fileName ||
         "property-document.pdf",
-      file_data:
-        dataUrl,
+
+      file_data: dataUrl,
     });
   } else if (
-    actualMimeType ===
-      "image/jpeg" ||
-    actualMimeType ===
-      "image/png"
+    actualMimeType === "image/jpeg" ||
+    actualMimeType === "image/png"
   ) {
     content.push({
       type: "input_image",
-      image_url:
-        dataUrl,
-      detail:
-        "high",
+      image_url: dataUrl,
+      detail: "high",
     });
   } else {
     throw new Error(
-      `Unsupported document type: ${mimeType}`,
+      `Unsupported document type: ${actualMimeType}`,
     );
   }
 
@@ -1257,40 +2661,41 @@ Rules:
     process.env.OPENAI_DOCUMENT_MODEL ||
     "gpt-5.6";
 
-  const openAIResponse =
-    await fetch(
-      "https://api.openai.com/v1/responses",
-      {
-        method: "POST",
-        headers: {
-          Authorization:
-            `Bearer ${apiKey}`,
-          "Content-Type":
-            "application/json",
-        },
-        body:
-          JSON.stringify({
-            model,
-            input: [
-              {
-                role: "user",
-                content,
-              },
-            ],
-            max_output_tokens:
-              2500,
-          }),
-        cache:
-          "no-store",
+  const openAIResponse = await fetch(
+    "https://api.openai.com/v1/responses",
+    {
+      method: "POST",
+
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
-    );
+
+      body: JSON.stringify({
+        model,
+
+        input: [
+          {
+            role: "user",
+            content,
+          },
+        ],
+
+        /*
+         * Allow enough space for structured
+         * survey beacon tables and metadata.
+         */
+        max_output_tokens: 8500,
+      }),
+
+      cache: "no-store",
+    },
+  );
 
   const payload =
     await openAIResponse.json();
 
-  if (
-    !openAIResponse.ok
-  ) {
+  if (!openAIResponse.ok) {
     console.error(
       "ESSENTIAL OPENAI ERROR:",
       payload,
@@ -1303,78 +2708,54 @@ Rules:
   }
 
   const outputText =
-    extractAIOutputText(
-      payload,
-    );
+    extractAIOutputText(payload);
 
   if (!outputText) {
-    console.error(
-      "ESSENTIAL AI EMPTY RESPONSE:",
-      JSON.stringify(
-        payload,
-        null,
-        2,
-      ),
-    );
-
     throw new Error(
       "AI returned no verification result.",
     );
   }
 
-  console.log(
-    "ESSENTIAL AI OUTPUT:",
-    outputText,
-  );
-
   const parsed =
-    parseAIJson(
-      outputText,
-    );
+    parseAIJson(outputText);
 
-  const checks:
-    VerificationChecks = {
-    documentStructure:
-      normalizeCheckValue(
-        parsed.checks
-          ?.documentStructure,
-      ),
+  /*
+   * ==========================================================
+   * NORMALIZE CHECKS
+   * ==========================================================
+   */
 
-    dataConsistency:
-      normalizeCheckValue(
-        parsed.checks
-          ?.dataConsistency,
-      ),
+  const parsedChecks =
+    asObject(parsed.checks);
 
-    signatureValid:
-      normalizeCheckValue(
-        parsed.checks
-          ?.signatureValid,
-      ),
+  const checks: VerificationChecks = {
+    documentStructure: normalizeCheckValue(
+      parsedChecks.documentStructure,
+    ),
 
-    stampValid:
-      normalizeCheckValue(
-        parsed.checks
-          ?.stampValid,
-      ),
+    dataConsistency: normalizeCheckValue(
+      parsedChecks.dataConsistency,
+    ),
 
-    noForgery:
-      normalizeCheckValue(
-        parsed.checks
-          ?.noForgery,
-      ),
+    signatureValid: normalizeCheckValue(
+      parsedChecks.signatureValid,
+    ),
 
-    noDuplicate:
-      normalizeCheckValue(
-        parsed.checks
-          ?.noDuplicate,
-      ),
+    stampValid: normalizeCheckValue(
+      parsedChecks.stampValid,
+    ),
 
-    documentCompleteness:
-      normalizeCheckValue(
-        parsed.checks
-          ?.documentCompleteness,
-      ),
+    noForgery: normalizeCheckValue(
+      parsedChecks.noForgery,
+    ),
+
+    noDuplicate: normalizeCheckValue(
+      parsedChecks.noDuplicate,
+    ),
+
+    documentCompleteness: normalizeCheckValue(
+      parsedChecks.documentCompleteness,
+    ),
   };
 
   const manipulationIndicators =
@@ -1387,83 +2768,124 @@ Rules:
       parsed.syntheticDocumentRisk,
     );
 
-  /*
-   * If the AI itself reports meaningful manipulation indicators,
-   * do not allow the normalized result to be represented as clean.
-   *
-   * This is still not a legal authenticity determination.
-   */
   if (
-    manipulationIndicators.length >
-      0 &&
-    checks.noForgery !==
-      false
+    manipulationIndicators.length > 0 &&
+    checks.noForgery !== false
   ) {
-    checks.noForgery =
-      false;
+    checks.noForgery = false;
   }
 
   const assessmentStatus =
-    deriveDocumentAssessment(
-      checks,
-    );
-
-  let summary =
-    String(
-      parsed.summary ||
-        "AI document assessment completed.",
-    ).trim();
+    deriveDocumentAssessment(checks);
 
   /*
-   * Make the scope explicit in every individual document result.
+   * ==========================================================
+   * STRUCTURED PROPERTY INFORMATION
+   * ==========================================================
    */
-  summary =
-    `${summary} This is an AI document assessment only; authenticity has not been independently verified.`;
+
+  const extractedFields =
+    normalizeExtractedFields({
+      documentTitle: parsed.documentTitle,
+      documentNumber: parsed.documentNumber,
+      issuingAuthority: parsed.issuingAuthority,
+      propertyDetails: parsed.propertyDetails,
+      parties: parsed.parties,
+      dates: parsed.dates,
+    });
+
+  /*
+   * ==========================================================
+   * GEOGRAPHIC EXTRACTION
+   * ==========================================================
+   */
+
+  const gps =
+    normalizeDocumentGPS(
+      parsed.gps,
+      fileName,
+      extractedFields.propertyDetails.location,
+    );
+
+  /*
+   * ==========================================================
+   * SUMMARY
+   * ==========================================================
+   */
+
+  let summary =
+    firstString(
+      parsed.summary,
+      "AI document assessment completed.",
+    );
+
+  if (
+    !summary
+      .toLowerCase()
+      .includes(
+        "not been independently verified",
+      )
+  ) {
+    summary +=
+      " This is an AI document assessment only; authenticity has not been independently verified.";
+  }
 
   return {
-    documentType:
-      String(
-        parsed.documentType ||
-          documentType ||
-          "Other Property Document",
-      ),
+    documentType: firstString(
+      parsed.documentType,
+      documentType,
+      "Other Property Document",
+    ),
 
-    documentTitle:
-      String(
-        parsed.documentTitle ||
-          parsed.documentType ||
-          documentType ||
-          fileName ||
-          "Property Document",
-      ),
+    documentTitle: firstString(
+      extractedFields.documentTitle,
+      parsed.documentType,
+      documentType,
+      "Property Document",
+    ),
 
-    confidence:
+    confidence: Math.round(
       clamp(
-        Number(
-          parsed.confidence,
-        ) || 0,
+        Number(parsed.confidence) || 0,
         0,
         100,
       ),
+    ),
 
     summary,
-
     assessmentStatus,
 
     authenticityStatus:
       "not_independently_verified" as const,
 
     checks,
-
     syntheticDocumentRisk,
-
     manipulationIndicators,
+
+    documentNumber:
+      extractedFields.documentNumber,
+
+    issuingAuthority:
+      extractedFields.issuingAuthority,
+
+    propertyDetails:
+      extractedFields.propertyDetails,
+
+    parties:
+      extractedFields.parties,
+
+    dates:
+      extractedFields.dates,
+
+    extractedFields,
+
+    gps,
   };
 }
 
 /*
  * ============================================================
- * MERGE DOCUMENT RESULTS
+ * PACKAGE CHECK MERGING
  * ============================================================
  */
 
@@ -1472,10 +2894,7 @@ function mergeChecks(
     checks: VerificationChecks;
   }>,
 ): VerificationChecks {
-  if (
-    documentResults.length ===
-    0
-  ) {
+  if (documentResults.length === 0) {
     return {
       ...EMPTY_CHECKS,
     };
@@ -1493,44 +2912,35 @@ function mergeChecks(
     "documentCompleteness",
   ];
 
-  const merged = {
+  const merged: VerificationChecks = {
     ...EMPTY_CHECKS,
   };
 
-  for (
-    const key of keys
-  ) {
+  for (const key of keys) {
     const values =
-      documentResults
-        .map(
-          (result) =>
-            result.checks[key],
-        );
+      documentResults.map(
+        (result) => result.checks[key],
+      );
 
     if (
       values.some(
-        (value) =>
-          value === false,
+        (value) => value === false,
       )
     ) {
-      merged[key] =
-        false;
+      merged[key] = false;
       continue;
     }
 
     if (
       values.every(
-        (value) =>
-          value === true,
+        (value) => value === true,
       )
     ) {
-      merged[key] =
-        true;
+      merged[key] = true;
       continue;
     }
 
-    merged[key] =
-      null;
+    merged[key] = null;
   }
 
   return merged;
@@ -1545,7 +2955,7 @@ function mergeChecks(
 function buildPackageSummary(
   documentResults: DocumentAIResult[],
   checks: VerificationChecks,
-) {
+): string {
   const attentionCount =
     documentResults.filter(
       (result) =>
@@ -1563,56 +2973,206 @@ function buildPackageSummary(
   const highSyntheticRiskCount =
     documentResults.filter(
       (result) =>
-        result.syntheticDocumentRisk ===
-        "high",
+        result.syntheticDocumentRisk === "high",
     ).length;
 
   const mediumSyntheticRiskCount =
     documentResults.filter(
       (result) =>
-        result.syntheticDocumentRisk ===
-        "medium",
+        result.syntheticDocumentRisk === "medium",
     ).length;
 
   const failedChecks =
-    Object.values(
-      checks,
-    ).filter(
-      (value) =>
-        value === false,
+    Object.values(checks).filter(
+      (value) => value === false,
     ).length;
 
-  if (
-    highSyntheticRiskCount > 0
-  ) {
-    return `AI analysis identified a high synthetic/fabrication risk in ${highSyntheticRiskCount} document${highSyntheticRiskCount === 1 ? "" : "s"}. Further verification is required.`;
+  if (highSyntheticRiskCount > 0) {
+    return (
+      `AI analysis identified a high synthetic/fabrication risk in ` +
+      `${highSyntheticRiskCount} document` +
+      `${highSyntheticRiskCount === 1 ? "" : "s"}. ` +
+      `Further verification is required.`
+    );
   }
 
   if (
     attentionCount > 0 ||
     failedChecks > 0
   ) {
-    return `AI document assessment identified ${Math.max(attentionCount, 1)} document${Math.max(attentionCount, 1) === 1 ? "" : "s"} requiring attention. Independent authenticity verification has not been performed.`;
+    const count =
+      Math.max(attentionCount, 1);
+
+    return (
+      `AI document assessment identified ${count} ` +
+      `document${count === 1 ? "" : "s"} requiring attention. ` +
+      `Independent authenticity verification has not been performed.`
+    );
   }
 
-  if (
-    mediumSyntheticRiskCount > 0
-  ) {
-    return `AI document assessment did not establish government authenticity and identified medium synthetic-document risk in ${mediumSyntheticRiskCount} document${mediumSyntheticRiskCount === 1 ? "" : "s"}. Further verification is recommended.`;
+  if (mediumSyntheticRiskCount > 0) {
+    return (
+      `AI document assessment did not establish government authenticity ` +
+      `and identified medium synthetic-document risk in ` +
+      `${mediumSyntheticRiskCount} document` +
+      `${mediumSyntheticRiskCount === 1 ? "" : "s"}. ` +
+      `Further verification is recommended.`
+    );
   }
 
-  if (
-    inconclusiveCount > 0
-  ) {
-    return `AI document assessment completed, but ${inconclusiveCount} document${inconclusiveCount === 1 ? "" : "s"} could not be conclusively assessed. Independent authenticity verification has not been performed.`;
+  if (inconclusiveCount > 0) {
+    return (
+      `AI document assessment completed, but ${inconclusiveCount} ` +
+      `document${inconclusiveCount === 1 ? "" : "s"} could not be ` +
+      `conclusively assessed. Independent authenticity verification ` +
+      `has not been performed.`
+    );
   }
 
-  return "AI document assessment found no significant visible issues in the submitted package. This does not establish that the documents are genuine or government-issued; independent authenticity verification has not been performed.";
+  return (
+    "AI document assessment found no significant visible issues " +
+    "in the submitted package. This does not establish that the " +
+    "documents are genuine or government-issued; independent " +
+    "authenticity verification has not been performed."
+  );
 }
 
 /*
  * ============================================================
- * POST
+ * CONSISTENT PROPERTY VALUES
+ * ============================================================
+ */
+
+function uniqueConsistentValue(
+  values: string[],
+): string {
+  const nonEmpty =
+    values
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+  if (nonEmpty.length === 0) {
+    return "";
+  }
+
+  const normalized =
+    new Set(
+      nonEmpty.map(
+        (value) => value.toLowerCase(),
+      ),
+    );
+
+  return normalized.size === 1
+    ? nonEmpty[0]
+    : "";
+}
+
+/*
+ * ============================================================
+ * BUILD PACKAGE PROPERTY
+ * ============================================================
+ */
+
+function buildPackageProperty(
+  documents: DocumentAIResult[],
+): Record<string, unknown> {
+  return {
+    location: uniqueConsistentValue(
+      documents.map(
+        (item) => item.propertyDetails.location,
+      ),
+    ),
+
+    description: uniqueConsistentValue(
+      documents.map(
+        (item) =>
+          item.propertyDetails.propertyDescription,
+      ),
+    ),
+
+    property_type: uniqueConsistentValue(
+      documents.map(
+        (item) => item.propertyDetails.propertyType,
+      ),
+    ),
+
+    land_size: uniqueConsistentValue(
+      documents.map(
+        (item) => item.propertyDetails.landSize,
+      ),
+    ),
+
+    plot: uniqueConsistentValue(
+      documents.map(
+        (item) => item.propertyDetails.plotNumber,
+      ),
+    ),
+
+    block: uniqueConsistentValue(
+      documents.map(
+        (item) => item.propertyDetails.blockNumber,
+      ),
+    ),
+
+    survey_reference: uniqueConsistentValue(
+      documents.map(
+        (item) =>
+          item.propertyDetails.surveyReference ||
+          item.propertyDetails.surveyNumber,
+      ),
+    ),
+
+    extraction_source: "ai_document_content",
+
+    authenticity_status:
+      "not_independently_verified",
+  };
+}
+
+/*
+ * ============================================================
+ * BUILD PACKAGE OWNERSHIP
+ * ============================================================
+ */
+
+function buildPackageOwnership(
+  documents: DocumentAIResult[],
+): Record<string, unknown> {
+  return {
+    owner_name: uniqueConsistentValue(
+      documents.map(
+        (item) => item.parties.owner,
+      ),
+    ),
+
+    grantor: uniqueConsistentValue(
+      documents.map(
+        (item) => item.parties.grantor,
+      ),
+    ),
+
+    grantee: uniqueConsistentValue(
+      documents.map(
+        (item) => item.parties.grantee,
+      ),
+    ),
+
+    holder: uniqueConsistentValue(
+      documents.map(
+        (item) => item.parties.holder,
+      ),
+    ),
+
+    status: "not_independently_verified",
+
+    extraction_source:
+      "ai_document_content",
+  };
+}
+
+/*
+ * ============================================================
+ * POST — ESSENTIAL VERIFICATION
  * ============================================================
  */
 
@@ -1625,18 +3185,14 @@ export async function POST(
 
     const verificationId =
       String(
-        body?.verificationId ||
-          "",
+        body?.verificationId || "",
       ).trim();
 
-    if (
-      !verificationId
-    ) {
+    if (!verificationId) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Verification ID is required.",
+          error: "Verification ID is required.",
         },
         {
           status: 400,
@@ -1648,32 +3204,23 @@ export async function POST(
       getSupabaseAdmin();
 
     /*
-     * ----------------------------------------------------------
+     * ========================================================
      * LOAD VERIFICATION
-     * ----------------------------------------------------------
+     * ========================================================
      */
 
     const {
       data: verification,
-      error:
-        verificationError,
-    } =
-      await supabaseAdmin
-        .from(
-          "verifications",
-        )
-        .select(
-          "id,doc_name,file_url,doc_type,status,findings",
-        )
-        .eq(
-          "id",
-          verificationId,
-        )
-        .maybeSingle();
+      error: verificationError,
+    } = await supabaseAdmin
+      .from("verifications")
+      .select(
+        "id,doc_name,file_url,doc_type,status,findings",
+      )
+      .eq("id", verificationId)
+      .maybeSingle();
 
-    if (
-      verificationError
-    ) {
+    if (verificationError) {
       console.error(
         "ESSENTIAL VERIFICATION LOAD ERROR:",
         verificationError,
@@ -1705,52 +3252,40 @@ export async function POST(
     }
 
     /*
-     * ----------------------------------------------------------
-     * PAYMENT CHECK
-     * ----------------------------------------------------------
+     * ========================================================
+     * PAYMENT VALIDATION
+     * ========================================================
+     *
+     * Existing Paystack Essential payment
+     * verification is preserved.
+     * ========================================================
      */
 
     const {
       data: payment,
-      error:
-        paymentError,
-    } =
-      await supabaseAdmin
-        .from(
-          "payments",
-        )
-        .select(
-          "id,plan,status,amount,currency,provider",
-        )
-        .eq(
-          "verification_id",
-          verificationId,
-        )
-        .eq(
-          "provider",
-          "paystack",
-        )
-        .eq(
-          "plan",
-          "essential",
-        )
-        .eq(
-          "status",
-          "paid",
-        )
-        .order(
-          "created_at",
-          {
-            ascending:
-              false,
-          },
-        )
-        .limit(1)
-        .maybeSingle();
+      error: paymentError,
+    } = await supabaseAdmin
+      .from("payments")
+      .select(
+        "id,plan,status,amount,currency,provider",
+      )
+      .eq(
+        "verification_id",
+        verificationId,
+      )
+      .eq("provider", "paystack")
+      .eq("plan", "essential")
+      .eq("status", "paid")
+      .order(
+        "created_at",
+        {
+          ascending: false,
+        },
+      )
+      .limit(1)
+      .maybeSingle();
 
-    if (
-      paymentError
-    ) {
+    if (paymentError) {
       console.error(
         "ESSENTIAL PAYMENT LOOKUP ERROR:",
         paymentError,
@@ -1782,27 +3317,26 @@ export async function POST(
     }
 
     /*
-     * ----------------------------------------------------------
+     * ========================================================
      * DOCUMENT PACKAGE
-     * ----------------------------------------------------------
+     * ========================================================
      */
 
     const storedFindings =
-      (
-        verification.findings ||
-        {}
+      asObject(
+        verification.findings,
       ) as VerificationFindings;
 
-    let documentPackage =
-      Array.isArray(
-        storedFindings.document_package,
-      )
-        ? storedFindings.document_package
-        : [];
+    let documentPackage:
+      DocumentPackageItem[] =
+        Array.isArray(
+          storedFindings.document_package,
+        )
+          ? storedFindings.document_package
+          : [];
 
     if (
-      documentPackage.length ===
-        0 &&
+      documentPackage.length === 0 &&
       verification.file_url
     ) {
       documentPackage = [
@@ -1818,16 +3352,12 @@ export async function POST(
             verification.doc_type ||
             "application/pdf",
 
-          documentType:
-            undefined,
+          documentType: undefined,
         },
       ];
     }
 
-    if (
-      documentPackage.length ===
-      0
-    ) {
+    if (documentPackage.length === 0) {
       return NextResponse.json(
         {
           success: false,
@@ -1841,18 +3371,17 @@ export async function POST(
     }
 
     /*
-     * ----------------------------------------------------------
+     * ========================================================
      * MARK PROCESSING
-     * ----------------------------------------------------------
+     * ========================================================
      */
 
-    await supabaseAdmin
-      .from(
-        "verifications",
-      )
+    const {
+      error: startError,
+    } = await supabaseAdmin
+      .from("verifications")
       .update({
-        status:
-          "processing",
+        status: "processing",
 
         findings: {
           ...storedFindings,
@@ -1868,11 +3397,8 @@ export async function POST(
           },
 
           processing: {
-            stage:
-              "structure",
-
-            progress:
-              22,
+            stage: "structure",
+            progress: 22,
 
             message:
               "AI is analyzing your property documents.",
@@ -1884,10 +3410,16 @@ export async function POST(
         verificationId,
       );
 
+    if (startError) {
+      throw new Error(
+        `Unable to start Essential analysis: ${startError.message}`,
+      );
+    }
+
     /*
-     * ----------------------------------------------------------
-     * ANALYZE EVERY DOCUMENT
-     * ----------------------------------------------------------
+     * ========================================================
+     * ANALYZE DOCUMENTS
+     * ========================================================
      */
 
     const documentResults:
@@ -1895,31 +3427,35 @@ export async function POST(
 
     for (
       let index = 0;
-      index <
-      documentPackage.length;
+      index < documentPackage.length;
       index++
     ) {
       const document =
         documentPackage[index];
 
-      if (
-        !document.path
-      ) {
+      if (!document.path) {
         continue;
       }
 
       const progress =
         Math.round(
           25 +
-            (index /
-              documentPackage.length) *
-              55,
+          (
+            index /
+            documentPackage.length
+          ) * 55,
         );
 
-      await supabaseAdmin
-        .from(
-          "verifications",
-        )
+      /*
+       * ======================================================
+       * UPDATE DOCUMENT PROGRESS
+       * ======================================================
+       */
+
+      const {
+        error: progressError,
+      } = await supabaseAdmin
+        .from("verifications")
         .update({
           findings: {
             ...storedFindings,
@@ -1935,9 +3471,7 @@ export async function POST(
             },
 
             processing: {
-              stage:
-                "authenticity",
-
+              stage: "authenticity",
               progress,
 
               message:
@@ -1950,67 +3484,61 @@ export async function POST(
           verificationId,
         );
 
+      if (progressError) {
+        throw new Error(
+          `Unable to update Essential progress: ${progressError.message}`,
+        );
+      }
+
+      /*
+       * ======================================================
+       * DOWNLOAD DOCUMENT
+       * ======================================================
+       */
+
       const storagePath =
         resolveStoragePath(
           document.path,
         );
 
-      if (
-        !storagePath
-      ) {
+      if (!storagePath) {
         throw new Error(
-          `Could not determine the storage path for ${document.name || "property document"}.`,
+          `Could not determine the storage path for ${
+            document.name || "property document"
+          }.`,
         );
       }
 
       const {
         data: fileBlob,
-        error:
-          downloadError,
-      } =
-        await supabaseAdmin
-          .storage
-          .from(
-            STORAGE_BUCKET,
-          )
-          .download(
-            storagePath,
-          );
+        error: downloadError,
+      } = await supabaseAdmin.storage
+        .from(STORAGE_BUCKET)
+        .download(storagePath);
 
       if (
         downloadError ||
         !fileBlob
       ) {
         throw new Error(
-          `Could not retrieve ${document.name || "property document"} from secure storage.`,
+          `Could not retrieve ${
+            document.name || "property document"
+          } from secure storage.`,
         );
       }
 
-      const actualDocumentMimeType =
+      const actualMimeType =
         normalizeMimeType(
           document.type,
           document.name,
           fileBlob.type,
         );
 
-      console.log(
-        "ESSENTIAL DOCUMENT TYPE:",
-        {
-          name:
-            document.name,
-
-          storedType:
-            document.type,
-
-          blobType:
-            fileBlob.type,
-
-          normalizedType:
-            actualDocumentMimeType,
-
-          storagePath,
-        },
-      );
+      /*
+       * ======================================================
+       * DOCUMENT AI AND GPS EXTRACTION
+       * ======================================================
+       */
 
       const result =
         await analyzeDocument(
@@ -2019,10 +3547,82 @@ export async function POST(
           document.name ||
             "property-document",
 
-          actualDocumentMimeType,
+          actualMimeType,
 
           document.documentType,
         );
+
+      /*
+       * ======================================================
+       * NORMALIZE STRUCTURED PROPERTY INFORMATION
+       * ======================================================
+       */
+
+      const propertyDetails =
+        normalizePropertyDetails(
+          result.propertyDetails,
+        );
+
+      const parties =
+        normalizeParties(
+          result.parties,
+        );
+
+      const dates =
+        normalizeDates(
+          result.dates,
+        );
+
+      const extractedFields =
+        normalizeExtractedFields({
+          documentTitle:
+            result.documentTitle,
+
+          documentNumber:
+            result.documentNumber,
+
+          issuingAuthority:
+            result.issuingAuthority,
+
+          propertyDetails,
+          parties,
+          dates,
+        });
+
+      /*
+       * ======================================================
+       * NORMALIZE ADVANCED GPS INFORMATION
+       * ======================================================
+       *
+       * Includes:
+       *
+       * - Geographic coordinates
+       * - Survey coordinate reference
+       * - Original beacon coordinates
+       * - Boundary point sequence
+       * - Stated land area and units
+       * - Extraction evidence
+       *
+       * These are passed to the GPS analysis
+       * engine after all documents are processed.
+       * ======================================================
+       */
+
+      const gps =
+        normalizeDocumentGPS(
+          result.gps,
+
+          document.name ||
+            "Property Document",
+
+          propertyDetails.location,
+        );
+
+      /*
+       * ======================================================
+       * INDIVIDUAL DOCUMENT RESULT
+       * ======================================================
+       */
 
       documentResults.push({
         documentName:
@@ -2031,6 +3631,9 @@ export async function POST(
 
         documentType:
           result.documentType,
+
+        documentTitle:
+          result.documentTitle,
 
         confidence:
           result.confidence,
@@ -2052,22 +3655,69 @@ export async function POST(
 
         manipulationIndicators:
           result.manipulationIndicators,
+
+        documentNumber:
+          result.documentNumber,
+
+        issuingAuthority:
+          result.issuingAuthority,
+
+        propertyDetails,
+
+        parties,
+
+        dates,
+
+        extractedFields,
+
+        propertyLocation:
+          propertyDetails.location,
+
+        propertyDescription:
+          propertyDetails.propertyDescription,
+
+        propertyType:
+          propertyDetails.propertyType,
+
+        plotNumber:
+          propertyDetails.plotNumber,
+
+        blockNumber:
+          propertyDetails.blockNumber,
+
+        surveyReference:
+          propertyDetails.surveyReference ||
+          propertyDetails.surveyNumber,
+
+        landSize:
+          propertyDetails.landSize,
+
+        ownerName:
+          parties.owner,
+
+        holderName:
+          parties.holder,
+
+        gps,
       });
     }
 
-    if (
-      documentResults.length ===
-      0
-    ) {
+    if (documentResults.length === 0) {
       throw new Error(
         "No documents could be analyzed.",
       );
     }
 
     /*
-     * ----------------------------------------------------------
-     * MERGE RESULTS
-     * ----------------------------------------------------------
+     * ========================================================
+     * PACKAGE SCORES
+     * ========================================================
+     *
+     * Original Essential scoring formulas preserved.
+     *
+     * Preliminary GPS or survey calculations
+     * do not automatically change the trust score.
+     * ========================================================
      */
 
     const checks =
@@ -2078,40 +3728,29 @@ export async function POST(
     const completenessValues =
       documentResults.map(
         (result) =>
-          result.checks
-            .documentCompleteness,
+          result.checks.documentCompleteness,
       );
 
-    if (
-      completenessValues.length >
-      0
-    ) {
+    if (completenessValues.length > 0) {
       if (
         completenessValues.every(
-          (value) =>
-            value === true,
+          (value) => value === true,
         )
       ) {
-        checks.documentCompleteness =
-          true;
+        checks.documentCompleteness = true;
       } else if (
         completenessValues.some(
-          (value) =>
-            value === false,
+          (value) => value === false,
         )
       ) {
-        checks.documentCompleteness =
-          false;
+        checks.documentCompleteness = false;
       } else {
-        checks.documentCompleteness =
-          null;
+        checks.documentCompleteness = null;
       }
     }
 
     const trustScore =
-      calculateTrustScore(
-        checks,
-      );
+      calculateTrustScore(checks);
 
     const confidence =
       calculateConfidence(
@@ -2137,89 +3776,212 @@ export async function POST(
       );
 
     /*
-     * ----------------------------------------------------------
-     * SAVE FINAL RESULT
-     * ----------------------------------------------------------
+     * ========================================================
+     * PACKAGE PROPERTY AND OWNERSHIP
+     * ========================================================
+     */
+
+    const packageProperty =
+      buildPackageProperty(
+        documentResults,
+      );
+
+    const packageOwnership =
+      buildPackageOwnership(
+        documentResults,
+      );
+
+    /*
+     * ========================================================
+     * ADVANCED GPS PACKAGE ANALYSIS
+     * ========================================================
+     *
+     * Includes:
+     *
+     * - Safe WGS84 coordinate interpretation
+     * - Supported survey beacon conversion
+     * - Projected boundary reconstruction
+     * - Approximate side lengths
+     * - Approximate plot perimeter
+     * - Approximate land area
+     * - Stated versus calculated area comparison
+     * - GPS location versus plot boundary comparison
+     * - Cross-document coordinate assessment
+     * - Surveyor-review findings
+     * - Map-ready geographic information
+     *
+     * The GPS engine must not manufacture
+     * missing boundary or CRS information.
+     * ========================================================
+     */
+
+    const gpsAnalysis =
+      buildPackageGPSAnalysis(
+        documentResults,
+      );
+
+    console.log(
+      "ESSENTIAL SURVEY DIAGNOSTICS:",
+      JSON.stringify(gpsAnalysis.surveyDiagnostics),
+    );
+
+    console.log(
+      "ESSENTIAL GPS ANALYSIS:",
+      {
+        verificationId,
+
+        status:
+          gpsAnalysis.status,
+
+        comparisonSafety:
+          gpsAnalysis.comparisonSafety,
+
+        mapAvailable:
+          gpsAnalysis.mapAvailable,
+
+        documents:
+          gpsAnalysis.documentGPSResults.length,
+
+        comparisons:
+          gpsAnalysis.documentComparisons.length,
+
+        surveyBoundaries:
+          gpsAnalysis.surveyBoundaries?.length || 0,
+
+        availableBoundaries:
+          (
+            gpsAnalysis.surveyBoundaries || []
+          ).filter(
+            (boundary) =>
+              boundary.status === "available",
+          ).length,
+
+        surveyMeasurements:
+          gpsAnalysis.surveyMeasurements?.length || 0,
+
+        requiresSurveyorReview:
+          gpsAnalysis.requiresSurveyorReview === true,
+      },
+    );
+
+    /*
+     * ========================================================
+     * FINAL FINDINGS
+     * ========================================================
+     *
+     * Existing findings are retained.
+     *
+     * GPS data saved at:
+     *
+     * findings.gps_analysis
+     *
+     * findings.essential.gps_analysis
+     *
+     * findings.essential.document_results[].gps
+     *
+     * No additional database table is required
+     * when findings is a JSONB column.
+     * ========================================================
      */
 
     const finalFindings:
       VerificationFindings = {
-      ...storedFindings,
+        ...storedFindings,
 
-      document_package:
-        documentPackage,
+        document_package:
+          documentPackage,
 
-      document_count:
-        documentPackage.length,
+        document_count:
+          documentPackage.length,
 
-      checks,
+        checks,
 
-      essential: {
-        plan:
-          "essential",
+        property: {
+          ...asObject(
+            storedFindings.property,
+          ),
 
-        completed_at:
-          new Date().toISOString(),
+          ...packageProperty,
+        },
 
-        document_results:
-          documentResults,
+        ownership: {
+          ...asObject(
+            storedFindings.ownership,
+          ),
 
-        summary,
+          ...packageOwnership,
+        },
 
-        authenticity_status:
-          "not_independently_verified",
+        gps_analysis:
+          gpsAnalysis,
 
-        verification_scope:
-          "ai_document_assessment_only",
-      },
+        essential: {
+          ...asObject(
+            storedFindings.essential,
+          ),
 
-      processing: {
-        stage:
-          "complete",
+          plan: "essential",
 
-        progress:
-          100,
+          completed_at:
+            new Date().toISOString(),
 
-        message:
-          "Essential AI document assessment completed.",
-      },
-    };
+          document_results:
+            documentResults,
+
+          summary,
+
+          gps_analysis:
+            gpsAnalysis,
+
+          authenticity_status:
+            "not_independently_verified",
+
+          verification_scope:
+            "ai_document_assessment_only",
+        },
+
+        processing: {
+          stage: "complete",
+
+          progress: 100,
+
+          message:
+            "Essential AI document and geographic assessment completed.",
+        },
+      };
+
+    /*
+     * ========================================================
+     * SAVE FINAL RESULT TO SUPABASE
+     * ========================================================
+     */
 
     const {
-      error:
-        updateError,
-    } =
-      await supabaseAdmin
-        .from(
-          "verifications",
-        )
-        .update({
-          status:
-            "processed",
+      error: updateError,
+    } = await supabaseAdmin
+      .from("verifications")
+      .update({
+        status: "processed",
 
-          review_status:
-            reviewStatus,
+        review_status:
+          reviewStatus,
 
-          trust_score:
-            trustScore,
+        trust_score:
+          trustScore,
 
-          confidence:
-            confidence,
+        confidence,
 
-          risk:
-            risk,
+        risk,
 
-          findings:
-            finalFindings,
-        })
-        .eq(
-          "id",
-          verificationId,
-        );
+        findings:
+          finalFindings,
+      })
+      .eq(
+        "id",
+        verificationId,
+      );
 
-    if (
-      updateError
-    ) {
+    if (updateError) {
       console.error(
         "ESSENTIAL FINAL UPDATE ERROR:",
         updateError,
@@ -2230,12 +3992,16 @@ export async function POST(
       );
     }
 
-    return NextResponse.json({
-      success:
-        true,
+    /*
+     * ========================================================
+     * SUCCESS RESPONSE
+     * ========================================================
+     */
 
-      plan:
-        "essential",
+    return NextResponse.json({
+      success: true,
+
+      plan: "essential",
 
       verificationId,
 
@@ -2261,10 +4027,16 @@ export async function POST(
         "ai_document_assessment_only",
 
       documentResults,
+
+      property:
+        packageProperty,
+
+      ownership:
+        packageOwnership,
+
+      gpsAnalysis,
     });
-  } catch (
-    error
-  ) {
+  } catch (error) {
     console.error(
       "ESSENTIAL VERIFICATION ERROR:",
       error,
@@ -2272,8 +4044,7 @@ export async function POST(
 
     return NextResponse.json(
       {
-        success:
-          false,
+        success: false,
 
         error:
           error instanceof Error

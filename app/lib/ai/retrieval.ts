@@ -1,136 +1,162 @@
 import { supabaseServer } from "./supabase-server";
 
-import type {
-  KnowledgeReference,
-  PropertyDocumentType,
-  KnowledgeSourceType,
+import {
+  NIGERIAN_JURISDICTIONS,
+  type KnowledgeReference,
+  type KnowledgeSourceType,
+  type KnowledgeVerificationOutcome,
+  type NigerianJurisdiction,
+  type PropertyDocumentType,
 } from "./types";
 
 import { generateEmbedding } from "./embeddings";
 
 /**
  * ============================================================
- * PROPERTYsure AI
- * KNOWLEDGE RETRIEVAL LAYER
+ * PROPERTYSURE AI
+ * JURISDICTION-AWARE KNOWLEDGE RETRIEVAL
  * ============================================================
  *
- * This module is responsible for:
+ * Two retrieval modes:
  *
- * 1. Building a searchable query.
- * 2. Generating an embedding for that query.
- * 3. Sending the embedding to Supabase.
- * 4. Calling the search_ai_knowledge() RPC function.
- * 5. Returning approved knowledge relevant to the document.
+ * 1. document-understanding
+ *    Approved, jurisdiction-matched reference material.
+ *    May include unverified or synthetic examples.
  *
- * IMPORTANT:
+ * 2. verified-evidence
+ *    Approved, jurisdiction-matched records with a
+ *    verified-legitimate or confirmed-fraud outcome
+ *    and supporting verification evidence.
  *
- * The actual trust boundary is maintained in Supabase.
+ * A reference match does not independently establish
+ * authenticity of a newly submitted document.
  *
- * Only knowledge with:
- *
- *     approval_status = "approved"
- *
- * should be returned by search_ai_knowledge().
- *
- * Customer-uploaded documents must NOT automatically become
- * trusted AI knowledge.
- * ============================================================
- */
-
-/**
- * ============================================================
- * DEFAULT SEARCH SETTINGS
+ * Unknown jurisdiction always returns zero references.
  * ============================================================
  */
 
 const DEFAULT_LIMIT = 10;
-
 const DEFAULT_MINIMUM_SIMILARITY = 0.5;
-
 const MAX_LIMIT = 50;
 
-/**
- * ============================================================
- * RPC RESULT TYPE
- * ============================================================
- *
- * The search_ai_knowledge() function may return some values
- * directly and some values inside metadata.
- *
- * We support both formats.
- */
+const UNDERSTANDING_SEARCH_RPC =
+  "search_ai_knowledge_by_jurisdiction";
+
+const VERIFIED_EVIDENCE_SEARCH_RPC =
+  "search_ai_verified_evidence_by_jurisdiction";
+
+export type KnowledgeRetrievalMode =
+  | "document-understanding"
+  | "verified-evidence";
+
 interface KnowledgeSearchResult {
   id?: string;
-
   knowledge_document_id?: string;
-
   content?: string;
-
   chunk_index?: number;
-
   similarity?: number;
 
   title?: string;
-
   document_type?: string;
-
   source_type?: string;
+
+  jurisdiction?: string | null;
+  local_government_area?: string | null;
+  issuing_authority?: string | null;
+  document_year?: number | null;
+
+  verification_outcome?: string | null;
+  verification_evidence?: string | null;
 
   metadata?: Record<string, unknown>;
 }
 
 /**
  * ============================================================
- * BUILD RETRIEVAL QUERY
+ * NORMALIZE JURISDICTION
  * ============================================================
- *
- * Creates a searchable query from information already known
- * about the document.
- *
- * Example:
- *
- * Document type: certificate-of-occupancy
- *
- * Keywords: certificate, occupancy, ministry, title,
- * registration
- *
- * <extracted document text>
+ */
+
+export function normalizeRetrievalJurisdiction(
+  value?: string | null,
+): NigerianJurisdiction | null {
+  if (
+    typeof value !== "string" ||
+    !value.trim()
+  ) {
+    return null;
+  }
+
+  const cleaned = value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+
+  if (
+    cleaned === "abuja" ||
+    cleaned === "fct" ||
+    cleaned === "f.c.t." ||
+    cleaned === "federal capital territory" ||
+    cleaned === "federal capital territory abuja"
+  ) {
+    return "FCT";
+  }
+
+  const withoutStateSuffix = cleaned
+    .replace(/\s+state$/, "")
+    .trim();
+
+  return (
+    NIGERIAN_JURISDICTIONS.find(
+      (jurisdiction) =>
+        jurisdiction.toLowerCase() ===
+        withoutStateSuffix,
+    ) ?? null
+  );
+}
+
+/**
+ * ============================================================
+ * BUILD RETRIEVAL QUERY
  * ============================================================
  */
 
 export function buildRetrievalQuery(input: {
   documentType?: PropertyDocumentType;
-
+  jurisdiction?: string | null;
   text?: string;
-
   keywords?: string[];
 }): string {
   const parts: string[] = [];
 
-  /**
-   * Document type
-   */
   if (input.documentType) {
     parts.push(
       `Document type: ${input.documentType}`,
     );
   }
 
-  /**
-   * Keywords
-   */
+  const jurisdiction =
+    normalizeRetrievalJurisdiction(
+      input.jurisdiction,
+    );
+
+  if (jurisdiction) {
+    parts.push(
+      `Jurisdiction: ${jurisdiction}`,
+    );
+  }
+
   if (
     Array.isArray(input.keywords) &&
     input.keywords.length > 0
   ) {
-    const cleanedKeywords =
-      input.keywords
-        .map((keyword) =>
-          typeof keyword === "string"
-            ? keyword.trim()
-            : "",
-        )
-        .filter(Boolean);
+    const cleanedKeywords = input.keywords
+      .map((keyword) =>
+        typeof keyword === "string"
+          ? keyword.trim()
+          : "",
+      )
+      .filter(Boolean);
 
     if (cleanedKeywords.length > 0) {
       parts.push(
@@ -139,16 +165,11 @@ export function buildRetrievalQuery(input: {
     }
   }
 
-  /**
-   * Document text
-   */
   if (
     typeof input.text === "string" &&
     input.text.trim()
   ) {
-    parts.push(
-      input.text.trim(),
-    );
+    parts.push(input.text.trim());
   }
 
   return parts.join("\n\n").trim();
@@ -158,14 +179,12 @@ export function buildRetrievalQuery(input: {
  * ============================================================
  * CREATE RETRIEVAL EMBEDDING
  * ============================================================
- *
- * Converts the retrieval query into a vector.
  */
+
 export async function createRetrievalEmbedding(
   query: string,
 ): Promise<number[]> {
-  const cleanedQuery =
-    query.trim();
+  const cleanedQuery = query.trim();
 
   if (!cleanedQuery) {
     throw new Error(
@@ -173,22 +192,16 @@ export async function createRetrievalEmbedding(
     );
   }
 
-  return generateEmbedding(
-    cleanedQuery,
-  );
+  return generateEmbedding(cleanedQuery);
 }
 
 /**
  * ============================================================
- * NORMALIZE LIMIT
+ * NORMALIZE LIMIT AND SIMILARITY
  * ============================================================
- *
- * Prevents accidental requests for an unreasonable number
- * of knowledge chunks.
  */
-function normalizeLimit(
-  value?: number,
-): number {
+
+function normalizeLimit(value?: number): number {
   if (
     typeof value !== "number" ||
     !Number.isFinite(value)
@@ -196,24 +209,15 @@ function normalizeLimit(
     return DEFAULT_LIMIT;
   }
 
-  const integer =
-    Math.floor(value);
+  const integer = Math.floor(value);
 
   if (integer < 1) {
     return 1;
   }
 
-  return Math.min(
-    integer,
-    MAX_LIMIT,
-  );
+  return Math.min(integer, MAX_LIMIT);
 }
 
-/**
- * ============================================================
- * NORMALIZE SIMILARITY
- * ============================================================
- */
 function normalizeSimilarity(
   value?: number,
 ): number {
@@ -232,143 +236,39 @@ function normalizeSimilarity(
 
 /**
  * ============================================================
- * READ METADATA VALUE
+ * READ METADATA VALUES
  * ============================================================
  */
+
 function getMetadataString(
   metadata: Record<string, unknown> | undefined,
   key: string,
 ): string | undefined {
-  const value =
-    metadata?.[key];
+  const value = metadata?.[key];
 
   return typeof value === "string"
     ? value
     : undefined;
 }
 
-/**
- * ============================================================
- * CONVERT DATABASE RESULT
- * ============================================================
- *
- * Converts the raw Supabase RPC result into the shared
- * KnowledgeReference structure used by the AI engine.
- */
-function mapKnowledgeResult(
-  item: KnowledgeSearchResult,
-  requestedDocumentType?: PropertyDocumentType,
-): KnowledgeReference {
-  const metadata =
-    item.metadata ?? {};
+function getMetadataNumber(
+  metadata: Record<string, unknown> | undefined,
+  key: string,
+): number | undefined {
+  const value = metadata?.[key];
 
-  /**
-   * Prefer direct database fields.
-   *
-   * Fall back to metadata when necessary.
-   */
-  const title =
-    item.title ??
-    getMetadataString(
-      metadata,
-      "title",
-    );
-
-  const rawDocumentType =
-    item.document_type ??
-    getMetadataString(
-      metadata,
-      "document_type",
-    );
-
-  const documentType =
-    rawDocumentType &&
-    isPropertyDocumentType(
-      rawDocumentType,
-    )
-      ? rawDocumentType
-      : requestedDocumentType;
-
-  const rawSourceType =
-    item.source_type ??
-    getMetadataString(
-      metadata,
-      "source_type",
-    );
-
-  const sourceType =
-    isKnowledgeSourceType(
-      rawSourceType,
-    )
-      ? rawSourceType
-      : "reference-document";
-
-  /**
-   * Preserve useful database metadata.
-   */
-  const combinedMetadata: Record<
-    string,
-    unknown
-  > = {
-    ...metadata,
-
-    knowledgeDocumentId:
-      item.knowledge_document_id,
-
-    chunkIndex:
-      item.chunk_index,
-  };
-
-  /**
-   * Remove undefined values from metadata.
-   */
-  Object.keys(
-    combinedMetadata,
-  ).forEach((key) => {
-    if (
-      combinedMetadata[key] ===
-      undefined
-    ) {
-      delete combinedMetadata[key];
-    }
-  });
-
-  return {
-    id:
-      item.id ??
-      item.knowledge_document_id ??
-      `knowledge-match-${Date.now()}-${Math.random()
-        .toString(36)
-        .slice(2, 8)}`,
-
-    title,
-
-    documentType,
-
-    sourceType,
-
-    similarity:
-      typeof item.similarity ===
-      "number"
-        ? item.similarity
-        : undefined,
-
-    content:
-      typeof item.content ===
-      "string"
-        ? item.content
-        : undefined,
-
-    metadata:
-      combinedMetadata,
-  };
+  return typeof value === "number" &&
+    Number.isFinite(value)
+    ? value
+    : undefined;
 }
 
 /**
  * ============================================================
- * DOCUMENT TYPE VALIDATION
+ * VALIDATE DOCUMENT TYPE
  * ============================================================
  */
+
 function isPropertyDocumentType(
   value: string,
 ): value is PropertyDocumentType {
@@ -388,9 +288,10 @@ function isPropertyDocumentType(
 
 /**
  * ============================================================
- * KNOWLEDGE SOURCE VALIDATION
+ * VALIDATE KNOWLEDGE SOURCE TYPE
  * ============================================================
  */
+
 function isKnowledgeSourceType(
   value?: string,
 ): value is KnowledgeSourceType {
@@ -400,38 +301,306 @@ function isKnowledgeSourceType(
     "fraud-pattern",
     "verification-rule",
     "verified-case",
+  ].includes(value ?? "");
+}
+
+/**
+ * ============================================================
+ * NORMALIZE VERIFICATION OUTCOME
+ * ============================================================
+ */
+
+function normalizeVerificationOutcome(
+  value?: string | null,
+): KnowledgeVerificationOutcome {
+  if (
+    value === "verified-legitimate" ||
+    value === "confirmed-fraud"
+  ) {
+    return value;
+  }
+
+  return "unverified";
+}
+
+/**
+ * ============================================================
+ * CHECK SYNTHETIC METADATA
+ * ============================================================
+ *
+ * This is additional application-side filtering.
+ *
+ * The verified-evidence SQL function also checks
+ * the parent document's metadata.
+ * ============================================================
+ */
+
+function isSyntheticMetadata(
+  metadata: Record<string, unknown> | undefined,
+): boolean {
+  if (!metadata) {
+    return false;
+  }
+
+  const syntheticFlag =
+    metadata["is_synthetic"];
+
+  if (
+    syntheticFlag === true ||
+    (
+      typeof syntheticFlag === "string" &&
+      syntheticFlag.toLowerCase().trim() ===
+        "true"
+    )
+  ) {
+    return true;
+  }
+
+  const category =
+    metadata["knowledge_category"];
+
+  if (typeof category !== "string") {
+    return false;
+  }
+
+  return [
+    "synthetic",
+    "synthetic-test",
+    "test-data",
   ].includes(
-    value ?? "",
+    category.toLowerCase().trim(),
   );
 }
 
 /**
  * ============================================================
- * SEARCH KNOWLEDGE BASE
+ * CONVERT DATABASE RESULT
+ * ============================================================
+ */
+
+function mapKnowledgeResult(
+  item: KnowledgeSearchResult,
+  requestedDocumentType?: PropertyDocumentType,
+): KnowledgeReference {
+  const metadata =
+    item.metadata &&
+    typeof item.metadata === "object" &&
+    !Array.isArray(item.metadata)
+      ? item.metadata
+      : {};
+
+  const title =
+    item.title ??
+    getMetadataString(metadata, "title");
+
+  const rawDocumentType =
+    item.document_type ??
+    getMetadataString(
+      metadata,
+      "document_type",
+    );
+
+  const documentType =
+    rawDocumentType &&
+    isPropertyDocumentType(rawDocumentType)
+      ? rawDocumentType
+      : requestedDocumentType;
+
+  const rawSourceType =
+    item.source_type ??
+    getMetadataString(
+      metadata,
+      "source_type",
+    );
+
+  const sourceType =
+    isKnowledgeSourceType(rawSourceType)
+      ? rawSourceType
+      : "reference-document";
+
+  const jurisdiction =
+    normalizeRetrievalJurisdiction(
+      item.jurisdiction ??
+      getMetadataString(
+        metadata,
+        "jurisdiction",
+      ),
+    );
+
+  const verificationOutcome =
+    normalizeVerificationOutcome(
+      item.verification_outcome ??
+      getMetadataString(
+        metadata,
+        "verification_outcome",
+      ),
+    );
+
+  const verificationEvidence =
+    item.verification_evidence ??
+    getMetadataString(
+      metadata,
+      "verification_evidence",
+    ) ??
+    null;
+
+  const documentYear =
+    item.document_year ??
+    getMetadataNumber(
+      metadata,
+      "document_year",
+    );
+
+  const combinedMetadata:
+    Record<string, unknown> = {
+      ...metadata,
+
+      knowledgeDocumentId:
+        item.knowledge_document_id,
+
+      chunkIndex:
+        item.chunk_index,
+
+      jurisdiction,
+
+      verificationOutcome,
+    };
+
+  Object.keys(combinedMetadata).forEach(
+    (key) => {
+      if (
+        combinedMetadata[key] === undefined
+      ) {
+        delete combinedMetadata[key];
+      }
+    },
+  );
+
+  return {
+    id:
+      item.id ??
+      item.knowledge_document_id ??
+      `knowledge-match-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 8)}`,
+
+    title,
+
+    documentType,
+
+    sourceType,
+
+    similarity:
+      typeof item.similarity === "number"
+        ? item.similarity
+        : undefined,
+
+    content:
+      typeof item.content === "string"
+        ? item.content
+        : undefined,
+
+    jurisdiction,
+
+    localGovernmentArea:
+      item.local_government_area ??
+      getMetadataString(
+        metadata,
+        "local_government_area",
+      ) ??
+      null,
+
+    issuingAuthority:
+      item.issuing_authority ??
+      getMetadataString(
+        metadata,
+        "issuing_authority",
+      ) ??
+      null,
+
+    documentYear:
+      documentYear ?? null,
+
+    verificationOutcome,
+
+    verificationEvidence,
+
+    metadata: combinedMetadata,
+  };
+}
+
+/**
+ * ============================================================
+ * DETERMINE RETRIEVAL MODE
+ * ============================================================
+ */
+
+function normalizeRetrievalMode(
+  mode?: KnowledgeRetrievalMode,
+): KnowledgeRetrievalMode {
+  return mode === "verified-evidence"
+    ? "verified-evidence"
+    : "document-understanding";
+}
+
+/**
+ * ============================================================
+ * CHECK VERIFIED EVIDENCE
  * ============================================================
  *
- * Calls:
+ * A database record's verification label and evidence
+ * do not independently prove authenticity.
  *
- *     public.search_ai_knowledge()
+ * This function checks eligibility for retrieval,
+ * not whether the underlying evidence is true.
+ * ============================================================
+ */
+
+function isEligibleVerifiedEvidence(
+  reference: KnowledgeReference,
+): boolean {
+  if (
+    reference.verificationOutcome !==
+      "verified-legitimate" &&
+    reference.verificationOutcome !==
+      "confirmed-fraud"
+  ) {
+    return false;
+  }
+
+  if (
+    typeof reference.verificationEvidence !==
+      "string" ||
+    !reference.verificationEvidence.trim()
+  ) {
+    return false;
+  }
+
+  if (
+    isSyntheticMetadata(reference.metadata)
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * ============================================================
+ * RETRIEVE KNOWLEDGE
+ * ============================================================
  *
- * The Supabase RPC function performs the vector search
- * against:
+ * Jurisdiction is mandatory for both modes.
  *
- *     ai_knowledge_chunks
+ * document-understanding:
+ *   General approved reference knowledge.
  *
- * and should restrict results to APPROVED knowledge.
+ * verified-evidence:
+ *   Approved records with qualifying verification
+ *   outcome, evidence, and synthetic exclusions.
  *
- * Flow:
- *
- * embedding
- *     ↓
- * search_ai_knowledge()
- *     ↓
- * vector similarity
- *     ↓
- * approved knowledge
- *     ↓
- * KnowledgeReference[]
+ * SQL performs the primary security filtering.
+ * This module adds defense-in-depth filtering.
  * ============================================================
  */
 
@@ -439,15 +608,12 @@ export async function retrieveKnowledge(
   embedding: number[],
   options?: {
     documentType?: PropertyDocumentType;
-
+    jurisdiction?: string | null;
     limit?: number;
-
     minimumSimilarity?: number;
+    mode?: KnowledgeRetrievalMode;
   },
 ): Promise<KnowledgeReference[]> {
-  /**
-   * Validate embedding.
-   */
   if (
     !Array.isArray(embedding) ||
     embedding.length === 0
@@ -457,9 +623,6 @@ export async function retrieveKnowledge(
     );
   }
 
-  /**
-   * Validate that the embedding contains numbers.
-   */
   const invalidEmbeddingValue =
     embedding.some(
       (value) =>
@@ -473,9 +636,30 @@ export async function retrieveKnowledge(
     );
   }
 
+  const jurisdiction =
+    normalizeRetrievalJurisdiction(
+      options?.jurisdiction,
+    );
+
   /**
-   * Search settings.
+   * Unknown jurisdiction:
+   * absolutely no reference retrieval.
    */
+
+  if (!jurisdiction) {
+    return [];
+  }
+
+  const mode =
+    normalizeRetrievalMode(
+      options?.mode,
+    );
+
+  const rpcName =
+    mode === "verified-evidence"
+      ? VERIFIED_EVIDENCE_SEARCH_RPC
+      : UNDERSTANDING_SEARCH_RPC;
+
   const limit =
     normalizeLimit(
       options?.limit,
@@ -486,18 +670,9 @@ export async function retrieveKnowledge(
       options?.minimumSimilarity,
     );
 
-  /**
-   * ==========================================================
-   * SUPABASE VECTOR SEARCH
-   * ==========================================================
-   */
-
-  const {
-    data,
-    error,
-  } =
+  const { data, error } =
     await supabaseServer.rpc(
-      "search_ai_knowledge",
+      rpcName,
       {
         query_embedding:
           embedding,
@@ -509,28 +684,28 @@ export async function retrieveKnowledge(
           minimumSimilarity,
 
         filter_document_type:
-          options?.documentType ??
-          null,
+          options?.documentType ?? null,
+
+        filter_jurisdiction:
+          jurisdiction,
       },
     );
 
-  /**
-   * Database error.
-   */
   if (error) {
     console.error(
-      "PropertySure AI knowledge search error:",
-      error,
+      "PropertySure AI knowledge retrieval error:",
+      {
+        mode,
+        jurisdiction,
+        error,
+      },
     );
 
     throw new Error(
-      `Knowledge retrieval failed: ${error.message}`,
+      `Knowledge retrieval failed (${mode}): ${error.message}`,
     );
   }
 
-  /**
-   * No results.
-   */
   if (
     !Array.isArray(data) ||
     data.length === 0
@@ -538,10 +713,6 @@ export async function retrieveKnowledge(
     return [];
   }
 
-  /**
-   * Convert database results into the format expected
-   * by the rest of the PropertySure AI engine.
-   */
   const references =
     data.map(
       (item: KnowledgeSearchResult) =>
@@ -552,27 +723,49 @@ export async function retrieveKnowledge(
     );
 
   /**
-   * Remove duplicate chunks/documents where possible.
+   * Defense-in-depth:
+   * reject any reference that does not match
+   * the requested jurisdiction.
    */
+
+  let matchingReferences =
+    references.filter(
+      (reference) =>
+        reference.jurisdiction ===
+        jurisdiction,
+    );
+
+  /**
+   * In verified-evidence mode, also discard
+   * references that fail application-side
+   * eligibility checks.
+   */
+
+  if (mode === "verified-evidence") {
+    matchingReferences =
+      matchingReferences.filter(
+        isEligibleVerifiedEvidence,
+      );
+  }
+
+  /**
+   * Deduplicate by chunk/reference ID.
+   */
+
   const uniqueReferences =
     new Map<
       string,
       KnowledgeReference
     >();
 
-  for (
-    const reference of references
-  ) {
-    const key =
-      reference.id;
-
+  for (const reference of matchingReferences) {
     if (
       !uniqueReferences.has(
-        key,
+        reference.id,
       )
     ) {
       uniqueReferences.set(
-        key,
+        reference.id,
         reference,
       );
     }
@@ -588,67 +781,57 @@ export async function retrieveKnowledge(
  * SEARCH KNOWLEDGE
  * ============================================================
  *
- * Convenience function.
+ * Default mode preserves existing integration behavior.
  *
- * Flow:
- *
- * document information
- *       ↓
- * retrieval query
- *       ↓
- * OpenAI embedding
- *       ↓
- * Supabase pgvector search
- *       ↓
- * approved knowledge references
+ * For authenticity-related reasoning, callers must
+ * explicitly request mode: "verified-evidence".
  * ============================================================
  */
 
 export async function searchKnowledge(
   input: {
     documentType?: PropertyDocumentType;
-
+    jurisdiction?: string | null;
     text?: string;
-
     keywords?: string[];
   },
   options?: {
     limit?: number;
-
     minimumSimilarity?: number;
+    mode?: KnowledgeRetrievalMode;
   },
 ): Promise<KnowledgeReference[]> {
-  /**
-   * Build the searchable query.
-   */
-  const query =
-    buildRetrievalQuery(
-      input,
+  const jurisdiction =
+    normalizeRetrievalJurisdiction(
+      input.jurisdiction,
     );
 
-  /**
-   * Nothing to search.
-   */
+  if (!jurisdiction) {
+    return [];
+  }
+
+  const query =
+    buildRetrievalQuery({
+      ...input,
+      jurisdiction,
+    });
+
   if (!query) {
     return [];
   }
 
-  /**
-   * Convert query to vector.
-   */
   const embedding =
     await createRetrievalEmbedding(
       query,
     );
 
-  /**
-   * Search Supabase.
-   */
   return retrieveKnowledge(
     embedding,
     {
       documentType:
         input.documentType,
+
+      jurisdiction,
 
       limit:
         options?.limit ??
@@ -657,6 +840,10 @@ export async function searchKnowledge(
       minimumSimilarity:
         options?.minimumSimilarity ??
         DEFAULT_MINIMUM_SIMILARITY,
+
+      mode:
+        options?.mode ??
+        "document-understanding",
     },
   );
 }

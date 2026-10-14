@@ -16,6 +16,28 @@ import styles from "./processing.module.css";
 
 /*
  * ============================================================
+ * PROPERTYSURE AI — PROCESSING PAGE
+ * ============================================================
+ *
+ * Route:
+ *
+ *   /processing?id=<verificationId>
+ *
+ * Workflow:
+ *
+ * 1. Get authenticated Supabase session.
+ * 2. Load verification through the status API.
+ * 3. Determine the paid verification plan.
+ * 4. Start the correct verification engine.
+ * 5. Poll the verification status.
+ * 6. Show the Processing screen long enough to be visible.
+ * 7. Redirect to the correct report.
+ *
+ * ============================================================
+ */
+
+/*
+ * ============================================================
  * TYPES
  * ============================================================
  */
@@ -87,6 +109,22 @@ type VerificationFindings = {
     document_results?: unknown[];
     summary?: string;
   };
+
+  professional?: {
+    plan?: string;
+    completed_at?: string;
+    document_results?: unknown[];
+    summary?: string;
+  };
+
+  premium?: {
+    plan?: string;
+    completed_at?: string;
+    document_results?: unknown[];
+    summary?: string;
+  };
+
+  plan?: string;
 
   processing?: {
     stage?: ProcessingStage;
@@ -262,31 +300,26 @@ function getDocumentIdentity(
  * ============================================================
  * AUTHENTICATED SESSION
  * ============================================================
- *
- * First try the existing browser session.
- *
- * If Supabase has not restored the session yet, refresh it.
- *
- * A few short retries protect the Processing page from a
- * temporary session-restoration race immediately after payment.
- * ============================================================
  */
 
 async function getAuthenticatedSession() {
   for (
     let attempt = 0;
-    attempt < 3;
+    attempt < 4;
     attempt += 1
   ) {
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: {
+        session,
+      },
+      error,
+    } =
+      await supabase.auth.getSession();
 
-    if (sessionError) {
+    if (error) {
       console.error(
-        "PROCESSING GET SESSION ERROR:",
-        sessionError,
+        "PROCESSING SESSION ERROR:",
+        error,
       );
     }
 
@@ -294,42 +327,37 @@ async function getAuthenticatedSession() {
       return session;
     }
 
-    /*
-     * The browser may still be restoring the Supabase session.
-     * Give Supabase a chance to refresh it.
-     */
+    if (attempt < 3) {
+      const {
+        data: {
+          session:
+            refreshedSession,
+        },
+        error:
+          refreshError,
+      } =
+        await supabase.auth.refreshSession();
 
-    const {
-      data: {
-        session: refreshedSession,
-      },
-      error: refreshError,
-    } = await supabase.auth.refreshSession();
+      if (refreshError) {
+        console.error(
+          "PROCESSING SESSION REFRESH ERROR:",
+          refreshError,
+        );
+      }
 
-    if (refreshError) {
-      console.error(
-        "PROCESSING SESSION REFRESH ERROR:",
-        refreshError,
-      );
-    }
+      if (
+        refreshedSession?.access_token
+      ) {
+        return refreshedSession;
+      }
 
-    if (
-      refreshedSession?.access_token
-    ) {
-      return refreshedSession;
-    }
-
-    /*
-     * Short delay before another attempt.
-     */
-
-    if (attempt < 2) {
-      await new Promise(
-        (resolve) =>
+      await new Promise<void>(
+        (resolve) => {
           setTimeout(
             resolve,
             500,
-          ),
+          );
+        },
       );
     }
   }
@@ -354,12 +382,9 @@ function normalizePlan(
       .toLowerCase();
 
   if (
-    normalized ===
-      "essential" ||
-    normalized ===
-      "professional" ||
-    normalized ===
-      "premium"
+    normalized === "essential" ||
+    normalized === "professional" ||
+    normalized === "premium"
   ) {
     return normalized;
   }
@@ -369,182 +394,7 @@ function normalizePlan(
 
 /*
  * ============================================================
- * DIRECT SUPABASE VERIFICATION FALLBACK
- * ============================================================
- *
- * This is used only when the status API refuses the request.
- *
- * The browser Supabase client uses the currently authenticated
- * user's session and RLS policies.
- *
- * We explicitly filter by BOTH:
- *
- *   verification ID
- *   authenticated user ID
- *
- * so a user cannot load another user's verification.
- * ============================================================
- */
-
-async function loadVerificationDirectly(
-  id: string,
-  userId: string,
-): Promise<VerificationRecord | null> {
-  const {
-    data,
-    error,
-  } =
-    await supabase
-      .from("verifications")
-      .select(
-        "id, user_id, doc_name, file_url, doc_type, status, trust_score, confidence, risk, findings, created_at",
-      )
-      .eq(
-        "id",
-        id,
-      )
-      .eq(
-        "user_id",
-        userId,
-      )
-      .maybeSingle();
-
-  if (error) {
-    console.error(
-      "PROCESSING DIRECT VERIFICATION LOAD ERROR:",
-      error,
-    );
-
-    throw new Error(
-      error.message ||
-        "Verification record could not be loaded.",
-    );
-  }
-
-  if (!data) {
-    return null;
-  }
-
-  return data as VerificationRecord;
-}
-
-/*
- * ============================================================
- * DIRECT PAYMENT FALLBACK
- * ============================================================
- *
- * If the status endpoint is unavailable or returns an
- * authorization response, attempt to recover the paid plan
- * directly from the authenticated user's payment record.
- *
- * The payment is still restricted to:
- *
- *   verification_id
- *   user_id
- *   provider = paystack
- *   status = paid
- * ============================================================
- */
-
-async function loadPaidPlanDirectly(
-  verificationId: string,
-  userId: string,
-): Promise<{
-  plan: PlanKey | null;
-  payment: VerificationStatusPayment | null;
-}> {
-  const {
-    data,
-    error,
-  } =
-    await supabase
-      .from("payments")
-      .select(
-        "id, verification_id, user_id, plan, amount, currency, provider, payment_method, provider_reference, status, paid_at, created_at",
-      )
-      .eq(
-        "verification_id",
-        verificationId,
-      )
-      .eq(
-        "user_id",
-        userId,
-      )
-      .eq(
-        "provider",
-        "paystack",
-      )
-      .eq(
-        "status",
-        "paid",
-      )
-      .order(
-        "created_at",
-        {
-          ascending:
-            false,
-        },
-      )
-      .limit(1);
-
-  if (error) {
-    console.error(
-      "PROCESSING DIRECT PAYMENT LOAD ERROR:",
-      error,
-    );
-
-    /*
-     * Do not immediately destroy the processing workflow.
-     *
-     * The status API may still contain the authoritative
-     * payment information.
-     */
-    return {
-      plan: null,
-      payment: null,
-    };
-  }
-
-  const payment =
-    Array.isArray(data) &&
-    data.length > 0
-      ? (data[0] as VerificationStatusPayment)
-      : null;
-
-  return {
-    plan:
-      normalizePlan(
-        payment?.plan,
-      ),
-
-    payment,
-  };
-}
-
-/*
- * ============================================================
  * LOAD VERIFICATION
- * ============================================================
- *
- * PRIMARY:
- *
- *   /api/verify-document/status
- *
- * FALLBACK:
- *
- *   authenticated Supabase browser client
- *
- * The fallback exists because the browser is currently
- * receiving:
- *
- *   "You are not authorized to access this verification."
- *
- * from the status request.
- *
- * The Processing page should not stop simply because that
- * status endpoint authorization path is temporarily refusing
- * the request, provided the authenticated user can still
- * access their own verification through Supabase RLS.
  * ============================================================
  */
 
@@ -552,19 +402,13 @@ async function loadVerification(
   id: string,
 ): Promise<{
   verification: VerificationRecord;
-
   plan: PlanKey | null;
-
-  payment: VerificationStatusPayment | null;
+  payment:
+    | VerificationStatusPayment
+    | null;
 }> {
   const session =
     await getAuthenticatedSession();
-
-  /*
-   * ----------------------------------------------------------
-   * PRIMARY STATUS API
-   * ----------------------------------------------------------
-   */
 
   const response =
     await fetch(
@@ -572,18 +416,17 @@ async function loadVerification(
         id,
       )}`,
       {
-        method:
-          "GET",
+        method: "GET",
 
         headers: {
           Authorization:
             `Bearer ${session.access_token}`,
 
-          "Cache-Control":
-            "no-cache",
-
           Accept:
             "application/json",
+
+          "Cache-Control":
+            "no-cache",
         },
 
         cache:
@@ -598,26 +441,24 @@ async function loadVerification(
   try {
     payload =
       (await response.json()) as VerificationStatusResponse;
-  } catch (
-    jsonError
-  ) {
+  } catch (error) {
     console.error(
-      "PROCESSING STATUS JSON ERROR:",
-      jsonError,
+      "PROCESSING STATUS RESPONSE JSON ERROR:",
+      error,
     );
   }
 
   console.log(
     "PROCESSING STATUS RESPONSE:",
     {
+      verificationId:
+        id,
+
       httpStatus:
         response.status,
 
       success:
         payload.success,
-
-      verificationId:
-        id,
 
       hasVerification:
         Boolean(
@@ -637,15 +478,6 @@ async function loadVerification(
       paymentStatus:
         payload.payment?.status,
 
-      paymentProvider:
-        payload.payment?.provider,
-
-      paymentCurrency:
-        payload.payment?.currency,
-
-      paymentAmount:
-        payload.payment?.amount,
-
       error:
         payload.error,
 
@@ -654,180 +486,62 @@ async function loadVerification(
     },
   );
 
-  /*
-   * ----------------------------------------------------------
-   * PRIMARY API SUCCESS
-   * ----------------------------------------------------------
-   */
-
   if (
-    response.ok &&
-    payload.verification
+    !response.ok ||
+    !payload.verification
   ) {
-    const verification =
-      payload.verification;
-
-    let plan =
-      normalizePlan(
-        payload.plan ||
-          payload.payment?.plan ||
-          verification
-            .findings
-            ?.essential
-            ?.plan,
-      );
-
-    let payment =
-      payload.payment ||
-      null;
-
-    /*
-     * If the status API returned the verification but omitted
-     * the plan/payment, recover it directly.
-     */
-
-    if (!plan) {
-      const directPayment =
-        await loadPaidPlanDirectly(
-          id,
-          session.user.id,
-        );
-
-      if (
-        directPayment.plan
-      ) {
-        plan =
-          directPayment.plan;
-      }
-
-      if (
-        !payment &&
-        directPayment.payment
-      ) {
-        payment =
-          directPayment.payment;
-      }
-    }
-
-    return {
-      verification,
-      plan,
-      payment,
-    };
-  }
-
-  /*
-   * ----------------------------------------------------------
-   * STATUS API FAILED
-   * ----------------------------------------------------------
-   *
-   * DO NOT immediately throw.
-   *
-   * First attempt the authenticated Supabase fallback.
-   * ----------------------------------------------------------
-   */
-
-  console.warn(
-    "PROCESSING STATUS API FAILED — USING DIRECT SUPABASE FALLBACK:",
-    {
-      status:
-        response.status,
-
-      error:
-        payload.error,
-
-      message:
-        payload.message,
-    },
-  );
-
-  /*
-   * ----------------------------------------------------------
-   * DIRECT VERIFICATION FALLBACK
-   * ----------------------------------------------------------
-   */
-
-  const directVerification =
-    await loadVerificationDirectly(
-      id,
-      session.user.id,
-    );
-
-  if (
-    !directVerification
-  ) {
-    /*
-     * Only now do we report the original status API error.
-     */
-
     throw new Error(
       payload.error ||
         payload.message ||
-        "You are not authorized to access this verification.",
+        "Verification status could not be loaded.",
     );
   }
 
+  const verification =
+    payload.verification;
+
   /*
-   * ----------------------------------------------------------
-   * DIRECT PAYMENT FALLBACK
-   * ----------------------------------------------------------
+   * Determine the plan from the server response.
+   *
+   * Priority:
+   *
+   * 1. status API plan
+   * 2. payment plan
+   * 3. premium findings
+   * 4. professional findings
+   * 5. essential findings
+   * 6. general findings plan
    */
 
-  const directPayment =
-    await loadPaidPlanDirectly(
-      id,
-      session.user.id,
-    );
-
-  const fallbackPlan =
-    directPayment.plan ||
+  const plan: PlanKey | null =
     normalizePlan(
-      directVerification
-        .findings
-        ?.essential
-        ?.plan,
+      payload.plan ||
+        payload.payment?.plan ||
+        verification
+          .findings
+          ?.premium
+          ?.plan ||
+        verification
+          .findings
+          ?.professional
+          ?.plan ||
+        verification
+          .findings
+          ?.essential
+          ?.plan ||
+        verification
+          .findings
+          ?.plan,
     );
-
-  /*
-   * ----------------------------------------------------------
-   * RETURN FALLBACK DATA
-   * ----------------------------------------------------------
-   */
-
-  console.log(
-    "PROCESSING DIRECT FALLBACK SUCCESS:",
-    {
-      verificationId:
-        directVerification.id,
-
-      userId:
-        session.user.id,
-
-      verificationStatus:
-        directVerification.status,
-
-      plan:
-        fallbackPlan,
-
-      paymentId:
-        directPayment.payment
-          ?.id,
-
-      paymentStatus:
-        directPayment.payment
-          ?.status,
-    },
-  );
 
   return {
-    verification:
-      directVerification,
+    verification,
 
-    plan:
-      fallbackPlan,
+    plan,
 
     payment:
-      directPayment.payment,
+      payload.payment ||
+      null,
   };
 }
 
@@ -966,15 +680,17 @@ function getReportUrl(
       verificationId,
     );
 
-  if (plan === "premium") {
-    return `/premium-report?id=${encodedId}`;
-  }
+  switch (plan) {
+    case "premium":
+      return `/premium-report?id=${encodedId}`;
 
-  if (plan === "professional") {
-    return `/professional-report?id=${encodedId}`;
-  }
+    case "professional":
+      return `/professional-report?id=${encodedId}`;
 
-  return `/result?id=${encodedId}`;
+    case "essential":
+    default:
+      return `/result?id=${encodedId}`;
+  }
 }
 
 /*
@@ -1037,17 +753,29 @@ export default function ProcessingPage() {
     setErrorMessage,
   ] = useState("");
 
-  const processingStarted =
+  const started =
     useRef(false);
 
   const redirecting =
     useRef(false);
 
   /*
-   * ============================================================
-   * PRIMARY DOCUMENT
-   * ============================================================
+   * ----------------------------------------------------------
+   * IMPORTANT:
+   *
+   * The Processing page must remain visible for at least
+   * 3 seconds before redirecting to a completed report.
+   *
+   * This prevents a completed verification from appearing
+   * to skip the Processing page completely.
+   * ----------------------------------------------------------
    */
+
+  const processingScreenShownAt =
+    useRef<number | null>(null);
+
+  const minimumProcessingDisplayMs =
+    3000;
 
   const primaryDocument =
     documentPackage[0];
@@ -1066,26 +794,69 @@ export default function ProcessingPage() {
     ]);
 
   const packageLabel =
-    documentPackage.length ===
-    1
+    documentPackage.length === 1
       ? "1 document"
       : `${documentPackage.length} documents`;
 
   /*
    * ============================================================
-   * MAIN PROCESSING WORKFLOW
+   * PROCESSING SCREEN TIMING
+   * ============================================================
+   */
+
+  function showProcessingScreen() {
+    if (
+      processingScreenShownAt.current ===
+      null
+    ) {
+      processingScreenShownAt.current =
+        Date.now();
+    }
+
+    setLoading(false);
+  }
+
+  async function waitForMinimumProcessingDisplay() {
+    const shownAt =
+      processingScreenShownAt.current;
+
+    if (shownAt === null) {
+      return;
+    }
+
+    const elapsed =
+      Date.now() - shownAt;
+
+    const remaining =
+      minimumProcessingDisplayMs -
+      elapsed;
+
+    if (remaining > 0) {
+      await new Promise<void>(
+        (resolve) => {
+          setTimeout(
+            resolve,
+            remaining,
+          );
+        },
+      );
+    }
+  }
+
+  /*
+   * ============================================================
+   * MAIN WORKFLOW
    * ============================================================
    */
 
   useEffect(() => {
-    if (
-      processingStarted.current
-    ) {
+    if (started.current) {
       return;
     }
 
-    processingStarted.current =
-      true;
+    started.current = true;
+
+    let cancelled = false;
 
     const params =
       new URLSearchParams(
@@ -1095,6 +866,12 @@ export default function ProcessingPage() {
     const id =
       params.get("id");
 
+    /*
+     * ----------------------------------------------------------
+     * VERIFY ID
+     * ----------------------------------------------------------
+     */
+
     if (!id) {
       window.location.href =
         "/verify";
@@ -1102,107 +879,129 @@ export default function ProcessingPage() {
       return;
     }
 
-    const verificationIdFromUrl =
+    const verificationIdValue: string =
       id;
 
     setVerificationId(
-      verificationIdFromUrl,
+      verificationIdValue,
     );
 
-    let cancelled =
-      false;
-
     /*
-     * ==========================================================
-     * PROGRESS POLLER
-     * ==========================================================
+     * ----------------------------------------------------------
+     * APPLY VERIFICATION STATE
+     * ----------------------------------------------------------
      */
 
-    async function pollVerification(
-      idToPoll: string,
+    function applyVerificationState(
+      verification: VerificationRecord,
     ) {
+      const packageItems =
+        createDocumentPackage(
+          verification,
+        );
+
+      if (
+        packageItems.length > 0
+      ) {
+        setDocumentPackage(
+          packageItems,
+        );
+      }
+
+      if (
+        verification.created_at
+      ) {
+        setUploadDate(
+          new Date(
+            verification.created_at,
+          ).toLocaleString(
+            "en-NG",
+            {
+              day:
+                "2-digit",
+
+              month:
+                "short",
+
+              year:
+                "numeric",
+
+              hour:
+                "2-digit",
+
+              minute:
+                "2-digit",
+            },
+          ),
+        );
+      }
+
+      const currentProgress =
+        getProcessingProgress(
+          verification,
+        );
+
+      const currentStage =
+        getProcessingStage(
+          verification,
+        );
+
+      const currentMessage =
+        getProcessingMessage(
+          verification,
+        );
+
+      setProgress(
+        currentProgress,
+      );
+
+      setProcessingStage(
+        currentStage,
+      );
+
+      setProcessingMessage(
+        currentMessage,
+      );
+    }
+
+    /*
+     * ----------------------------------------------------------
+     * POLL VERIFICATION
+     * ----------------------------------------------------------
+     */
+
+    async function pollVerification() {
       while (!cancelled) {
         try {
           const loaded =
             await loadVerification(
-              idToPoll,
+              verificationIdValue,
             );
-
-          const verification =
-            loaded.verification;
 
           if (cancelled) {
             return;
           }
 
-          const currentPackage =
-            createDocumentPackage(
-              verification,
-            );
+          const verification =
+            loaded.verification;
 
-          if (
-            currentPackage.length >
-            0
-          ) {
-            setDocumentPackage(
-              currentPackage,
-            );
-          }
-
-          if (
-            verification.created_at
-          ) {
-            setUploadDate(
-              new Date(
-                verification.created_at,
-              ).toLocaleString(
-                "en-NG",
-                {
-                  day:
-                    "2-digit",
-
-                  month:
-                    "short",
-
-                  year:
-                    "numeric",
-
-                  hour:
-                    "2-digit",
-
-                  minute:
-                    "2-digit",
-                },
-              ),
-            );
-          }
-
-          const currentProgress =
-            getProcessingProgress(
-              verification,
-            );
+          applyVerificationState(
+            verification,
+          );
 
           const currentStage =
             getProcessingStage(
               verification,
             );
 
-          const currentMessage =
-            getProcessingMessage(
-              verification,
-            );
-
-          setProgress(
-            currentProgress,
-          );
-
-          setProcessingStage(
-            currentStage,
-          );
-
-          setProcessingMessage(
-            currentMessage,
-          );
+          /*
+           * If the verification completes during polling,
+           * show the completed state but DO NOT immediately
+           * redirect.
+           *
+           * The redirect is handled centrally after the
+           * minimum display time.
+           */
 
           if (
             verification.status ===
@@ -1210,9 +1009,7 @@ export default function ProcessingPage() {
             currentStage ===
               "complete"
           ) {
-            setProgress(
-              100,
-            );
+            setProgress(100);
 
             setProcessingStage(
               "complete",
@@ -1226,6 +1023,8 @@ export default function ProcessingPage() {
               true,
             );
 
+            showProcessingScreen();
+
             return;
           }
 
@@ -1235,155 +1034,121 @@ export default function ProcessingPage() {
             currentStage ===
               "failed"
           ) {
+            setProcessingStage(
+              "failed",
+            );
+
+            setLoading(false);
+
             return;
           }
 
-          await new Promise(
-            (resolve) =>
-              setTimeout(
-                resolve,
-                800,
-              ),
-          );
-        } catch (
-          pollError
-        ) {
-          /*
-           * Polling errors are supplementary.
-           *
-           * The main verification request remains active.
-           */
-
-          console.error(
-            "PROCESSING POLL ERROR:",
-            pollError,
-          );
-
-          await new Promise(
-            (resolve) =>
+          await new Promise<void>(
+            (resolve) => {
               setTimeout(
                 resolve,
                 1200,
-              ),
+              );
+            },
+          );
+        } catch (error) {
+          console.error(
+            "PROCESSING POLL ERROR:",
+            error,
+          );
+
+          await new Promise<void>(
+            (resolve) => {
+              setTimeout(
+                resolve,
+                1500,
+              );
+            },
           );
         }
       }
     }
 
     /*
-     * ==========================================================
-     * REAL VERIFICATION
-     * ==========================================================
+     * ----------------------------------------------------------
+     * START VERIFICATION
+     * ----------------------------------------------------------
      */
 
     async function processVerification() {
       try {
         /*
-         * --------------------------------------------------------
-         * LOAD VERIFICATION
-         * --------------------------------------------------------
+         * ------------------------------------------------------
+         * LOAD INITIAL VERIFICATION
+         * ------------------------------------------------------
          */
 
         const loaded =
           await loadVerification(
-            verificationIdFromUrl,
+            verificationIdValue,
           );
+
+        if (cancelled) {
+          return;
+        }
 
         const verification =
           loaded.verification;
 
-        let selectedPlan =
+        /*
+         * ------------------------------------------------------
+         * DETERMINE PLAN
+         * ------------------------------------------------------
+         */
+
+        const selectedPlan:
+          | PlanKey
+          | null =
           loaded.plan;
 
-        /*
-         * --------------------------------------------------------
-         * IF THE STATUS API FALLBACK DID NOT PROVIDE A PLAN,
-         * TRY ONE MORE DIRECT PAYMENT LOOKUP.
-         * --------------------------------------------------------
-         */
-
-        if (!selectedPlan) {
-          const session =
-            await getAuthenticatedSession();
-
-          const directPayment =
-            await loadPaidPlanDirectly(
-              verificationIdFromUrl,
-              session.user.id,
-            );
-
-          selectedPlan =
-            directPayment.plan;
-        }
-
-        if (!selectedPlan) {
+        if (
+          selectedPlan ===
+          null
+        ) {
           throw new Error(
-            "The paid verification plan could not be determined from the payment record.",
+            "The paid verification plan could not be determined.",
           );
         }
 
+        const verifiedPlan:
+          PlanKey =
+          selectedPlan;
+
         /*
-         * --------------------------------------------------------
-         * PRESERVE REVIEWED PACKAGE
-         * --------------------------------------------------------
+         * ------------------------------------------------------
+         * INITIAL STATE
+         * ------------------------------------------------------
          */
 
-        const reviewedPackage =
-          createDocumentPackage(
-            verification,
-          );
-
-        setDocumentPackage(
-          reviewedPackage,
+        applyVerificationState(
+          verification,
         );
 
         /*
-         * --------------------------------------------------------
-         * UPLOAD DATE
-         * --------------------------------------------------------
-         */
-
-        if (
-          verification.created_at
-        ) {
-          setUploadDate(
-            new Date(
-              verification.created_at,
-            ).toLocaleString(
-              "en-NG",
-              {
-                day:
-                  "2-digit",
-
-                month:
-                  "short",
-
-                year:
-                  "numeric",
-
-                hour:
-                  "2-digit",
-
-                minute:
-                  "2-digit",
-              },
-            ),
-          );
-        }
-
-        /*
-         * --------------------------------------------------------
-         * ALREADY PROCESSED
-         * --------------------------------------------------------
+         * ------------------------------------------------------
+         * ALREADY COMPLETE
+         * ------------------------------------------------------
+         *
+         * This is the important fix.
+         *
+         * Previously, an already-processed verification could
+         * redirect after only 900ms.
+         *
+         * Now the Processing page becomes visible first and
+         * remains visible for at least 3 seconds.
+         * ------------------------------------------------------
          */
 
         if (
           verification.status ===
           "processed"
         ) {
-          setProgress(
-            100,
-          );
+          setProgress(100);
 
           setProcessingStage(
             "complete",
@@ -1397,33 +1162,33 @@ export default function ProcessingPage() {
             true,
           );
 
-          setLoading(
-            false,
-          );
+          showProcessingScreen();
+
+          await waitForMinimumProcessingDisplay();
+
+          if (
+            cancelled ||
+            redirecting.current
+          ) {
+            return;
+          }
 
           redirecting.current =
             true;
 
-          setTimeout(
-            () => {
-              if (!cancelled) {
-                window.location.href =
-                  getReportUrl(
-                    selectedPlan,
-                    verificationIdFromUrl,
-                  );
-              }
-            },
-            900,
-          );
+          window.location.href =
+            getReportUrl(
+              verifiedPlan,
+              verificationIdValue,
+            );
 
           return;
         }
 
         /*
-         * --------------------------------------------------------
-         * FAILED
-         * --------------------------------------------------------
+         * ------------------------------------------------------
+         * ALREADY FAILED
+         * ------------------------------------------------------
          */
 
         if (
@@ -1431,7 +1196,8 @@ export default function ProcessingPage() {
           "failed"
         ) {
           throw new Error(
-            verification.findings
+            verification
+              .findings
               ?.processing
               ?.message ||
               "The verification could not be completed.",
@@ -1439,9 +1205,13 @@ export default function ProcessingPage() {
         }
 
         /*
-         * --------------------------------------------------------
-         * INITIAL UI STATE
-         * --------------------------------------------------------
+         * ------------------------------------------------------
+         * SHOW PROCESSING PAGE
+         * ------------------------------------------------------
+         *
+         * From this point onward, the actual Processing UI
+         * becomes visible while the verification engine runs.
+         * ------------------------------------------------------
          */
 
         setProgress(
@@ -1453,65 +1223,53 @@ export default function ProcessingPage() {
           ),
         );
 
-        setProcessingStage(
-          getProcessingStage(
-            verification,
-          ),
-        );
-
-        setProcessingMessage(
-          getProcessingMessage(
-            verification,
-          ),
-        );
-
-        setLoading(
-          false,
-        );
+        showProcessingScreen();
 
         /*
-         * --------------------------------------------------------
+         * ------------------------------------------------------
          * START POLLING
-         * --------------------------------------------------------
+         * ------------------------------------------------------
          */
 
-        void pollVerification(
-          verificationIdFromUrl,
-        );
+        void pollVerification();
 
         /*
-         * --------------------------------------------------------
-         * SELECT PAID VERIFICATION ENGINE
-         * --------------------------------------------------------
+         * ------------------------------------------------------
+         * SELECT ENGINE
+         * ------------------------------------------------------
          */
 
-        const verificationEndpoint =
-          selectedPlan ===
+        const endpoint =
+          verifiedPlan ===
           "premium"
             ? "/api/verify-document/premium"
-            : selectedPlan ===
+            : verifiedPlan ===
                 "professional"
               ? "/api/verify-document/professional"
               : "/api/verify-document/essential";
 
         /*
-         * --------------------------------------------------------
-         * GET AUTHENTICATED SESSION
-         * --------------------------------------------------------
+         * ------------------------------------------------------
+         * GET CURRENT AUTHENTICATED SESSION
+         * ------------------------------------------------------
          */
 
-        const currentSession =
+        const session =
           await getAuthenticatedSession();
 
+        if (cancelled) {
+          return;
+        }
+
         /*
-         * --------------------------------------------------------
-         * START SERVER-SIDE VERIFICATION
-         * --------------------------------------------------------
+         * ------------------------------------------------------
+         * START SERVER VERIFICATION
+         * ------------------------------------------------------
          */
 
         const response =
           await fetch(
-            verificationEndpoint,
+            endpoint,
             {
               method:
                 "POST",
@@ -1521,13 +1279,13 @@ export default function ProcessingPage() {
                   "application/json",
 
                 Authorization:
-                  `Bearer ${currentSession.access_token}`,
+                  `Bearer ${session.access_token}`,
               },
 
               body:
                 JSON.stringify({
                   verificationId:
-                    verificationIdFromUrl,
+                    verificationIdValue,
                 }),
 
               cache:
@@ -1535,82 +1293,98 @@ export default function ProcessingPage() {
             },
           );
 
-        let data:
+        let result:
           | {
               success?: boolean;
-
               error?: string;
-
+              message?: string;
               verificationId?: string;
-
               trustScore?: number;
-
               confidence?: number;
-
               risk?: string;
-
               plan?: string;
             }
           | null =
           null;
 
         try {
-          data =
-            await response.json();
+          result =
+            (await response.json()) as {
+              success?: boolean;
+              error?: string;
+              message?: string;
+              verificationId?: string;
+              trustScore?: number;
+              confidence?: number;
+              risk?: string;
+              plan?: string;
+            };
         } catch {
-          data = null;
+          result = null;
         }
+
+        console.log(
+          "PROCESSING ENGINE RESPONSE:",
+          {
+            endpoint,
+
+            verificationId:
+              verificationIdValue,
+
+            httpStatus:
+              response.status,
+
+            success:
+              result?.success,
+
+            error:
+              result?.error,
+
+            message:
+              result?.message,
+          },
+        );
 
         if (
           !response.ok ||
-          !data?.success
+          !result?.success
         ) {
           const planName =
-            selectedPlan ===
+            verifiedPlan ===
             "premium"
               ? "Premium"
-              : selectedPlan ===
+              : verifiedPlan ===
                   "professional"
                 ? "Professional"
                 : "Essential";
 
           throw new Error(
-            data?.error ||
+            result?.error ||
+              result?.message ||
               `${planName} verification could not be completed.`,
           );
         }
 
         /*
-         * --------------------------------------------------------
-         * RELOAD FINAL DATABASE STATE
-         * --------------------------------------------------------
+         * ------------------------------------------------------
+         * RELOAD FINAL STATE
+         * ------------------------------------------------------
          */
 
-        const completedLoaded =
+        const completed =
           await loadVerification(
-            verificationIdFromUrl,
+            verificationIdValue,
           );
 
-        const completedVerification =
-          completedLoaded.verification;
-
-        const completedPackage =
-          createDocumentPackage(
-            completedVerification,
-          );
-
-        if (
-          completedPackage.length >
-          0
-        ) {
-          setDocumentPackage(
-            completedPackage,
-          );
+        if (cancelled) {
+          return;
         }
 
-        setProgress(
-          100,
+        applyVerificationState(
+          completed.verification,
         );
+
+        setProgress(100);
 
         setProcessingStage(
           "complete",
@@ -1624,79 +1398,67 @@ export default function ProcessingPage() {
           true,
         );
 
+        showProcessingScreen();
+
+        /*
+         * ------------------------------------------------------
+         * WAIT BEFORE REDIRECT
+         * ------------------------------------------------------
+         *
+         * The Processing page must remain visible for at least
+         * 3 seconds from the moment it was first displayed.
+         * ------------------------------------------------------
+         */
+
+        await waitForMinimumProcessingDisplay();
+
+        if (
+          cancelled ||
+          redirecting.current
+        ) {
+          return;
+        }
+
         redirecting.current =
           true;
 
-        await new Promise(
-          (resolve) =>
-            setTimeout(
-              resolve,
-              900,
-            ),
-        );
-
-        if (!cancelled) {
-          window.location.href =
-            getReportUrl(
-              selectedPlan,
-              verificationIdFromUrl,
-            );
-        }
-      } catch (
-        error
-      ) {
+        window.location.href =
+          getReportUrl(
+            verifiedPlan,
+            verificationIdValue,
+          );
+      } catch (error) {
         console.error(
           "PROCESSING ERROR:",
           error,
         );
 
         if (!cancelled) {
-          const message =
+          setErrorMessage(
             error instanceof Error
               ? error.message
-              : "Unknown verification error.";
+              : "Unknown verification error.",
+          );
 
           setProcessingStage(
             "failed",
           );
 
-          setErrorMessage(
-            message,
-          );
-
-          setLoading(
-            false,
-          );
+          setLoading(false);
         }
       }
     }
 
-    /*
-     * ==========================================================
-     * RUN REAL VERIFICATION
-     * ==========================================================
-     */
-
     void processVerification();
 
-    /*
-     * ==========================================================
-     * CLEANUP
-     * ==========================================================
-     */
-
     return () => {
-      cancelled =
-        true;
-
-      redirecting.current =
-        true;
+      cancelled = true;
     };
   }, []);
 
   /*
    * ============================================================
-   * SHARED PROPERTYSURE AI LOADING SCREEN
+   * LOADING
    * ============================================================
    */
 
@@ -1706,7 +1468,7 @@ export default function ProcessingPage() {
 
   /*
    * ============================================================
-   * ERROR SCREEN
+   * ERROR
    * ============================================================
    */
 
@@ -1762,7 +1524,7 @@ export default function ProcessingPage() {
 
   /*
    * ============================================================
-   * MAIN PAGE
+   * MAIN PROCESSING PAGE
    * ============================================================
    */
 
@@ -1793,11 +1555,6 @@ export default function ProcessingPage() {
             styles.pageContainer
           }
         >
-          {/* ==================================================
-              7-STEP VERIFICATION WORKFLOW
-              STEP 7 — VERIFICATION
-              ================================================== */}
-
           <VerificationWorkflow
             activeStep={7}
             backHref={
@@ -1810,10 +1567,6 @@ export default function ProcessingPage() {
             showBottomActions={false}
             showSecurityNote={false}
           />
-
-          {/* ==================================================
-              PAGE BRAND
-              ================================================== */}
 
           <header
             className={
@@ -1854,17 +1607,11 @@ export default function ProcessingPage() {
             </div>
           </header>
 
-          {/* ==================================================
-              HERO
-              ================================================== */}
-
           <section
             className={
               styles.hero
             }
           >
-            {/* DOCUMENT SCANNER */}
-
             <div
               className={
                 styles.scanner
@@ -1948,8 +1695,6 @@ export default function ProcessingPage() {
                 </div>
               </div>
 
-              {/* FLOATING ICONS */}
-
               <div
                 className={`${styles.floatingIcon} ${styles.floatingDocument}`}
               >
@@ -2000,10 +1745,6 @@ export default function ProcessingPage() {
                 ? "Your verification workflow has been completed. Your result is now ready for review."
                 : "PropertySure AI is securely processing your submitted property document package. This may take a few moments."}
             </p>
-
-            {/* ==================================================
-                PROGRESS CARD
-                ================================================== */}
 
             <div
               className={
@@ -2068,10 +1809,6 @@ export default function ProcessingPage() {
                 </span>
               </div>
             </div>
-
-            {/* ==================================================
-                PROCESSING STEPS
-                ================================================== */}
 
             <div
               className={
@@ -2164,10 +1901,6 @@ export default function ProcessingPage() {
               />
             </div>
 
-            {/* ==================================================
-                SECURITY
-                ================================================== */}
-
             <div
               className={
                 styles.securityCard
@@ -2192,10 +1925,6 @@ export default function ProcessingPage() {
               </div>
             </div>
 
-            {/* ==================================================
-                SLOGAN
-                ================================================== */}
-
             <div
               className={
                 styles.slogan
@@ -2212,10 +1941,6 @@ export default function ProcessingPage() {
               <span />
             </div>
           </section>
-
-          {/* ==================================================
-              FEATURE CARDS
-              ================================================== */}
 
           <section
             className={
@@ -2243,10 +1968,6 @@ export default function ProcessingPage() {
               variant="purple"
             />
           </section>
-
-          {/* ==================================================
-              FOOTER BRAND
-              ================================================== */}
 
           <footer
             className={
@@ -2296,7 +2017,7 @@ export default function ProcessingPage() {
 
 /*
  * ============================================================
- * PROCESSING STEP COMPONENT
+ * PROCESSING STEP
  * ============================================================
  */
 
@@ -2395,7 +2116,7 @@ function ProcessingStep({
 
 /*
  * ============================================================
- * FEATURE CARD COMPONENT
+ * FEATURE CARD
  * ============================================================
  */
 

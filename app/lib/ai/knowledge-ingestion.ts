@@ -11,39 +11,27 @@ import {
 
 import type {
   KnowledgeSourceType,
+  KnowledgeVerificationOutcome,
+  NigerianJurisdiction,
   PropertyDocumentType,
 } from "./types";
 
 /**
  * ============================================================
- * PROPERTYsure AI
+ * PROPERTYSURE AI
  * KNOWLEDGE INGESTION ENGINE
  * ============================================================
  *
- * This is the bridge between:
+ * Creates pending knowledge documents, splits their content
+ * into chunks, generates embeddings, and stores everything
+ * in Supabase.
  *
- *      KNOWLEDGE
- *          ↓
- *      KNOWLEDGE DOCUMENT
- *          ↓
- *      TEXT CHUNKS
- *          ↓
- *      EMBEDDINGS
- *          ↓
- *      SUPABASE VECTOR DATABASE
- *          ↓
- *      FUTURE AI RETRIEVAL
+ * Jurisdiction and verification details are stored on the
+ * parent document and included in chunk metadata.
  *
  * IMPORTANT:
- *
- * A document being ingested does NOT mean that it is trusted.
- *
- * Every new knowledge document begins as:
- *
- *      approval_status = "pending"
- *
- * Only approved knowledge can later be returned by the
- * retrieval system.
+ * Ingestion does not establish document authenticity.
+ * Every new record remains pending administrator approval.
  * ============================================================
  */
 
@@ -53,14 +41,7 @@ const DOCUMENTS_TABLE =
 const CHUNKS_TABLE =
   "ai_knowledge_chunks";
 
-/**
- * Default knowledge chunk size.
- */
 const DEFAULT_CHUNK_SIZE = 1200;
-
-/**
- * Default overlap between adjacent chunks.
- */
 const DEFAULT_CHUNK_OVERLAP = 150;
 
 /**
@@ -74,21 +55,21 @@ function validateChunkOptions(
   overlap: number,
 ) {
   if (
-    !Number.isFinite(chunkSize) ||
+    !Number.isInteger(chunkSize) ||
     chunkSize <= 0
   ) {
     throw new Error(
-      "Chunk size must be greater than zero.",
+      "Chunk size must be a positive integer.",
     );
   }
 
   if (
-    !Number.isFinite(overlap) ||
+    !Number.isInteger(overlap) ||
     overlap < 0 ||
     overlap >= chunkSize
   ) {
     throw new Error(
-      "Chunk overlap must be greater than or equal to zero and smaller than chunk size.",
+      "Chunk overlap must be a non-negative integer smaller than chunk size.",
     );
   }
 }
@@ -96,23 +77,6 @@ function validateChunkOptions(
 /**
  * ============================================================
  * SPLIT TEXT INTO KNOWLEDGE CHUNKS
- * ============================================================
- *
- * The AI does not need to retrieve an entire document every
- * time.
- *
- * Instead, a document is divided into smaller pieces.
- *
- * Example:
- *
- * Large C of O reference
- *        ↓
- * Chunk 1
- * Chunk 2
- * Chunk 3
- * Chunk 4
- *
- * Each chunk receives its own embedding.
  * ============================================================
  */
 
@@ -150,21 +114,14 @@ export function chunkKnowledgeText(
 
   let start = 0;
 
-  while (
-    start < cleanedText.length
-  ) {
+  while (start < cleanedText.length) {
     let end =
       Math.min(
         start + chunkSize,
         cleanedText.length,
       );
 
-    /**
-     * Try to end the chunk at a natural boundary.
-     */
-    if (
-      end < cleanedText.length
-    ) {
+    if (end < cleanedText.length) {
       const paragraphBreak =
         cleanedText.lastIndexOf(
           "\n\n",
@@ -190,33 +147,24 @@ export function chunkKnowledgeText(
         );
 
       const minimumBoundary =
-        start +
-        chunkSize * 0.5;
+        start + chunkSize * 0.5;
 
       if (
-        paragraphBreak >
-        minimumBoundary
+        paragraphBreak > minimumBoundary
       ) {
-        end =
-          paragraphBreak + 2;
+        end = paragraphBreak + 2;
       } else if (
-        sentenceBreak >
-        minimumBoundary
+        sentenceBreak > minimumBoundary
       ) {
-        end =
-          sentenceBreak + 2;
+        end = sentenceBreak + 2;
       } else if (
-        newlineBreak >
-        minimumBoundary
+        newlineBreak > minimumBoundary
       ) {
-        end =
-          newlineBreak + 1;
+        end = newlineBreak + 1;
       } else if (
-        spaceBreak >
-        minimumBoundary
+        spaceBreak > minimumBoundary
       ) {
-        end =
-          spaceBreak + 1;
+        end = spaceBreak + 1;
       }
     }
 
@@ -229,10 +177,7 @@ export function chunkKnowledgeText(
       chunks.push(chunk);
     }
 
-    if (
-      end >=
-      cleanedText.length
-    ) {
+    if (end >= cleanedText.length) {
       break;
     }
 
@@ -256,38 +201,25 @@ async function saveKnowledgeChunks(
   knowledgeDocumentId: string,
   chunks: string[],
   embeddings: number[][],
-  metadata?: Record<
-    string,
-    unknown
-  >,
+  metadata?: Record<string, unknown>,
 ) {
-  if (
-    chunks.length === 0
-  ) {
+  if (chunks.length === 0) {
     return [];
   }
 
-  if (
-    embeddings.length !==
-    chunks.length
-  ) {
+  if (embeddings.length !== chunks.length) {
     throw new Error(
       `Embedding count mismatch. Expected ${chunks.length} embeddings but received ${embeddings.length}.`,
     );
   }
 
-  /**
-   * Make sure every chunk actually has an embedding.
-   */
   for (
     let index = 0;
     index < embeddings.length;
     index += 1
   ) {
     if (
-      !Array.isArray(
-        embeddings[index],
-      ) ||
+      !Array.isArray(embeddings[index]) ||
       embeddings[index].length === 0
     ) {
       throw new Error(
@@ -298,10 +230,7 @@ async function saveKnowledgeChunks(
 
   const rows =
     chunks.map(
-      (
-        content,
-        index,
-      ) => ({
+      (content, index) => ({
         knowledge_document_id:
           knowledgeDocumentId,
 
@@ -352,20 +281,15 @@ async function saveKnowledgeChunks(
  * DELETE INCOMPLETE KNOWLEDGE DOCUMENT
  * ============================================================
  *
- * If something fails after the parent document has been
- * created, remove it.
- *
- * The foreign-key relationship should remove its chunks as
- * well when ON DELETE CASCADE is configured.
+ * Parent deletion should cascade to chunks when the
+ * database foreign key is configured with ON DELETE CASCADE.
  * ============================================================
  */
 
 async function cleanupKnowledgeDocument(
   id: string,
 ) {
-  const {
-    error,
-  } =
+  const { error } =
     await supabaseServer
       .from(DOCUMENTS_TABLE)
       .delete()
@@ -383,29 +307,6 @@ async function cleanupKnowledgeDocument(
  * ============================================================
  * INGEST KNOWLEDGE DOCUMENT
  * ============================================================
- *
- * MAIN PIPELINE:
- *
- * Reference / approved-source document
- *              ↓
- *        create knowledge
- *              ↓
- *           PENDING
- *              ↓
- *       save parent record
- *              ↓
- *        split into chunks
- *              ↓
- *       generate embeddings
- *              ↓
- *       save vector chunks
- *              ↓
- *       await approval
- *
- * IMPORTANT:
- *
- * This function DOES NOT approve the knowledge.
- * ============================================================
  */
 
 export async function ingestKnowledgeDocument(
@@ -421,33 +322,32 @@ export async function ingestKnowledgeDocument(
     content: string;
 
     description?: string;
-
     sourcePath?: string;
-
     sourceUrl?: string;
 
-    metadata?: Record<
-      string,
-      unknown
-    >;
+    jurisdiction?: NigerianJurisdiction | null;
+
+    localGovernmentArea?: string | null;
+    issuingAuthority?: string | null;
+    documentYear?: number | null;
+
+    verificationOutcome?:
+      KnowledgeVerificationOutcome;
+
+    verificationEvidence?: string | null;
+
+    metadata?: Record<string, unknown>;
 
     chunkSize?: number;
-
     chunkOverlap?: number;
   },
 ) {
   /**
-   * ----------------------------------------------------------
-   * STEP 1
-   * Validate basic input.
-   * ----------------------------------------------------------
+   * STEP 1: Validate basic input.
    */
 
-  const title =
-    input.title.trim();
-
-  const content =
-    input.content.trim();
+  const title = input.title.trim();
+  const content = input.content.trim();
 
   if (!title) {
     throw new Error(
@@ -462,14 +362,9 @@ export async function ingestKnowledgeDocument(
   }
 
   /**
-   * ----------------------------------------------------------
-   * STEP 2
-   * Create the knowledge object.
+   * STEP 2: Create pending knowledge.
    *
-   * createKnowledgeDocument() automatically gives it:
-   *
-   * approvalStatus = "pending"
-   * ----------------------------------------------------------
+   * createKnowledgeDocument() sets approvalStatus to pending.
    */
 
   const knowledgeDocument =
@@ -493,6 +388,24 @@ export async function ingestKnowledgeDocument(
       sourceUrl:
         input.sourceUrl,
 
+      jurisdiction:
+        input.jurisdiction,
+
+      localGovernmentArea:
+        input.localGovernmentArea,
+
+      issuingAuthority:
+        input.issuingAuthority,
+
+      documentYear:
+        input.documentYear,
+
+      verificationOutcome:
+        input.verificationOutcome,
+
+      verificationEvidence:
+        input.verificationEvidence,
+
       metadata:
         input.metadata,
     });
@@ -503,17 +416,15 @@ export async function ingestKnowledgeDocument(
     );
 
   /**
-   * ----------------------------------------------------------
-   * STEP 3
-   * Save the parent knowledge document.
-   * ----------------------------------------------------------
+   * STEP 3: Save parent knowledge document.
+   *
+   * The new jurisdiction fields correspond to the columns
+   * already added to public.ai_knowledge_documents.
    */
 
   const {
-    data:
-      savedDocument,
-    error:
-      documentError,
+    data: savedDocument,
+    error: documentError,
   } =
     await supabaseServer
       .from(DOCUMENTS_TABLE)
@@ -527,28 +438,41 @@ export async function ingestKnowledgeDocument(
         source_type:
           preparedKnowledge.sourceType,
 
-        approval_status:
-          preparedKnowledge.approvalStatus,
+        approval_status: "pending",
 
         description:
-          preparedKnowledge.description ??
-          null,
+          preparedKnowledge.description ?? null,
 
         content:
-          preparedKnowledge.content ??
-          null,
+          preparedKnowledge.content ?? null,
 
         source_path:
-          preparedKnowledge.sourcePath ??
-          null,
+          preparedKnowledge.sourcePath ?? null,
 
         source_url:
-          preparedKnowledge.sourceUrl ??
-          null,
+          preparedKnowledge.sourceUrl ?? null,
+
+        jurisdiction:
+          preparedKnowledge.jurisdiction ?? null,
+
+        local_government_area:
+          preparedKnowledge.localGovernmentArea ?? null,
+
+        issuing_authority:
+          preparedKnowledge.issuingAuthority ?? null,
+
+        document_year:
+          preparedKnowledge.documentYear ?? null,
+
+        verification_outcome:
+          preparedKnowledge.verificationOutcome ??
+          "unverified",
+
+        verification_evidence:
+          preparedKnowledge.verificationEvidence ?? null,
 
         metadata:
-          preparedKnowledge.metadata ??
-          {},
+          preparedKnowledge.metadata ?? {},
 
         created_at:
           preparedKnowledge.createdAt ??
@@ -572,19 +496,14 @@ export async function ingestKnowledgeDocument(
     );
   }
 
-  if (
-    !savedDocument?.id
-  ) {
+  if (!savedDocument?.id) {
     throw new Error(
       "Knowledge document was saved without an ID.",
     );
   }
 
   /**
-   * ----------------------------------------------------------
-   * STEP 4
-   * Split the content into chunks.
-   * ----------------------------------------------------------
+   * STEP 4: Split knowledge into chunks.
    */
 
   const chunks =
@@ -599,9 +518,7 @@ export async function ingestKnowledgeDocument(
       },
     );
 
-  if (
-    chunks.length === 0
-  ) {
+  if (chunks.length === 0) {
     await cleanupKnowledgeDocument(
       savedDocument.id,
     );
@@ -612,25 +529,14 @@ export async function ingestKnowledgeDocument(
   }
 
   /**
-   * ----------------------------------------------------------
-   * STEP 5
-   * Generate embeddings.
-   * ----------------------------------------------------------
-   *
-   * Every chunk gets a vector representation.
-   *
-   * Those vectors are what allow PropertySure AI to later
-   * search its memory semantically.
-   * ----------------------------------------------------------
+   * STEP 5: Generate embeddings.
    */
 
   let embeddings: number[][];
 
   try {
     embeddings =
-      await generateEmbeddings(
-        chunks,
-      );
+      await generateEmbeddings(chunks);
   } catch (error) {
     await cleanupKnowledgeDocument(
       savedDocument.id,
@@ -640,21 +546,15 @@ export async function ingestKnowledgeDocument(
   }
 
   /**
-   * ----------------------------------------------------------
-   * STEP 6
-   * Save chunks and embeddings.
-   * ----------------------------------------------------------
+   * STEP 6: Save chunks with jurisdiction metadata.
    */
 
   try {
     const savedChunks =
       await saveKnowledgeChunks(
         savedDocument.id,
-
         chunks,
-
         embeddings,
-
         {
           title:
             preparedKnowledge.title,
@@ -665,16 +565,28 @@ export async function ingestKnowledgeDocument(
           source_type:
             preparedKnowledge.sourceType,
 
-          approval_status:
-            preparedKnowledge.approvalStatus,
+          approval_status: "pending",
+
+          jurisdiction:
+            preparedKnowledge.jurisdiction ?? null,
+
+          local_government_area:
+            preparedKnowledge.localGovernmentArea ?? null,
+
+          issuing_authority:
+            preparedKnowledge.issuingAuthority ?? null,
+
+          document_year:
+            preparedKnowledge.documentYear ?? null,
+
+          verification_outcome:
+            preparedKnowledge.verificationOutcome ??
+            "unverified",
         },
       );
 
     /**
-     * --------------------------------------------------------
-     * STEP 7
-     * Return ingestion result.
-     * --------------------------------------------------------
+     * STEP 7: Return ingestion result.
      */
 
     return {

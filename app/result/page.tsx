@@ -1,15 +1,68 @@
+
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+
 import AppShell from "../AppShell/AppShell";
 import { supabase } from "../lib/supabase";
 import styles from "../professional-report/professional-report.module.css";
+import "leaflet/dist/leaflet.css";
+
+/*
+ * ============================================================
+ * PROPERTYSURE AI — ESSENTIAL RESULTS PAGE
+ * ============================================================
+ *
+ * Updated:
+ *
+ * 1. Premium individual manipulation indicator cards.
+ * 2. Mobile swipe hint and navigation arrow.
+ * 3. Consistent executive assessment typography.
+ * 4. Removed duplicated Key Findings from Analysis Summary.
+ * 5. Consistent Recommended Next Steps typography.
+ *
+ * Preserved:
+ *
+ * - Desktop document results table
+ * - Mobile document cards
+ * - Individual View Details actions
+ * - Secure document preview
+ * - Individual verification checks
+ * - Overall package checks
+ * - Property information
+ * - Saved AI analysis
+ * - Report download button
+ * - Compact mobile action buttons
+ *
+ * ============================================================
+ */
+
+type JsonRecord = Record<string, unknown>;
 
 type CheckValue = boolean | null;
-type RiskLevel = "Low" | "Medium" | "High" | "Not Conclusive";
-type LocationStatus = "consistent" | "mismatch" | "inconclusive";
-type DetailRow = [label: string, value: unknown];
+
+type Tab =
+  | "documents"
+  | "checks"
+  | "property"
+  | "gps"
+  | "summary";
+
+type RiskLevel =
+  | "Low"
+  | "Medium"
+  | "High"
+  | "Not Conclusive";
 
 type VerificationChecks = {
   documentStructure: CheckValue;
@@ -21,27 +74,9 @@ type VerificationChecks = {
   documentCompleteness: CheckValue;
 };
 
-type PackageDocument = {
-  name?: string;
-  path?: string;
-  type?: string;
-  document_type?: string;
-  documentType?: string;
-  document_title?: string;
-  documentTitleDetected?: string;
-  reference?: string;
-  document_reference?: string;
-  confidence?: number | null;
-  ai_confidence?: number | null;
-  status?: string;
-  result?: string;
-  summary?: string;
-  findings?: Record<string, unknown>;
-};
-
 type VerificationRecord = {
-  id: number | string;
-  user_id?: string;
+  id: number;
+  user_id?: string | null;
   doc_name?: string | null;
   file_url?: string | null;
   doc_type?: string | null;
@@ -49,7 +84,7 @@ type VerificationRecord = {
   trust_score?: number | null;
   confidence?: number | null;
   risk?: string | null;
-  findings?: Record<string, unknown> | null;
+  findings?: JsonRecord | null;
 };
 
 type PaymentRecord = {
@@ -59,58 +94,200 @@ type PaymentRecord = {
   paid_at?: string | null;
 };
 
-const STORAGE_BUCKET = "property-documents";
+type PackageDocument = {
+  name?: string;
+  path?: string;
+  type?: string;
 
-const EMPTY_CHECKS: VerificationChecks = {
-  documentStructure: null,
-  dataConsistency: null,
-  signatureValid: null,
-  stampValid: null,
-  noForgery: null,
-  noDuplicate: null,
-  documentCompleteness: null,
+  document_type?: string;
+  documentType?: string;
+
+  document_title?: string;
+  documentTitle?: string;
+  documentTitleDetected?: string;
+
+  documentName?: string;
+  documentNumber?: string;
+  nameDetected?: string;
+  issuingAuthority?: string;
+
+  propertyLocation?: string;
+  propertyDescription?: string;
+  propertyType?: string;
+  landSize?: string;
+  plotNumber?: string;
+  blockNumber?: string;
+  surveyReference?: string;
+
+  ownerName?: string;
+  holderName?: string;
+
+  reference?: string;
+  document_reference?: string;
+
+  confidence?: number | null;
+  ai_confidence?: number | null;
+
+  summary?: string;
+  assessmentStatus?: string;
+  authenticityStatus?: string;
+  syntheticDocumentRisk?: string;
+
+  manipulationIndicators?: string[];
+
+  checks?: JsonRecord;
+  findings?: JsonRecord;
+  extractedFields?: JsonRecord;
+  propertyDetails?: JsonRecord;
+  parties?: JsonRecord;
+  dates?: JsonRecord;
 };
 
-const CHECK_LABELS: Record<keyof VerificationChecks, string> = {
+type DetailRow = {
+  label: string;
+  value: string;
+  source: string;
+};
+
+type DocumentUnderstanding = {
+  observedFields?: string[];
+  referenceStructure?: string[];
+  terminology?: string[];
+  missingOrUnclearFields?: string[];
+  notes?: string[];
+};
+
+const STORAGE_BUCKET = "property-documents";
+
+const CHECK_KEYS: Array<keyof VerificationChecks> = [
+  "documentStructure",
+  "dataConsistency",
+  "signatureValid",
+  "stampValid",
+  "noForgery",
+  "noDuplicate",
+  "documentCompleteness",
+];
+
+const CHECK_LABELS: Record<
+  keyof VerificationChecks,
+  string
+> = {
   documentStructure: "Document Structure",
   dataConsistency: "Data Consistency",
-  signatureValid: "Signature Valid (Visual)",
-  stampValid: "Stamp Valid (Visual)",
-  noForgery: "Forgery Indicators",
-  noDuplicate: "Duplicate Detection",
+  signatureValid: "Signature Indicators (Visual)",
+  stampValid: "Stamp / Seal Indicators (Visual)",
+  noForgery: "Manipulation Indicators",
+  noDuplicate: "Duplicate Indicators",
   documentCompleteness: "Document Completeness",
 };
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
+/*
+ * ============================================================
+ * HELPERS
+ * ============================================================
+ */
+
+function asRecord(value: unknown): JsonRecord {
+  return value &&
+    typeof value === "object" &&
+    !Array.isArray(value)
+    ? (value as JsonRecord)
     : {};
 }
 
+/* Keep GPS JSON array handling typed without changing report layout. */
+function recordArray(value: unknown): JsonRecord[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter(
+      (item): item is JsonRecord =>
+        item !== null &&
+        typeof item === "object" &&
+        !Array.isArray(item),
+    )
+    .map(asRecord);
+}
+
 function firstValue(...values: unknown[]): unknown {
-  return values.find((value) => value !== undefined && value !== null && value !== "");
+  return values.find(
+    (value) =>
+      value !== null &&
+      value !== undefined &&
+      value !== "",
+  );
 }
 
 function stringValue(...values: unknown[]): string {
-  const value = firstValue(...values);
-  if (typeof value === "string") return value.trim();
-  if (value == null) return "";
-  return String(value);
+  for (const value of values) {
+    if (
+      typeof value === "string" &&
+      value.trim()
+    ) {
+      return value.trim();
+    }
+
+    if (
+      typeof value === "number" &&
+      Number.isFinite(value)
+    ) {
+      return String(value);
+    }
+  }
+
+  return "";
 }
 
 function numberValue(...values: unknown[]): number | null {
   const value = firstValue(...values);
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string" && value.trim()) {
+
+  if (
+    typeof value === "number" &&
+    Number.isFinite(value)
+  ) {
+    return value;
+  }
+
+  if (
+    typeof value === "string" &&
+    value.trim()
+  ) {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
   }
+
   return null;
 }
 
-function clampScore(value: number | null): number | null {
-  if (value === null) return null;
-  return Math.max(0, Math.min(100, Math.round(value)));
+function scoreValue(...values: unknown[]): number | null {
+  const value = numberValue(...values);
+
+  return value === null
+    ? null
+    : Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function nested(
+  value: unknown,
+  ...keys: string[]
+): unknown {
+  let current: unknown = value;
+
+  for (const key of keys) {
+    current = asRecord(current)[key];
+  }
+
+  return current;
+}
+
+function textArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.filter(
+    (item): item is string =>
+      typeof item === "string" &&
+      item.trim().length > 0,
+  );
 }
 
 function titleCase(value: string): string {
@@ -118,927 +295,2454 @@ function titleCase(value: string): string {
     .replace(/[_-]+/g, " ")
     .replace(/\s+/g, " ")
     .trim()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .replace(
+      /\b\w/g,
+      (letter) => letter.toUpperCase(),
+    );
 }
 
-function formatDate(value: string | null | undefined): string {
+function formatDate(value?: string | null): string {
   if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
 
-function formatDateTime(value: string | null | undefined): string {
-  if (!value) return "—";
   const date = new Date(value);
+
   if (Number.isNaN(date.getTime())) return "—";
+
   return new Intl.DateTimeFormat("en-NG", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   }).format(date);
 }
 
-function formatCurrency(value: number | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) return "—";
-  return new Intl.NumberFormat("en-NG", {
-    style: "currency",
-    currency: "NGN",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function getNested(record: Record<string, unknown>, ...keys: string[]): unknown {
-  let current: unknown = record;
-  for (const key of keys) current = asRecord(current)[key];
-  return current;
-}
-
 function normalizeRisk(value: unknown): RiskLevel {
-  const normalized = stringValue(value).toLowerCase();
-  if (normalized.includes("high")) return "High";
-  if (normalized.includes("medium") || normalized.includes("moderate")) return "Medium";
-  if (normalized.includes("low")) return "Low";
+  const text = stringValue(value).toLowerCase();
+
+  if (
+    text.includes("high") ||
+    text.includes("critical")
+  ) {
+    return "High";
+  }
+
+  if (
+    text.includes("medium") ||
+    text.includes("moderate")
+  ) {
+    return "Medium";
+  }
+
+  if (text.includes("low")) return "Low";
+
   return "Not Conclusive";
 }
 
-function riskClass(risk: RiskLevel): string {
-  if (risk === "Low") return styles.riskLow;
-  if (risk === "Medium") return styles.riskMedium;
-  if (risk === "High") return styles.riskHigh;
+function riskStyle(value: RiskLevel): string {
+  if (value === "High") return styles.riskHigh;
+  if (value === "Medium") return styles.riskMedium;
+  if (value === "Low") return styles.riskLow;
   return styles.riskUnknown;
 }
 
+function normalizedName(value: unknown): string {
+  return stringValue(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+/*
+ * ============================================================
+ * MERGE UPLOADS AND SAVED DOCUMENT ASSESSMENTS
+ * ============================================================
+ */
+
 function getPackageDocuments(
-  findings: Record<string, unknown>,
+  findings: JsonRecord,
   verification: VerificationRecord,
 ): PackageDocument[] {
-  const candidate = firstValue(
+  const essential = asRecord(findings.essential);
+
+  const uploadsRaw = firstValue(
     findings.document_package,
     findings.documents,
-    getNested(findings, "essential", "documents"),
-    getNested(findings, "essential", "document_results"),
+    essential.documents,
   );
 
-  if (Array.isArray(candidate)) {
-    return candidate.filter(
-      (item): item is PackageDocument => !!item && typeof item === "object",
-    );
-  }
+  const analysesRaw = essential.document_results;
 
-  if (verification.file_url) {
-    return [
+  let uploads: PackageDocument[] = Array.isArray(uploadsRaw)
+    ? uploadsRaw.filter(
+        (item): item is PackageDocument =>
+          !!item &&
+          typeof item === "object" &&
+          !Array.isArray(item),
+      )
+    : [];
+
+  const analyses: PackageDocument[] =
+    Array.isArray(analysesRaw)
+      ? analysesRaw.filter(
+          (item): item is PackageDocument =>
+            !!item &&
+            typeof item === "object" &&
+            !Array.isArray(item),
+        )
+      : [];
+
+  if (
+    uploads.length === 0 &&
+    verification.file_url
+  ) {
+    uploads = [
       {
-        name: verification.doc_name || "Property Document",
+        name:
+          verification.doc_name ||
+          "Property Document",
         path: verification.file_url,
-        type: verification.doc_type || "Document",
-        document_type: verification.doc_type || "Document",
+        documentType:
+          verification.doc_type ||
+          "Property Document",
       },
     ];
   }
 
-  return [];
-}
-
-function getDocumentType(document: PackageDocument): string {
-  return stringValue(
-    document.document_type,
-    document.documentType,
-    document.document_title,
-    document.documentTitleDetected,
-    document.type,
-    document.name,
-  ) || "Property Document";
-}
-
-function getDocumentReference(document: PackageDocument, index: number, id: number | string): string {
-  return stringValue(
-    document.document_reference,
-    document.reference,
-  ) || `PSAI-${String(id)}-DOC-${String(index + 1).padStart(2, "0")}`;
-}
-
-function normalizeChecks(value: unknown): VerificationChecks {
-  const record = asRecord(value);
-  const get = (...keys: string[]): CheckValue => {
-    const raw = firstValue(...keys.map((key) => record[key]));
-    if (typeof raw === "boolean") return raw;
-    if (typeof raw === "string") {
-      const normalized = raw.trim().toLowerCase();
-      if (["true", "passed", "pass", "yes", "valid", "clear", "detected: false"].includes(normalized)) return true;
-      if (["false", "failed", "fail", "no", "invalid", "attention", "flagged"].includes(normalized)) return false;
-    }
-    return null;
-  };
-
-  return {
-    documentStructure: get("documentStructure", "document_structure", "structure"),
-    dataConsistency: get("dataConsistency", "data_consistency", "consistency"),
-    signatureValid: get("signatureValid", "signature_valid", "signature"),
-    stampValid: get("stampValid", "stamp_valid", "stamp", "seal_valid"),
-    noForgery: get("noForgery", "no_forgery", "forgery", "manipulation"),
-    noDuplicate: get("noDuplicate", "no_duplicate", "duplicate"),
-    documentCompleteness: get("documentCompleteness", "document_completeness", "completeness"),
-  };
-}
-
-function getEssentialChecks(findings: Record<string, unknown>): VerificationChecks {
-  return normalizeChecks(
-    firstValue(
-      getNested(findings, "essential", "checks"),
-      getNested(findings, "essential", "verification_checks"),
-      findings.checks,
-    ),
-  );
-}
-
-function getDocumentChecks(document: PackageDocument): VerificationChecks {
-  return normalizeChecks(
-    firstValue(
-      document.findings,
-      getNested(document.findings || {}, "checks"),
-      getNested(document.findings || {}, "verification_checks"),
-    ),
-  );
-}
-
-function checkLabel(key: keyof VerificationChecks): string {
-  return CHECK_LABELS[key];
-}
-
-function checkDescription(key: keyof VerificationChecks, value: CheckValue): string {
-  if (value === false) {
-    const descriptions: Record<keyof VerificationChecks, string> = {
-      documentStructure: "The document structure contains items requiring attention.",
-      dataConsistency: "Some information appears inconsistent within the submitted package.",
-      signatureValid: "Signature indicators require further review.",
-      stampValid: "Stamp or seal indicators require further review.",
-      noForgery: "Potential manipulation or alteration indicators were detected.",
-      noDuplicate: "A possible duplicate or repeated document was detected.",
-      documentCompleteness: "The submitted package may be missing supporting information.",
-    };
-    return descriptions[key];
+  if (uploads.length === 0) {
+    return analyses.map((analysis) => ({
+      ...analysis,
+      name:
+        stringValue(
+          analysis.documentName,
+          analysis.name,
+        ) || "Property Document",
+    }));
   }
-  if (value === null) return "This check could not be conclusively assessed from the available information.";
-  const descriptions: Record<keyof VerificationChecks, string> = {
-    documentStructure: "Document structure and expected formatting were assessed.",
-    dataConsistency: "Key information was assessed for consistency across the available package.",
-    signatureValid: "Visible signature indicators were assessed as part of the document review.",
-    stampValid: "Visible stamps or seals were assessed as part of the document review.",
-    noForgery: "No obvious manipulation indicators were identified in the available assessment.",
-    noDuplicate: "No suspiciously repeated documents were identified in the available assessment.",
-    documentCompleteness: "The available document package was assessed for expected supporting information.",
-  };
-  return descriptions[key];
+
+  const used = new Set<number>();
+
+  return uploads.map((upload, index) => {
+    const uploadName = normalizedName(upload.name);
+
+    let matchIndex = analyses.findIndex(
+      (analysis, analysisIndex) =>
+        !used.has(analysisIndex) &&
+        uploadName.length > 0 &&
+        normalizedName(
+          firstValue(
+            analysis.documentName,
+            analysis.name,
+          ),
+        ) === uploadName,
+    );
+
+    if (
+      matchIndex < 0 &&
+      analyses.length === uploads.length &&
+      !used.has(index)
+    ) {
+      matchIndex = index;
+    }
+
+    if (matchIndex < 0) return upload;
+
+    used.add(matchIndex);
+
+    const analysis = analyses[matchIndex];
+
+    return {
+      ...upload,
+      ...analysis,
+
+      path: stringValue(
+        upload.path,
+        analysis.path,
+      ),
+
+      name: stringValue(
+        upload.name,
+        analysis.documentName,
+        analysis.name,
+      ),
+
+      documentType: stringValue(
+        analysis.documentType,
+        upload.documentType,
+        upload.document_type,
+      ),
+
+      documentTitleDetected: stringValue(
+        upload.documentTitleDetected,
+        analysis.documentTitleDetected,
+      ),
+
+      documentTitle: stringValue(
+        analysis.documentTitle,
+        upload.documentTitle,
+      ),
+
+      nameDetected: stringValue(
+        upload.nameDetected,
+        analysis.nameDetected,
+      ),
+
+      summary: stringValue(
+        analysis.summary,
+        upload.summary,
+      ),
+
+      confidence: numberValue(
+        analysis.confidence,
+        upload.confidence,
+      ),
+
+      ai_confidence: numberValue(
+        analysis.ai_confidence,
+        analysis.confidence,
+        upload.ai_confidence,
+      ),
+
+      assessmentStatus: stringValue(
+        analysis.assessmentStatus,
+        upload.assessmentStatus,
+      ),
+
+      authenticityStatus: stringValue(
+        analysis.authenticityStatus,
+        upload.authenticityStatus,
+      ),
+
+      syntheticDocumentRisk: stringValue(
+        analysis.syntheticDocumentRisk,
+        upload.syntheticDocumentRisk,
+      ),
+
+      manipulationIndicators:
+        textArray(analysis.manipulationIndicators).length > 0
+          ? textArray(analysis.manipulationIndicators)
+          : textArray(upload.manipulationIndicators),
+
+      checks: {
+        ...asRecord(upload.checks),
+        ...asRecord(analysis.checks),
+      },
+
+      findings: {
+        ...asRecord(upload.findings),
+        ...asRecord(analysis.findings),
+      },
+
+      extractedFields: {
+        ...asRecord(upload.extractedFields),
+        ...asRecord(analysis.extractedFields),
+      },
+
+      propertyDetails: {
+        ...asRecord(upload.propertyDetails),
+        ...asRecord(analysis.propertyDetails),
+      },
+
+      parties: {
+        ...asRecord(upload.parties),
+        ...asRecord(analysis.parties),
+      },
+
+      dates: {
+        ...asRecord(upload.dates),
+        ...asRecord(analysis.dates),
+      },
+
+      propertyLocation: stringValue(
+        analysis.propertyLocation,
+        upload.propertyLocation,
+      ),
+
+      propertyDescription: stringValue(
+        analysis.propertyDescription,
+        upload.propertyDescription,
+      ),
+
+      propertyType: stringValue(
+        analysis.propertyType,
+        upload.propertyType,
+      ),
+
+      landSize: stringValue(
+        analysis.landSize,
+        upload.landSize,
+      ),
+
+      plotNumber: stringValue(
+        analysis.plotNumber,
+        upload.plotNumber,
+      ),
+
+      blockNumber: stringValue(
+        analysis.blockNumber,
+        upload.blockNumber,
+      ),
+
+      surveyReference: stringValue(
+        analysis.surveyReference,
+        upload.surveyReference,
+      ),
+
+      ownerName: stringValue(
+        analysis.ownerName,
+        upload.ownerName,
+      ),
+
+      holderName: stringValue(
+        analysis.holderName,
+        upload.holderName,
+      ),
+
+      documentNumber: stringValue(
+        analysis.documentNumber,
+        upload.documentNumber,
+      ),
+
+      issuingAuthority: stringValue(
+        analysis.issuingAuthority,
+        upload.issuingAuthority,
+      ),
+    };
+  });
 }
 
-function normalizeReportStatus(value: unknown): "Pending" | "Verified" | "Flagged" {
-  const normalized = stringValue(value).toLowerCase();
-  if (normalized === "verified") return "Verified";
-  if (normalized === "flagged") return "Flagged";
-  return "Pending";
-}
-
-function getAssessment(findings: Record<string, unknown>, verification: VerificationRecord): string {
-  const explicit = stringValue(
-    getNested(findings, "essential", "assessment", "status"),
-    getNested(findings, "essential", "status"),
-    findings.assessment_status,
-    findings.overall_status,
-  ).toLowerCase();
-
-  if (explicit.includes("high risk")) return "High Risk";
-  if (explicit.includes("attention")) return "Attention Required";
-  if (explicit.includes("partially")) return "Partially Verified";
-  if (explicit.includes("verified")) return "Verified";
-  if (explicit.includes("review")) return "Reviewed";
-
-  const risk = normalizeRisk(firstValue(
-    getNested(findings, "essential", "risk"),
-    findings.risk,
-    verification.risk,
-  ));
-  if (risk === "High") return "High Risk";
-  if (risk === "Medium") return "Attention Required";
-  return normalizeReportStatus(verification.status) === "Verified" ? "Verified" : "Pending";
-}
-
-function getRecommendation(findings: Record<string, unknown>, assessment: string): string {
-  const explicit = stringValue(
-    getNested(findings, "essential", "recommendation", "status"),
-    getNested(findings, "essential", "recommendation", "text"),
-    getNested(findings, "essential", "recommendation"),
-    findings.recommendation,
+function documentType(
+  document: PackageDocument,
+): string {
+  return (
+    stringValue(
+      document.documentType,
+      document.document_type,
+      document.documentTitleDetected,
+      document.documentTitle,
+      document.document_title,
+      document.type,
+    ) || "Property Document"
   );
-  if (explicit) return explicit;
-  if (assessment === "Verified") return "Proceed With Further Due Diligence";
-  if (assessment === "High Risk") return "Do Not Proceed Until Resolved";
-  if (assessment === "Attention Required" || assessment === "Partially Verified") return "Proceed With Caution";
-  return "Further Verification Required";
 }
 
-function getLocation(findings: Record<string, unknown>) {
-  const raw = asRecord(firstValue(
-    findings.location,
-    findings.gps,
-    findings.location_analysis,
-    getNested(findings, "essential", "location"),
-    getNested(findings, "essential", "gps"),
-  ));
-
-  const coordinates = asRecord(raw.coordinates);
-  const latitude = numberValue(raw.latitude, raw.lat, raw.gps_latitude, coordinates.latitude, coordinates.lat);
-  const longitude = numberValue(raw.longitude, raw.lng, raw.lon, raw.gps_longitude, coordinates.longitude, coordinates.lng, coordinates.lon);
-
-  const documentLocation = stringValue(
-    raw.document_location,
-    raw.documentLocation,
-    raw.stated_location,
-    raw.property_location_from_document,
-    findings.property_location,
+function documentReference(
+  document: PackageDocument,
+  index: number,
+  verificationId: number,
+): string {
+  return (
+    stringValue(
+      document.document_reference,
+      document.reference,
+      document.documentNumber,
+    ) ||
+    `PSAI-${verificationId}-DOC-${String(
+      index + 1,
+    ).padStart(2, "0")}`
   );
-  const detectedLocation = stringValue(
-    raw.detected_location,
-    raw.detectedLocation,
-    raw.resolved_location,
-    raw.address,
-    raw.reported_location,
-  );
-  const confidence = clampScore(numberValue(raw.confidence, raw.location_confidence, raw.gps_confidence));
-  const distance = numberValue(raw.distance_meters, raw.distanceMeters, raw.distance, findings.location_distance);
-  const source = stringValue(raw.source, raw.gps_source, raw.location_source) || (latitude !== null && longitude !== null ? "Recorded GPS coordinates" : "No property GPS data recorded");
-  const discrepancy = stringValue(raw.discrepancy, raw.location_discrepancy, raw.finding, raw.notes);
-  const rawStatus = stringValue(raw.status, raw.location_status, raw.verification_status, raw.consistency).toLowerCase();
+}
 
-  let status: LocationStatus = "inconclusive";
-  if (rawStatus.includes("mismatch") || rawStatus.includes("inconsistent") || rawStatus.includes("discrep")) status = "mismatch";
-  else if (rawStatus.includes("consistent") || rawStatus === "match" || rawStatus === "matched" || rawStatus === "verified") status = "consistent";
+/*
+ * ============================================================
+ * CHECKS
+ * ============================================================
+ */
+
+function normalizeChecks(
+  value: unknown,
+): VerificationChecks {
+  const record = asRecord(value);
+
+  function check(...names: string[]): CheckValue {
+    const raw = firstValue(
+      ...names.map((name) => record[name]),
+    );
+
+    if (typeof raw === "boolean") return raw;
+
+    const text = stringValue(raw).toLowerCase();
+
+    if (
+      ["true", "passed", "pass", "yes", "valid"].includes(text)
+    ) {
+      return true;
+    }
+
+    if (
+      ["false", "failed", "fail", "no", "flagged"].includes(text)
+    ) {
+      return false;
+    }
+
+    return null;
+  }
 
   return {
-    status,
-    statusLabel: status === "consistent" ? "Location Consistent" : status === "mismatch" ? "Location Mismatch" : "Location Not Conclusive",
-    latitude,
-    longitude,
-    coordinatesLabel: latitude !== null && longitude !== null
-      ? `${Math.abs(latitude).toFixed(6)}° ${latitude >= 0 ? "N" : "S"}, ${Math.abs(longitude).toFixed(6)}° ${longitude >= 0 ? "E" : "W"}`
-      : "Not available",
-    documentLocation: documentLocation || "Not available",
-    detectedLocation: detectedLocation || "Not available",
-    confidence,
-    distance,
-    source,
-    message: status === "consistent"
-      ? "The available geographic information is consistent with the property location stated in the submitted documents."
-      : status === "mismatch"
-        ? discrepancy || "A geographic discrepancy was identified between the available location information and the submitted property documents."
-        : stringValue(raw.message, raw.summary, raw.analysis) || "The available location information is not sufficient to establish geographic consistency.",
+    documentStructure: check(
+      "documentStructure",
+      "document_structure",
+    ),
+    dataConsistency: check(
+      "dataConsistency",
+      "data_consistency",
+    ),
+    signatureValid: check(
+      "signatureValid",
+      "signature_valid",
+    ),
+    stampValid: check(
+      "stampValid",
+      "stamp_valid",
+    ),
+    noForgery: check(
+      "noForgery",
+      "no_forgery",
+    ),
+    noDuplicate: check(
+      "noDuplicate",
+      "no_duplicate",
+    ),
+    documentCompleteness: check(
+      "documentCompleteness",
+      "document_completeness",
+    ),
   };
 }
 
-function getMapUrl(latitude: number, longitude: number): string {
-  const delta = 0.015;
-  const bbox = `${longitude - delta},${latitude - delta},${longitude + delta},${latitude + delta}`;
-  return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${encodeURIComponent(`${latitude},${longitude}`)}`;
+function documentChecks(
+  document: PackageDocument,
+): VerificationChecks {
+  return normalizeChecks(
+    firstValue(
+      document.checks,
+      nested(document.findings, "checks"),
+      document.findings,
+    ),
+  );
 }
 
-function getMapsLink(latitude: number, longitude: number): string {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${latitude},${longitude}`)}`;
+function checkText(value: CheckValue): string {
+  if (value === true) return "No Issue Detected";
+  if (value === false) return "Attention Required";
+  return "Not Conclusive";
 }
 
-function getStorageObjectPath(value: string): string | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  if (!/^https?:\/\//i.test(trimmed)) return trimmed;
+/*
+ * ============================================================
+ * PROPERTY DETAILS
+ * ============================================================
+ */
+
+function getPropertyDetails(
+  findings: JsonRecord,
+  documents: PackageDocument[],
+): DetailRow[] {
+  const essential = asRecord(findings.essential);
+
+  const property = asRecord(
+    firstValue(
+      findings.property,
+      essential.property,
+      findings.property_details,
+    ),
+  );
+
+  const ownership = asRecord(
+    firstValue(
+      findings.ownership,
+      essential.ownership,
+    ),
+  );
+
+  const crossDocument = asRecord(
+    firstValue(
+      findings.cross_document_analysis,
+      essential.cross_document_analysis,
+    ),
+  );
+
+  const firstDocument =
+    documents.length > 0
+      ? documents[0]
+      : ({} as PackageDocument);
+
+  const extracted = asRecord(
+    firstDocument.extractedFields,
+  );
+
+  const extractedProperty = asRecord(
+    firstValue(
+      extracted.propertyDetails,
+      extracted.property,
+      firstDocument.propertyDetails,
+    ),
+  );
+
+  const parties = asRecord(
+    firstValue(
+      extracted.parties,
+      firstDocument.parties,
+    ),
+  );
+
+  function detail(
+    label: string,
+    sources: Array<[unknown, string]>,
+  ): DetailRow {
+    for (const [rawValue, source] of sources) {
+      const value = stringValue(rawValue);
+
+      if (value) {
+        return { label, value, source };
+      }
+    }
+
+    return {
+      label,
+      value: "Not available in structured data",
+      source: "unavailable",
+    };
+  }
+
+  return [
+    detail("Document Type", [
+      [firstDocument.documentType, "AI classification"],
+      [firstDocument.document_type, "Document package"],
+      [firstDocument.type, "Document package"],
+    ]),
+
+    detail("Document Title", [
+      [firstDocument.documentTitleDetected, "AI classification"],
+      [firstDocument.documentTitle, "AI extraction"],
+      [extracted.documentTitle, "AI extraction"],
+    ]),
+
+    detail("Property Type", [
+      [property.property_type, "AI extraction"],
+      [extractedProperty.propertyType, "AI extraction"],
+      [firstDocument.propertyType, "Document-level analysis"],
+    ]),
+
+    detail("Property Location", [
+      [property.location, "AI extraction"],
+      [property.address, "Saved property information"],
+      [crossDocument.location, "Cross-document analysis"],
+      [extractedProperty.location, "AI extraction"],
+      [firstDocument.propertyLocation, "Document-level analysis"],
+    ]),
+
+    detail("Property Description", [
+      [property.description, "AI extraction"],
+      [crossDocument.property_description, "Cross-document analysis"],
+      [extractedProperty.propertyDescription, "AI extraction"],
+      [extractedProperty.description, "AI extraction"],
+      [firstDocument.propertyDescription, "Document-level analysis"],
+    ]),
+
+    detail("Land Size", [
+      [property.land_size, "AI extraction"],
+      [extractedProperty.landSize, "AI extraction"],
+      [firstDocument.landSize, "Document-level analysis"],
+    ]),
+
+    detail("Plot / Block Number", [
+      [crossDocument.plot_block, "Cross-document analysis"],
+      [property.plot, "AI extraction"],
+      [property.block, "AI extraction"],
+      [extractedProperty.plotNumber, "AI extraction"],
+      [firstDocument.plotNumber, "Document-level analysis"],
+    ]),
+
+    detail("Survey Reference", [
+      [crossDocument.survey_reference, "Cross-document analysis"],
+      [property.survey_reference, "AI extraction"],
+      [extractedProperty.surveyReference, "AI extraction"],
+      [extractedProperty.surveyNumber, "AI extraction"],
+      [firstDocument.surveyReference, "Document-level analysis"],
+    ]),
+
+    detail("Named Owner / Holder", [
+      [ownership.owner_name, "Document claim"],
+      [ownership.holder, "Document claim"],
+      [parties.owner, "AI extraction"],
+      [parties.holder, "AI extraction"],
+      [firstDocument.ownerName, "Document-level analysis"],
+      [firstDocument.holderName, "Document-level analysis"],
+    ]),
+
+    detail("Name Identified on Document", [
+      [firstDocument.nameDetected, "AI classification"],
+      [extracted.nameDetected, "AI extraction"],
+    ]),
+
+    detail("Title Reference", [
+      [ownership.title_reference, "Saved ownership information"],
+      [crossDocument.title_reference, "Cross-document analysis"],
+      [findings.title_reference, "Saved findings"],
+    ]),
+
+    detail("Document Number", [
+      [firstDocument.documentNumber, "AI extraction"],
+      [extracted.documentNumber, "AI extraction"],
+    ]),
+
+    detail("Issuing Authority", [
+      [firstDocument.issuingAuthority, "AI extraction"],
+      [extracted.issuingAuthority, "AI extraction"],
+    ]),
+  ];
+}
+
+/*
+ * ============================================================
+ * SECURE PREVIEW HELPER
+ * ============================================================
+ */
+
+function getStorageObjectPath(
+  value: string,
+): string | null {
+  const path = value.trim();
+
+  if (!path) return null;
+
+  if (!/^https?:\/\//i.test(path)) return path;
 
   try {
-    const url = new URL(trimmed);
+    const url = new URL(path);
     const marker = `/${STORAGE_BUCKET}/`;
     const index = url.pathname.indexOf(marker);
-    if (index === -1) return null;
-    const objectPath = url.pathname.substring(index + marker.length);
-    return objectPath ? decodeURIComponent(objectPath) : null;
+
+    if (index < 0) return null;
+
+    return decodeURIComponent(
+      url.pathname.substring(
+        index + marker.length,
+      ),
+    );
   } catch {
     return null;
   }
 }
 
-type DetailPresentation = {
+/*
+ * ============================================================
+ * METRIC
+ * ============================================================
+ */
+
+function Metric({
+  label,
+  value,
+  description,
+  tone = "blue",
+}: {
+  label: string;
   value: string;
-  state: "available" | "attention" | "inconclusive";
-};
+  description: string;
+  tone?: "blue" | "green" | "warning";
+}) {
+  const toneClass =
+    tone === "warning"
+      ? styles.metricWarning
+      : tone === "green"
+        ? styles.metricGreen
+        : styles.metricBlue;
 
-function getDetailPresentation(value: unknown): DetailPresentation {
-  const text = stringValue(value);
+  return (
+    <div
+      className={`${styles.metricCard} ${toneClass}`}
+    >
+      <div>
+        <span>{label}</span>
+        <strong>{value}</strong>
+        <p>{description}</p>
+      </div>
+    </div>
+  );
+}
 
-  if (!text) {
-    return {
-      value: "Not Conclusive",
-      state: "inconclusive",
-    };
+/*
+ * ============================================================
+ * PREMIUM MANIPULATION INDICATOR CARDS
+ * ============================================================
+ *
+ * Each item is distinct.
+ *
+ * The cards are visual presentation only.
+ * They do not change the AI findings or their meaning.
+ *
+ * ============================================================
+ */
+
+function PremiumIndicators({
+  indicators,
+}: {
+  indicators: string[];
+}) {
+  if (indicators.length === 0) {
+    return (
+      <p className="psai-no-indicators">
+        No separate manipulation indicators were saved
+        for this document.
+      </p>
+    );
   }
 
-  const normalized = text.toLowerCase();
+  return (
+    <div className="psai-indicator-list">
+      {indicators.map((indicator, index) => (
+        <article
+          key={`${index}-${indicator}`}
+          className="psai-indicator-card"
+        >
+          <div className="psai-indicator-icon">
+            <span aria-hidden="true">!</span>
+          </div>
 
-  if (
-    normalized.includes("mismatch") ||
-    normalized.includes("inconsisten") ||
-    normalized.includes("conflict") ||
-    normalized.includes("discrep") ||
-    normalized.includes("attention required") ||
-    normalized.includes("requires further review")
-  ) {
-    return {
-      value: text,
-      state: "attention",
-    };
+          <p>{indicator}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+
+/* ============================================================
+ * GPS ONLY — isolated presentation, no modifications to
+ * Document Results, Verification Checks, Property or Summary.
+ * ============================================================ */
+
+type GPSPosition = { latitude: number; longitude: number; label?: string };
+
+function gpsNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const n = Number(value.replace(/,/g, ""));
+    return Number.isFinite(n) ? n : null;
   }
+  return null;
+}
 
-  if (
-    normalized === "not conclusive" ||
-    normalized === "not conclusive." ||
-    normalized === "not available" ||
-    normalized === "unknown"
-  ) {
-    return {
-      value: text,
-      state: "inconclusive",
-    };
-  }
-
+function gpsPosition(value: unknown): GPSPosition | null {
+  const raw = asRecord(value);
+  const coordinates = asRecord(raw.coordinates);
+  const latitude = gpsNumber(firstValue(raw.latitude, coordinates.latitude));
+  const longitude = gpsNumber(firstValue(raw.longitude, coordinates.longitude));
+  if (latitude === null || longitude === null || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return null;
   return {
-    value: text,
-    state: "available",
+    latitude,
+    longitude,
+    label: stringValue(raw.beaconId, raw.label, raw.id, coordinates.label),
   };
 }
 
-function detailRows(rows: DetailRow[], options?: { premium?: boolean }) {
-  return rows.map(([label, rawValue]) => {
-    const detail = getDetailPresentation(rawValue);
-    const stateLabel =
-      detail.state === "attention"
-        ? "Attention"
-        : detail.state === "available"
-          ? "Available"
-          : "Not Conclusive";
+function gpsPositions(value: unknown): GPSPosition[] {
+  if (!Array.isArray(value)) return [];
+  const points: GPSPosition[] = [];
+  for (const item of value) {
+    const found = gpsPosition(item);
+    if (found) points.push(found);
+  }
+  if (points.length > 3) {
+    const first = points[0];
+    const last = points[points.length - 1];
+    if (first.latitude === last.latitude && first.longitude === last.longitude) points.pop();
+  }
+  return points;
+}
 
-    return (
-      <div
-        className={styles.propertyGridItem}
-        key={label}
-        style={
-          options?.premium
-            ? {
-                position: "relative",
-                minHeight: 104,
-                padding: "18px 18px 16px",
-                border: "1px solid #e5ebf3",
-                borderRadius: 14,
-                background:
-                  detail.state === "attention"
-                    ? "linear-gradient(135deg, #fffaf2 0%, #ffffff 72%)"
-                    : "linear-gradient(135deg, #ffffff 0%, #f8fbff 100%)",
-                boxShadow:
-                  detail.state === "attention"
-                    ? "0 8px 24px rgba(180, 120, 20, 0.08)"
-                    : "0 8px 24px rgba(24, 53, 88, 0.06)",
-                overflow: "hidden",
-              }
-            : undefined
-        }
+function gpsFormat(value: unknown, digits = 2): string {
+  const number = gpsNumber(value);
+  return number === null
+    ? "Not available"
+    : number.toLocaleString("en-NG", { maximumFractionDigits: digits, minimumFractionDigits: digits });
+}
+
+function GPSMapOnly({ marker }: { marker: GPSPosition | null }) {
+  const elementRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<import("leaflet").Map | null>(null);
+  const markerLat = marker?.latitude;
+  const markerLng = marker?.longitude;
+
+  useEffect(() => {
+    if (markerLat === undefined || markerLng === undefined) return;
+    let canceled = false;
+    let localMap: import("leaflet").Map | null = null;
+
+    async function mount() {
+      const L = await import("leaflet");
+      if (canceled || !elementRef.current) return;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      const map = L.map(elementRef.current, { scrollWheelZoom: false })
+        .setView([markerLat!, markerLng!], 17);
+      localMap = map;
+      mapRef.current = map;
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+        maxZoom: 19,
+      }).addTo(map);
+      const pin = L.divIcon({
+        className: "psai-gps-pin",
+        html: '<span style="display:block;width:18px;height:18px;border:3px solid white;border-radius:50%;background:#225de9;box-shadow:0 1px 6px #233e68"></span>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+      });
+      L.marker([markerLat!, markerLng!], { icon: pin })
+        .bindPopup("Document-reported location (not independently verified)")
+        .addTo(map);
+      window.requestAnimationFrame(() => {
+        if (!canceled) map.invalidateSize();
+      });
+    }
+
+    void mount();
+    return () => {
+      canceled = true;
+      if (localMap) {
+        localMap.remove();
+        if (mapRef.current === localMap) mapRef.current = null;
+      }
+    };
+  }, [markerLat, markerLng]);
+
+  if (!marker) {
+    return <p>No safe document-reported map position is available.</p>;
+  }
+  return (
+    <div
+      ref={elementRef}
+      className="psai-gps-leaflet"
+      role="application"
+      aria-label="Interactive document-reported property location map"
+    />
+  );
+}
+
+/** A standalone, schematic drawing made only from validated boundary points. */
+function SurveyPlotShape({
+  points,
+  area,
+}: {
+  points: GPSPosition[];
+  area: number | null;
+}) {
+  if (points.length < 3) return null;
+
+  const WIDTH = 720;
+  const HEIGHT = 420;
+  const PADDING = 75;
+  const latitudeCentre =
+    points.reduce((sum, point) => sum + point.latitude, 0) / points.length;
+  const longitudeScale = Math.max(
+    0.01,
+    Math.cos((latitudeCentre * Math.PI) / 180),
+  );
+  const projected = points.map((point) => ({
+    ...point,
+    x: point.longitude * longitudeScale,
+    y: point.latitude,
+  }));
+  const minX = Math.min(...projected.map((point) => point.x));
+  const maxX = Math.max(...projected.map((point) => point.x));
+  const minY = Math.min(...projected.map((point) => point.y));
+  const maxY = Math.max(...projected.map((point) => point.y));
+  const spanX = Math.max(maxX - minX, 1e-10);
+  const spanY = Math.max(maxY - minY, 1e-10);
+  const scale = Math.min(
+    (WIDTH - 2 * PADDING) / spanX,
+    (HEIGHT - 2 * PADDING) / spanY,
+  );
+  const offsetX = (WIDTH - spanX * scale) / 2;
+  const offsetY = (HEIGHT - spanY * scale) / 2;
+  const drawing = projected.map((point) => ({
+    ...point,
+    sx: offsetX + (point.x - minX) * scale,
+    sy: HEIGHT - offsetY - (point.y - minY) * scale,
+  }));
+  const polygon = drawing.map((point) => `${point.sx},${point.sy}`).join(" ");
+
+  return (
+    <div className="psai-gps-survey-plot">
+      <svg
+        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+        role="img"
+        aria-label={`Separate survey plot shape with ${points.length} labelled beacons`}
       >
-        {options?.premium ? (
-          <div
-            aria-hidden="true"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 3,
-              background:
-                detail.state === "attention"
-                  ? "#d99520"
-                  : detail.state === "available"
-                    ? "#1268f3"
-                    : "#c9d3df",
-            }}
-          />
-        ) : null}
-
-        <div
-          style={
-            options?.premium
-              ? {
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 10,
-                  marginBottom: 10,
-                }
-              : undefined
-          }
-        >
-          <span
-            style={
-              options?.premium
-                ? {
-                    margin: 0,
-                    color: "#73849a",
-                    fontSize: 10,
-                    fontWeight: 800,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                  }
-                : undefined
-            }
-          >
-            {label}
-          </span>
-
-          {options?.premium ? (
-            <span
-              style={{
-                flexShrink: 0,
-                padding: "4px 8px",
-                borderRadius: 999,
-                background:
-                  detail.state === "attention"
-                    ? "#fff1d6"
-                    : detail.state === "available"
-                      ? "#eaf3ff"
-                      : "#f0f3f6",
-                color:
-                  detail.state === "attention"
-                    ? "#9a6200"
-                    : detail.state === "available"
-                      ? "#1557a6"
-                      : "#718096",
-                fontSize: 8,
-                fontWeight: 800,
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-              }}
+        <rect width={WIDTH} height={HEIGHT} rx={14} fill="#f5f9ff" />
+        <polygon
+          points={polygon}
+          fill="#dceafd"
+          stroke="#2761c5"
+          strokeWidth={4}
+          strokeLinejoin="round"
+        />
+        {drawing.map((point, index) => (
+          <g key={`${point.label || index}-${index}`}>
+            <circle
+              cx={point.sx}
+              cy={point.sy}
+              r={7}
+              fill="#2761c5"
+              stroke="#fff"
+              strokeWidth={2}
+            />
+            <text
+              x={point.sx + 12}
+              y={point.sy - 13}
+              fontSize={19}
+              fontWeight={700}
+              fill="#173c72"
             >
-              {stateLabel}
-            </span>
-          ) : null}
-        </div>
-
-        <strong
-          style={
-            options?.premium
-              ? {
-                  display: "block",
-                  color:
-                    detail.state === "attention"
-                      ? "#8b5a00"
-                      : detail.state === "inconclusive"
-                        ? "#68788d"
-                        : "#16385f",
-                  fontSize: 13,
-                  lineHeight: 1.55,
-                  fontWeight: 750,
-                }
-              : undefined
-          }
+              {point.label || `Beacon ${index + 1}`}
+            </text>
+          </g>
+        ))}
+        <text
+          x={WIDTH - 30}
+          y={34}
+          textAnchor="end"
+          fill="#25569b"
+          fontSize={20}
+          fontWeight={700}
         >
-          {detail.value}
-        </strong>
-
-        {options?.premium && detail.state === "inconclusive" ? (
-          <small
-            style={{
-              display: "block",
-              marginTop: 8,
-              color: "#8a98a9",
-              fontSize: 9,
-              lineHeight: 1.45,
-            }}
+          N ↑
+        </text>
+        {area !== null && (
+          <text
+            x={WIDTH / 2}
+            y={HEIGHT - 25}
+            textAnchor="middle"
+            fill="#244c85"
+            fontSize={19}
+            fontWeight={700}
           >
-            The available evidence does not support a definitive conclusion.
-          </small>
-        ) : null}
-      </div>
-    );
-  });
+            Calculated Area: {gpsFormat(area)} m²
+          </text>
+        )}
+      </svg>
+      <p className="psai-gps-caption">
+        Survey plot diagram based on validated document-derived beacon
+        coordinates. This is separate from the geographic location map,
+        and is not an official cadastral or field survey.
+      </p>
+    </div>
+  );
 }
 
+function GPSReportSection({ analysis }: { analysis: JsonRecord }) {
+  const mapData = asRecord(analysis.mapData);
+  const marker = gpsPosition(firstValue(mapData.markerCoordinates, mapData.center, analysis.coordinates));
+  const boundaries = recordArray(analysis.surveyBoundaries);
+  const measurements = recordArray(analysis.surveyMeasurements);
+  const documents = recordArray(analysis.documentGPSResults);
+  const diagnostics = recordArray(analysis.surveyDiagnostics);
+  const comparisons = recordArray(analysis.documentComparisons);
+  const locationComparisons = recordArray(analysis.surveyLocationComparisons);
+  const candidate = boundaries.find((item) => item.status === "available" && item.mapReady === true);
+  const boundary = candidate ? gpsPositions(candidate.points) : [];
+  const fromMap = mapData.showBoundary === true ? gpsPositions(mapData.boundaryPoints) : [];
+  const plottedBoundary = boundary.length >= 3 ? boundary : fromMap.length >= 3 ? fromMap : [];
+  const showBoundary = plottedBoundary.length >= 3;
+  const plotMeasurement = measurements.find(
+    (item) => item.geometryValid === true &&
+      gpsNumber(item.calculatedAreaSquareMeters) !== null,
+  );
+  const calculatedPlotArea = plotMeasurement
+    ? gpsNumber(plotMeasurement.calculatedAreaSquareMeters)
+    : null;
 
-function simplifyFinding(value: string): string {
-  const text = value.trim();
-  if (!text) return "";
-
-  const replacements: Array<[RegExp, string]> = [
-    [/material\s+surname\s+mismatch\s+between\s+holder\s+(.+?)\s+and\s+registered\s+owner\s+(.+?)(?:\.|$)/i, "The name on the document does not match the registered owner name."],
-    [/resolve\s+the\s+(.+?)\s+(?:versus|vs\.?|and)\s+(.+?)\s+ownership[- ]name\s+conflict\.?/i, "The ownership names do not match and need to be confirmed."],
-    [/reconcile\s+(.+?)\s+with\s+(.+?)\s+parcel[- ]reference\s+conflict\.?/i, "The property/plot references do not match and need to be confirmed."],
-    [/property\s+description\s+states\s+(.+?),\s*while\s+plot\s+reference\s+(.+?)\s+may\s+identify\s+(.+?)(?:\.|$)/i, "The property description and plot reference may refer to different plots."],
-    [/printed\s+coordinates\s+appear\s+geographically\s+inconsistent\s+with\s+the\s+stated\s+(.+?)(?:\.|$)/i, "The printed coordinates do not appear to match the stated property location."],
-    [/the\s+referenced\s+schedule\s+and\s+detailed\s+survey\s+plan\s+are\s+absent\.?/i, "The supporting schedule and detailed survey plan are missing."],
-    [/obtain\s+and\s+review\s+the\s+complete\s+certificate\s+of\s+occupancy.*$/i, "The complete Certificate of Occupancy and its supporting pages should be provided."],
-    [/obtain\s+reliable\s+identity\s+documents.*$/i, "Reliable identity and transaction records should be provided to confirm the parties involved."],
-    [/validate\s+the\s+QR\s+code.*$/i, "The original document and QR code should be checked through the official source."],
-    [/independently\s+confirm\s+file\s+number.*$/i, "The file number, survey reference, and title details should be independently confirmed."],
-    [/obtain\s+an\s+independent\s+title\s+encumbrance\s+search\.?/i, "An independent title search should be completed."],
-    [/confirm\s+the\s+correct\s+parcel\s+location\s+and\s+coordinates.*$/i, "The exact property location and coordinates should be confirmed using reliable survey records."],
-    [/no\s+additional\s+documents\s+were\s+supplied.*$/i, "More supporting documents are needed to clear the ownership, property, or location differences."],
-    [/confirm\s+whether\s+the\s+intended\s+parcel\s+is\s+(.+?)(?:\.|$)/i, "The correct plot/parcel needs to be confirmed."],
-    [/obtain\s+independent\s+confirmation\s+of\s+the\s+stated\s+file.*$/i, "The stated title and registration details should be independently confirmed."],
-    [/obtain\s+the\s+complete\s+title\s+instrument.*$/i, "The complete title document and referenced attachments should be provided."],
-  ];
-
-  for (const [pattern, replacement] of replacements) {
-    if (pattern.test(text)) return replacement;
-  }
-
-  return text
-    .replace(/^resolve\s+/i, "Confirm ")
-    .replace(/^reconcile\s+/i, "Confirm ")
-    .replace(/^obtain\s+/i, "Provide ")
-    .replace(/^independently\s+confirm\s+/i, "Confirm independently ")
-    .replace(/^confirm\s+whether\s+/i, "Confirm whether ")
-    .replace(/\s+/g, " ")
-    .replace(/\.$/, "") + ".";
+  return (
+    <div className="psai-gps-only">
+      <section className={styles.card}>
+        <div className={styles.cardTitle}>
+          <span>⌖</span>
+          <div><h2>GPS Analysis</h2><p>Document-reported locations and survey plot analysis.</p></div>
+        </div>
+        <p className="psai-gps-disclaimer">These coordinates and measurements come from uploaded documents, not a physical survey or government registry confirmation.</p>
+        {Object.keys(analysis).length === 0 ? (
+          <p>No GPS analysis was saved for this verification.</p>
+        ) : (
+          <>
+            <div className="psai-gps-tiles">
+              <div><span>Latitude</span><strong>{gpsFormat(marker?.latitude, 6)}</strong></div>
+              <div><span>Longitude</span><strong>{gpsFormat(marker?.longitude, 6)}</strong></div>
+              <div><span>Document Coordinate System</span><strong>{stringValue(analysis.coordinateSystem) || "Not established"}</strong></div>
+              <div><span>Plot Boundary</span><strong>{showBoundary ? "Calculated from survey beacons" : "Not established"}</strong></div>
+            </div>
+            <GPSMapOnly marker={marker} />
+            <p className="psai-gps-caption">Blue marker = the separately stated, document-reported location. The survey plot shape is displayed separately below; neither is independently verified.</p>
+            {marker && <a className="psai-gps-external" href={`https://www.openstreetmap.org/?mlat=${marker.latitude}&mlon=${marker.longitude}#map=17/${marker.latitude}/${marker.longitude}`} target="_blank" rel="noopener noreferrer">Open full map ↗</a>}
+            {!showBoundary && <div className="psai-gps-alert"><strong>Plot shape could not be confirmed</strong><p>{stringValue(diagnostics[0]?.explanation, asRecord(boundaries[0]).limitations && textArray(boundaries[0]?.limitations)[0]) || "An established beacon order and supported coordinate reference are required to draw the plot safely."}</p><p>Beacon coordinates alone do not prove the correct plot boundary.</p></div>}
+          </>
+        )}
+      </section>
+      {showBoundary && (
+        <section className={styles.card}>
+          <div className={styles.cardTitle}>
+            <span>▱</span>
+            <div>
+              <h2>Survey Plot Shape</h2>
+              <p>Separate plot outline with the validated survey beacon labels.</p>
+            </div>
+          </div>
+          <SurveyPlotShape points={plottedBoundary} area={calculatedPlotArea} />
+        </section>
+      )}
+      {measurements.length > 0 && (
+        <section className={styles.card}>
+          <div className={styles.cardTitle}><span>▱</span><div><h2>Survey Measurements</h2><p>Document-based plot area, perimeter, and side lengths.</p></div></div>
+          {measurements.map((measurement, index) => {
+            const areaComparison = asRecord(measurement.areaComparison);
+            const sides = recordArray(measurement.sideLengths);
+            return <article className="psai-gps-document" key={index}>
+              <h3>{stringValue(measurement.sourceDocument) || `Survey ${index + 1}`}</h3>
+              <div className="psai-gps-tiles">
+                <div><span>Calculated Area</span><strong>{gpsNumber(measurement.calculatedAreaSquareMeters) === null ? "Not calculated" : `${gpsFormat(measurement.calculatedAreaSquareMeters)} m²`}</strong></div>
+                <div><span>Perimeter</span><strong>{gpsNumber(measurement.perimeterMeters) === null ? "Not calculated" : `${gpsFormat(measurement.perimeterMeters)} m`}</strong></div>
+                <div><span>Stated Area</span><strong>{gpsNumber(measurement.statedAreaSquareMeters) === null ? "Not available" : `${gpsFormat(measurement.statedAreaSquareMeters)} m²`}</strong></div>
+                <div><span>Area Difference</span><strong>{gpsNumber(areaComparison.differenceSquareMeters) === null ? "Not available" : `${gpsFormat(areaComparison.differenceSquareMeters)} m²`}</strong></div>
+              </div>
+              {sides.length > 0 && <div className="psai-gps-scroll"><table><thead><tr><th>Side</th><th>Length</th></tr></thead><tbody>{sides.map((side, j) => <tr key={j}><td>{stringValue(side.fromBeacon, side.from, side.startBeacon)} → {stringValue(side.toBeacon, side.to, side.endBeacon)}</td><td>{gpsFormat(firstValue(side.distanceMeters, side.lengthMeters, side.metres))} m</td></tr>)}</tbody></table></div>}
+              {textArray(measurement.limitations).length > 0 && <p className="psai-gps-caption">{textArray(measurement.limitations).join(" ")}</p>}
+            </article>;
+          })}
+        </section>
+      )}
+      {documents.length > 0 && <section className={styles.card}>
+        <div className={styles.cardTitle}><span>⌖</span><div><h2>Survey Beacons &amp; Document Coordinates</h2><p>Original coordinates extracted from submitted documents.</p></div></div>
+        {documents.map((document, index) => {
+          const beacons = recordArray(document.surveyBeacons);
+          const reference = asRecord(document.coordinateReference);
+          return <article className="psai-gps-document" key={index}>
+            <h3>{stringValue(document.sourceDocument) || `Document ${index + 1}`}</h3>
+            <p><strong>Reported address:</strong> {stringValue(document.statedAddress) || "Not available"}</p>
+            {beacons.length > 0 && <>
+              <p><strong>Survey reference:</strong> {stringValue(reference.datum) || "Unspecified"} / UTM Zone {stringValue(reference.utmZone) || "Unspecified"}{stringValue(reference.hemisphere)}</p>
+              <p><strong>Boundary order:</strong> {textArray(document.boundarySequence).join(" → ") || "Not established"} ({document.boundarySequenceEstablished === true ? "established" : "unconfirmed"})</p>
+              <div className="psai-gps-scroll"><table><thead><tr><th>Beacon</th><th>Easting</th><th>Northing</th></tr></thead><tbody>{beacons.map((b, i) => <tr key={i}><td>{stringValue(b.beaconId) || `#${i + 1}`}</td><td>{gpsFormat(b.easting)}</td><td>{gpsFormat(b.northing)}</td></tr>)}</tbody></table></div>
+            </>}
+          </article>;
+        })}
+      </section>}
+      {(comparisons.length > 0 || locationComparisons.length > 0) && <section className={styles.card}>
+        <div className={styles.cardTitle}><span>↔</span><div><h2>Geographic Comparisons</h2><p>Position differences between submitted documents.</p></div></div>
+        {[...comparisons, ...locationComparisons].map((comparison, index) => <article className="psai-gps-document" key={index}>
+          <h3>{stringValue(comparison.firstDocument, comparison.sourceDocument, comparison.documentName) || `Comparison ${index + 1}`}{stringValue(comparison.secondDocument) ? ` ↔ ${stringValue(comparison.secondDocument)}` : ""}</h3>
+          <p>{stringValue(comparison.explanation, comparison.summary) || "No detailed explanation was saved."}</p>
+          {gpsNumber(comparison.distanceMeters) !== null && <p>Distance: {gpsFormat(comparison.distanceMeters)} m</p>}
+        </article>)}
+      </section>}
+      <section className={styles.card}>
+        <div className={styles.cardTitle}><span>!</span><div><h2>GPS Findings &amp; Limitations</h2><p>Concise findings, with detailed technical notes on demand.</p></div></div>
+        <ul className="psai-gps-findings">
+          {recordArray(analysis.structuredFindings).length > 0 ? recordArray(analysis.structuredFindings).map((finding, index) => <li key={index}><strong>{stringValue(finding.title) || "GPS finding"}</strong><p>{stringValue(finding.description)}</p></li>) : textArray(analysis.findings).slice(0, 6).map((finding, index) => <li key={index}>{finding}</li>)}
+        </ul>
+        <details><summary>View Technical GPS Findings and Limitations</summary>
+          <ul className="psai-gps-findings">{textArray(analysis.findings).map((finding, index) => <li key={index}>{finding}</li>)}{textArray(analysis.limitations).map((limitation, index) => <li key={`lim-${index}`}>{limitation}</li>)}</ul>
+        </details>
+        <p className="psai-gps-disclaimer">A calculated plot does not prove ownership, title, or registered property boundaries. Confirm material discrepancies with a licensed surveyor and relevant authorities.</p>
+      </section>
+    </div>
+  );
 }
 
-function getRiskInterpretation(risk: RiskLevel): string {
-  if (risk === "High") {
-    return "We found important warning signs in the available documents. Some information conflicts or still needs independent confirmation. Do not rely on this document for a purchase, payment, signing, or transfer until the issues are cleared and the required external checks are completed.";
-  }
-  if (risk === "Medium") {
-    return "There are issues that need clarification before you rely on the document. Complete the outstanding checks and confirm the important property and ownership details before moving forward.";
-  }
-  if (risk === "Low") {
-    return "No major warning signs were identified in the available assessment. This does not replace an official title or government search where one is required.";
-  }
-  return "The available evidence is not enough to give the property a reliable risk conclusion. More information and the outstanding checks are needed before you make a transaction decision.";
-}
+/*
+ * ============================================================
+ * RESPONSIVE CSS
+ * ============================================================
+ */
 
-function getConfidenceExplanation(confidence: number | null): string {
-  if (confidence === null) {
-    return "The Essential engine did not provide a confidence score. More evidence may be needed for a stronger assessment.";
-  }
-  if (confidence < 50) {
-    return `The ${confidence}% score means the available evidence was not strong enough for the Essential analysis to be highly confident. This is an analysis-confidence measure, not a probability of fraud.`;
-  }
-  return `The Essential engine has ${confidence}% confidence in the available analysis and evidence. This is an analysis-confidence measure, not a probability that the property is genuine or fraudulent.`;
-}
+const RESPONSIVE_CSS = `
+  /* New GPS tab only: no overrides to existing results styles */
+  .psai-gps-only .psai-gps-survey-plot{margin-top:16px;width:100%;min-width:0}
+  .psai-gps-only .psai-gps-survey-plot svg{display:block;width:100%;height:auto;border:1px solid #dce6f2;border-radius:12px;box-sizing:border-box}
 
-function getEffectiveEssentialStatus(
-  verification: VerificationRecord,
-  findings: Record<string, unknown>,
-  checks: VerificationChecks,
-): "Pending" | "Verified" | "Flagged" {
-  const storedStatus = normalizeReportStatus(verification.status);
+  .psai-gps-only .psai-gps-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+  .psai-gps-only .psai-gps-tiles>div{min-width:0;padding:14px;border:1px solid #dce4ed;border-radius:11px;background:#f8fafc}
+  .psai-gps-only .psai-gps-tiles span{display:block;font-size:12px;color:#52647b;margin-bottom:5px}
+  .psai-gps-only .psai-gps-tiles strong{color:#1d365a;font-size:15px;overflow-wrap:anywhere}
+  .psai-gps-only .psai-gps-leaflet{width:100%;height:390px;min-height:300px;border-radius:12px;z-index:0;margin:16px 0;overflow:hidden}
+  .psai-gps-only .psai-gps-caption{color:#53677c;font-size:12px;line-height:1.6;margin:12px 0}
+  .psai-gps-only .psai-gps-alert{border:1px solid #efdfc6;background:#fffaf3;padding:16px;border-radius:12px;margin-top:16px}
+  .psai-gps-only .psai-gps-alert p{font-size:13px;line-height:1.65}
+  .psai-gps-only .psai-gps-disclaimer{padding:12px;border-left:3px solid #d6a23c;background:#fffaf0;font-size:12px;line-height:1.65}
+  .psai-gps-only .psai-gps-document{border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-top:13px;overflow-wrap:anywhere}
+  .psai-gps-only .psai-gps-document h3{font-size:14px;color:#1b375c;margin:0 0 10px}
+  .psai-gps-only .psai-gps-scroll{overflow-x:auto;margin:12px 0;border:1px solid #e2e8f0;border-radius:10px}
+  .psai-gps-only table{width:100%;border-collapse:collapse;min-width:340px;font-size:12px}
+  .psai-gps-only th,.psai-gps-only td{padding:11px;text-align:left;border-bottom:1px solid #e2e8f0}
+  .psai-gps-only th{background:#eef3fa}
+  .psai-gps-only .psai-gps-findings{padding-left:24px;color:#364b65;line-height:1.65;font-size:13px}
+  .psai-gps-only .psai-gps-findings li{margin-bottom:10px}
+  .psai-gps-only .psai-gps-findings p{margin:2px 0}
+  .psai-gps-only details{margin-top:14px;border:1px solid #e1e9f3;padding:12px;border-radius:10px}
+  .psai-gps-only summary{cursor:pointer;color:#2d5eab;font-weight:650}
+  .psai-gps-only .psai-gps-external{display:inline-block;color:#255ccc;margin-top:4px}
+  @media(max-width:767px){.psai-gps-only .psai-gps-leaflet{height:330px}.psai-gps-only .psai-gps-tiles{grid-template-columns:minmax(0,1fr)}}
 
-  // A final canonical status always wins.
-  if (storedStatus === "Verified" || storedStatus === "Flagged") {
-    return storedStatus;
-  }
+  /*
+   * ----------------------------------------------------------
+   * DEFAULT DESKTOP / MOBILE VISIBILITY
+   * ----------------------------------------------------------
+   */
 
-  // Legacy records can still contain status="pending" after the AI engine
-  // has already produced its findings. Resolve those records from the actual
-  // Essential evidence so the report does not incorrectly remain pending.
-  const risk = normalizeRisk(firstValue(
-    getNested(findings, "essential", "risk"),
-    findings.risk,
-    verification.risk,
-  ));
-
-  const hasAttention = (Object.keys(checks) as Array<keyof VerificationChecks>)
-    .some((key) => checks[key] === false);
-
-  const hasInconclusive = (Object.keys(checks) as Array<keyof VerificationChecks>)
-    .some((key) => checks[key] === null);
-
-  if (risk === "High" || hasAttention) return "Flagged";
-
-  if (!hasInconclusive) {
-    const hasAnyCheck = (Object.keys(checks) as Array<keyof VerificationChecks>)
-      .some((key) => checks[key] !== null);
-
-    if (hasAnyCheck) return "Verified";
+  .psai-desktop-hero,
+  .psai-desktop-scope,
+  .psai-desktop-documents {
+    display: block;
   }
 
-  // If no conclusive AI evidence exists yet, remain pending.
-  return "Pending";
-}
+  .psai-mobile-heading,
+  .psai-mobile-scope,
+  .psai-mobile-documents,
+  .psai-mobile-tab-hint {
+    display: none;
+  }
 
-function isEssentialAnalysisComplete(status: "Pending" | "Verified" | "Flagged"): boolean {
-  return status === "Verified" || status === "Flagged";
-}
+  /*
+   * ----------------------------------------------------------
+   * PREMIUM MANIPULATION INDICATORS
+   * ----------------------------------------------------------
+   */
+
+  .psai-indicator-list {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    margin-top: 15px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .psai-indicator-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    width: 100%;
+    min-width: 0;
+    padding: 15px 16px;
+    border-radius: 12px;
+    border: 1px solid #e3e9f0;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(25, 45, 78, 0.035);
+    box-sizing: border-box;
+  }
+
+  .psai-indicator-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 0 0 25px;
+    width: 25px;
+    height: 25px;
+    border-radius: 8px;
+    background: #fff0ed;
+    border: 1px solid #f7dcd6;
+    color: #ba5145;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .psai-indicator-card p {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    color: #42536b;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+
+  .psai-no-indicators {
+    color: #718198;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /*
+   * ----------------------------------------------------------
+   * PREMIUM ANALYSIS SUMMARY TYPOGRAPHY
+   * ----------------------------------------------------------
+   */
+
+  .psai-summary-executive-text,
+  .psai-summary-meaning-text,
+  .psai-recommendation-text {
+    margin: 0;
+    color: #344861;
+    font-size: 15px;
+    font-weight: 650;
+    line-height: 1.75;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .psai-summary-executive-text {
+    margin-top: 12px;
+  }
+
+  .psai-summary-meaning-text {
+    margin-top: 9px;
+  }
+
+  .psai-recommendation-section {
+    padding: 24px;
+  }
+
+  .psai-recommendation-label {
+    display: block;
+    margin-bottom: 15px;
+    color: #435e95;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+
+  .psai-recommendation-text + .psai-recommendation-text {
+    margin-top: 14px;
+  }
+
+  /*
+   * ----------------------------------------------------------
+   * OUTSTANDING ISSUES
+   * ----------------------------------------------------------
+   */
+
+  .psai-outstanding-list {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    margin-top: 16px;
+  }
+
+  .psai-outstanding-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 15px;
+    border: 1px solid #e5eaf2;
+    border-radius: 12px;
+    background: #ffffff;
+    box-sizing: border-box;
+  }
+
+  .psai-outstanding-dot {
+    flex: 0 0 22px;
+    height: 22px;
+    width: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #f4dbd8;
+    border-radius: 50%;
+    background: #fff3f1;
+    color: #ba5145;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .psai-outstanding-item p {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.65;
+    color: #40526b;
+    overflow-wrap: anywhere;
+  }
+
+  /*
+   * ----------------------------------------------------------
+   * MOBILE STYLES
+   * ----------------------------------------------------------
+   */
+
+  @media (max-width: 767px) {
+    .psai-desktop-hero,
+    .psai-desktop-scope,
+    .psai-desktop-documents {
+      display: none !important;
+    }
+
+    /*
+     * COMPACT MOBILE REPORT HEADER
+     */
+
+    .psai-mobile-heading {
+      display: block !important;
+      padding: 0 2px;
+      margin: 0 0 12px;
+    }
+
+    .psai-mobile-heading-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .psai-mobile-heading-eyebrow {
+      display: block;
+      color: #64748b;
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .psai-mobile-heading h1 {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: #172b4d;
+      letter-spacing: -0.035em;
+    }
+
+    .psai-mobile-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px 7px;
+      margin-top: 7px;
+      color: #64748b;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .psai-mobile-status {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      border-radius: 999px;
+      border: 1px solid #c7e8d3;
+      background: #eefbf2;
+      color: #16713b;
+      font-size: 10px;
+      font-weight: 750;
+      padding: 6px 9px;
+      white-space: nowrap;
+    }
+
+    .psai-mobile-status.pending {
+      background: #fff8e7;
+      border-color: #f6dda7;
+      color: #9a6700;
+    }
+
+    /*
+     * FOUR MOBILE METRIC CARDS
+     */
+
+    .psai-responsive-metrics {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 10px !important;
+      margin-top: 0 !important;
+      margin-bottom: 12px !important;
+      min-width: 0;
+    }
+
+    .psai-responsive-metrics > * {
+      min-width: 0 !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      margin: 0 !important;
+      padding: 12px !important;
+    }
+
+    .psai-responsive-metrics > * strong {
+      display: block;
+      font-size: clamp(17px, 5vw, 23px) !important;
+      line-height: 1.25 !important;
+      overflow-wrap: anywhere;
+      margin-top: 5px;
+    }
+
+    .psai-responsive-metrics > * span {
+      font-size: 10px !important;
+    }
+
+    .psai-responsive-metrics > * p {
+      display: none !important;
+    }
+
+    /*
+     * MOBILE ASSESSMENT SCOPE
+     */
+
+    .psai-mobile-scope {
+      display: block !important;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+    }
+
+    .psai-mobile-scope p {
+      color: #475569;
+      font-size: 11px;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .psai-mobile-scope strong {
+      color: #243b53;
+    }
+
+    /*
+     * MOBILE TABS AND SWIPE INDICATOR
+     */
+
+    .psai-tab-navigation {
+      position: relative;
+      min-width: 0;
+    }
+
+    .psai-responsive-tabs {
+      display: flex !important;
+      flex-wrap: nowrap !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scroll-behavior: smooth;
+      min-width: 0;
+    }
+
+    .psai-responsive-tabs > button {
+      flex: 0 0 auto !important;
+      white-space: nowrap;
+      min-height: 40px;
+      font-size: 11px !important;
+      padding: 9px 13px !important;
+    }
+
+    .psai-mobile-tab-hint {
+      display: flex !important;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 4px 12px;
+      color: #5475bc;
+      font-size: 10px;
+      font-weight: 650;
+    }
+
+    .psai-mobile-tab-hint-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #eaf1ff;
+      color: #275ad4;
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .psai-mobile-tab-hint-hidden {
+      display: none !important;
+    }
+
+    .psai-tab-right-control {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 2px;
+      right: 0;
+      height: 36px;
+      width: 29px;
+      z-index: 2;
+      border: none;
+      border-radius: 0 9px 9px 0;
+      background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0.8),
+        #ffffff 55%
+      );
+      color: #2e5cce;
+      font-size: 23px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /*
+     * MOBILE DOCUMENT CARDS
+     */
+
+    .psai-mobile-documents {
+      display: flex !important;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      min-width: 0;
+      margin-top: 16px;
+    }
+
+    .psai-mobile-document-card {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      gap: 12px;
+      padding: 15px;
+      border-radius: 14px;
+      border: 1px solid #e0e7f0;
+      background: #ffffff;
+      box-shadow: 0 3px 10px rgba(24,44,74,0.04);
+    }
+
+    .psai-mobile-document-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 9px;
+    }
+
+    .psai-mobile-document-identity {
+      display: flex;
+      min-width: 0;
+      flex: 1;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .psai-mobile-document-number {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      height: 26px;
+      min-width: 26px;
+      border-radius: 8px;
+      background: #eef3ff;
+      color: #3564d9;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .psai-mobile-document-name {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .psai-mobile-document-name h3 {
+      margin: 0;
+      color: #203452;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .psai-mobile-document-name p {
+      margin: 5px 0 0;
+      color: #718198;
+      font-size: 11px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .psai-mobile-document-confidence {
+      flex-shrink: 0;
+      color: #3156aa;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .psai-mobile-document-confidence small {
+      display: block;
+      color: #8190a2;
+      font-size: 9px;
+      font-weight: 500;
+      text-align: right;
+      margin-bottom: 2px;
+    }
+
+    .psai-mobile-document-status {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .psai-mobile-document-status span {
+      font-size: 10px;
+      font-weight: 750;
+      border-radius: 999px;
+      padding: 6px 9px;
+      background: #fff1ef;
+      color: #c34a43;
+      border: 1px solid #fbd9d4;
+    }
+
+    .psai-mobile-document-status span.reviewed {
+      color: #236c51;
+      background: #eef9f3;
+      border-color: #d5eddf;
+    }
+
+    .psai-mobile-document-reference {
+      color: #8491a3;
+      font-size: 10px;
+      overflow-wrap: anywhere;
+    }
+
+    .psai-mobile-view-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 43px;
+      border-radius: 10px;
+      border: 1px solid #2e60db;
+      background: #2f66eb;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .psai-mobile-view-button:active {
+      background: #1947b6;
+    }
+
+    .psai-mobile-document-note {
+      margin-top: 14px !important;
+      padding: 12px !important;
+    }
+
+    .psai-mobile-document-note p {
+      font-size: 11px;
+    }
+
+    /*
+     * PREMIUM INDICATOR CARD MOBILE SPACING
+     */
+
+    .psai-indicator-list {
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .psai-indicator-card {
+      padding: 12px;
+      gap: 11px;
+      border-radius: 11px;
+    }
+
+    .psai-indicator-icon {
+      flex-basis: 23px;
+      width: 23px;
+      height: 23px;
+    }
+
+    .psai-indicator-card p {
+      font-size: 12px;
+      line-height: 1.65;
+      font-weight: 500;
+    }
+
+    /*
+     * SUMMARY TYPOGRAPHY CONSISTENCY
+     *
+     * Identical paragraph styling for:
+     * Executive Assessment
+     * What This Means for You
+     * Recommended Next Steps
+     */
+
+    .psai-summary-executive-text,
+    .psai-summary-meaning-text,
+    .psai-recommendation-text {
+      font-size: 14px !important;
+      line-height: 1.7 !important;
+      font-weight: 650 !important;
+      color: #344861 !important;
+      letter-spacing: 0 !important;
+    }
+
+    .psai-recommendation-section {
+      padding: 18px 15px;
+    }
+
+    /*
+     * COMPACT MOBILE BOTTOM BUTTONS
+     */
+
+    .psai-mobile-actions {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      justify-content: flex-start !important;
+      gap: 10px !important;
+      width: 100% !important;
+    }
+
+    .psai-mobile-actions-right {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      justify-content: flex-start !important;
+      flex-wrap: nowrap !important;
+      gap: 10px !important;
+      width: 100% !important;
+      flex: 0 0 auto !important;
+      min-height: 0 !important;
+    }
+
+    .psai-mobile-actions > button,
+    .psai-mobile-actions-right > button {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: 46px !important;
+      min-height: 46px !important;
+      max-height: 46px !important;
+      flex: 0 0 46px !important;
+      align-self: stretch !important;
+      margin: 0 !important;
+      padding: 0 14px !important;
+      box-sizing: border-box !important;
+      border-radius: 10px !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      line-height: 1.3 !important;
+      white-space: normal !important;
+      cursor: pointer !important;
+    }
+  }
+
+  /*
+   * ----------------------------------------------------------
+   * VERY SMALL SCREENS
+   * ----------------------------------------------------------
+   */
+
+  @media (max-width: 360px) {
+    .psai-mobile-heading h1 {
+      font-size: 19px;
+    }
+
+    .psai-responsive-metrics {
+      gap: 7px !important;
+    }
+
+    .psai-responsive-metrics > * {
+      padding: 10px !important;
+    }
+
+    .psai-mobile-document-card {
+      padding: 12px;
+    }
+
+    .psai-mobile-document-confidence {
+      font-size: 13px;
+    }
+  }
+`;
+
+/*
+ * ============================================================
+ * MAIN REPORT
+ * ============================================================
+ */
 
 function EssentialReportContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const verificationId = searchParams.get("id") || "";
 
-  const [verification, setVerification] = useState<VerificationRecord | null>(null);
-  const [payment, setPayment] = useState<PaymentRecord | null>(null);
+  const verificationId =
+    searchParams.get("id") || "";
+
+  const [
+    verification,
+    setVerification,
+  ] = useState<VerificationRecord | null>(null);
+
+  const [
+    payment,
+    setPayment,
+  ] = useState<PaymentRecord | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<"documents" | "checks" | "property" | "summary">("documents");
-  const [selectedDocument, setSelectedDocument] = useState<PackageDocument | null>(null);
-  const [selectedDocumentIndex, setSelectedDocumentIndex] = useState(-1);
-  const [selectedDocumentUrl, setSelectedDocumentUrl] = useState("");
-  const [previewLoading, setPreviewLoading] = useState(false);
-  const [previewError, setPreviewError] = useState("");
+
+  const [activeTab, setActiveTab] =
+    useState<Tab>("documents");
+
+  const [
+    selectedDocument,
+    setSelectedDocument,
+  ] = useState<PackageDocument | null>(null);
+
+  const [selectedIndex, setSelectedIndex] =
+    useState(-1);
+
+  const [previewUrl, setPreviewUrl] =
+    useState("");
+
+  const [
+    previewLoading,
+    setPreviewLoading,
+  ] = useState(false);
+
+  const [
+    previewError,
+    setPreviewError,
+  ] = useState("");
+
   const previewRequestId = useRef(0);
+
+  /*
+   * MOBILE TAB SCROLL STATE
+   */
+
+  const tabNavRef =
+    useRef<HTMLElement | null>(null);
+
+  const [canScrollTabsRight, setCanScrollTabsRight] =
+    useState(false);
+
+  const [canScrollTabsLeft, setCanScrollTabsLeft] =
+    useState(false);
+
+  /*
+   * ==========================================================
+   * LOAD VERIFICATION
+   * ==========================================================
+   */
 
   useEffect(() => {
     let mounted = true;
 
-    async function loadReport() {
-      if (!verificationId) {
-        setError("Verification ID is missing.");
-        setLoading(false);
+    async function loadResult() {
+      setLoading(true);
+      setError("");
+      setVerification(null);
+
+      const numericId = Number(verificationId);
+
+      if (
+        !verificationId ||
+        !Number.isSafeInteger(numericId) ||
+        numericId <= 0
+      ) {
+        if (mounted) {
+          setError(
+            "A valid verification ID is required.",
+          );
+          setLoading(false);
+        }
+
         return;
       }
 
       try {
-        const numericId = Number(verificationId);
-        const query = Number.isFinite(numericId)
-          ? supabase.from("verifications").select("id,user_id,doc_name,file_url,doc_type,status,trust_score,confidence,risk,findings").eq("id", numericId).maybeSingle()
-          : supabase.from("verifications").select("id,user_id,doc_name,file_url,doc_type,status,trust_score,confidence,risk,findings").eq("id", verificationId).maybeSingle();
-
-        const { data, error: verificationError } = await query;
-        if (verificationError) throw verificationError;
-        if (!data) throw new Error("Verification record could not be found.");
-
-        const { data: paymentData } = await supabase
-          .from("payments")
-          .select("plan,status,amount,paid_at")
-          .eq("verification_id", data.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
+        const {
+          data,
+          error: dbError,
+        } = await supabase
+          .from("verifications")
+          .select(
+            "id,user_id,doc_name,file_url,doc_type,status,trust_score,confidence,risk,findings",
+          )
+          .eq("id", numericId)
           .maybeSingle();
 
-        if (mounted) {
-          setVerification(data as VerificationRecord);
-          setPayment((paymentData || null) as PaymentRecord | null);
+        if (dbError) throw dbError;
+
+        if (!data) {
+          throw new Error(
+            "Verification record not found.",
+          );
         }
-      } catch (loadError) {
-        console.error("PROFESSIONAL REPORT LOAD ERROR:", loadError);
-        if (mounted) setError(loadError instanceof Error ? loadError.message : "Unable to load the Essential report.");
+
+        const { data: paymentData } =
+          await supabase
+            .from("payments")
+            .select(
+              "plan,status,amount,paid_at",
+            )
+            .eq(
+              "verification_id",
+              numericId,
+            )
+            .order(
+              "created_at",
+              { ascending: false },
+            )
+            .limit(1)
+            .maybeSingle();
+
+        if (!mounted) return;
+
+        setVerification(
+          data as VerificationRecord,
+        );
+
+        setPayment(
+          (paymentData || null) as
+            PaymentRecord | null,
+        );
+      } catch (err) {
+        if (!mounted) return;
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "The verification result could not be loaded.",
+        );
       } finally {
         if (mounted) setLoading(false);
       }
     }
 
-    void loadReport();
+    void loadResult();
+
     return () => {
       mounted = false;
     };
   }, [verificationId]);
 
-  const findings = useMemo(() => asRecord(verification?.findings), [verification]);
-  const documents = useMemo(() => getPackageDocuments(findings, verification || { id: verificationId }), [findings, verification, verificationId]);
-  const location = useMemo(() => getLocation(findings), [findings]);
+  /*
+   * ==========================================================
+   * RESPONSIVE TAB SCROLL DETECTION
+   * ==========================================================
+   */
 
-  const trustScore = clampScore(numberValue(
-    getNested(findings, "essential", "trust_score"),
-    findings.trust_score,
-    verification?.trust_score,
-  ));
-  const confidence = clampScore(numberValue(
-    getNested(findings, "essential", "confidence"),
-    findings.confidence,
-    verification?.confidence,
-  ));
-  const overallRisk = normalizeRisk(firstValue(
-    getNested(findings, "essential", "risk"),
-    findings.risk,
-    verification?.risk,
-  ));
-  const assessment = getAssessment(findings, verification || { id: verificationId });
-  const recommendation = getRecommendation(findings, assessment);
+  useEffect(() => {
+    const nav = tabNavRef.current;
 
-  const property = asRecord(firstValue(
-    findings.property,
-    getNested(findings, "essential", "property"),
-  ));
-  const ownership = asRecord(firstValue(
-    findings.ownership,
-    getNested(findings, "essential", "ownership"),
-    getNested(findings, "essential", "title"),
-  ));
-  const coreDocumentChecks = useMemo(
-    () => getEssentialChecks(findings),
+    if (!nav) return;
+
+    function updateTabScroll() {
+      if (!nav) return;
+
+      const remaining =
+        nav.scrollWidth -
+        nav.clientWidth -
+        nav.scrollLeft;
+
+      setCanScrollTabsRight(
+        remaining > 5,
+      );
+
+      setCanScrollTabsLeft(
+        nav.scrollLeft > 5,
+      );
+    }
+
+    updateTabScroll();
+
+    nav.addEventListener(
+      "scroll",
+      updateTabScroll,
+      { passive: true },
+    );
+
+    window.addEventListener(
+      "resize",
+      updateTabScroll,
+    );
+
+    const observer =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(updateTabScroll)
+        : null;
+
+    observer?.observe(nav);
+
+    return () => {
+      nav.removeEventListener(
+        "scroll",
+        updateTabScroll,
+      );
+
+      window.removeEventListener(
+        "resize",
+        updateTabScroll,
+      );
+
+      observer?.disconnect();
+    };
+  }, [loading, verification]);
+
+  function scrollTabsRight() {
+    const nav = tabNavRef.current;
+
+    if (!nav) return;
+
+    nav.scrollBy({
+      left: Math.max(
+        140,
+        nav.clientWidth * 0.65,
+      ),
+      behavior: "smooth",
+    });
+  }
+
+  function selectTab(tab: Tab) {
+    setActiveTab(tab);
+
+    const nav = tabNavRef.current;
+
+    if (!nav) return;
+
+    const buttons =
+      nav.querySelectorAll("button[data-report-tab]");
+
+    const matchingButton = Array.from(
+      buttons,
+    ).find(
+      (button) =>
+        button.getAttribute("data-report-tab") === tab,
+    );
+
+    if (matchingButton) {
+      matchingButton.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "nearest",
+      });
+    }
+  }
+
+  /*
+   * ==========================================================
+   * SAVED REPORT DATA
+   * ==========================================================
+   */
+
+  const findings = useMemo(
+    () =>
+      asRecord(
+        verification?.findings,
+      ),
+    [verification],
+  );
+
+  const essential = useMemo(
+    () =>
+      asRecord(
+        findings.essential,
+      ),
     [findings],
   );
 
-  const crossDocument = asRecord(firstValue(
-    findings.cross_document_analysis,
-    getNested(findings, "essential", "cross_document_analysis"),
-  ));
-  const propertyType = stringValue(property.property_type, property.type, findings.property_type) || "Not conclusive";
-  const propertyLocation = stringValue(property.location, property.address, findings.property_location, location.detectedLocation) || "Not conclusive";
-  const completedAt = stringValue(
-    getNested(findings, "essential", "completed_at"),
-    getNested(findings, "essential", "completedAt"),
-    payment?.paid_at,
+  const documents = useMemo(
+    () =>
+      verification
+        ? getPackageDocuments(
+            findings,
+            verification,
+          )
+        : [],
+    [findings, verification],
   );
 
-  const effectiveEssentialStatus = getEffectiveEssentialStatus(
-    verification || { id: verificationId },
-    findings,
-    coreDocumentChecks,
+  const gpsAnalysis = useMemo(
+    () => asRecord(firstValue(essential.gps_analysis, findings.gps_analysis)),
+    [essential, findings],
   );
 
-  const essentialAnalysisComplete = isEssentialAnalysisComplete(
-    effectiveEssentialStatus,
+  const checks = useMemo(
+    () =>
+      normalizeChecks(
+        firstValue(
+          essential.checks,
+          essential.verification_checks,
+          findings.checks,
+        ),
+      ),
+    [essential, findings],
   );
 
-  const packageStatus = effectiveEssentialStatus;
+  const propertyDetails = useMemo(
+    () =>
+      getPropertyDetails(
+        findings,
+        documents,
+      ),
+    [findings, documents],
+  );
 
-  const executiveSummary = stringValue(
-    getNested(findings, "essential", "executive_summary"),
+  const trustScore = scoreValue(
+    essential.trust_score,
+    findings.trust_score,
+    verification?.trust_score,
+  );
+
+  const confidence = scoreValue(
+    essential.confidence,
+    findings.confidence,
+    verification?.confidence,
+  );
+
+  const risk = normalizeRisk(
+    firstValue(
+      essential.risk,
+      findings.risk,
+      verification?.risk,
+    ),
+  );
+
+  const storedReviewStatus =
+    stringValue(
+      essential.review_status,
+      findings.review_status,
+    ).toLowerCase();
+
+  const hasFlaggedChecks =
+    CHECK_KEYS.some(
+      (key) => checks[key] === false,
+    );
+
+  const hasAnyChecks =
+    CHECK_KEYS.some(
+      (key) => checks[key] !== null,
+    );
+
+  const completed =
+    verification?.status === "processed" ||
+    stringValue(
+      nested(
+        findings,
+        "processing",
+        "stage",
+      ),
+    ) === "complete";
+
+  const packageStatus =
+    storedReviewStatus === "flagged" ||
+    risk === "High" ||
+    hasFlaggedChecks
+      ? "Flagged"
+      : storedReviewStatus === "verified"
+        ? "AI Reviewed"
+        : completed && hasAnyChecks
+          ? "AI Reviewed"
+          : completed
+            ? "Processed"
+            : "Pending";
+
+  const packageSummary = stringValue(
+    essential.executive_summary,
+    essential.summary,
     findings.executive_summary,
-  ) || "The Essential report will present the consolidated assessment once the AI verification engine has supplied its findings.";
-
-  const recommendationReason = stringValue(
-    getNested(findings, "essential", "recommendation", "reason"),
-    findings.recommendation_reason,
-  ) || "The recommendation is based on the available verification findings and outstanding issues.";
-
-  const recommendationText = stringValue(
-    getNested(findings, "essential", "recommendation", "text"),
-    findings.recommendation_text,
-    getNested(findings, "essential", "recommendation", "reason"),
-  ) || "This recommendation is based on the available AI document, property, ownership, location, and risk evidence.";
-
-  const professionalKeyFindingsRaw = firstValue(
-    getNested(findings, "essential", "key_findings"),
-    findings.key_findings,
-    getNested(findings, "essential", "findings"),
+    findings.summary,
   );
 
-  const professionalKeyFindings: string[] = Array.isArray(professionalKeyFindingsRaw)
-    ? professionalKeyFindingsRaw
-        .map((item) => stringValue(item))
-        .filter(Boolean)
-    : stringValue(professionalKeyFindingsRaw)
-        ? [stringValue(professionalKeyFindingsRaw)]
-        : [];
+  const documentSummaries =
+    documents
+      .map(
+        (document) =>
+          stringValue(
+            document.summary,
+          ),
+      )
+      .filter(Boolean);
 
-  const outstandingIssues = firstValue(
-    getNested(findings, "essential", "outstanding_issues"),
-    findings.outstanding_issues,
-    findings.issues,
+  const manipulationIndicators =
+    Array.from(
+      new Set(
+        documents.flatMap(
+          (document) =>
+            textArray(
+              document.manipulationIndicators,
+            ),
+        ),
+      ),
+    );
+
+  /*
+   * OUTSTANDING ISSUES
+   *
+   * We keep this section.
+   *
+   * Key Findings is no longer presented as a separate
+   * duplicate section in Analysis Summary.
+   */
+
+  const savedOutstandingIssues =
+    textArray(
+      firstValue(
+        essential.outstanding_issues,
+        findings.outstanding_issues,
+        findings.issues,
+      ),
+    );
+
+  const outstandingIssues =
+    savedOutstandingIssues.length > 0
+      ? savedOutstandingIssues
+      : manipulationIndicators;
+
+  const knowledgeUnderstanding =
+    asRecord(
+      firstValue(
+        essential.documentUnderstanding,
+        findings.documentUnderstanding,
+        essential.document_understanding,
+        findings.document_understanding,
+      ),
+    ) as DocumentUnderstanding;
+
+  const understandingSections: Array<{
+    label: string;
+    values: string[];
+  }> = [
+    {
+      label: "Observed Fields",
+      values: textArray(
+        knowledgeUnderstanding.observedFields,
+      ),
+    },
+    {
+      label: "Reference Structure",
+      values: textArray(
+        knowledgeUnderstanding.referenceStructure,
+      ),
+    },
+    {
+      label: "Terminology",
+      values: textArray(
+        knowledgeUnderstanding.terminology,
+      ),
+    },
+    {
+      label: "Missing or Unclear Fields",
+      values: textArray(
+        knowledgeUnderstanding.missingOrUnclearFields,
+      ),
+    },
+    {
+      label: "Understanding Notes",
+      values: textArray(
+        knowledgeUnderstanding.notes,
+      ),
+    },
+  ];
+
+  const hasKnowledgeUnderstanding =
+    understandingSections.some(
+      (section) =>
+        section.values.length > 0,
+    );
+
+  const completedAt = stringValue(
+    essential.completed_at,
+    essential.completedAt,
   );
 
-  const issueItems: string[] = Array.isArray(outstandingIssues)
-    ? outstandingIssues.map((issue) => stringValue(issue)).filter(Boolean)
-    : [];
+  const availablePropertyDetails =
+    propertyDetails.filter(
+      (item) =>
+        item.source !== "unavailable",
+    );
 
-  const summaryFindings = professionalKeyFindings.length > 0
-    ? professionalKeyFindings
-    : issueItems;
+  const missingPropertyDetails =
+    propertyDetails.filter(
+      (item) =>
+        item.source === "unavailable",
+    );
 
-  const userFriendlyFindings = summaryFindings
-    .map(simplifyFinding)
-    .filter(Boolean);
+  /*
+   * ==========================================================
+   * DOCUMENT PREVIEW
+   * ==========================================================
+   */
 
-  const essentialAnalysisNarrative = packageStatus === "Pending"
-    ? `Your Essential verification is still being processed. ${documents.length > 0 ? `${documents.length} document${documents.length === 1 ? " is" : "s are"} already in the verification package. ` : ""}The final Essential assessment will appear when the AI verification engine supplies conclusive findings.`
-    : executiveSummary.startsWith("The Essential report will present")
-      ? `We reviewed ${documents.length} document${documents.length === 1 ? "" : "s"} in this Essential package. The current result is ${overallRisk.toLowerCase()} risk based on the available AI evidence.`
-      : executiveSummary;
+  async function openDocument(
+    document: PackageDocument,
+    index: number,
+  ) {
+    const requestId =
+      ++previewRequestId.current;
 
-  const verificationStatusCounts = useMemo(() => {
-    const counts = {
-      Verified: 0,
-      "Attention Required": 0,
-      Pending: 0,
-      "Not Conclusive": 0,
-    };
-
-    (Object.keys(coreDocumentChecks) as Array<keyof VerificationChecks>).forEach((key) => {
-      const value = coreDocumentChecks[key];
-      if (value === true) counts.Verified += 1;
-      else if (value === false) counts["Attention Required"] += 1;
-      else counts["Not Conclusive"] += 1;
-    });
-
-    return counts;
-  }, [coreDocumentChecks]);
-
-  const confidenceNarrative = getConfidenceExplanation(confidence);
-  const riskInterpretation = getRiskInterpretation(overallRisk);
-  const userActionMessage = overallRisk === "High"
-    ? "Before you pay, sign, transfer money, or rely on this property document, resolve the issues identified in the AI assessment before proceeding."
-    : overallRisk === "Medium"
-      ? "Before proceeding, clarify the issues identified in the AI assessment before proceeding."
-      : overallRisk === "Low"
-        ? "The available assessment is encouraging, but complete any required official checks before completing the transaction."
-        : "Do not make a final transaction decision yet. More evidence and verification are needed.";
-
-  const crossDocumentRows: DetailRow[] = [
-    ["Owner / Applicant Name", firstValue(crossDocument.owner_name, crossDocument.ownerName, ownership.owner_name, ownership.name, findings.owner_name)],
-    ["Property Description", firstValue(crossDocument.property_description, property.description, findings.property_description)],
-    ["Plot / Block", firstValue(crossDocument.plot_block, crossDocument.plot, property.plot, property.block, findings.plot_number)],
-    ["Survey Information", firstValue(crossDocument.survey_reference, property.survey_reference, findings.survey_reference)],
-    ["Location", firstValue(crossDocument.location, propertyLocation)],
-    ["Land Size", firstValue(crossDocument.land_size, property.land_size, property.area, findings.land_size)],
-    ["Title Reference", firstValue(crossDocument.title_reference, ownership.title_reference, findings.title_reference)],
-    ["Relevant Dates", firstValue(crossDocument.dates, property.date, findings.relevant_dates)],
-  ];
-
-  const ownershipRows: DetailRow[] = [
-    ["Named Owner", firstValue(ownership.owner_name, ownership.name, findings.owner_name)],
-    ["Title Reference", firstValue(ownership.title_reference, ownership.reference, findings.title_reference)],
-    ["Ownership Status", firstValue(ownership.status, findings.ownership_status)],
-  ];
-
-  const propertyRows: DetailRow[] = [
-    ["Property Type", propertyType],
-    ["Location", propertyLocation],
-    ["Land Size", firstValue(property.land_size, property.area, findings.land_size)],
-    ["Property Description", firstValue(property.description, findings.property_description)],
-  ];
-
-
-  async function openDocument(document: PackageDocument, index: number) {
-    const requestId = ++previewRequestId.current;
     setSelectedDocument(document);
-    setSelectedDocumentIndex(index);
-    setSelectedDocumentUrl("");
+    setSelectedIndex(index);
+    setPreviewUrl("");
     setPreviewError("");
     setPreviewLoading(true);
 
     try {
-      const path = stringValue(document.path);
-      const storagePath = path ? getStorageObjectPath(path) : null;
+      const path =
+        stringValue(
+          document.path,
+        );
+
+      const storagePath =
+        getStorageObjectPath(path);
+
       if (storagePath) {
-        const { data, error: signedUrlError } = await supabase.storage
+        const {
+          data,
+          error: storageError,
+        } = await supabase.storage
           .from(STORAGE_BUCKET)
-          .createSignedUrl(storagePath, 60 * 60);
-        if (signedUrlError) throw new Error(signedUrlError.message);
-        if (!data?.signedUrl) throw new Error("A secure document preview URL could not be created.");
-        if (requestId === previewRequestId.current) setSelectedDocumentUrl(data.signedUrl);
+          .createSignedUrl(
+            storagePath,
+            3600,
+          );
+
+        if (storageError) {
+          throw storageError;
+        }
+
+        if (!data?.signedUrl) {
+          throw new Error(
+            "Secure preview URL unavailable.",
+          );
+        }
+
+        if (
+          requestId ===
+          previewRequestId.current
+        ) {
+          setPreviewUrl(
+            data.signedUrl,
+          );
+        }
+
         return;
       }
+
       if (/^https?:\/\//i.test(path)) {
-        if (requestId === previewRequestId.current) setSelectedDocumentUrl(path);
+        if (
+          requestId ===
+          previewRequestId.current
+        ) {
+          setPreviewUrl(path);
+        }
+
         return;
       }
-      throw new Error("The document location could not be resolved.");
-    } catch (previewLoadError) {
-      console.error("DOCUMENT PREVIEW ERROR:", previewLoadError);
-      if (requestId === previewRequestId.current) {
-        setPreviewError(previewLoadError instanceof Error ? previewLoadError.message : "Unable to load the document preview.");
+
+      throw new Error(
+        "Document file location unavailable.",
+      );
+    } catch (err) {
+      if (
+        requestId ===
+        previewRequestId.current
+      ) {
+        setPreviewError(
+          err instanceof Error
+            ? err.message
+            : "Document preview could not be loaded.",
+        );
       }
     } finally {
-      if (requestId === previewRequestId.current) setPreviewLoading(false);
+      if (
+        requestId ===
+        previewRequestId.current
+      ) {
+        setPreviewLoading(false);
+      }
     }
   }
 
   function closeDocument() {
     ++previewRequestId.current;
+
     setSelectedDocument(null);
-    setSelectedDocumentIndex(-1);
-    setSelectedDocumentUrl("");
+    setSelectedIndex(-1);
+    setPreviewUrl("");
     setPreviewError("");
     setPreviewLoading(false);
   }
 
   function downloadReport() {
-    window.open(`/api/report?id=${encodeURIComponent(String(verification?.id || verificationId))}`, "_blank");
+    window.open(
+      `/api/report?id=${encodeURIComponent(
+        String(
+          verification?.id ||
+          verificationId,
+        ),
+      )}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
   }
 
-  function goToTab(tab: "documents" | "checks" | "property" | "summary") {
-    setActiveTab(tab);
-  }
+  /*
+   * ==========================================================
+   * LOADING
+   * ==========================================================
+   */
 
   if (loading) {
     return (
-      <AppShell activePath="/verify" headerPath="/result">
+      <AppShell
+        activePath="/verify"
+        headerPath="/result"
+      >
         <div className={styles.loadingPage}>
           <div className={styles.loadingCard}>
-            <div className={styles.loadingSpinner} />
-            <h2>Loading verification result</h2>
-            <p>Retrieving your completed property analysis...</p>
+            <div
+              className={styles.loadingSpinner}
+            />
+
+            <h2>
+              Loading verification result
+            </h2>
+
+            <p>
+              Retrieving your saved PropertySure AI analysis...
+            </p>
           </div>
         </div>
       </AppShell>
     );
   }
 
+  /*
+   * ==========================================================
+   * ERROR
+   * ==========================================================
+   */
+
   if (error || !verification) {
     return (
-      <AppShell activePath="/verify" headerPath="/result">
+      <AppShell
+        activePath="/verify"
+        headerPath="/result"
+      >
         <div className={styles.errorPage}>
           <div className={styles.errorCard}>
-            <div className={styles.errorIcon}>!</div>
-            <h2>Unable to load result</h2>
-            <p>{error || "The Essential verification result could not be loaded."}</p>
-            <button type="button" className={styles.primaryButton} onClick={() => router.push("/dashboard")}>
+            <h2>
+              Unable to load result
+            </h2>
+
+            <p>
+              {error ||
+                "Verification record unavailable."}
+            </p>
+
+            <button
+              type="button"
+              className={styles.primaryButton}
+              onClick={() =>
+                router.push("/dashboard")
+              }
+            >
               Back to Dashboard
             </button>
           </div>
@@ -1047,964 +2751,1811 @@ function EssentialReportContent() {
     );
   }
 
+  /*
+   * ==========================================================
+   * PAGE CONTENT
+   * ==========================================================
+   */
+
   return (
-    <AppShell activePath="/verify" headerPath="/result">
+    <AppShell
+      activePath="/verify"
+      headerPath="/result"
+    >
+      <style>
+        {RESPONSIVE_CSS}
+      </style>
+
       <main className={styles.resultPage}>
-        <section className={styles.hero}>
-          <div className={styles.heroWatermark} aria-hidden="true">
-            <img
-              src="/result-header-verification.png"
-              alt=""
-            />
-          </div>
 
-          <div className={styles.heroContent}>
-            <div className={styles.completeBadge}>
-              <span>{essentialAnalysisComplete ? "✓" : "i"}</span>
-              {essentialAnalysisComplete ? "ESSENTIAL VERIFICATION COMPLETE" : "ESSENTIAL VERIFICATION PENDING"}
+        {/* ==================================================
+            DESKTOP HEADER
+           ================================================== */}
+
+        <div className="psai-desktop-hero">
+          <section className={styles.hero}>
+            <div className={styles.heroContent}>
+              <div
+                className={styles.completeBadge}
+              >
+                {completed
+                  ? "ESSENTIAL ANALYSIS COMPLETED"
+                  : "ESSENTIAL ANALYSIS PENDING"}
+              </div>
+
+              <h1>
+                Property Verification Report
+              </h1>
+
+              <p>
+                AI document assessment by PropertySure AI.
+              </p>
+
+              <p className={styles.heroSubtext}>
+                Review document findings, combined
+                verification checks, extracted property
+                information, and recommended next steps.
+              </p>
+
+              <div className={styles.heroMeta}>
+                <div
+                  className={styles.heroMetaItem}
+                >
+                  <div>
+                    <small>
+                      Verification ID
+                    </small>
+
+                    <strong>
+                      #{verification.id}
+                    </strong>
+                  </div>
+                </div>
+
+                <div
+                  className={styles.heroMetaItem}
+                >
+                  <div>
+                    <small>Plan</small>
+                    <strong>Essential</strong>
+                  </div>
+                </div>
+
+                <div
+                  className={styles.heroMetaItem}
+                >
+                  <div>
+                    <small>Documents</small>
+
+                    <strong>
+                      {documents.length}
+                    </strong>
+                  </div>
+                </div>
+
+                <div
+                  className={styles.heroMetaItem}
+                >
+                  <div>
+                    <small>
+                      Analysis Completed
+                    </small>
+
+                    <strong>
+                      {formatDate(completedAt)}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* ==================================================
+            MOBILE HEADER
+           ================================================== */}
+
+        <header className="psai-mobile-heading">
+          <div className="psai-mobile-heading-top">
+            <div>
+              <span className="psai-mobile-heading-eyebrow">
+                PropertySure AI
+              </span>
+
+              <h1>
+                Verification Results
+              </h1>
             </div>
 
-            <h1>Property Verification Report</h1>
+            <span
+              className={`psai-mobile-status ${
+                !completed ? "pending" : ""
+              }`}
+            >
+              {completed
+                ? "Completed"
+                : "Pending"}
+            </span>
+          </div>
 
-            <p>AI document assessment of your property document package by PropertySure AI.</p>
-             <p className={styles.heroSubtext}>Review the findings, AI verification checks, risks, and next steps below.</p>
+          <div className="psai-mobile-meta">
+            <span>Essential</span>
+            <span>•</span>
 
-            <div className={styles.heroMeta}>
-              <div className={styles.heroMetaItem}>
-                <span className={styles.metaIcon}>◉</span>
-                <div><small>Verification ID</small><strong>#{verification.id}</strong></div>
-              </div>
-              <div className={styles.heroMetaItem}>
-                <span className={styles.metaIcon}>◫</span>
-                <div><small>{packageStatus === "Pending" ? "Status" : "Completed"}</small><strong>{packageStatus === "Pending" ? "Pending" : formatDateTime(completedAt)}</strong></div>
-              </div>
-              <div className={styles.heroMetaItem}>
-                <span className={styles.metaIcon}>▣</span>
-                <div><small>Plan</small><strong>Essential</strong></div>
-              </div>
-              <div className={styles.heroMetaItem}>
-                <span className={styles.metaIcon}>▱</span>
-                <div><small>Documents Analyzed</small><strong>{documents.length} document{documents.length === 1 ? "" : "s"}</strong></div>
+            <span>
+              Report #{verification.id}
+            </span>
+
+            <span>•</span>
+
+            <span>
+              {documents.length} document
+              {documents.length === 1
+                ? ""
+                : "s"}
+            </span>
+          </div>
+        </header>
+
+        {/* ==================================================
+            FOUR METRIC CARDS
+           ================================================== */}
+
+        <section
+          className={`${styles.metricsGrid} psai-responsive-metrics`}
+          aria-label="Verification metrics"
+        >
+          <Metric
+            label="Trust Score"
+            value={
+              trustScore !== null
+                ? `${trustScore} / 100`
+                : "—"
+            }
+            description="AI-derived document assessment score."
+            tone={
+              risk === "High"
+                ? "warning"
+                : "green"
+            }
+          />
+
+          <Metric
+            label="AI Confidence"
+            value={
+              confidence !== null
+                ? `${confidence}%`
+                : "—"
+            }
+            description="Confidence in the analysis, not proof of authenticity."
+          />
+
+          <Metric
+            label="Overall Risk"
+            value={risk}
+            description="Combined risk assessment of the submitted documents."
+            tone={
+              risk === "High"
+                ? "warning"
+                : "blue"
+            }
+          />
+
+          <Metric
+            label="Package Status"
+            value={packageStatus}
+            description="AI review status, not government verification."
+            tone={
+              packageStatus === "Flagged"
+                ? "warning"
+                : "green"
+            }
+          />
+        </section>
+
+        {/* ==================================================
+            VERIFICATION SCOPE — DESKTOP
+           ================================================== */}
+
+        <div className="psai-desktop-scope">
+          <section className={styles.card}>
+            <div className={styles.cardTitle}>
+              <span>!</span>
+
+              <div>
+                <h2>
+                  Verification Scope
+                </h2>
+
+                <p>
+                  Essential AI Document Assessment
+                </p>
               </div>
             </div>
-          </div>
-        </section>
 
-        <section className={styles.metricsGrid} aria-label="Result summary">
-          <div className={`${styles.metricCard} ${styles.metricGreen}`}>
-            <div className={styles.metricIcon}>✓</div>
-            <div><span>Trust Score</span><strong>{trustScore ?? "—"}<small>{trustScore !== null ? " / 100" : ""}</small></strong><p>Overall package quality and reliability score.</p></div>
-          </div>
-          <div className={`${styles.metricCard} ${styles.metricBlue}`}>
-            <div className={styles.metricIcon}>▮</div>
-            <div><span>Essential AI Confidence</span><strong>{confidence !== null ? confidence : "—"}<small>{confidence !== null ? "%" : ""}</small></strong><p>{confidence !== null ? "Confidence in the available Essential analysis." : "No Essential confidence score was supplied."}</p></div>
-          </div>
-          <div className={`${styles.metricCard} ${overallRisk === "High" ? styles.metricWarning : styles.metricGreen}`}>
-            <div className={styles.metricIcon}>!</div>
-            <div><span>Overall Risk</span><strong className={riskClass(overallRisk)}>{overallRisk}</strong><p>Risk assessment across the available verification findings.</p></div>
-          </div>
-          <div className={`${styles.metricCard} ${packageStatus === "Flagged" ? styles.metricWarning : packageStatus === "Pending" ? styles.metricBlue : styles.metricGreen}`}>
-            <div className={styles.metricIcon}>▣</div>
-            <div><span>Package Status</span><strong>{packageStatus}</strong><p>{packageStatus === "Pending" ? "Essential analysis is still pending." : `${documents.length} of ${documents.length} submitted document${documents.length === 1 ? "" : "s"} reviewed.`}</p></div>
-          </div>
-        </section>
+            <p>
+              This report is an AI assessment of submitted
+              documents. It does not independently confirm
+              government issuance, ownership, title validity,
+              registry records, or the legal right to sell.
+            </p>
 
-        <nav className={styles.tabs} aria-label="Verification result sections">
-          <button type="button" className={activeTab === "documents" ? styles.activeTab : ""} onClick={() => goToTab("documents")}><span>▣</span>Document Results</button>
-          <button type="button" className={activeTab === "checks" ? styles.activeTab : ""} onClick={() => goToTab("checks")}><span>♡</span>Verification Checks</button>
-          <button type="button" className={activeTab === "property" ? styles.activeTab : ""} onClick={() => goToTab("property")}><span>⌖</span>Property Details</button>
-          <button type="button" className={activeTab === "summary" ? styles.activeTab : ""} onClick={() => goToTab("summary")}><span>▤</span>Analysis Summary</button>
-        </nav>
+            <p>
+              <strong>
+                Authenticity status:
+              </strong>{" "}
+              {titleCase(
+                stringValue(
+                  essential.authenticity_status,
+                ) ||
+                  "not_independently_verified",
+              )}
+            </p>
 
-        <div className={styles.tabPanel} role="region" aria-live="polite">
+            <p>
+              Potential manipulation indicators are
+              observations requiring further review,
+              not confirmed forgery.
+            </p>
+          </section>
+        </div>
+
+        {/* ==================================================
+            VERIFICATION SCOPE — MOBILE
+           ================================================== */}
+
+        <div className="psai-mobile-scope">
+          <p>
+            <strong>
+              AI document assessment only.
+            </strong>{" "}
+            Authenticity and ownership have not
+            been independently verified. Flagged
+            indicators require further review and
+            do not establish fraud.
+          </p>
+        </div>
+
+        {/* ==================================================
+            REPORT NAVIGATION — WITH SWIPE HINT
+           ================================================== */}
+
+        <div className="psai-tab-navigation">
+          <nav
+            ref={tabNavRef}
+            className={`${styles.tabs} psai-responsive-tabs`}
+            aria-label="Report sections"
+          >
+            <button
+              type="button"
+              data-report-tab="documents"
+              className={
+                activeTab === "documents"
+                  ? styles.activeTab
+                  : ""
+              }
+              onClick={() =>
+                selectTab("documents")
+              }
+            >
+              Document Results
+            </button>
+
+            <button
+              type="button"
+              data-report-tab="checks"
+              className={
+                activeTab === "checks"
+                  ? styles.activeTab
+                  : ""
+              }
+              onClick={() =>
+                selectTab("checks")
+              }
+            >
+              Verification Checks
+            </button>
+
+            <button
+              type="button"
+              data-report-tab="property"
+              className={
+                activeTab === "property"
+                  ? styles.activeTab
+                  : ""
+              }
+              onClick={() =>
+                selectTab("property")
+              }
+            >
+              Property Details
+            </button>
+
+            <button
+              type="button"
+              data-report-tab="gps"
+              className={activeTab === "gps" ? styles.activeTab : ""}
+              onClick={() => selectTab("gps")}
+            >
+              GPS Analysis
+            </button>
+
+            <button
+              type="button"
+              data-report-tab="summary"
+              className={
+                activeTab === "summary"
+                  ? styles.activeTab
+                  : ""
+              }
+              onClick={() =>
+                selectTab("summary")
+              }
+            >
+              Analysis Summary
+            </button>
+          </nav>
+
+          {canScrollTabsRight && (
+            <button
+              type="button"
+              className="psai-tab-right-control"
+              aria-label="Show more report sections"
+              onClick={scrollTabsRight}
+            >
+              ›
+            </button>
+          )}
+
+          <div
+            className={
+              canScrollTabsRight
+                ? "psai-mobile-tab-hint"
+                : "psai-mobile-tab-hint psai-mobile-tab-hint-hidden"
+            }
+          >
+            <span>
+              Swipe left to explore more sections
+            </span>
+
+            <span
+              className="psai-mobile-tab-hint-icon"
+              aria-hidden="true"
+            >
+              →
+            </span>
+          </div>
+
+          {canScrollTabsLeft &&
+            !canScrollTabsRight && (
+              <div className="psai-mobile-tab-hint">
+                <span>
+                  Swipe right for previous sections
+                </span>
+
+                <span
+                  className="psai-mobile-tab-hint-icon"
+                  aria-hidden="true"
+                >
+                  ←
+                </span>
+              </div>
+            )}
+        </div>
+
+        {/* ==================================================
+            TABBED REPORT CONTENT
+           ================================================== */}
+
+        <div
+          className={styles.tabPanel}
+          role="region"
+        >
+
+          {/* ================================================
+              DOCUMENT RESULTS
+             ================================================ */}
+
           {activeTab === "documents" && (
             <div className={styles.tabPanelContent}>
-        <section id="professional-documents" className={styles.card}>
-          <div className={styles.sectionHeader}>
-            <div>
-              <h2><span>▣</span> Documents Reviewed</h2>
-              <p>Documents included in the Essential verification package.</p>
-            </div>
-            <div className={styles.packageProgress}>
-              <div className={styles.progressIcon}>{packageStatus === "Pending" ? "i" : "✓"}</div>
-              <div><strong>{packageStatus === "Pending" ? `${documents.length} document${documents.length === 1 ? "" : "s"} submitted — Essential analysis pending` : `${documents.length} of ${documents.length} documents reviewed`}</strong><div className={styles.progressTrack}><span style={{ width: packageStatus !== "Pending" && documents.length ? "100%" : "0%" }} /></div><small>{packageStatus !== "Pending" && documents.length ? "100%" : "Pending"}</small></div>
-            </div>
-          </div>
+              <section className={styles.card}>
+                <div className={styles.sectionHeader}>
+                  <div>
+                    <h2>
+                      Documents Reviewed
+                    </h2>
 
-          <div className={styles.tableWrap}>
-            <table className={styles.documentTable}>
-              <thead><tr><th>#</th><th>Document Type</th><th>Document Reference</th><th>AI Confidence</th><th>Status</th><th>Key Finding</th><th>Actions</th></tr></thead>
-              <tbody>
-                {documents.map((document, index) => {
-                  const confidenceValue = clampScore(numberValue(document.ai_confidence, document.confidence));
-                  const status = packageStatus;
-                  const finding = stringValue(document.summary, getNested(document.findings || {}, "summary")) || "No AI finding supplied yet.";
-                  return (
-                    <tr key={`${document.path || document.name || "document"}-${index}`}>
-                      <td>{index + 1}</td>
-                      <td><div className={styles.documentTypeCell}><span className={styles.fileIcon}>▣</span><strong>{getDocumentType(document)}</strong></div></td>
-                      <td><span className={styles.documentReference}>{getDocumentReference(document, index, verification.id)}</span></td>
-                      <td>{confidenceValue !== null ? `${confidenceValue}%` : "—"}</td>
-                      <td><span className={`${styles.statusBadge} ${status === "Flagged" ? styles.statusAttention : status === "Pending" ? styles.statusReviewed : styles.statusReviewed}`}>{status}</span></td>
-                      <td>{finding}</td>
-                      <td><button type="button" className={styles.viewButton} onClick={() => void openDocument(document, index)}>View Details <span>→</span></button></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          {documents.length === 0 && <div className={styles.emptyState}>Essential document findings are not available yet.</div>}
-        </section>
+                    <p>
+                      Each submitted document has its own
+                      assessment. Open View Details for
+                      the complete analysis.
+                    </p>
+                  </div>
 
-        <section className={styles.card}>
-          <div className={styles.cardTitle}><span>▣</span><div><h2>Document Findings</h2><p>Individual document-level findings supplied by the Essential AI verification engine.</p></div></div>
-          <div className={styles.professionalFindingGrid}>
-            {documents.map((document, index) => {
-              const checks = getDocumentChecks(document);
-              const entries = (Object.keys(checks) as Array<keyof VerificationChecks>).filter((key) => checks[key] !== null);
-              return (
-                <article className={styles.professionalFindingCard} key={`${document.name || "document"}-${index}`}>
-                  <div className={styles.professionalFindingHeading}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{getDocumentType(document)}</strong><small>{getDocumentReference(document, index, verification.id)}</small></div></div>
-                  <p>{stringValue(document.summary, getNested(document.findings || {}, "summary"), getNested(document.findings || {}, "assessment")) || "No document-level Essential summary is available yet."}</p>
-                  {entries.length > 0 && <div className={styles.professionalCheckMini}>{entries.map((key) => <div key={key}><span>{checkLabel(key)}</span><strong className={checks[key] === false ? styles.detailAttention : checks[key] === true ? styles.detailPassed : styles.detailReviewed}>{checks[key] === true ? "No Issue Detected" : checks[key] === false ? "Attention" : "Not Conclusive"}</strong></div>)}</div>}
-                </article>
-              );
-            })}
-            {documents.length === 0 && <div className={styles.emptyState}>No document-level Essential findings are available yet.</div>}
-          </div>
-        </section>
+                  <strong>
+                    {documents.length} document
+                    {documents.length === 1
+                      ? ""
+                      : "s"}
+                  </strong>
+                </div>
+
+                {documents.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    No uploaded documents are available.
+                  </div>
+                ) : (
+                  <>
+                    {/* DESKTOP DOCUMENT TABLE */}
+
+                    <div className="psai-desktop-documents">
+                      <div className={styles.tableWrap}>
+                        <table
+                          className={styles.documentTable}
+                        >
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Document Type</th>
+                              <th>Reference</th>
+                              <th>AI Confidence</th>
+                              <th>Assessment Status</th>
+                              <th>Action</th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {documents.map(
+                              (document, index) => {
+                                const docConfidence =
+                                  scoreValue(
+                                    document.ai_confidence,
+                                    document.confidence,
+                                  );
+
+                                const attentionRequired =
+                                  document.assessmentStatus ===
+                                  "attention_required";
+
+                                return (
+                                  <tr
+                                    key={`desktop-${index}`}
+                                  >
+                                    <td>
+                                      {index + 1}
+                                    </td>
+
+                                    <td>
+                                      <div
+                                        className={
+                                          styles.documentTypeCell
+                                        }
+                                      >
+                                        <strong>
+                                          {documentType(document)}
+                                        </strong>
+
+                                        <small
+                                          style={{
+                                            display: "block",
+                                            marginTop: 6,
+                                            overflowWrap: "anywhere",
+                                          }}
+                                        >
+                                          {stringValue(
+                                            document.name,
+                                            document.documentName,
+                                          )}
+                                        </small>
+                                      </div>
+                                    </td>
+
+                                    <td>
+                                      <span
+                                        className={
+                                          styles.documentReference
+                                        }
+                                      >
+                                        {documentReference(
+                                          document,
+                                          index,
+                                          verification.id,
+                                        )}
+                                      </span>
+                                    </td>
+
+                                    <td>
+                                      {docConfidence !== null
+                                        ? `${docConfidence}%`
+                                        : "—"}
+                                    </td>
+
+                                    <td>
+                                      <span
+                                        className={`${styles.statusBadge} ${
+                                          attentionRequired
+                                            ? styles.statusAttention
+                                            : styles.statusReviewed
+                                        }`}
+                                      >
+                                        {document.assessmentStatus
+                                          ? titleCase(
+                                              document.assessmentStatus,
+                                            )
+                                          : "Not Available"}
+                                      </span>
+                                    </td>
+
+                                    <td>
+                                      <button
+                                        type="button"
+                                        className={
+                                          styles.viewButton
+                                        }
+                                        onClick={() =>
+                                          void openDocument(
+                                            document,
+                                            index,
+                                          )
+                                        }
+                                      >
+                                        View Details →
+                                      </button>
+                                    </td>
+                                  </tr>
+                                );
+                              },
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* MOBILE DOCUMENT CARDS */}
+
+                    <div className="psai-mobile-documents">
+                      {documents.map(
+                        (document, index) => {
+                          const docConfidence =
+                            scoreValue(
+                              document.ai_confidence,
+                              document.confidence,
+                            );
+
+                          const attentionRequired =
+                            document.assessmentStatus ===
+                            "attention_required";
+
+                          return (
+                            <article
+                              className="psai-mobile-document-card"
+                              key={`mobile-${index}`}
+                            >
+                              <div className="psai-mobile-document-heading">
+                                <div className="psai-mobile-document-identity">
+                                  <span className="psai-mobile-document-number">
+                                    {String(
+                                      index + 1,
+                                    ).padStart(
+                                      2,
+                                      "0",
+                                    )}
+                                  </span>
+
+                                  <div className="psai-mobile-document-name">
+                                    <h3>
+                                      {documentType(document)}
+                                    </h3>
+
+                                    <p>
+                                      {stringValue(
+                                        document.name,
+                                        document.documentName,
+                                      ) ||
+                                        "Property Document"}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="psai-mobile-document-confidence">
+                                  <small>
+                                    AI Confidence
+                                  </small>
+
+                                  {docConfidence !== null
+                                    ? `${docConfidence}%`
+                                    : "—"}
+                                </div>
+                              </div>
+
+                              <div className="psai-mobile-document-status">
+                                <span
+                                  className={
+                                    attentionRequired
+                                      ? ""
+                                      : "reviewed"
+                                  }
+                                >
+                                  {document.assessmentStatus
+                                    ? titleCase(
+                                        document.assessmentStatus,
+                                      )
+                                    : "Not Available"}
+                                </span>
+                              </div>
+
+                              <div className="psai-mobile-document-reference">
+                                Reference:{" "}
+                                {documentReference(
+                                  document,
+                                  index,
+                                  verification.id,
+                                )}
+                              </div>
+
+                              <button
+                                type="button"
+                                className="psai-mobile-view-button"
+                                onClick={() =>
+                                  void openDocument(
+                                    document,
+                                    index,
+                                  )
+                                }
+                              >
+                                View Details →
+                              </button>
+                            </article>
+                          );
+                        },
+                      )}
+                    </div>
+                  </>
+                )}
+
+                <div
+                  className="psai-mobile-document-note"
+                  style={{
+                    marginTop: 20,
+                    padding: "14px 18px",
+                    background: "#f0f6ff",
+                    border: "1px solid #dce8f8",
+                    borderRadius: 12,
+                    color: "#214c78",
+                  }}
+                >
+                  <strong>
+                    Detailed Document Assessments
+                  </strong>
+
+                  <p
+                    style={{
+                      margin: "6px 0 0",
+                    }}
+                  >
+                    Select View Details to preview
+                    each document and read its full
+                    AI assessment, potential
+                    manipulation indicators, and
+                    individual verification checks.
+                  </p>
+                </div>
+              </section>
             </div>
           )}
+
+          {/* ================================================
+              OVERALL VERIFICATION CHECKS
+             ================================================ */}
 
           {activeTab === "checks" && (
             <div className={styles.tabPanelContent}>
-        <section id="professional-checks" className={styles.card}>
-          <div className={styles.cardTitle}><span>▣</span><div><h2>Verification Checks</h2><p>Package-level AI checks from the Essential verification workflow.</p></div></div>
-          <div className={styles.checkList}>
-            {(Object.keys(coreDocumentChecks) as Array<keyof VerificationChecks>).map((key) => {
-              const value = coreDocumentChecks[key];
-              return <div className={styles.checkRow} key={key}><div className={`${styles.checkStatus} ${value === true ? styles.checkPassed : value === false ? styles.checkFailed : styles.checkReview}`}>{value === true ? "✓" : value === false ? "!" : "i"}</div><div className={styles.checkText}><strong>{checkLabel(key)}</strong><p>{checkDescription(key, value)}</p></div><span className={`${styles.checkBadge} ${value === true ? styles.checkBadgePassed : value === false ? styles.checkBadgeFailed : styles.checkBadgeReview}`}>{value === true ? "No Issue Detected" : value === false ? "Attention" : "Not Conclusive"}</span></div>;
-            })}
-          </div>
-        </section>
+              <section className={styles.card}>
+                <div className={styles.cardTitle}>
+                  <span>✓</span>
 
+                  <div>
+                    <h2>
+                      Overall Package Verification Checks
+                    </h2>
 
+                    <p>
+                      Combined AI assessment of all{" "}
+                      {documents.length} submitted document
+                      {documents.length === 1
+                        ? ""
+                        : "s"}.
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    marginBottom: 22,
+                    padding: "15px 18px",
+                    background: "#f0f6ff",
+                    border: "1px solid #dce8f8",
+                    borderRadius: 12,
+                    color: "#214c78",
+                  }}
+                >
+                  <strong>
+                    What These Results Represent
+                  </strong>
+
+                  <p
+                    style={{
+                      margin: "7px 0 0",
+                    }}
+                  >
+                    These checks summarize all
+                    documents submitted for this
+                    verification. They do not
+                    represent only one document.
+                  </p>
+
+                  <p
+                    style={{
+                      margin: "9px 0 0",
+                    }}
+                  >
+                    If any document has a flagged
+                    check, that check is flagged
+                    for the entire package.
+                    If none is flagged but at
+                    least one result is inconclusive,
+                    the combined check is inconclusive.
+                  </p>
+
+                  <p
+                    style={{
+                      margin: "9px 0 0",
+                    }}
+                  >
+                    To identify the document responsible
+                    for a finding, select Document
+                    Results and click View Details.
+                  </p>
+                </div>
+
+                <div className={styles.checkList}>
+                  {CHECK_KEYS.map((key) => {
+                    const value =
+                      checks[key];
+
+                    return (
+                      <div
+                        className={styles.checkRow}
+                        key={key}
+                      >
+                        <div
+                          className={`${styles.checkStatus} ${
+                            value === true
+                              ? styles.checkPassed
+                              : value === false
+                                ? styles.checkFailed
+                                : styles.checkReview
+                          }`}
+                        >
+                          {value === true
+                            ? "✓"
+                            : value === false
+                              ? "!"
+                              : "i"}
+                        </div>
+
+                        <div className={styles.checkText}>
+                          <strong>
+                            {CHECK_LABELS[key]}
+                          </strong>
+
+                          <p>
+                            {value === true
+                              ? "No issue was detected across the assessed documents for this check."
+                              : value === false
+                                ? "At least one document requires attention for this check."
+                                : "The available AI assessments do not support a conclusive combined result."}
+                          </p>
+                        </div>
+
+                        <span
+                          className={`${styles.checkBadge} ${
+                            value === true
+                              ? styles.checkBadgePassed
+                              : value === false
+                                ? styles.checkBadgeFailed
+                                : styles.checkBadgeReview
+                          }`}
+                        >
+                          {checkText(value)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <p
+                  style={{
+                    marginTop: 20,
+                  }}
+                >
+                  These checks do not replace
+                  official property registry searches,
+                  legal review, physical inspection,
+                  or independent authentication.
+                </p>
+              </section>
             </div>
           )}
+
+          {/* ================================================
+              PROPERTY DETAILS
+             ================================================ */}
 
           {activeTab === "property" && (
             <div className={styles.tabPanelContent}>
-        <section
-          className={styles.card}
-          style={{
-            border: "1px solid #dfe7f1",
-            borderRadius: 16,
-            boxShadow: "0 12px 32px rgba(24, 53, 88, 0.07)",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            className={styles.cardTitle}
-            style={{
-              marginBottom: 18,
-              paddingBottom: 16,
-              borderBottom: "1px solid #edf1f6",
-            }}
-          >
-            <span>⇄</span>
-            <div>
-              <h2>Cross-Document Analysis</h2>
-              <p>
-                Comparison of key property information across the submitted
-                document package. Values shown below come from the available
-                document evidence; conflicts are highlighted for attention.
-              </p>
-            </div>
-          </div>
+              <section className={styles.card}>
+                <div className={styles.cardTitle}>
+                  <span>⌖</span>
 
-          <div
-            style={{
-              marginBottom: 16,
-              padding: "12px 14px",
-              border: "1px solid #e5edf7",
-              borderRadius: 12,
-              background: "linear-gradient(135deg, #f7faff 0%, #ffffff 100%)",
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-            }}
-          >
-            <span
-              style={{
-                width: 28,
-                height: 28,
-                display: "grid",
-                placeItems: "center",
-                borderRadius: 9,
-                background: "#eaf3ff",
-                color: "#1268f3",
-                fontSize: 13,
-                fontWeight: 800,
-                flexShrink: 0,
-              }}
-            >
-              ⇄
-            </span>
-            <div>
-              <strong
-                style={{
-                  display: "block",
-                  color: "#183558",
-                  fontSize: 11,
-                  fontWeight: 800,
-                }}
-              >
-                Document consistency view
-              </strong>
-              <span
-                style={{
-                  display: "block",
-                  marginTop: 2,
-                  color: "#71829b",
-                  fontSize: 9,
-                  lineHeight: 1.45,
-                }}
-              >
-                This section shows what the submitted documents say about the
-                same property and flags information that may need clarification.
-              </span>
-            </div>
-          </div>
+                  <div>
+                    <h2>
+                      Property Information
+                    </h2>
 
-          <div
-            className={styles.propertyGrid}
-            style={{
-              gap: 14,
-            }}
-          >
-            {detailRows(crossDocumentRows, { premium: true })}
-          </div>
-        </section>
-
-        <section
-          id="professional-property"
-          className={styles.card}
-          style={{
-            border: "1px solid #dfe7f1",
-            borderRadius: 16,
-            boxShadow: "0 12px 32px rgba(24, 53, 88, 0.07)",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            className={styles.cardTitle}
-            style={{
-              marginBottom: 18,
-              paddingBottom: 16,
-              borderBottom: "1px solid #edf1f6",
-            }}
-          >
-            <span>⌖</span>
-            <div>
-              <h2>Property Details</h2>
-              <p>
-                A structured profile of the property information extracted
-                from the available documents and verification evidence.
-              </p>
-            </div>
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1.4fr) minmax(180px, 0.6fr)",
-              gap: 14,
-              marginBottom: 14,
-            }}
-          >
-            <div
-              style={{
-                padding: "16px 18px",
-                borderRadius: 14,
-                background: "linear-gradient(135deg, #0f2f57 0%, #164b83 100%)",
-                color: "#ffffff",
-                boxShadow: "0 10px 26px rgba(15, 47, 87, 0.16)",
-              }}
-            >
-              <span
-                style={{
-                  display: "block",
-                  marginBottom: 7,
-                  color: "#b9d4f4",
-                  fontSize: 8,
-                  fontWeight: 800,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Property profile
-              </span>
-              <strong
-                style={{
-                  display: "block",
-                  fontSize: 17,
-                  lineHeight: 1.35,
-                  fontWeight: 800,
-                }}
-              >
-                {propertyType}
-              </strong>
-              <p
-                style={{
-                  margin: "7px 0 0",
-                  color: "#dbe9f8",
-                  fontSize: 10,
-                  lineHeight: 1.5,
-                }}
-              >
-                Based on the property information currently available to the
-                Essential AI review.
-              </p>
-            </div>
-
-            <div
-              style={{
-                padding: "16px 18px",
-                border: "1px solid #e2e9f2",
-                borderRadius: 14,
-                background: "#fbfdff",
-              }}
-            >
-              <span
-                style={{
-                  display: "block",
-                  marginBottom: 7,
-                  color: "#73849a",
-                  fontSize: 8,
-                  fontWeight: 800,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Evidence status
-              </span>
-              <strong
-                style={{
-                  display: "block",
-                  color: essentialAnalysisComplete ? "#176b46" : "#68788d",
-                  fontSize: 14,
-                  lineHeight: 1.35,
-                }}
-              >
-                {essentialAnalysisComplete ? "Essential Analysis Complete" : "Essential Analysis Pending"}
-              </strong>
-              <p
-                style={{
-                  margin: "7px 0 0",
-                  color: "#71829b",
-                  fontSize: 9,
-                  lineHeight: 1.45,
-                }}
-              >
-                {essentialAnalysisComplete
-                  ? "The displayed property profile reflects the completed Essential analysis."
-                  : "Property information may be visible before all AI checks are completed."}
-              </p>
-            </div>
-          </div>
-
-          <div
-            className={styles.propertyGrid}
-            style={{
-              gap: 14,
-            }}
-          >
-            {detailRows(propertyRows, { premium: true })}
-          </div>
-        </section>
-
-        <section
-          className={styles.card}
-          style={{
-            border: "1px solid #dfe7f1",
-            borderRadius: 16,
-            boxShadow: "0 12px 32px rgba(24, 53, 88, 0.07)",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            className={styles.cardTitle}
-            style={{
-              marginBottom: 16,
-              paddingBottom: 16,
-              borderBottom: "1px solid #edf1f6",
-            }}
-          >
-            <span>♙</span>
-            <div>
-              <h2>Ownership &amp; Title</h2>
-              <p>
-                A concise view of the ownership and title evidence available
-                from the submitted property documents.
-              </p>
-            </div>
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 16,
-              marginBottom: 14,
-              padding: "13px 15px",
-              border: "1px solid #e4ebf4",
-              borderRadius: 12,
-              background: "linear-gradient(135deg, #f7faff 0%, #ffffff 100%)",
-            }}
-          >
-            <div>
-              <span
-                style={{
-                  display: "block",
-                  marginBottom: 4,
-                  color: "#7a899c",
-                  fontSize: 9,
-                  fontWeight: 800,
-                  letterSpacing: "0.09em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Title evidence
-              </span>
-              <strong
-                style={{
-                  display: "block",
-                  color: "#17385f",
-                  fontSize: 12,
-                  lineHeight: 1.45,
-                }}
-              >
-                {essentialAnalysisComplete
-                  ? "Available AI findings"
-                  : "Essential title information is based on submitted documents"}
-              </strong>
-            </div>
-            <span
-              style={{
-                flexShrink: 0,
-                padding: "5px 9px",
-                borderRadius: 999,
-                background: essentialAnalysisComplete ? "#eaf3ff" : "#f0f3f6",
-                color: essentialAnalysisComplete ? "#1557a6" : "#718096",
-                fontSize: 8,
-                fontWeight: 800,
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-              }}
-            >
-              {essentialAnalysisComplete ? "Reviewed" : "Pending"}
-            </span>
-          </div>
-
-          <div
-            className={styles.propertyGrid}
-            style={{
-              gap: 12,
-            }}
-          >
-            {detailRows(ownershipRows, { premium: true })}
-          </div>
-        </section>
-
-        <section
-          className={styles.card}
-          style={{
-            border: "1px solid #dfe7f1",
-            borderRadius: 16,
-            boxShadow: "0 14px 36px rgba(18, 50, 88, 0.08)",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            className={styles.cardTitle}
-            style={{
-              marginBottom: 16,
-              paddingBottom: 16,
-              borderBottom: "1px solid #edf1f6",
-            }}
-          >
-            <span>⌖</span>
-            <div>
-              <h2>Property Location &amp; GPS Analysis</h2>
-              <p>
-                Location intelligence comparing available geographic evidence
-                with the property location stated in the submitted documents.
-              </p>
-            </div>
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) auto",
-              alignItems: "center",
-              gap: 14,
-              marginBottom: 16,
-              padding: "15px 17px",
-              borderRadius: 14,
-              border:
-                location.status === "mismatch"
-                  ? "1px solid #efd9a8"
-                  : location.status === "consistent"
-                    ? "1px solid #d6eadf"
-                    : "1px solid #e1e7ef",
-              background:
-                location.status === "mismatch"
-                  ? "linear-gradient(135deg, #fffaf1 0%, #ffffff 100%)"
-                  : location.status === "consistent"
-                    ? "linear-gradient(135deg, #f5fbf7 0%, #ffffff 100%)"
-                    : "linear-gradient(135deg, #f7faff 0%, #ffffff 100%)",
-            }}
-          >
-            <div>
-              <span
-                style={{
-                  display: "block",
-                  marginBottom: 5,
-                  color: "#73849a",
-                  fontSize: 8,
-                  fontWeight: 800,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Location intelligence
-              </span>
-              <strong
-                style={{
-                  display: "block",
-                  color:
-                    location.status === "mismatch"
-                      ? "#8b5a00"
-                      : location.status === "consistent"
-                        ? "#24714a"
-                        : "#52657b",
-                  fontSize: 15,
-                  lineHeight: 1.35,
-                  fontWeight: 800,
-                }}
-              >
-                {location.statusLabel}
-              </strong>
-              <p
-                style={{
-                  margin: "5px 0 0",
-                  color: "#71829b",
-                  fontSize: 10,
-                  lineHeight: 1.5,
-                }}
-              >
-                {location.status === "mismatch"
-                  ? "A geographic difference requires clarification before relying on the location evidence."
-                  : location.status === "consistent"
-                    ? "The available geographic evidence is consistent with the stated property location."
-                    : "The available geographic evidence is not sufficient to establish consistency."}
-              </p>
-            </div>
-
-            <div
-              style={{
-                minWidth: 150,
-                padding: "9px 11px",
-                borderRadius: 10,
-                background: "#ffffff",
-                border: "1px solid #e5ebf2",
-                textAlign: "right",
-              }}
-            >
-              <span
-                style={{
-                  display: "block",
-                  color: "#8795a6",
-                  fontSize: 8,
-                  fontWeight: 700,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Geographic reference
-              </span>
-              <strong
-                style={{
-                  display: "block",
-                  marginTop: 3,
-                  color: "#193b61",
-                  fontSize: 10,
-                  lineHeight: 1.4,
-                }}
-              >
-                {location.coordinatesLabel}
-              </strong>
-            </div>
-          </div>
-
-          <div
-            className={styles.locationGrid}
-            style={{
-              gap: 12,
-              marginBottom: 14,
-            }}
-          >
-            <div className={styles.locationMetric}>
-              <span>GPS Coordinates</span>
-              <strong>{location.coordinatesLabel}</strong>
-            </div>
-            <div className={styles.locationMetric}>
-              <span>Document-Stated Location</span>
-              <strong>{location.documentLocation}</strong>
-            </div>
-            <div className={styles.locationMetric}>
-              <span>Detected / Reported Location</span>
-              <strong>{location.detectedLocation}</strong>
-            </div>
-            <div className={styles.locationMetric}>
-              <span>Location Confidence</span>
-              <strong>
-                {location.confidence !== null
-                  ? `${location.confidence}%`
-                  : "Not available"}
-              </strong>
-            </div>
-            <div className={styles.locationMetric}>
-              <span>Location Source</span>
-              <strong>{location.source}</strong>
-            </div>
-            <div className={styles.locationMetric}>
-              <span>Distance Analysis</span>
-              <strong>
-                {location.distance !== null
-                  ? `${location.distance.toLocaleString("en-NG")} m`
-                  : "Not available"}
-              </strong>
-            </div>
-          </div>
-
-          <div
-            className={styles.locationMessage}
-            style={{
-              marginBottom: 16,
-              border:
-                location.status === "mismatch"
-                  ? "1px solid #efd9a8"
-                  : location.status === "consistent"
-                    ? "1px solid #d7eade"
-                    : "1px solid #e2e8f0",
-            }}
-          >
-            <div className={styles.locationMessageIcon}>
-              {location.status === "mismatch"
-                ? "!"
-                : location.status === "consistent"
-                  ? "✓"
-                  : "i"}
-            </div>
-            <div>
-              <strong>{location.statusLabel}</strong>
-              <p>{location.message}</p>
-            </div>
-          </div>
-
-          <div
-            className={styles.locationMapPanel}
-            style={{
-              borderRadius: 15,
-              border: "1px solid #dce5ef",
-              boxShadow: "0 10px 28px rgba(20, 48, 80, 0.07)",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              className={styles.locationMapHeader}
-              style={{
-                padding: "15px 17px",
-                background: "linear-gradient(135deg, #f8fbff 0%, #ffffff 100%)",
-              }}
-            >
-              <div>
-                <span>PROPERTY LOCATION MAP</span>
-                <strong>Geographic Reference</strong>
-              </div>
-              <span className={styles.locationCoordinateBadge}>
-                {location.latitude !== null && location.longitude !== null
-                  ? "Coordinates available"
-                  : "Not available"}
-              </span>
-            </div>
-
-            {location.latitude !== null && location.longitude !== null ? (
-              <>
-                <div
-                  className={styles.locationMapFrame}
-                  style={{
-                    minHeight: 330,
-                    position: "relative",
-                  }}
-                >
-                  <iframe
-                    title="Property location map"
-                    src={getMapUrl(location.latitude, location.longitude)}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                  <div
-                    className={styles.locationMapOverlay}
-                    style={{
-                      borderRadius: 11,
-                      boxShadow: "0 8px 22px rgba(20, 44, 72, 0.16)",
-                    }}
-                  >
-                    <span>⌖</span>
-                    <div>
-                      <strong>Property Coordinates</strong>
-                      <small>{location.coordinatesLabel}</small>
-                    </div>
+                    <p>
+                      Extracted property and document
+                      details from the saved
+                      verification record.
+                    </p>
                   </div>
                 </div>
 
-                <div className={styles.locationMapFooter}>
-                  <span>
-                    Geographic reference based on the available verification
-                    coordinates.
-                  </span>
-                  <a
-                    className={styles.locationMapLink}
-                    href={getMapsLink(location.latitude, location.longitude)}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                <div
+                  style={{
+                    marginBottom: 18,
+                    padding: "13px 16px",
+                    background: "#f0f6ff",
+                    border: "1px solid #dce9fa",
+                    borderRadius: 12,
+                    color: "#214c78",
+                  }}
+                >
+                  <strong>
+                    Information Source
+                  </strong>
+
+                  <p
+                    style={{
+                      margin: "6px 0 0",
+                    }}
                   >
-                    Open in Maps <span>↗</span>
-                  </a>
-                </div>
-              </>
-            ) : (
-              <div className={styles.locationMapUnavailable}>
-                <div className={styles.locationMapUnavailableIcon}>⌖</div>
-                <div>
-                  <strong>Map unavailable</strong>
-                  <p>
-                    A property map will appear here when usable GPS
-                    coordinates are available from the verification data.
+                    These fields come from saved AI
+                    extraction, document classification,
+                    or other structured verification
+                    data. They are not independently
+                    verified property facts.
                   </p>
                 </div>
-              </div>
-            )}
-          </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              alignItems: "flex-start",
-              marginTop: 14,
-              padding: "11px 13px",
-              borderRadius: 11,
-              background: "#f7f9fc",
-              border: "1px solid #e5eaf1",
-            }}
-          >
-            <span
-              style={{
-                color: "#708196",
-                fontSize: 11,
-                lineHeight: 1.5,
-              }}
-              aria-hidden="true"
-            >
-              i
-            </span>
-            <p
-              style={{
-                margin: 0,
-                color: "#718097",
-                fontSize: 9,
-                lineHeight: 1.55,
-              }}
-            >
-              GPS is an additional geographic verification signal. It can help
-              identify inconsistencies between the reported property location
-              and the submitted documents, but it does not by itself establish
-              document authenticity, ownership, or government issuance.
-            </p>
-          </div>
-        </section>
+                <div className={styles.propertyGrid}>
+                  {propertyDetails.map(
+                    (detail) => {
+                      const missing =
+                        detail.source ===
+                        "unavailable";
+
+                      return (
+                        <div
+                          className={
+                            styles.propertyGridItem
+                          }
+                          key={detail.label}
+                        >
+                          <span>
+                            {detail.label}
+                          </span>
+
+                          <strong
+                            style={{
+                              color: missing
+                                ? "#8190a2"
+                                : "#16385f",
+                              overflowWrap: "anywhere",
+                            }}
+                          >
+                            {detail.value}
+                          </strong>
+
+                          {!missing && (
+                            <small
+                              style={{
+                                display: "block",
+                                marginTop: 8,
+                                color: "#697f99",
+                                fontSize: 10,
+                              }}
+                            >
+                              Source:{" "}
+                              {detail.source}
+                            </small>
+                          )}
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 18,
+                    padding: "12px 16px",
+                    background: "#f8fafc",
+                    border: "1px solid #e5ebf3",
+                    borderRadius: 10,
+                  }}
+                >
+                  <strong>
+                    Data Availability
+                  </strong>
+
+                  <p
+                    style={{
+                      margin: "6px 0 0",
+                    }}
+                  >
+                    {availablePropertyDetails.length} structured
+                    field
+                    {availablePropertyDetails.length === 1
+                      ? ""
+                      : "s"}{" "}
+                    available;{" "}
+                    {missingPropertyDetails.length} field
+                    {missingPropertyDetails.length === 1
+                      ? ""
+                      : "s"}{" "}
+                    not available in the saved
+                    structured data.
+                  </p>
+                </div>
+              </section>
+
+              <section className={styles.card}>
+                <div className={styles.cardTitle}>
+                  <span>!</span>
+
+                  <div>
+                    <h2>
+                      Property Verification Limitations
+                    </h2>
+
+                    <p>
+                      Essential provides AI document
+                      assessment, not independent
+                      field verification.
+                    </p>
+                  </div>
+                </div>
+
+                <p>
+                  Missing structured property details
+                  do not automatically mean that a
+                  document is fraudulent. Some
+                  details may be missing, unreadable,
+                  or unavailable in the saved
+                  structured record.
+                </p>
+
+                <p>
+                  Ownership, title registration,
+                  litigation, survey records,
+                  planning approvals, and physical
+                  location should be independently
+                  checked where required.
+                </p>
+              </section>
             </div>
           )}
 
+          {/* GPS — ONLY NEW TAB; all original tabs untouched */}
+          {activeTab === "gps" && (
+            <div className={styles.tabPanelContent}>
+              <GPSReportSection analysis={gpsAnalysis} />
+            </div>
+          )}
+
+          {/* ================================================
+              ANALYSIS SUMMARY
+             ================================================ */}
+
           {activeTab === "summary" && (
             <div className={styles.tabPanelContent}>
-        <section id="professional-summary" className={styles.card}>
-          <div className={styles.cardTitle}><span>▤</span><div><h2>Analysis Summary</h2><p>Overall Essential AI assessment of the submitted property document package.</p></div></div>
-          <div className={styles.summaryContent}>
-            <div className={styles.summaryAssessmentPremium}>
-              <div className={styles.summaryAssessmentHeader}>
-                 <span>EXECUTIVE ASSESSMENT</span>
-                 <strong className={essentialAnalysisComplete ? riskClass(overallRisk) : styles.riskUnknown}>
-                   <span className={styles.summaryRiskIcon} aria-hidden="true">{!essentialAnalysisComplete ? "i" : overallRisk === "High" ? "!" : overallRisk === "Medium" ? "!" : overallRisk === "Low" ? "✓" : "i"}</span>
-                   {overallRisk === "High" || overallRisk === "Medium" || overallRisk === "Low" ? `${overallRisk} Risk` : "Not Conclusive"}
-                 </strong>
-               </div>
-              <p>{essentialAnalysisNarrative}</p>
-              <div className={styles.summaryActionMessage}>
-                <span>WHAT THIS MEANS FOR YOU</span>
-                <p>{userActionMessage}</p>
-              </div>
-            </div>
 
-            <div className={styles.analysisInsightGrid}>
-              <article className={styles.analysisInsightCard}>
-                <span>KEY FINDINGS</span>
-                {userFriendlyFindings.length > 0 ? (
-                  <ul>
-                    {userFriendlyFindings.slice(0, 6).map((finding, index) => (
-                      <li key={`${finding}-${index}`}>{finding}</li>
-                    ))}
-                  </ul>
+              {/* EXECUTIVE ASSESSMENT */}
+
+              <section className={styles.card}>
+                <div className={styles.cardTitle}>
+                  <span>▤</span>
+
+                  <div>
+                    <h2>
+                      Analysis Summary
+                    </h2>
+
+                    <p>
+                      Consolidated Essential AI
+                      document assessment.
+                    </p>
+                  </div>
+                </div>
+
+                <div className={styles.summaryContent}>
+                  <div
+                    className={
+                      styles.summaryAssessmentPremium
+                    }
+                  >
+                    <div
+                      className={
+                        styles.summaryAssessmentHeader
+                      }
+                    >
+                      <span>
+                        EXECUTIVE ASSESSMENT
+                      </span>
+
+                      <strong
+                        className={riskStyle(risk)}
+                      >
+                        {risk === "Not Conclusive"
+                          ? risk
+                          : `${risk} Risk`}
+                      </strong>
+                    </div>
+
+                    {/*
+                     * SAME FONT SIZE AND WEIGHT AS
+                     * "WHAT THIS MEANS FOR YOU".
+                     */}
+
+                    <p
+                      className="psai-summary-executive-text"
+                    >
+                      {packageSummary ||
+                        documentSummaries[0] ||
+                        "No saved package summary is available."}
+                    </p>
+
+                    <div
+                      className={
+                        styles.summaryActionMessage
+                      }
+                    >
+                      <span>
+                        WHAT THIS MEANS FOR YOU
+                      </span>
+
+                      <p
+                        className="psai-summary-meaning-text"
+                      >
+                        {risk === "High"
+                          ? "Important warning signs were identified by the AI assessment. Resolve these concerns and complete appropriate independent checks before making payment or relying on the documents."
+                          : risk === "Medium"
+                            ? "Some matters require clarification before relying on these documents."
+                            : risk === "Low"
+                              ? "No major issue was identified in the available AI assessment. Independent verification may still be required."
+                              : "The available information is insufficient for a conclusive risk assessment."}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/*
+                   * KEY FINDINGS REMOVED.
+                   *
+                   * OUTSTANDING ISSUES BELOW
+                   * IS THE SINGLE LIST OF CONCERNS.
+                   */}
+
+                  <div
+                    className={
+                      styles.analysisInsightGrid
+                    }
+                  >
+                    <article
+                      className={`${styles.analysisInsightCard} ${
+                        risk === "High"
+                          ? styles.analysisRiskHigh
+                          : risk === "Medium"
+                            ? styles.analysisRiskMedium
+                            : ""
+                      }`}
+                    >
+                      <span>
+                        RISK ASSESSMENT
+                      </span>
+
+                      <strong>
+                        {risk}
+                      </strong>
+
+                      <p>
+                        This is the combined AI
+                        risk assessment, not
+                        independent legal authentication.
+                      </p>
+                    </article>
+
+                    <article
+                      className={
+                        styles.analysisInsightCard
+                      }
+                    >
+                      <span>
+                        AI CONFIDENCE
+                      </span>
+
+                      <strong>
+                        {confidence !== null
+                          ? `${confidence}%`
+                          : "Not Available"}
+                      </strong>
+
+                      <p>
+                        Confidence measures the engine's
+                        confidence in its analysis, not
+                        the probability that the
+                        property is legitimate.
+                      </p>
+                    </article>
+
+                    <article
+                      className={
+                        styles.analysisInsightCard
+                      }
+                    >
+                      <span>
+                        DOCUMENTS ANALYZED
+                      </span>
+
+                      <strong>
+                        {documents.length}
+                      </strong>
+
+                      <p>
+                        Essential document package.
+                      </p>
+                    </article>
+                  </div>
+                </div>
+              </section>
+
+              {/* OUTSTANDING ISSUES */}
+
+              <section className={styles.card}>
+                <div className={styles.cardTitle}>
+                  <span>!</span>
+
+                  <div>
+                    <h2>
+                      Outstanding Issues
+                    </h2>
+
+                    <p>
+                      Observations requiring
+                      further attention before
+                      relying on the documents.
+                    </p>
+                  </div>
+                </div>
+
+                {outstandingIssues.length > 0 ? (
+                  <div className="psai-outstanding-list">
+                    {outstandingIssues.map(
+                      (issue, index) => (
+                        <article
+                          className="psai-outstanding-item"
+                          key={`${index}-${issue}`}
+                        >
+                          <div
+                            className="psai-outstanding-dot"
+                            aria-hidden="true"
+                          >
+                            {index + 1}
+                          </div>
+
+                          <p>
+                            {issue}
+                          </p>
+                        </article>
+                      ),
+                    )}
+                  </div>
                 ) : (
-                  <p>{essentialAnalysisComplete ? "The Essential AI analysis did not return specific findings yet." : "Essential findings will appear here when the AI analysis is complete."}</p>
+                  <div className={styles.emptyState}>
+                    No separate outstanding
+                    issues were saved.
+                  </div>
                 )}
-              </article>
+              </section>
 
-              <article className={`${styles.analysisInsightCard} ${overallRisk === "High" ? styles.analysisRiskHigh : overallRisk === "Medium" ? styles.analysisRiskMedium : ""}`}>
-                <span>WHAT THE RISK MEANS</span>
-                <strong>{overallRisk === "High" || overallRisk === "Medium" || overallRisk === "Low" ? overallRisk : "Not Conclusive"}</strong>
-                <p>{riskInterpretation}</p>
-              </article>
+              {/* DOCUMENT UNDERSTANDING */}
 
-              <article className={styles.analysisInsightCard}>
-                <span>CONFIDENCE IN THIS ANALYSIS</span>
-                <strong>{confidence !== null ? `${confidence}%` : "Not available"}</strong>
-                <p>{confidenceNarrative}</p>
-              </article>
+              {hasKnowledgeUnderstanding && (
+                <section className={styles.card}>
+                  <div className={styles.cardTitle}>
+                    <span>◈</span>
 
-              <article className={styles.analysisInsightCard}>
-                 <span>AI VERIFICATION CHECKS</span>
-                 <div className={styles.serviceCountGrid}>
-                   <div className={styles.serviceCountVerified}><strong>{verificationStatusCounts.Verified}</strong><span>Verified</span></div>
-                   <div className={styles.serviceCountAttention}><strong>{verificationStatusCounts["Attention Required"]}</strong><span>Attention</span></div>
-                   <div className={styles.serviceCountPending}><strong>{verificationStatusCounts.Pending}</strong><span>Pending</span></div>
-                   <div className={styles.serviceCountNeutral}><strong>{verificationStatusCounts["Not Conclusive"]}</strong><span>Not conclusive</span></div>
-                 </div>
-                 <p>These counts reflect the AI document checks included in the Essential verification scope.</p>
-               </article>
-            </div>
+                    <div>
+                      <h2>
+                        Document Understanding
+                      </h2>
 
-            <div className={styles.analysisRecommendationPanel}>
-              <div className={`${styles.analysisRecommendationIcon} ${overallRisk === "High" ? styles.guidanceHigh : overallRisk === "Medium" ? styles.guidanceMedium : overallRisk === "Low" ? styles.guidanceLow : styles.guidanceNeutral}`} aria-hidden="true">{overallRisk === "High" || overallRisk === "Medium" ? "!" : overallRisk === "Low" ? "✓" : "i"}</div>
-              <div>
-                <span>ESSENTIAL GUIDANCE</span>
-                <h3>{recommendation}</h3>
-                <p>{recommendationText}</p>
-                <strong>Need deeper verification?</strong>
-                <p>For independent title, ownership, registry, survey, legal, or physical due diligence, use the Professional or Premium verification service.</p>
-              </div>
-            </div>
-
-            <div className={styles.summaryStats}>
-              <div>
-                <strong>{documents.length}</strong>
-                <span>Documents reviewed</span>
-              </div>
-              <div>
-                <strong>{propertyType}</strong>
-                <span>Property type</span>
-              </div>
-              <div>
-                <strong className={riskClass(overallRisk)}>{assessment}</strong>
-                <span>Essential assessment</span>
-              </div>
-              <div>
-                <strong>{formatDate(completedAt)}</strong>
-                <span>Report date</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.card}>
-          <div className={styles.cardTitle}><span>!</span><div><h2>Outstanding Issues</h2><p>Items requiring clarification, confirmation, or additional verification.</p></div></div>
-          <div className={styles.professionalIssueList}>
-            {issueItems.length > 0 ? (
-              issueItems.map((issue, index) => (
-                <article className={styles.professionalIssueRow} key={`${issue}-${index}`}>
-                  <div className={styles.professionalIssueNumber}>
-                    <span>{String(index + 1).padStart(2, "0")}</span>
+                      <p>
+                        Structural observations informed
+                        by available knowledge references.
+                      </p>
+                    </div>
                   </div>
-                  <div className={styles.professionalIssueContent}>
-                    <span className={styles.professionalIssueLabel}>ITEM {String(index + 1).padStart(2, "0")}</span>
-                    <p>{simplifyFinding(issue)}</p>
-                  </div>
-                </article>
-              ))
-            ) : (
-              <div className={styles.emptyState}>
-                No outstanding issues have been supplied by the Essential verification engine yet.
-              </div>
-            )}
-          </div>
-        </section>
 
+                  <p>
+                    Reference knowledge assists
+                    document understanding but
+                    does not independently
+                    establish authenticity.
+                  </p>
 
+                  {understandingSections.map(
+                    (section) => {
+                      if (
+                        section.values.length ===
+                        0
+                      ) {
+                        return null;
+                      }
+
+                      return (
+                        <div
+                          key={section.label}
+                          style={{
+                            marginTop: 16,
+                          }}
+                        >
+                          <h3>
+                            {section.label}
+                          </h3>
+
+                          <ul
+                            style={{
+                              paddingLeft: 22,
+                            }}
+                          >
+                            {section.values.map(
+                              (value, index) => (
+                                <li
+                                  key={index}
+                                >
+                                  {value}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      );
+                    },
+                  )}
+                </section>
+              )}
+
+              {/* RECOMMENDED NEXT STEPS */}
+
+              <section
+                className={`${styles.card} psai-recommendation-section`}
+              >
+                <span className="psai-recommendation-label">
+                  RECOMMENDED NEXT STEPS
+                </span>
+
+                <p className="psai-recommendation-text">
+                  Address flagged document irregularities,
+                  obtain missing supporting documentation,
+                  and independently confirm ownership,
+                  title, survey, and property information.
+                </p>
+
+                <p className="psai-recommendation-text">
+                  For deeper registry, legal, survey,
+                  and physical due diligence, consider
+                  the Professional or Premium plan
+                  according to the verification required.
+                </p>
+              </section>
             </div>
           )}
         </div>
 
-        <section className={styles.actions}>
-          <button type="button" className={styles.secondaryButton} onClick={() => router.push("/dashboard")}>← Back to Dashboard</button>
-          <div className={styles.actionRight}>
-            <button type="button" className={styles.outlineButton} onClick={downloadReport}>↓ Download Full Report</button>
-            <button type="button" className={styles.primaryButton} onClick={() => router.push("/verify")}>+ Verify Another Property</button>
+        {/* ==================================================
+            COMPACT MOBILE ACTION BUTTONS
+           ================================================== */}
+
+        <section
+          className={`${styles.actions} psai-mobile-actions`}
+        >
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={() =>
+              router.push("/dashboard")
+            }
+          >
+            ← Back to Dashboard
+          </button>
+
+          <div
+            className={`${styles.actionRight} psai-mobile-actions-right`}
+          >
+            <button
+              type="button"
+              className={styles.outlineButton}
+              onClick={downloadReport}
+            >
+              ↓ Download Full Report
+            </button>
+
+            <button
+              type="button"
+              className={styles.primaryButton}
+              onClick={() =>
+                router.push("/verify")
+              }
+            >
+              + Verify Another Property
+            </button>
           </div>
         </section>
 
+        {/* ==================================================
+            FOOTER
+           ================================================== */}
+
         <footer className={styles.footer}>
           <div className={styles.footerBrand}>
-            <strong>PropertySure AI</strong>
-            <span>Essential Property Verification Report</span>
+            <strong>
+              PropertySure AI
+            </strong>
+
+            <span>
+              Essential AI Document Assessment
+            </span>
           </div>
+
           <div className={styles.footerMeta}>
-            <span>Verification ID #{verification.id}</span>
-            <span>Essential Plan</span>
-            <span>Assessment: {assessment}</span>
-            {String(payment?.status || "").toLowerCase() === "paid" && <span>Payment: {formatCurrency(payment?.amount)}</span>}
+            <span>
+              Verification #{verification.id}
+            </span>
+
+            <span>
+              Essential Plan
+            </span>
+
+            <span>
+              {packageStatus}
+            </span>
+
+            {payment?.status && (
+              <span>
+                Payment Status:{" "}
+                {titleCase(
+                  payment.status,
+                )}
+              </span>
+            )}
           </div>
         </footer>
 
+        {/* ==================================================
+            DOCUMENT DETAILS MODAL
+           ================================================== */}
+
         {selectedDocument && (
-          <div className={styles.modalBackdrop} onClick={closeDocument}>
-            <div className={styles.modal} onClick={(event) => event.stopPropagation()}>
-              <div className={styles.modalHeader}><div><span>Document Details</span><h2>{getDocumentType(selectedDocument)}</h2><small className={styles.modalReference}>{getDocumentReference(selectedDocument, selectedDocumentIndex, verification.id)}</small></div><button type="button" onClick={closeDocument} className={styles.modalClose} aria-label="Close document details">×</button></div>
+          <div
+            className={styles.modalBackdrop}
+            onClick={closeDocument}
+          >
+            <div
+              className={styles.modal}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Document details"
+              onClick={(event) =>
+                event.stopPropagation()
+              }
+            >
+              <div className={styles.modalHeader}>
+                <div>
+                  <span>
+                    Document Details
+                  </span>
+
+                  <h2>
+                    {documentType(
+                      selectedDocument,
+                    )}
+                  </h2>
+
+                  <small
+                    className={
+                      styles.modalReference
+                    }
+                  >
+                    {documentReference(
+                      selectedDocument,
+                      selectedIndex,
+                      verification.id,
+                    )}
+                  </small>
+                </div>
+
+                <button
+                  type="button"
+                  className={styles.modalClose}
+                  onClick={closeDocument}
+                  aria-label="Close document preview"
+                >
+                  ×
+                </button>
+              </div>
+
               <div className={styles.modalBody}>
-                <div className={styles.documentPreviewColumn}>
+
+                {/* DOCUMENT PREVIEW */}
+
+                <div
+                  className={
+                    styles.documentPreviewColumn
+                  }
+                >
                   <div className={styles.documentPreview}>
-                    {previewLoading ? <div className={styles.previewLoading}><div className={styles.previewSpinner} /><span>Loading secure document preview...</span></div> : previewError ? <div className={styles.previewError}><strong>Document preview unavailable</strong><span>{previewError}</span></div> : selectedDocumentUrl ? (/image/i.test(getDocumentType(selectedDocument)) || /\.(jpg|jpeg|png|webp)(\?|$)/i.test(stringValue(selectedDocument.path))) ? <img src={selectedDocumentUrl} alt={getDocumentType(selectedDocument)} /> : <iframe src={selectedDocumentUrl} title={getDocumentType(selectedDocument)} /> : <div>Document preview unavailable.</div>}
+                    {previewLoading ? (
+                      <div
+                        className={
+                          styles.previewLoading
+                        }
+                      >
+                        <div
+                          className={
+                            styles.previewSpinner
+                          }
+                        />
+
+                        <span>
+                          Loading secure document preview...
+                        </span>
+                      </div>
+                    ) : previewError ? (
+                      <div
+                        className={
+                          styles.previewError
+                        }
+                      >
+                        <strong>
+                          Preview unavailable
+                        </strong>
+
+                        <span>
+                          {previewError}
+                        </span>
+                      </div>
+                    ) : previewUrl ? (
+                      /\.(jpg|jpeg|png|webp)(\?|$)/i.test(
+                        stringValue(
+                          selectedDocument.path,
+                        ),
+                      ) ? (
+                        <img
+                          src={previewUrl}
+                          alt={
+                            stringValue(
+                              selectedDocument.name,
+                            ) ||
+                            "Uploaded property document"
+                          }
+                        />
+                      ) : (
+                        <iframe
+                          src={previewUrl}
+                          title="Property document preview"
+                        />
+                      )
+                    ) : (
+                      <p>
+                        No preview available.
+                      </p>
+                    )}
                   </div>
-                  <div className={styles.documentNavigation}>
-                    <button type="button" className={styles.documentNavButton} disabled={selectedDocumentIndex <= 0} onClick={() => { const previous = documents[selectedDocumentIndex - 1]; if (previous) void openDocument(previous, selectedDocumentIndex - 1); }}>← Previous</button>
-                    <span className={styles.documentCounter}>{selectedDocumentIndex + 1} of {documents.length}</span>
-                    <button type="button" className={styles.documentNavButton} disabled={selectedDocumentIndex >= documents.length - 1} onClick={() => { const next = documents[selectedDocumentIndex + 1]; if (next) void openDocument(next, selectedDocumentIndex + 1); }}>Next →</button>
+
+                  {/* PREVIOUS / NEXT */}
+
+                  <div
+                    className={
+                      styles.documentNavigation
+                    }
+                  >
+                    <button
+                      type="button"
+                      className={
+                        styles.documentNavButton
+                      }
+                      disabled={
+                        selectedIndex <= 0
+                      }
+                      onClick={() => {
+                        const previous =
+                          documents[
+                            selectedIndex - 1
+                          ];
+
+                        if (previous) {
+                          void openDocument(
+                            previous,
+                            selectedIndex - 1,
+                          );
+                        }
+                      }}
+                    >
+                      ← Previous
+                    </button>
+
+                    <span
+                      className={
+                        styles.documentCounter
+                      }
+                    >
+                      {selectedIndex + 1} of{" "}
+                      {documents.length}
+                    </span>
+
+                    <button
+                      type="button"
+                      className={
+                        styles.documentNavButton
+                      }
+                      disabled={
+                        selectedIndex >=
+                        documents.length - 1
+                      }
+                      onClick={() => {
+                        const next =
+                          documents[
+                            selectedIndex + 1
+                          ];
+
+                        if (next) {
+                          void openDocument(
+                            next,
+                            selectedIndex + 1,
+                          );
+                        }
+                      }}
+                    >
+                      Next →
+                    </button>
                   </div>
                 </div>
+
+                {/* DOCUMENT INFORMATION */}
+
                 <div className={styles.modalDetails}>
-                  <div className={styles.detailItem}><span>Document Type</span><strong>{getDocumentType(selectedDocument)}</strong></div>
-                  <div className={styles.detailItem}><span>Document Reference</span><strong>{getDocumentReference(selectedDocument, selectedDocumentIndex, verification.id)}</strong></div>
-                  <div className={styles.detailItem}><span>AI Confidence</span><strong>{clampScore(numberValue(selectedDocument.ai_confidence, selectedDocument.confidence)) !== null ? `${clampScore(numberValue(selectedDocument.ai_confidence, selectedDocument.confidence))}%` : "—"}</strong></div>
-                  <div className={styles.detailItem}><span>Status</span><strong>{packageStatus}</strong></div>
-                  <div className={styles.detailSummary}><span>Analysis Summary</span><p>{stringValue(selectedDocument.summary, getNested(selectedDocument.findings || {}, "summary")) || "No document-level Essential summary is available yet."}</p></div>
+                  <div
+                    className={
+                      styles.detailItem
+                    }
+                  >
+                    <span>
+                      Document Name
+                    </span>
+
+                    <strong>
+                      {stringValue(
+                        selectedDocument.name,
+                        selectedDocument.documentName,
+                      ) ||
+                        "Property Document"}
+                    </strong>
+                  </div>
+
+                  <div
+                    className={
+                      styles.detailItem
+                    }
+                  >
+                    <span>
+                      Document Type
+                    </span>
+
+                    <strong>
+                      {documentType(
+                        selectedDocument,
+                      )}
+                    </strong>
+                  </div>
+
+                  <div
+                    className={
+                      styles.detailItem
+                    }
+                  >
+                    <span>
+                      AI Confidence
+                    </span>
+
+                    <strong>
+                      {scoreValue(
+                        selectedDocument.ai_confidence,
+                        selectedDocument.confidence,
+                      ) !== null
+                        ? `${scoreValue(
+                            selectedDocument.ai_confidence,
+                            selectedDocument.confidence,
+                          )}%`
+                        : "—"}
+                    </strong>
+                  </div>
+
+                  <div
+                    className={
+                      styles.detailItem
+                    }
+                  >
+                    <span>
+                      Assessment Status
+                    </span>
+
+                    <strong>
+                      {selectedDocument.assessmentStatus
+                        ? titleCase(
+                            selectedDocument.assessmentStatus,
+                          )
+                        : "Not Available"}
+                    </strong>
+                  </div>
+
+                  <div
+                    className={
+                      styles.detailItem
+                    }
+                  >
+                    <span>
+                      Visual Fabrication Risk
+                    </span>
+
+                    <strong>
+                      {selectedDocument.syntheticDocumentRisk
+                        ? titleCase(
+                            selectedDocument.syntheticDocumentRisk,
+                          )
+                        : "Inconclusive"}
+                    </strong>
+                  </div>
+
+                  <div
+                    className={
+                      styles.detailItem
+                    }
+                  >
+                    <span>
+                      Authenticity
+                    </span>
+
+                    <strong>
+                      Not Independently Verified
+                    </strong>
+                  </div>
+
+                  {/* SAVED AI ASSESSMENT */}
+
+                  <div
+                    className={
+                      styles.detailSummary
+                    }
+                  >
+                    <span>
+                      Saved AI Assessment
+                    </span>
+
+                    <p>
+                      {stringValue(
+                        selectedDocument.summary,
+                      ) ||
+                        "No individual assessment summary available."}
+                    </p>
+                  </div>
+
+                  {/* ========================================
+                      PREMIUM MANIPULATION INDICATORS
+                     ======================================== */}
+
+                  {textArray(
+                    selectedDocument.manipulationIndicators,
+                  ).length > 0 && (
+                    <div
+                      className={
+                        styles.detailSummary
+                      }
+                    >
+                      <span>
+                        Potential Manipulation Indicators
+                      </span>
+
+                      <p>
+                        These are individual AI
+                        observations requiring review.
+                        They do not independently
+                        establish forgery.
+                      </p>
+
+                      <PremiumIndicators
+                        indicators={textArray(
+                          selectedDocument.manipulationIndicators,
+                        )}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className={styles.modalChecks}><h3>Document Checks</h3>{(Object.keys(getDocumentChecks(selectedDocument)) as Array<keyof VerificationChecks>).map((key) => { const value = getDocumentChecks(selectedDocument)[key]; return <div className={styles.modalCheckRow} key={key}><span>{checkLabel(key)}</span><strong className={value === true ? styles.modalPass : value === false ? styles.modalFail : styles.modalReview}>{value === true ? "No Issue Detected" : value === false ? "Attention" : "Not Conclusive"}</strong></div>; })}</div>
+
+              {/* ============================================
+                  INDIVIDUAL DOCUMENT CHECKS
+                 ============================================ */}
+
+              <div className={styles.modalChecks}>
+                <h3>
+                  Individual Document Verification Checks
+                </h3>
+
+                <p
+                  style={{
+                    marginBottom: 16,
+                  }}
+                >
+                  These checks apply only to the
+                  displayed document. The
+                  Verification Checks tab shows
+                  combined results for the
+                  entire package.
+                </p>
+
+                {CHECK_KEYS.map((key) => {
+                  const value =
+                    documentChecks(
+                      selectedDocument,
+                    )[key];
+
+                  return (
+                    <div
+                      className={
+                        styles.modalCheckRow
+                      }
+                      key={key}
+                    >
+                      <span>
+                        {CHECK_LABELS[key]}
+                      </span>
+
+                      <strong
+                        className={
+                          value === true
+                            ? styles.modalPass
+                            : value === false
+                              ? styles.modalFail
+                              : styles.modalReview
+                        }
+                      >
+                        {checkText(value)}
+                      </strong>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
@@ -2013,23 +4564,50 @@ function EssentialReportContent() {
   );
 }
 
+/*
+ * ============================================================
+ * SUSPENSE FALLBACK
+ * ============================================================
+ */
+
 function EssentialReportFallback() {
   return (
-    <AppShell activePath="/verify" headerPath="/result">
+    <AppShell
+      activePath="/verify"
+      headerPath="/result"
+    >
       <div className={styles.loadingPage}>
         <div className={styles.loadingCard}>
-          <div className={styles.loadingSpinner} />
-          <h2>Loading verification result</h2>
-          <p>Retrieving your completed property analysis...</p>
+          <div
+            className={styles.loadingSpinner}
+          />
+
+          <h2>
+            Loading verification result
+          </h2>
+
+          <p>
+            Retrieving your completed property analysis...
+          </p>
         </div>
       </div>
     </AppShell>
   );
 }
 
+/*
+ * ============================================================
+ * PAGE EXPORT
+ * ============================================================
+ */
+
 export default function EssentialResultPage() {
   return (
-    <Suspense fallback={<EssentialReportFallback />}>
+    <Suspense
+      fallback={
+        <EssentialReportFallback />
+      }
+    >
       <EssentialReportContent />
     </Suspense>
   );

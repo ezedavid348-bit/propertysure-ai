@@ -2,9 +2,8 @@
  * PropertySure AI
  * Core AI Intelligence Types
  *
- * This file defines the shared data structures used by
- * the document classification, extraction, retrieval,
- * analysis, learning, and risk-scoring systems.
+ * Shared structures for classification, extraction,
+ * retrieval, analysis, learning, and risk scoring.
  */
 
 export type PropertyDocumentType =
@@ -37,6 +36,108 @@ export type KnowledgeSourceType =
   | "fraud-pattern"
   | "verification-rule"
   | "verified-case";
+
+/**
+ * ============================================================
+ * NIGERIAN PROPERTY JURISDICTIONS
+ * ============================================================
+ *
+ * All 36 Nigerian states plus the Federal Capital Territory.
+ *
+ * Canonical values are used for database filtering.
+ *
+ * Abuja is represented by "FCT".
+ * Port Harcourt is represented by "Rivers".
+ *
+ * These types do not automatically detect jurisdiction.
+ * Detection and normalization happen in the application.
+ * ============================================================
+ */
+
+export const NIGERIAN_JURISDICTIONS = [
+  "Abia",
+  "Adamawa",
+  "Akwa Ibom",
+  "Anambra",
+  "Bauchi",
+  "Bayelsa",
+  "Benue",
+  "Borno",
+  "Cross River",
+  "Delta",
+  "Ebonyi",
+  "Edo",
+  "Ekiti",
+  "Enugu",
+  "Gombe",
+  "Imo",
+  "Jigawa",
+  "Kaduna",
+  "Kano",
+  "Katsina",
+  "Kebbi",
+  "Kogi",
+  "Kwara",
+  "Lagos",
+  "Nasarawa",
+  "Niger",
+  "Ogun",
+  "Ondo",
+  "Osun",
+  "Oyo",
+  "Plateau",
+  "Rivers",
+  "Sokoto",
+  "Taraba",
+  "Yobe",
+  "Zamfara",
+  "FCT",
+] as const;
+
+export type NigerianJurisdiction =
+  (typeof NIGERIAN_JURISDICTIONS)[number];
+
+/**
+ * ============================================================
+ * KNOWLEDGE VERIFICATION OUTCOME
+ * ============================================================
+ *
+ * This is not the same as knowledge approval.
+ *
+ * An approved knowledge record can describe a confirmed
+ * fraudulent document.
+ *
+ * "verified-legitimate" and "confirmed-fraud" must be
+ * supported by independent verification evidence.
+ * ============================================================
+ */
+
+export type KnowledgeVerificationOutcome =
+  | "verified-legitimate"
+  | "confirmed-fraud"
+  | "unverified";
+
+/**
+ * ============================================================
+ * JURISDICTION AND VERIFICATION INFORMATION
+ * ============================================================
+ *
+ * Jurisdiction is optional at the type level because existing
+ * records and documents may not have a known jurisdiction.
+ *
+ * A missing jurisdiction must never trigger an automatic
+ * cross-state reference fallback.
+ * ============================================================
+ */
+
+export interface KnowledgeJurisdiction {
+  jurisdiction?: NigerianJurisdiction | null;
+  localGovernmentArea?: string | null;
+  issuingAuthority?: string | null;
+  documentYear?: number | null;
+  verificationOutcome?: KnowledgeVerificationOutcome;
+  verificationEvidence?: string | null;
+}
 
 export interface DocumentInput {
   documentId?: string;
@@ -82,10 +183,22 @@ export interface ExtractedDocumentData {
 
   rawText?: string;
 
-  fields?: Record<string, string | number | boolean | null>;
+  fields?: Record<
+    string,
+    string | number | boolean | null
+  >;
+
+  /**
+   * Jurisdiction extracted from document content.
+   *
+   * Do not infer jurisdiction from filename alone.
+   */
+  jurisdiction?: NigerianJurisdiction | null;
+  localGovernmentArea?: string | null;
 }
 
-export interface KnowledgeReference {
+export interface KnowledgeReference
+  extends KnowledgeJurisdiction {
   id: string;
   title?: string;
   documentType?: PropertyDocumentType;
@@ -100,7 +213,11 @@ export interface VerificationRule {
   name: string;
   description: string;
   documentTypes: PropertyDocumentType[];
-  severity: "low" | "medium" | "high" | "critical";
+  severity:
+    | "low"
+    | "medium"
+    | "high"
+    | "critical";
   enabled: boolean;
 }
 
@@ -110,21 +227,34 @@ export interface FraudPattern {
   description: string;
   documentTypes?: PropertyDocumentType[];
   indicators: string[];
-  severity: "low" | "medium" | "high" | "critical";
+  severity:
+    | "low"
+    | "medium"
+    | "high"
+    | "critical";
 }
 
 export interface DocumentFinding {
   category: string;
   title: string;
   description: string;
-  severity: "info" | "low" | "medium" | "high" | "critical";
+  severity:
+    | "info"
+    | "low"
+    | "medium"
+    | "high"
+    | "critical";
   confidence: number;
   evidence?: string[];
 }
 
 export interface RiskScore {
   score: number;
-  level: "low" | "moderate" | "high" | "critical";
+  level:
+    | "low"
+    | "moderate"
+    | "high"
+    | "critical";
   reasons: string[];
 }
 
@@ -137,7 +267,8 @@ export interface DocumentAnalysis {
   status: AIProcessingStatus;
 }
 
-export interface KnowledgeDocument {
+export interface KnowledgeDocument
+  extends KnowledgeJurisdiction {
   id?: string;
   title: string;
   documentType: PropertyDocumentType;
@@ -175,7 +306,10 @@ export interface ClassificationFeedback {
 
   confidence?: number;
 
-  feedbackSource?: "admin" | "system" | "verified-case";
+  feedbackSource?:
+    | "admin"
+    | "system"
+    | "verified-case";
 
   notes?: string;
 }

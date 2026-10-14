@@ -5,111 +5,54 @@ import {
   saveKnowledgeChunks,
 } from "./knowledge-chunks";
 
-import type {
-  KnowledgeApprovalStatus,
-  KnowledgeDocument,
-  KnowledgeSourceType,
-  PropertyDocumentType,
+import {
+  NIGERIAN_JURISDICTIONS,
+  type KnowledgeApprovalStatus,
+  type KnowledgeDocument,
+  type KnowledgeSourceType,
+  type KnowledgeVerificationOutcome,
+  type NigerianJurisdiction,
+  type PropertyDocumentType,
 } from "./types";
 
 /**
  * ============================================================
- * PROPERTYsure AI
+ * PROPERTYSURE AI
  * KNOWLEDGE STORE
  * ============================================================
  *
- * This module connects the AI knowledge layer to Supabase.
+ * All new knowledge enters as pending.
  *
- * IMPORTANT:
+ * Administrative approval controls whether knowledge
+ * is eligible for retrieval.
  *
- * Customer documents must NOT automatically become trusted
- * knowledge.
+ * Verification outcome describes the independently
+ * supported authenticity status of a document.
  *
- * Knowledge enters the database with an approval status.
+ * Approval alone does not establish authenticity.
  *
- * Only approved knowledge should later be supplied to the
- * AI retrieval and analysis systems.
- *
- * APPROVAL FLOW:
- *
- * pending
- *    ↓
- * administrator approval
- *    ↓
- * create chunks
- *    ↓
- * generate embeddings
- *    ↓
- * save searchable chunks
- *    ↓
- * approved
+ * Jurisdiction-specific retrieval must never fall back
+ * to another Nigerian state or FCT.
  * ============================================================
  */
 
 const TABLE_NAME = "ai_knowledge_documents";
+const CHUNKS_TABLE = "ai_knowledge_chunks";
 
 /**
  * ============================================================
- * NORMALIZE KNOWLEDGE DOCUMENT ID
+ * NORMALIZE AND VALIDATE KNOWLEDGE ID
  * ============================================================
- *
- * Supabase expects a clean UUID.
- *
- * This function protects the knowledge store from IDs that
- * accidentally arrive with:
- *
- *   "uuid"
- *   'uuid'
- *   \"uuid\"
- *   \uuid\
- *   whitespace
- *
- * The final value must be a clean UUID.
  */
+
 function normalizeKnowledgeId(id: string): string {
-  let cleanId = String(id ?? "").trim();
-
-  /**
-   * Remove surrounding escaped quotation marks and
-   * surrounding backslashes.
-   *
-   * Example:
-   *
-   * \"3db729ad-053c-4291-b94a-77dd9e33e\"
-   *
-   * becomes:
-   *
-   * 3db729ad-053c-4291-b94a-77dd9e33e
-   */
-  cleanId = cleanId.replace(
-    /^[\\"']+|[\\"']+$/g,
-    "",
-  );
-
-  /**
-   * Remove normal surrounding quotation marks.
-   */
-  cleanId = cleanId.replace(
-    /^["']+|["']+$/g,
-    "",
-  );
-
-  /**
-   * Remove any remaining surrounding whitespace.
-   */
-  cleanId = cleanId.trim();
-
-  return cleanId;
+  return String(id ?? "")
+    .trim()
+    .replace(/^[\\\"']+|[\\\"']+$/g, "")
+    .replace(/^["']+|["']+$/g, "")
+    .trim();
 }
 
-/**
- * ============================================================
- * VALIDATE KNOWLEDGE DOCUMENT ID
- * ============================================================
- *
- * This prevents malformed values from reaching Supabase's
- * UUID column.
- */
 function validateKnowledgeId(id: string): string {
   const cleanId = normalizeKnowledgeId(id);
 
@@ -119,9 +62,6 @@ function validateKnowledgeId(id: string): string {
     );
   }
 
-  /**
-   * Standard UUID format.
-   */
   const uuidPattern =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -136,56 +76,175 @@ function validateKnowledgeId(id: string): string {
 
 /**
  * ============================================================
+ * OPTIONAL TEXT
+ * ============================================================
+ */
+
+function optionalText(
+  value?: string | null,
+): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  return value.trim() || null;
+}
+
+/**
+ * ============================================================
+ * NORMALIZE JURISDICTION
+ * ============================================================
+ *
+ * Recognizes the canonical 36 states and FCT.
+ *
+ * City names are not used to infer jurisdiction.
+ * ============================================================
+ */
+
+export function normalizeJurisdiction(
+  value?: string | null,
+): NigerianJurisdiction | null {
+  const cleaned = optionalText(value);
+
+  if (!cleaned) {
+    return null;
+  }
+
+  const normalized = cleaned
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+
+  const fctAliases = [
+    "abuja",
+    "fct",
+    "f.c.t.",
+    "federal capital territory",
+    "federal capital territory abuja",
+    "abuja fct",
+    "fct abuja",
+  ];
+
+  if (fctAliases.includes(normalized)) {
+    return "FCT";
+  }
+
+  const withoutStateSuffix = normalized
+    .replace(/\s+state$/, "")
+    .trim();
+
+  const match = NIGERIAN_JURISDICTIONS.find(
+    (jurisdiction) =>
+      jurisdiction.toLowerCase() ===
+      withoutStateSuffix,
+  );
+
+  return match ?? null;
+}
+
+/**
+ * ============================================================
+ * NORMALIZE VERIFICATION OUTCOME
+ * ============================================================
+ */
+
+function normalizeVerificationOutcome(
+  value?: KnowledgeVerificationOutcome,
+): KnowledgeVerificationOutcome {
+  if (
+    value === "verified-legitimate" ||
+    value === "confirmed-fraud"
+  ) {
+    return value;
+  }
+
+  return "unverified";
+}
+
+/**
+ * ============================================================
  * SAVE KNOWLEDGE DOCUMENT
  * ============================================================
  *
- * Creates a new knowledge record in Supabase.
- *
- * New knowledge is normally created as "pending".
+ * Every new document remains pending.
+ * ============================================================
  */
+
 export async function saveKnowledgeDocument(
   document: KnowledgeDocument,
 ) {
-  const { data, error } =
-    await supabaseServer
-      .from(TABLE_NAME)
-      .insert({
-        title: document.title,
+  const jurisdiction = normalizeJurisdiction(
+    document.jurisdiction,
+  );
 
-        document_type:
-          document.documentType,
+  const verificationOutcome =
+    normalizeVerificationOutcome(
+      document.verificationOutcome,
+    );
 
-        source_type:
-          document.sourceType,
+  const verificationEvidence = optionalText(
+    document.verificationEvidence,
+  );
 
-        approval_status:
-          document.approvalStatus,
+  if (
+    verificationOutcome !== "unverified" &&
+    !verificationEvidence
+  ) {
+    throw new Error(
+      "Supporting verification evidence is required for verified-legitimate or confirmed-fraud knowledge.",
+    );
+  }
 
-        description:
-          document.description ?? null,
+  const { data, error } = await supabaseServer
+    .from(TABLE_NAME)
+    .insert({
+      title: document.title,
 
-        content:
-          document.content ?? null,
+      document_type: document.documentType,
 
-        source_path:
-          document.sourcePath ?? null,
+      source_type: document.sourceType,
 
-        source_url:
-          document.sourceUrl ?? null,
+      approval_status: "pending",
 
-        metadata:
-          document.metadata ?? {},
+      jurisdiction,
 
-        created_at:
-          document.createdAt ??
-          new Date().toISOString(),
+      local_government_area: optionalText(
+        document.localGovernmentArea,
+      ),
 
-        updated_at:
-          document.updatedAt ??
-          new Date().toISOString(),
-      })
-      .select()
-      .single();
+      issuing_authority: optionalText(
+        document.issuingAuthority,
+      ),
+
+      document_year:
+        typeof document.documentYear === "number" &&
+        Number.isInteger(document.documentYear) &&
+        document.documentYear >= 1800 &&
+        document.documentYear <= 2200
+          ? document.documentYear
+          : null,
+
+      verification_outcome: verificationOutcome,
+
+      verification_evidence: verificationEvidence,
+
+      description: document.description ?? null,
+
+      content: document.content ?? null,
+
+      source_path: document.sourcePath ?? null,
+
+      source_url: document.sourceUrl ?? null,
+
+      metadata: document.metadata ?? {},
+
+      created_at:
+        document.createdAt ?? new Date().toISOString(),
+
+      updated_at:
+        document.updatedAt ?? new Date().toISOString(),
+    })
+    .select()
+    .single();
 
   if (error) {
     console.error(
@@ -206,18 +265,15 @@ export async function saveKnowledgeDocument(
  * GET KNOWLEDGE DOCUMENT
  * ============================================================
  */
-export async function getKnowledgeDocument(
-  id: string,
-) {
-  const cleanId =
-    validateKnowledgeId(id);
 
-  const { data, error } =
-    await supabaseServer
-      .from(TABLE_NAME)
-      .select("*")
-      .eq("id", cleanId)
-      .maybeSingle();
+export async function getKnowledgeDocument(id: string) {
+  const cleanId = validateKnowledgeId(id);
+
+  const { data, error } = await supabaseServer
+    .from(TABLE_NAME)
+    .select("*")
+    .eq("id", cleanId)
+    .maybeSingle();
 
   if (error) {
     console.error(
@@ -238,25 +294,34 @@ export async function getKnowledgeDocument(
  * GET APPROVED KNOWLEDGE
  * ============================================================
  *
- * Only approved knowledge is returned.
+ * A valid jurisdiction is mandatory.
  *
- * The AI retrieval system should use this function rather
- * than retrieving every knowledge record.
+ * Unknown jurisdiction returns no knowledge.
+ * No cross-state fallback is permitted.
+ * ============================================================
  */
+
 export async function getApprovedKnowledge(
   options?: {
     documentType?: PropertyDocumentType;
     sourceType?: KnowledgeSourceType;
+    jurisdiction?: string;
     limit?: number;
   },
 ) {
+  const jurisdiction = normalizeJurisdiction(
+    options?.jurisdiction,
+  );
+
+  if (!jurisdiction) {
+    return [];
+  }
+
   let query = supabaseServer
     .from(TABLE_NAME)
     .select("*")
-    .eq(
-      "approval_status",
-      "approved",
-    );
+    .eq("approval_status", "approved")
+    .eq("jurisdiction", jurisdiction);
 
   if (options?.documentType) {
     query = query.or(
@@ -271,16 +336,19 @@ export async function getApprovedKnowledge(
     );
   }
 
-  query = query
+  const requestedLimit = options?.limit ?? 20;
+
+  const safeLimit =
+    Number.isInteger(requestedLimit) &&
+    requestedLimit > 0
+      ? Math.min(requestedLimit, 100)
+      : 20;
+
+  const { data, error } = await query
     .order("created_at", {
       ascending: false,
     })
-    .limit(
-      options?.limit ?? 20,
-    );
-
-  const { data, error } =
-    await query;
+    .limit(safeLimit);
 
   if (error) {
     console.error(
@@ -301,32 +369,38 @@ export async function getApprovedKnowledge(
  * UPDATE KNOWLEDGE APPROVAL STATUS
  * ============================================================
  *
- * Updates the approval state of a knowledge document.
+ * This function must only be called by trusted
+ * server-side administrative workflows.
+ *
+ * Approval must pass through approveKnowledgeDocument().
+ * ============================================================
  */
+
 export async function updateKnowledgeApprovalStatus(
   id: string,
   approvalStatus: KnowledgeApprovalStatus,
 ) {
-  const cleanId =
-    validateKnowledgeId(id);
+  const cleanId = validateKnowledgeId(id);
 
-  const { data, error } =
-    await supabaseServer
-      .from(TABLE_NAME)
-      .update({
-        approval_status:
-          approvalStatus,
+  if (approvalStatus === "approved") {
+    throw new Error(
+      "Direct approval is disabled. Use approveKnowledgeDocument() to enforce knowledge approval safeguards.",
+    );
+  }
 
-        updated_at:
-          new Date().toISOString(),
-      })
-      .eq("id", cleanId)
-      .select()
-      .single();
+  const { data, error } = await supabaseServer
+    .from(TABLE_NAME)
+    .update({
+      approval_status: approvalStatus,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", cleanId)
+    .select()
+    .single();
 
   if (error) {
     console.error(
-      "PropertySure AI knowledge approval error:",
+      "PropertySure AI knowledge status update error:",
       error,
     );
 
@@ -343,54 +417,23 @@ export async function updateKnowledgeApprovalStatus(
  * APPROVE KNOWLEDGE DOCUMENT
  * ============================================================
  *
- * Approval is the point at which a knowledge document becomes
- * eligible to enter the searchable AI knowledge layer.
+ * Reuses previously generated embeddings.
  *
- * FLOW:
+ * Does not delete existing chunks.
  *
- * pending
- *    ↓
- * administrator approval
- *    ↓
- * delete old chunks
- *    ↓
- * split document into chunks
- *    ↓
- * generate embeddings
- *    ↓
- * save chunks
- *    ↓
- * mark document approved
- *
- * IMPORTANT:
- *
- * This function should only be called by an authorized
- * administrator/approval workflow.
- *
- * Customer documents must NEVER be automatically approved.
+ * An administrator must independently review evidence
+ * before assigning a verified or fraud outcome.
+ * ============================================================
  */
+
 export async function approveKnowledgeDocument(
   id: string,
 ) {
-  /**
-   * ----------------------------------------------------------
-   * NORMALIZE + VALIDATE ID
-   * ----------------------------------------------------------
-   */
+  const cleanId = validateKnowledgeId(id);
 
-  const cleanId =
-    validateKnowledgeId(id);
-
-  /**
-   * ----------------------------------------------------------
-   * GET THE KNOWLEDGE DOCUMENT
-   * ----------------------------------------------------------
-   */
-
-  const document =
-    await getKnowledgeDocument(
-      cleanId,
-    );
+  const document = await getKnowledgeDocument(
+    cleanId,
+  );
 
   if (!document) {
     throw new Error(
@@ -398,15 +441,14 @@ export async function approveKnowledgeDocument(
     );
   }
 
-  /**
-   * ----------------------------------------------------------
-   * REQUIRE CONTENT
-   * ----------------------------------------------------------
-   */
+  if (document.approval_status === "rejected") {
+    throw new Error(
+      "Rejected knowledge cannot be approved without a separate review workflow.",
+    );
+  }
 
   if (
-    typeof document.content !==
-      "string" ||
+    typeof document.content !== "string" ||
     !document.content.trim()
   ) {
     throw new Error(
@@ -414,69 +456,97 @@ export async function approveKnowledgeDocument(
     );
   }
 
-  /**
-   * ----------------------------------------------------------
-   * REMOVE OLD CHUNKS
-   * ----------------------------------------------------------
-   *
-   * If this document was previously processed, remove its
-   * old chunks before creating the new searchable version.
-   */
-
-  await deleteKnowledgeChunks(
-    cleanId,
+  const jurisdiction = normalizeJurisdiction(
+    document.jurisdiction,
   );
 
-  /**
-   * ----------------------------------------------------------
-   * CREATE CHUNKS + EMBEDDINGS
-   * ----------------------------------------------------------
-   *
-   * The content is divided into smaller pieces.
-   *
-   * Each piece receives an embedding from the embeddings
-   * layer and is stored in ai_knowledge_chunks.
-   */
+  if (!jurisdiction) {
+    throw new Error(
+      "A valid Nigerian state or FCT jurisdiction is required before knowledge approval.",
+    );
+  }
 
-  const chunkResult =
-    await saveKnowledgeChunks(
-      cleanId,
-      document.content,
-      {
-        documentType:
-          document.document_type,
-
-        sourceType:
-          document.source_type,
-
-        title:
-          document.title,
-      },
+  const verificationOutcome =
+    normalizeVerificationOutcome(
+      document.verification_outcome,
     );
 
+  const verificationEvidence = optionalText(
+    document.verification_evidence,
+  );
+
+  if (
+    verificationOutcome !== "unverified" &&
+    !verificationEvidence
+  ) {
+    throw new Error(
+      "Verified legitimate and confirmed fraud knowledge require supporting verification evidence before approval.",
+    );
+  }
+
   /**
-   * ----------------------------------------------------------
-   * MARK DOCUMENT AS APPROVED
-   * ----------------------------------------------------------
+   * Synthetic references and unverified documents
+   * remain non-authoritative even when approved.
    *
-   * We only reach this point after chunking and embedding
-   * have succeeded.
+   * Retrieval must enforce this distinction.
    */
 
-  const approvedDocument =
-    await updateKnowledgeApprovalStatus(
-      cleanId,
-      "approved",
+  const { count, error: chunksError } =
+    await supabaseServer
+      .from(CHUNKS_TABLE)
+      .select("id", {
+        count: "exact",
+        head: true,
+      })
+      .eq("knowledge_document_id", cleanId);
+
+  if (chunksError) {
+    throw new Error(
+      `Failed to check knowledge chunks: ${chunksError.message}`,
     );
+  }
+
+  if (!count || count < 1) {
+    throw new Error(
+      "Knowledge document has no searchable chunks. Re-ingest the document before approval.",
+    );
+  }
+
+  /**
+   * Save the normalized jurisdiction and approval status.
+   *
+   * We deliberately preserve the existing embeddings.
+   */
+
+  const { data: approvedDocument, error } =
+    await supabaseServer
+      .from(TABLE_NAME)
+      .update({
+        jurisdiction,
+        approval_status: "approved",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", cleanId)
+      .neq("approval_status", "rejected")
+      .select()
+      .single();
+
+  if (error) {
+    console.error(
+      "PropertySure AI knowledge approval error:",
+      error,
+    );
+
+    throw new Error(
+      `Failed to approve knowledge document: ${error.message}`,
+    );
+  }
 
   return {
     success: true,
-
-    document:
-      approvedDocument,
-
-    chunksCreated:
-      chunkResult.count,
+    document: approvedDocument,
+    chunksCreated: 0,
+    existingChunks: count,
   };
 }
 
@@ -484,60 +554,41 @@ export async function approveKnowledgeDocument(
  * ============================================================
  * REJECT KNOWLEDGE DOCUMENT
  * ============================================================
- *
- * Rejected knowledge must not remain searchable.
- *
- * If the document had previously been approved and therefore
- * had chunks, those chunks are removed as a safety measure.
  */
+
 export async function rejectKnowledgeDocument(
   id: string,
 ) {
-  const cleanId =
-    validateKnowledgeId(id);
+  const cleanId = validateKnowledgeId(id);
 
-  await deleteKnowledgeChunks(
-    cleanId,
-  );
+  const rejectedDocument =
+    await updateKnowledgeApprovalStatus(
+      cleanId,
+      "rejected",
+    );
 
-  return updateKnowledgeApprovalStatus(
-    cleanId,
-    "rejected",
-  );
+  await deleteKnowledgeChunks(cleanId);
+
+  return rejectedDocument;
 }
 
 /**
  * ============================================================
  * DELETE KNOWLEDGE DOCUMENT
  * ============================================================
- *
- * Deletes the knowledge document and its associated searchable
- * chunks.
- *
- * This should only be called from an authorized server/admin
- * workflow.
  */
+
 export async function deleteKnowledgeDocument(
   id: string,
 ) {
-  const cleanId =
-    validateKnowledgeId(id);
+  const cleanId = validateKnowledgeId(id);
 
-  /**
-   * Remove searchable chunks first.
-   */
-  await deleteKnowledgeChunks(
-    cleanId,
-  );
+  await deleteKnowledgeChunks(cleanId);
 
-  /**
-   * Then remove the parent knowledge document.
-   */
-  const { error } =
-    await supabaseServer
-      .from(TABLE_NAME)
-      .delete()
-      .eq("id", cleanId);
+  const { error } = await supabaseServer
+    .from(TABLE_NAME)
+    .delete()
+    .eq("id", cleanId);
 
   if (error) {
     console.error(

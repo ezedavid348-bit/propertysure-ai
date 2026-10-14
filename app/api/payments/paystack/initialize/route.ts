@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-type PlanKey = "essential" | "professional" | "premium";
+type PlanKey =
+  | "essential"
+  | "professional"
+  | "premium";
 
 const PLAN_PRICES: Record<PlanKey, number> = {
   essential: 299999,
@@ -23,16 +26,14 @@ export async function POST(request: Request) {
      * ============================================================
      */
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseUrl =
+      process.env.NEXT_PUBLIC_SUPABASE_URL;
 
     const supabaseServiceRoleKey =
       process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     const paystackSecretKey =
       process.env.PAYSTACK_SECRET_KEY;
-
-    const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL;
 
     if (
       !supabaseUrl ||
@@ -49,22 +50,80 @@ export async function POST(request: Request) {
     }
 
     /*
-     * The payment callback must have a real application URL.
+     * ============================================================
+     * APPLICATION ORIGIN
+     * ============================================================
      *
-     * We intentionally do NOT fall back to localhost.
-     * A localhost callback would fail when Paystack redirects
-     * a customer using a different device, such as a phone.
+     * For local development, PropertySure AI uses the configured
+     * local site URL as the authoritative callback origin.
+     *
+     * This prevents Paystack from receiving localhost when the
+     * application is being tested through the LAN address.
+     *
+     * Local:
+     *
+     * http://192.168.1.184:3000
+     *
+     * Callback:
+     *
+     * http://192.168.1.184:3000/verify/payment-callback
+     *
+     * In production, NEXT_PUBLIC_SITE_URL should contain the
+     * real HTTPS production domain.
      */
 
-    if (!siteUrl) {
-      return NextResponse.json(
-        {
-          error:
-            "Payment callback URL is not configured on the server.",
-        },
-        { status: 500 },
-      );
-    }
+    const requestOrigin =
+      new URL(request.url).origin;
+
+    const configuredSiteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL?.trim();
+
+    const isDevelopment =
+      process.env.NODE_ENV !== "production";
+
+    /*
+     * DEVELOPMENT:
+     *
+     * Prefer the explicitly configured site URL.
+     *
+     * This is important because the browser may still have an
+     * old localhost tab/session open. We do not want that to
+     * determine the Paystack callback URL.
+     *
+     * PRODUCTION:
+     *
+     * Use the configured production site URL, falling back to
+     * the incoming request origin if necessary.
+     */
+
+    const siteUrl =
+      isDevelopment
+        ? configuredSiteUrl ||
+          requestOrigin
+        : configuredSiteUrl ||
+          requestOrigin;
+
+    /*
+     * Remove trailing slash.
+     */
+
+    const normalizedSiteUrl =
+      siteUrl.replace(/\/+$/, "");
+
+    const callbackUrl =
+      `${normalizedSiteUrl}/verify/payment-callback`;
+
+    console.log(
+      "PAYSTACK CALLBACK CONFIG:",
+      {
+        requestOrigin,
+        configuredSiteUrl:
+          configuredSiteUrl || null,
+        environment:
+          process.env.NODE_ENV,
+        callbackUrl,
+      },
+    );
 
     /*
      * ============================================================
@@ -72,18 +131,24 @@ export async function POST(request: Request) {
      * ============================================================
      */
 
-    const body = await request.json();
+    const body =
+      await request.json();
 
     const verificationId =
-      String(body?.verificationId || "").trim();
+      String(
+        body?.verificationId || "",
+      ).trim();
 
     const plan =
-      String(body?.plan || "").trim() as PlanKey;
+      String(
+        body?.plan || "",
+      ).trim() as PlanKey;
 
     if (!verificationId) {
       return NextResponse.json(
         {
-          error: "Verification ID is required.",
+          error:
+            "Verification ID is required.",
         },
         { status: 400 },
       );
@@ -96,7 +161,8 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json(
         {
-          error: "Invalid verification plan.",
+          error:
+            "Invalid verification plan.",
         },
         { status: 400 },
       );
@@ -106,61 +172,71 @@ export async function POST(request: Request) {
      * ============================================================
      * SUPABASE SERVER CLIENT
      * ============================================================
-     *
-     * The service-role key is SERVER ONLY.
-     * Never expose it to the browser.
      */
 
-    const supabaseAdmin = createClient(
-      supabaseUrl,
-      supabaseServiceRoleKey,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
+    const supabaseAdmin =
+      createClient(
+        supabaseUrl,
+        supabaseServiceRoleKey,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
         },
-      },
-    );
+      );
 
     /*
      * ============================================================
      * AUTHENTICATED USER
      * ============================================================
-     *
-     * The frontend sends the verification ID and plan.
-     * We do NOT trust the browser for the payment amount.
-     *
-     * The authenticated user is determined from the
-     * Authorization header.
      */
 
     const authorization =
-      request.headers.get("authorization");
+      request.headers.get(
+        "authorization",
+      );
 
-    if (!authorization?.startsWith("Bearer ")) {
+    if (
+      !authorization?.startsWith(
+        "Bearer ",
+      )
+    ) {
       return NextResponse.json(
         {
-          error: "Authentication required.",
+          error:
+            "Authentication required.",
         },
         { status: 401 },
       );
     }
 
     const accessToken =
-      authorization.replace("Bearer ", "").trim();
+      authorization
+        .replace(
+          "Bearer ",
+          "",
+        )
+        .trim();
 
     const {
-      data: { user },
+      data: {
+        user,
+      },
       error: userError,
     } =
       await supabaseAdmin.auth.getUser(
         accessToken,
       );
 
-    if (userError || !user) {
+    if (
+      userError ||
+      !user
+    ) {
       return NextResponse.json(
         {
-          error: "Unable to authenticate user.",
+          error:
+            "Unable to authenticate user.",
         },
         { status: 401 },
       );
@@ -170,21 +246,26 @@ export async function POST(request: Request) {
      * ============================================================
      * VERIFY OWNERSHIP
      * ============================================================
-     *
-     * Make sure this verification belongs to the logged-in user.
      */
 
     const {
       data: verification,
-      error: verificationError,
+      error:
+        verificationError,
     } =
       await supabaseAdmin
         .from("verifications")
         .select(
-          "id, user_id, doc_name, status",
+          "id,user_id,doc_name,status",
         )
-        .eq("id", verificationId)
-        .eq("user_id", user.id)
+        .eq(
+          "id",
+          verificationId,
+        )
+        .eq(
+          "user_id",
+          user.id,
+        )
         .single();
 
     if (
@@ -204,8 +285,6 @@ export async function POST(request: Request) {
      * ============================================================
      * OFFICIAL SERVER-SIDE PRICE
      * ============================================================
-     *
-     * These prices are NOT taken from the browser.
      */
 
     const amount =
@@ -257,16 +336,28 @@ export async function POST(request: Request) {
         .insert({
           verification_id:
             verification.id,
+
           user_id:
             user.id,
+
           plan,
+
           amount,
-          currency: "NGN",
-          provider: "paystack",
-          payment_method: null,
+
+          currency:
+            "NGN",
+
+          provider:
+            "paystack",
+
+          payment_method:
+            null,
+
           provider_reference:
             providerReference,
-          status: "pending",
+
+          status:
+            "pending",
         })
         .select()
         .single();
@@ -293,11 +384,6 @@ export async function POST(request: Request) {
      * ============================================================
      * PAYSTACK INITIALIZATION
      * ============================================================
-     *
-     * Paystack expects NGN amounts in kobo.
-     *
-     * Example:
-     * ₦299,999 = 29,999,900 kobo
      */
 
     const paystackResponse =
@@ -309,6 +395,7 @@ export async function POST(request: Request) {
           headers: {
             Authorization:
               `Bearer ${paystackSecretKey}`,
+
             "Content-Type":
               "application/json",
           },
@@ -317,21 +404,15 @@ export async function POST(request: Request) {
             email,
 
             amount:
-              String(amount * 100),
+              String(
+                amount * 100,
+              ),
 
             currency:
               "NGN",
 
             reference:
               providerReference,
-
-            /*
-             * Allow multiple payment channels.
-             *
-             * Paystack supports channels such as card,
-             * bank, bank transfer, USSD and others depending
-             * on the account/configuration.
-             */
 
             channels: [
               "card",
@@ -341,15 +422,12 @@ export async function POST(request: Request) {
             ],
 
             /*
-             * IMPORTANT:
-             *
-             * Use the configured application URL.
-             * Do not fall back to localhost because the
-             * customer may complete payment on another device.
+             * Paystack receives the authoritative PropertySure
+             * callback URL calculated above.
              */
 
             callback_url:
-              `${siteUrl.replace(/\/$/, "")}/verify/payment-callback`,
+              callbackUrl,
 
             metadata: {
               verification_id:
@@ -376,22 +454,20 @@ export async function POST(request: Request) {
     if (
       !paystackResponse.ok ||
       !paystackData?.status ||
-      !paystackData?.data?.authorization_url
+      !paystackData?.data
+        ?.authorization_url
     ) {
       console.error(
         "Paystack initialization failed:",
         paystackData,
       );
 
-      /*
-       * Mark our payment record as failed if Paystack
-       * could not initialize the transaction.
-       */
-
       await supabaseAdmin
         .from("payments")
         .update({
-          status: "failed",
+          status:
+            "failed",
+
           updated_at:
             new Date().toISOString(),
         })
@@ -414,16 +490,14 @@ export async function POST(request: Request) {
      * ============================================================
      * SAVE PAYSTACK REFERENCE
      * ============================================================
-     *
-     * The reference should already match our generated reference,
-     * but we keep the returned value available for confirmation.
      */
 
     await supabaseAdmin
       .from("payments")
       .update({
         provider_reference:
-          paystackData.data.reference ||
+          paystackData.data
+            .reference ||
           providerReference,
 
         updated_at:
@@ -436,7 +510,7 @@ export async function POST(request: Request) {
 
     /*
      * ============================================================
-     * RESPONSE TO FRONTEND
+     * RESPONSE
      * ============================================================
      */
 
@@ -444,13 +518,16 @@ export async function POST(request: Request) {
       success: true,
 
       authorizationUrl:
-        paystackData.data.authorization_url,
+        paystackData.data
+          .authorization_url,
 
       accessCode:
-        paystackData.data.access_code,
+        paystackData.data
+          .access_code,
 
       reference:
-        paystackData.data.reference,
+        paystackData.data
+          .reference,
 
       paymentId:
         payment.id,
@@ -464,6 +541,8 @@ export async function POST(request: Request) {
 
       currency:
         "NGN",
+
+      callbackUrl,
     });
   } catch (error) {
     console.error(

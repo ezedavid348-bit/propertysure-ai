@@ -21,7 +21,6 @@ type IconProps = {
 
 /* ============================================================
    PROPERTYsure AI BRANDING
-   EXTRACTED DIRECTLY FROM SIGN UP PAGE
 ============================================================ */
 
 function LogoMark({ size = 23 }: IconProps) {
@@ -369,6 +368,19 @@ export default function SignInPage() {
     setResending,
   ] = useState(false);
 
+  /*
+   * IMPORTANT:
+   * This stores the exact Supabase user ID obtained after
+   * successful password authentication.
+   *
+   * The OTP step is not allowed to silently switch the
+   * browser to another Supabase user.
+   */
+  const [
+    passwordAuthenticatedUserId,
+    setPasswordAuthenticatedUserId,
+  ] = useState<string | null>(null);
+
   /* ==========================================================
      AUTH STATE LISTENER
   ========================================================== */
@@ -384,6 +396,7 @@ export default function SignInPage() {
           console.log(
             "AUTH STATE:",
             event,
+            session?.user?.id || "NO USER ID",
             session?.user?.email ||
               "NO SESSION"
           );
@@ -423,6 +436,13 @@ export default function SignInPage() {
     try {
       setLoading(true);
 
+      /*
+       * STEP 1
+       * Authenticate with password.
+       *
+       * This is the identity we will preserve through
+       * the remainder of the sign-in process.
+       */
       const {
         data,
         error: signInError,
@@ -444,6 +464,80 @@ export default function SignInPage() {
         );
       }
 
+      if (data.user.is_anonymous === true) {
+        throw new Error(
+          "An anonymous session was detected. Please sign in again."
+        );
+      }
+
+      const passwordUserId =
+        data.user.id;
+
+      console.log(
+        "PASSWORD AUTHENTICATED USER:",
+        {
+          id: passwordUserId,
+          email: data.user.email,
+          isAnonymous:
+            data.user.is_anonymous,
+        }
+      );
+
+      /*
+       * Confirm that the browser session actually contains
+       * the same authenticated user.
+       */
+      const {
+        data: sessionData,
+        error: sessionError,
+      } =
+        await supabase.auth.getSession();
+
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      if (
+        !sessionData.session?.user?.id
+      ) {
+        throw new Error(
+          "Your authenticated session could not be established. Please try again."
+        );
+      }
+
+      if (
+        sessionData.session.user.id !==
+        passwordUserId
+      ) {
+        console.error(
+          "PASSWORD SESSION ID MISMATCH:",
+          {
+            passwordUserId,
+            sessionUserId:
+              sessionData.session.user.id,
+          }
+        );
+
+        await supabase.auth.signOut();
+
+        throw new Error(
+          "Your browser session changed unexpectedly. Please sign in again."
+        );
+      }
+
+      setPasswordAuthenticatedUserId(
+        passwordUserId
+      );
+
+      /*
+       * STEP 2
+       * Send the security code.
+       *
+       * IMPORTANT:
+       * signInWithOtp() here is used only to send the
+       * email security code. We do NOT replace or manually
+       * manipulate the password session at this point.
+       */
       const {
         error: otpError,
       } =
@@ -457,6 +551,51 @@ export default function SignInPage() {
 
       if (otpError) {
         throw otpError;
+      }
+
+      /*
+       * Make absolutely sure that requesting the OTP did
+       * not replace the authenticated password session.
+       */
+      const {
+        data: otpRequestSessionData,
+        error:
+          otpRequestSessionError,
+      } =
+        await supabase.auth.getSession();
+
+      if (otpRequestSessionError) {
+        throw otpRequestSessionError;
+      }
+
+      const otpRequestUserId =
+        otpRequestSessionData.session
+          ?.user?.id;
+
+      if (
+        !otpRequestUserId ||
+        otpRequestUserId !==
+          passwordUserId
+      ) {
+        console.error(
+          "USER ID CHANGED AFTER OTP REQUEST:",
+          {
+            passwordUserId,
+            otpRequestUserId:
+              otpRequestUserId ||
+              "NO USER",
+          }
+        );
+
+        await supabase.auth.signOut();
+
+        setPasswordAuthenticatedUserId(
+          null
+        );
+
+        throw new Error(
+          "Your secure session changed unexpectedly. Please sign in again."
+        );
       }
 
       setVerificationCode("");
@@ -508,6 +647,67 @@ export default function SignInPage() {
       const cleanEmail =
         email.trim().toLowerCase();
 
+      /*
+       * We MUST have the user ID captured during password
+       * authentication.
+       */
+      if (
+        !passwordAuthenticatedUserId
+      ) {
+        throw new Error(
+          "Your sign-in session could not be verified. Please sign in again."
+        );
+      }
+
+      /*
+       * STEP 1
+       * Confirm the current session before consuming OTP.
+       */
+      const {
+        data: beforeOtpData,
+        error: beforeOtpError,
+      } =
+        await supabase.auth.getSession();
+
+      if (beforeOtpError) {
+        throw beforeOtpError;
+      }
+
+      const beforeOtpUserId =
+        beforeOtpData.session
+          ?.user?.id;
+
+      if (
+        !beforeOtpUserId ||
+        beforeOtpUserId !==
+          passwordAuthenticatedUserId
+      ) {
+        console.error(
+          "SESSION CHANGED BEFORE OTP VERIFICATION:",
+          {
+            expectedUserId:
+              passwordAuthenticatedUserId,
+            currentUserId:
+              beforeOtpUserId ||
+              "NO USER",
+          }
+        );
+
+        await supabase.auth.signOut();
+
+        setPasswordAuthenticatedUserId(
+          null
+        );
+
+        throw new Error(
+          "Your secure session changed unexpectedly. Please sign in again."
+        );
+      }
+
+      /*
+       * STEP 2
+       * Verify the email security code.
+       */
       const {
         data,
         error: verifyError,
@@ -524,7 +724,14 @@ export default function SignInPage() {
 
       console.log(
         "OTP VERIFIED:",
-        data.user?.email
+        {
+          userId:
+            data.user?.id ||
+            "NO USER",
+          email:
+            data.user?.email ||
+            "NO EMAIL",
+        }
       );
 
       if (!data.session) {
@@ -533,6 +740,46 @@ export default function SignInPage() {
         );
       }
 
+      /*
+       * STEP 3
+       * CRITICAL IDENTITY CHECK.
+       *
+       * The OTP-created session MUST belong to the exact
+       * same Supabase user who authenticated with password.
+       */
+      const otpUserId =
+        data.session.user.id;
+
+      if (
+        otpUserId !==
+        passwordAuthenticatedUserId
+      ) {
+        console.error(
+          "CRITICAL AUTH ID MISMATCH AFTER OTP:",
+          {
+            passwordAuthenticatedUserId,
+            otpUserId,
+            email:
+              data.session.user.email,
+          }
+        );
+
+        await supabase.auth.signOut();
+
+        setPasswordAuthenticatedUserId(
+          null
+        );
+
+        throw new Error(
+          "Security verification detected a different account session. Nothing was submitted. Please sign in again."
+        );
+      }
+
+      /*
+       * STEP 4
+       * Read the final browser session and confirm the
+       * same identity one more time.
+       */
       const {
         data: sessionData,
         error: sessionError,
@@ -549,6 +796,38 @@ export default function SignInPage() {
         );
       }
 
+      const finalSessionUserId =
+        sessionData.session.user.id;
+
+      if (
+        finalSessionUserId !==
+        passwordAuthenticatedUserId
+      ) {
+        console.error(
+          "FINAL SESSION USER ID MISMATCH:",
+          {
+            expected:
+              passwordAuthenticatedUserId,
+            actual:
+              finalSessionUserId,
+          }
+        );
+
+        await supabase.auth.signOut();
+
+        setPasswordAuthenticatedUserId(
+          null
+        );
+
+        throw new Error(
+          "Your final authentication session does not match your account. Please sign in again."
+        );
+      }
+
+      /*
+       * STEP 5
+       * Ask Supabase for the authenticated user.
+       */
       const {
         data: userData,
         error: userError,
@@ -565,9 +844,53 @@ export default function SignInPage() {
         );
       }
 
+      if (
+        userData.user.id !==
+        passwordAuthenticatedUserId
+      ) {
+        console.error(
+          "GET USER ID MISMATCH:",
+          {
+            expected:
+              passwordAuthenticatedUserId,
+            actual:
+              userData.user.id,
+          }
+        );
+
+        await supabase.auth.signOut();
+
+        setPasswordAuthenticatedUserId(
+          null
+        );
+
+        throw new Error(
+          "Your authenticated account could not be confirmed. Please sign in again."
+        );
+      }
+
+      if (
+        userData.user.is_anonymous === true
+      ) {
+        await supabase.auth.signOut();
+
+        setPasswordAuthenticatedUserId(
+          null
+        );
+
+        throw new Error(
+          "An anonymous session was detected. Please sign in again."
+        );
+      }
+
       console.log(
         "AUTHENTICATED SESSION CONFIRMED:",
-        userData.user.email
+        {
+          id: userData.user.id,
+          email: userData.user.email,
+          isAnonymous:
+            userData.user.is_anonymous,
+        }
       );
 
       setSuccess(
@@ -766,6 +1089,48 @@ export default function SignInPage() {
       try {
         setResending(true);
 
+        /*
+         * Confirm that the original password-authenticated
+         * identity still exists before sending another code.
+         */
+        if (
+          !passwordAuthenticatedUserId
+        ) {
+          throw new Error(
+            "Your secure sign-in session has expired. Please sign in again."
+          );
+        }
+
+        const {
+          data: sessionData,
+          error: sessionError,
+        } =
+          await supabase.auth.getSession();
+
+        if (sessionError) {
+          throw sessionError;
+        }
+
+        const currentUserId =
+          sessionData.session
+            ?.user?.id;
+
+        if (
+          !currentUserId ||
+          currentUserId !==
+            passwordAuthenticatedUserId
+        ) {
+          await supabase.auth.signOut();
+
+          setPasswordAuthenticatedUserId(
+            null
+          );
+
+          throw new Error(
+            "Your secure session changed unexpectedly. Please sign in again."
+          );
+        }
+
         const {
           error: resendError,
         } =
@@ -780,6 +1145,51 @@ export default function SignInPage() {
 
         if (resendError) {
           throw resendError;
+        }
+
+        /*
+         * Confirm that requesting another code did not
+         * change the current authenticated identity.
+         */
+        const {
+          data: afterResendData,
+          error:
+            afterResendError,
+        } =
+          await supabase.auth.getSession();
+
+        if (afterResendError) {
+          throw afterResendError;
+        }
+
+        const afterResendUserId =
+          afterResendData.session
+            ?.user?.id;
+
+        if (
+          afterResendUserId !==
+          passwordAuthenticatedUserId
+        ) {
+          console.error(
+            "USER ID CHANGED AFTER RESEND:",
+            {
+              expected:
+                passwordAuthenticatedUserId,
+              actual:
+                afterResendUserId ||
+                "NO USER",
+            }
+          );
+
+          await supabase.auth.signOut();
+
+          setPasswordAuthenticatedUserId(
+            null
+          );
+
+          throw new Error(
+            "Your secure session changed unexpectedly. Please sign in again."
+          );
         }
 
         setVerificationCode("");
@@ -946,6 +1356,10 @@ export default function SignInPage() {
               );
 
               setVerificationCode("");
+
+              setPasswordAuthenticatedUserId(
+                null
+              );
 
               setError("");
               setSuccess("");
@@ -1276,7 +1690,6 @@ export default function SignInPage() {
       >
         {/* ====================================================
             DESKTOP HERO
-            REMAINS INTACT ON DESKTOP
         ==================================================== */}
 
         <div
