@@ -35,9 +35,26 @@ type UploadedDocument = {
   size: number;
 };
 
+type PropertyDetails = {
+  propertyType: string;
+  propertySubtype: string;
+  estimatedSize: string;
+  sizeUnit: string;
+  estimatedValue: string;
+  currency: string;
+  propertyDescription: string;
+  ownerType: string;
+  ownerName: string;
+  agentDeveloper: string;
+  verificationPurpose: string;
+};
+
 type VerificationFindings = {
   document_package: UploadedDocument[];
   document_count: number;
+
+  property_details: PropertyDetails;
+
   checks: {
     documentStructure: boolean | null;
     dataConsistency: boolean | null;
@@ -47,6 +64,7 @@ type VerificationFindings = {
     noDuplicate: boolean | null;
     documentCompleteness: boolean | null;
   };
+
   processing: {
     stage: "received";
     progress: 8;
@@ -56,6 +74,9 @@ type VerificationFindings = {
 
 const STORAGE_BUCKET = "property-documents";
 
+const PROPERTY_DETAILS_STORAGE_KEY =
+  "propertysure-property-details";
+
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 const ALLOWED_TYPES = [
@@ -63,6 +84,12 @@ const ALLOWED_TYPES = [
   "image/jpeg",
   "image/png",
 ];
+
+/*
+ * ============================================================
+ * DOCUMENT HELPERS
+ * ============================================================
+ */
 
 function getDocumentType(file: File): string {
   if (file.type === "application/pdf") {
@@ -99,14 +126,11 @@ function formatFileSize(bytes: number): string {
 function createSafeFileName(
   fileName: string
 ): string {
-  const lastDot =
-    fileName.lastIndexOf(".");
+  const lastDot = fileName.lastIndexOf(".");
 
   const extension =
     lastDot >= 0
-      ? fileName
-          .slice(lastDot)
-          .toLowerCase()
+      ? fileName.slice(lastDot).toLowerCase()
       : "";
 
   const baseName =
@@ -116,18 +140,9 @@ function createSafeFileName(
 
   const safeBase = baseName
     .normalize("NFKD")
-    .replace(
-      /[^a-zA-Z0-9_-]/g,
-      "-"
-    )
-    .replace(
-      /-+/g,
-      "-"
-    )
-    .replace(
-      /^-+|-+$/g,
-      ""
-    );
+    .replace(/[^a-zA-Z0-9_-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
 
   return `${
     safeBase || "property-document"
@@ -141,8 +156,7 @@ function getFileKey(file: File): string {
 function createDocumentId(): string {
   if (
     typeof crypto !== "undefined" &&
-    typeof crypto.randomUUID ===
-      "function"
+    typeof crypto.randomUUID === "function"
   ) {
     return crypto.randomUUID();
   }
@@ -151,6 +165,133 @@ function createDocumentId(): string {
     .toString(36)
     .slice(2)}`;
 }
+
+/*
+ * ============================================================
+ * PROPERTY DETAILS HELPERS
+ * ============================================================
+ *
+ * Property Details are collected on:
+ *
+ * /verify/property-details
+ *
+ * The original customer information is saved here
+ * with the verification record.
+ *
+ * IMPORTANT:
+ *
+ * Customers are NOT required to enter a state,
+ * local government area, or town.
+ *
+ * The Essential AI engine will identify location
+ * information from uploaded document contents.
+ *
+ * The customer-provided property description is
+ * not treated as verified location evidence.
+ * ============================================================
+ */
+
+function readPropertyDetails(): PropertyDetails {
+  const saved = sessionStorage.getItem(
+    PROPERTY_DETAILS_STORAGE_KEY
+  );
+
+  if (!saved) {
+    throw new Error(
+      "Your property details could not be found. Please return to Property Details and continue again."
+    );
+  }
+
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(saved);
+  } catch {
+    throw new Error(
+      "Your saved property information is invalid. Please return to Property Details and save it again."
+    );
+  }
+
+  if (
+    !parsed ||
+    typeof parsed !== "object" ||
+    Array.isArray(parsed)
+  ) {
+    throw new Error(
+      "Your saved property information is invalid. Please return to Property Details."
+    );
+  }
+
+  const data = parsed as Record<string, unknown>;
+
+  const getString = (key: string): string =>
+    typeof data[key] === "string"
+      ? (data[key] as string).trim()
+      : "";
+
+  const propertyType = getString("propertyType");
+
+  if (!propertyType) {
+    throw new Error(
+      "Please return to Property Details and select your property type."
+    );
+  }
+
+  const ownerType = getString("ownerType");
+
+  if (!ownerType) {
+    throw new Error(
+      "Please return to Property Details and select the seller or owner type."
+    );
+  }
+
+  const verificationPurpose = getString(
+    "verificationPurpose"
+  );
+
+  if (!verificationPurpose) {
+    throw new Error(
+      "Please return to Property Details and select your verification purpose."
+    );
+  }
+
+  return {
+    propertyType,
+
+    propertySubtype:
+      getString("propertySubtype"),
+
+    estimatedSize:
+      getString("estimatedSize"),
+
+    sizeUnit:
+      getString("sizeUnit") || "sqm",
+
+    estimatedValue:
+      getString("estimatedValue"),
+
+    currency: "NGN",
+
+    propertyDescription:
+      getString("propertyDescription"),
+
+    ownerType,
+
+    ownerName:
+      getString("ownerName"),
+
+    agentDeveloper:
+      getString("agentDeveloper"),
+
+    verificationPurpose,
+  };
+}
+
+/*
+ * ============================================================
+ * UPLOAD PAGE
+ * ============================================================
+ */
 
 export default function VerifyPage() {
   const [loadingPage, setLoadingPage] =
@@ -178,12 +319,9 @@ export default function VerifyPage() {
    */
 
   useEffect(() => {
-    const timer = window.setTimeout(
-      () => {
-        setLoadingPage(false);
-      },
-      350
-    );
+    const timer = window.setTimeout(() => {
+      setLoadingPage(false);
+    }, 350);
 
     return () => {
       window.clearTimeout(timer);
@@ -201,8 +339,7 @@ export default function VerifyPage() {
   ) {
     setUploadError("");
 
-    const incomingFiles =
-      Array.from(selectedFiles);
+    const incomingFiles = Array.from(selectedFiles);
 
     if (incomingFiles.length === 0) {
       return;
@@ -211,12 +348,11 @@ export default function VerifyPage() {
     const invalidFiles: string[] = [];
     const duplicateFiles: string[] = [];
 
-    const existingFileKeys =
-      new Set(
-        documents.map((document) =>
-          getFileKey(document.file)
-        )
-      );
+    const existingFileKeys = new Set(
+      documents.map((document) =>
+        getFileKey(document.file)
+      )
+    );
 
     const currentSelectionKeys =
       new Set<string>();
@@ -228,6 +364,7 @@ export default function VerifyPage() {
         invalidFiles.push(
           `${file.name}: unsupported file type`
         );
+
         continue;
       }
 
@@ -235,24 +372,22 @@ export default function VerifyPage() {
         invalidFiles.push(
           `${file.name}: exceeds 20 MB`
         );
+
         continue;
       }
 
-      const fileKey =
-        getFileKey(file);
+      const fileKey = getFileKey(file);
 
       if (
         existingFileKeys.has(fileKey) ||
         currentSelectionKeys.has(fileKey)
       ) {
         duplicateFiles.push(file.name);
+
         continue;
       }
 
-      currentSelectionKeys.add(
-        fileKey
-      );
-
+      currentSelectionKeys.add(fileKey);
       validFiles.push(file);
     }
 
@@ -266,9 +401,7 @@ export default function VerifyPage() {
 
     if (duplicateFiles.length > 0) {
       messages.push(
-        `Already selected: ${duplicateFiles.join(
-          ", "
-        )}`
+        `Already selected: ${duplicateFiles.join(", ")}`
       );
     }
 
@@ -282,11 +415,12 @@ export default function VerifyPage() {
       return;
     }
 
-    const newDocuments =
-      validFiles.map((file) => ({
+    const newDocuments = validFiles.map(
+      (file) => ({
         file,
         id: createDocumentId(),
-      }));
+      })
+    );
 
     setDocuments((current) => [
       ...current,
@@ -304,9 +438,7 @@ export default function VerifyPage() {
     event: ChangeEvent<HTMLInputElement>
   ) {
     if (event.target.files) {
-      addDocuments(
-        event.target.files
-      );
+      addDocuments(event.target.files);
     }
 
     event.target.value = "";
@@ -322,6 +454,7 @@ export default function VerifyPage() {
     event: DragEvent<HTMLLabelElement>
   ) {
     event.preventDefault();
+
     setIsDragging(true);
   }
 
@@ -337,9 +470,7 @@ export default function VerifyPage() {
     setIsDragging(false);
 
     if (event.dataTransfer.files) {
-      addDocuments(
-        event.dataTransfer.files
-      );
+      addDocuments(event.dataTransfer.files);
     }
   }
 
@@ -385,12 +516,9 @@ export default function VerifyPage() {
    * GET AUTHENTICATED USER
    * ============================================================
    *
-   * IMPORTANT:
-   *
    * There is NO anonymous authentication fallback.
    *
-   * The exact authenticated Supabase user returned by
-   * auth.getUser() becomes the owner of:
+   * The authenticated Supabase user owns:
    *
    * Upload
    *   ↓
@@ -408,24 +536,14 @@ export default function VerifyPage() {
    *   ↓
    * Result
    *
-   * This prevents the verification.user_id from being
-   * created under one Supabase identity while the payment
-   * and processing workflow use another identity.
+   * ============================================================
    */
 
   async function getVerifiedUser() {
-    /*
-     * First inspect the current browser session.
-     *
-     * This is mainly useful for diagnostics and for
-     * confirming that a session exists before asking
-     * Supabase to validate the user.
-     */
     const {
       data: sessionData,
       error: sessionError,
-    } =
-      await supabase.auth.getSession();
+    } = await supabase.auth.getSession();
 
     if (sessionError) {
       console.error(
@@ -442,22 +560,12 @@ export default function VerifyPage() {
       );
     }
 
-    /*
-     * IMPORTANT:
-     *
-     * getUser() validates the authenticated user
-     * using the current Supabase session.
-     *
-     * We deliberately DO NOT fall back to
-     * sessionData.session.user here.
-     */
     const {
       data: userData,
       error: userError,
-    } =
-      await supabase.auth.getUser(
-        sessionData.session.access_token
-      );
+    } = await supabase.auth.getUser(
+      sessionData.session.access_token
+    );
 
     if (userError) {
       console.error(
@@ -470,8 +578,7 @@ export default function VerifyPage() {
       );
     }
 
-    const user =
-      userData?.user || null;
+    const user = userData?.user || null;
 
     if (!user) {
       throw new Error(
@@ -479,13 +586,7 @@ export default function VerifyPage() {
       );
     }
 
-    /*
-     * Anonymous users are NOT allowed to create
-     * verification records.
-     */
-    if (
-      user.is_anonymous === true
-    ) {
+    if (user.is_anonymous === true) {
       throw new Error(
         "Your verification session is not linked to a registered account. Please sign in to your PropertySure AI account before uploading your documents."
       );
@@ -511,13 +612,24 @@ export default function VerifyPage() {
     setIsUploading(true);
     setUploadError("");
 
-    const uploadedStoragePaths: string[] =
-      [];
+    const uploadedStoragePaths: string[] = [];
 
     try {
       /*
        * ========================================================
-       * 1. REQUIRE A REAL AUTHENTICATED USER
+       * 1. READ ORIGINAL PROPERTY DETAILS
+       * ========================================================
+       *
+       * No State/FCT selection is required.
+       * No manual location input is required.
+       */
+
+      const propertyDetails =
+        readPropertyDetails();
+
+      /*
+       * ========================================================
+       * 2. REQUIRE A REAL AUTHENTICATED USER
        * ========================================================
        */
 
@@ -534,11 +646,9 @@ export default function VerifyPage() {
 
       console.log({
         userId: authUser.id,
-        email:
-          authUser.email || null,
+        email: authUser.email || null,
         isAnonymous:
-          authUser.is_anonymous ||
-          false,
+          authUser.is_anonymous || false,
       });
 
       console.log(
@@ -547,7 +657,7 @@ export default function VerifyPage() {
 
       /*
        * ========================================================
-       * 2. UPLOAD COMPLETE DOCUMENT PACKAGE
+       * 3. UPLOAD COMPLETE DOCUMENT PACKAGE
        * ========================================================
        */
 
@@ -576,41 +686,32 @@ export default function VerifyPage() {
         const documentId =
           selectedDocument.id;
 
-        /*
-         * The storage path is explicitly tied to
-         * the verified authenticated user's ID.
-         */
         const filePath =
           `${authUser.id}/verification-uploads/${documentId}/${safeFileName}`;
 
         console.log(
           "Uploading document:",
           {
-            documentNumber:
-              index + 1,
-            fileName:
-              originalFileName,
-            userId:
-              authUser.id,
+            documentNumber: index + 1,
+            fileName: originalFileName,
+            userId: authUser.id,
             filePath,
           }
         );
 
         const {
           error: storageError,
-        } =
-          await supabase.storage
-            .from(STORAGE_BUCKET)
-            .upload(
-              filePath,
-              file,
-              {
-                cacheControl: "3600",
-                upsert: false,
-                contentType:
-                  file.type,
-              }
-            );
+        } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .upload(
+            filePath,
+            file,
+            {
+              cacheControl: "3600",
+              upsert: false,
+              contentType: file.type,
+            }
+          );
 
         if (storageError) {
           console.error(
@@ -630,16 +731,16 @@ export default function VerifyPage() {
         /*
          * Confirm the stored file can be accessed.
          */
+
         const {
           data: signedUrlData,
           error: signedUrlError,
-        } =
-          await supabase.storage
-            .from(STORAGE_BUCKET)
-            .createSignedUrl(
-              filePath,
-              60 * 10
-            );
+        } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .createSignedUrl(
+            filePath,
+            60 * 10
+          );
 
         if (
           signedUrlError ||
@@ -661,8 +762,7 @@ export default function VerifyPage() {
         uploadedDocuments.push({
           id: documentId,
           name: originalFileName,
-          original_name:
-            originalFileName,
+          original_name: originalFileName,
           path: filePath,
           type: getDocumentType(file),
           mime_type: file.type,
@@ -680,8 +780,15 @@ export default function VerifyPage() {
 
       /*
        * ========================================================
-       * 3. INITIAL FINDINGS
+       * 4. INITIAL FINDINGS
        * ========================================================
+       *
+       * Store original customer property information.
+       *
+       * No customer-entered jurisdiction is stored.
+       *
+       * Essential AI will extract property locations
+       * from the uploaded document contents.
        */
 
       const findings:
@@ -691,6 +798,9 @@ export default function VerifyPage() {
 
         document_count:
           uploadedDocuments.length,
+
+        property_details:
+          propertyDetails,
 
         checks: {
           documentStructure: null,
@@ -715,13 +825,10 @@ export default function VerifyPage() {
 
       /*
        * ========================================================
-       * 4. CREATE VERIFICATION RECORD
+       * 5. CREATE VERIFICATION RECORD
        * ========================================================
        *
-       * CRITICAL:
-       *
-       * user_id MUST be the exact same authenticated
-       * user's ID used by Checkout and Processing.
+       * user_id remains the authenticated user ID.
        */
 
       console.log(
@@ -733,8 +840,7 @@ export default function VerifyPage() {
       );
 
       console.log({
-        userId:
-          authUser.id,
+        userId: authUser.id,
         documentName:
           primaryDocument.name,
         documentCount:
@@ -748,34 +854,32 @@ export default function VerifyPage() {
       const {
         data: verificationRecord,
         error: verificationError,
-      } =
-        await supabase
-          .from("verifications")
-          .insert({
-            user_id:
-              authUser.id,
+      } = await supabase
+        .from("verifications")
+        .insert({
+          user_id: authUser.id,
 
-            doc_name:
-              primaryDocument.name,
+          doc_name:
+            primaryDocument.name,
 
-            file_url:
-              primaryDocument.path,
+          file_url:
+            primaryDocument.path,
 
-            doc_type:
-              primaryDocument.type,
+          doc_type:
+            primaryDocument.type,
 
-            status: "review",
+          status: "review",
 
-            trust_score: null,
+          trust_score: null,
 
-            confidence: null,
+          confidence: null,
 
-            risk: null,
+          risk: null,
 
-            findings,
-          })
-          .select("id, user_id")
-          .single();
+          findings,
+        })
+        .select("id, user_id")
+        .single();
 
       if (verificationError) {
         console.error(
@@ -788,12 +892,11 @@ export default function VerifyPage() {
         ) {
           const {
             error: rollbackError,
-          } =
-            await supabase.storage
-              .from(STORAGE_BUCKET)
-              .remove(
-                uploadedStoragePaths
-              );
+          } = await supabase.storage
+            .from(STORAGE_BUCKET)
+            .remove(
+              uploadedStoragePaths
+            );
 
           if (rollbackError) {
             console.warn(
@@ -808,9 +911,7 @@ export default function VerifyPage() {
         );
       }
 
-      if (
-        !verificationRecord?.id
-      ) {
+      if (!verificationRecord?.id) {
         throw new Error(
           "Verification record was created but no verification ID was returned."
         );
@@ -818,7 +919,7 @@ export default function VerifyPage() {
 
       /*
        * ========================================================
-       * 5. FINAL OWNERSHIP CHECK
+       * 6. FINAL OWNERSHIP CHECK
        * ========================================================
        */
 
@@ -854,13 +955,18 @@ export default function VerifyPage() {
       console.log({
         verificationId:
           verificationRecord.id,
+
         userId:
           verificationRecord.user_id,
+
         authenticatedUserId:
           authUser.id,
+
         ownershipConfirmed:
           verificationRecord.user_id ===
           authUser.id,
+
+        propertyDetailsSaved: true,
       });
 
       console.log(
@@ -869,7 +975,7 @@ export default function VerifyPage() {
 
       /*
        * ========================================================
-       * 6. CONTINUE TO REVIEW
+       * 7. CONTINUE TO REVIEW
        * ========================================================
        */
 
@@ -937,19 +1043,11 @@ export default function VerifyPage() {
           ================================================== */}
 
           <section
-            className={
-              styles.uploadLayout
-            }
+            className={styles.uploadLayout}
           >
-            <div
-              className={
-                styles.uploadCard
-              }
-            >
+            <div className={styles.uploadCard}>
               <div
-                className={
-                  styles.sectionHeading
-                }
+                className={styles.sectionHeading}
               >
                 <div>
                   <span>
@@ -957,14 +1055,12 @@ export default function VerifyPage() {
                   </span>
 
                   <h2>
-                    Upload Property
-                    Documents
+                    Upload Property Documents
                   </h2>
 
                   <p>
-                    Upload the complete
-                    document package
-                    for the property.
+                    Upload the complete document
+                    package for the property.
                   </p>
                 </div>
               </div>
@@ -975,53 +1071,32 @@ export default function VerifyPage() {
                     ? styles.dragging
                     : ""
                 }`}
-                onDragOver={
-                  handleDragOver
-                }
-                onDragLeave={
-                  handleDragLeave
-                }
-                onDrop={
-                  handleDrop
-                }
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
               >
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png"
                   multiple
-                  onChange={
-                    handleFileInput
-                  }
-                  disabled={
-                    isUploading
-                  }
+                  onChange={handleFileInput}
+                  disabled={isUploading}
                 />
 
                 <div
-                  className={
-                    styles.uploadIcon
-                  }
+                  className={styles.uploadIcon}
                 >
-                  <span>
-                    ▧
-                  </span>
-
-                  <b>
-                    ↑
-                  </b>
+                  <span>▧</span>
+                  <b>↑</b>
                 </div>
 
                 <h3>
-                  Drag & drop your
-                  documents here
+                  Drag & drop your documents here
                 </h3>
 
                 <p>
-                  or{" "}
-                  <span>
-                    tap to browse
-                  </span>
+                  or <span>tap to browse</span>
                 </p>
 
                 <div
@@ -1033,34 +1108,21 @@ export default function VerifyPage() {
                     Supported formats:
                   </span>
 
-                  <b
-                    className={
-                      styles.pdf
-                    }
-                  >
+                  <b className={styles.pdf}>
                     PDF
                   </b>
 
-                  <b
-                    className={
-                      styles.jpg
-                    }
-                  >
+                  <b className={styles.jpg}>
                     JPG
                   </b>
 
-                  <b
-                    className={
-                      styles.png
-                    }
-                  >
+                  <b className={styles.png}>
                     PNG
                   </b>
                 </div>
 
                 <small>
-                  Maximum file size:
-                  20 MB per document
+                  Maximum file size: 20 MB per document
                 </small>
               </label>
             </div>
@@ -1068,9 +1130,7 @@ export default function VerifyPage() {
             {/* SECURITY */}
 
             <aside
-              className={
-                styles.securityCard
-              }
+              className={styles.securityCard}
             >
               <div
                 className={
@@ -1081,17 +1141,13 @@ export default function VerifyPage() {
               </div>
 
               <h2>
-                Your Documents
-                Are Secure
+                Your Documents Are Secure
               </h2>
 
               <p>
-                All documents are
-                encrypted and
-                processed securely
-                through the
-                PropertySure AI
-                verification workflow.
+                All documents are encrypted and
+                processed securely through the
+                PropertySure AI verification workflow.
               </p>
 
               <ul>
@@ -1107,15 +1163,13 @@ export default function VerifyPage() {
 
                 <li>
                   <span>✓</span>
-                  Automatic document
-                  deletion after
+                  Automatic document deletion after
                   verification
                 </li>
 
                 <li>
                   <span>✓</span>
-                  Your privacy is our
-                  priority
+                  Your privacy is our priority
                 </li>
               </ul>
             </aside>
@@ -1160,17 +1214,12 @@ export default function VerifyPage() {
                 }
               >
                 {documents.map(
-                  (
-                    document,
-                    index
-                  ) => (
+                  (document, index) => (
                     <div
                       className={
                         styles.documentRow
                       }
-                      key={
-                        document.id
-                      }
+                      key={document.id}
                     >
                       <div
                         className={`${styles.documentTypeIcon} ${
@@ -1192,8 +1241,7 @@ export default function VerifyPage() {
                         }
                       >
                         <strong>
-                          Document{" "}
-                          {index + 1}
+                          Document {index + 1}
                         </strong>
 
                         <span>
@@ -1203,11 +1251,10 @@ export default function VerifyPage() {
                         <small>
                           {getDocumentType(
                             document.file
-                          )}{" "}
-                          •{" "}
+                          )}
+                          {" • "}
                           {formatFileSize(
-                            document.file
-                              .size
+                            document.file.size
                           )}
                         </small>
                       </div>
@@ -1230,9 +1277,7 @@ export default function VerifyPage() {
                             document.id
                           )
                         }
-                        disabled={
-                          isUploading
-                        }
+                        disabled={isUploading}
                         aria-label={`Remove ${document.file.name}`}
                       >
                         ×
@@ -1247,12 +1292,8 @@ export default function VerifyPage() {
                 className={
                   styles.addMoreButton
                 }
-                onClick={
-                  openFilePicker
-                }
-                disabled={
-                  isUploading
-                }
+                onClick={openFilePicker}
+                disabled={isUploading}
               >
                 + Add Another Document
               </button>
@@ -1304,10 +1345,8 @@ export default function VerifyPage() {
               </h2>
 
               <p>
-                You may upload the
-                following documents
-                and other relevant
-                property documents:
+                You may upload the following documents
+                and other relevant property documents:
               </p>
 
               <div
@@ -1316,8 +1355,7 @@ export default function VerifyPage() {
                 }
               >
                 <span>
-                  Certificate of
-                  Occupancy
+                  Certificate of Occupancy
                 </span>
 
                 <span>
@@ -1341,8 +1379,7 @@ export default function VerifyPage() {
                 </span>
 
                 <span>
-                  Other relevant
-                  property documents
+                  Other relevant property documents
                 </span>
               </div>
             </div>
@@ -1353,14 +1390,10 @@ export default function VerifyPage() {
           ================================================== */}
 
           <section
-            className={
-              styles.featureGrid
-            }
+            className={styles.featureGrid}
           >
             <div
-              className={
-                styles.featureCard
-              }
+              className={styles.featureCard}
             >
               <div
                 className={`${styles.featureIcon} ${styles.secureFeature}`}
@@ -1373,15 +1406,12 @@ export default function VerifyPage() {
               </strong>
 
               <span>
-                Protected
-                documents
+                Protected documents
               </span>
             </div>
 
             <div
-              className={
-                styles.featureCard
-              }
+              className={styles.featureCard}
             >
               <div
                 className={`${styles.featureIcon} ${styles.fastFeature}`}
@@ -1394,15 +1424,12 @@ export default function VerifyPage() {
               </strong>
 
               <span>
-                Automated
-                workflow
+                Automated workflow
               </span>
             </div>
 
             <div
-              className={
-                styles.featureCard
-              }
+              className={styles.featureCard}
             >
               <div
                 className={`${styles.featureIcon} ${styles.aiFeature}`}
@@ -1415,15 +1442,12 @@ export default function VerifyPage() {
               </strong>
 
               <span>
-                Intelligent
-                document analysis
+                Intelligent document analysis
               </span>
             </div>
 
             <div
-              className={
-                styles.featureCard
-              }
+              className={styles.featureCard}
             >
               <div
                 className={`${styles.featureIcon} ${styles.reliableFeature}`}
@@ -1436,8 +1460,7 @@ export default function VerifyPage() {
               </strong>
 
               <span>
-                Structured
-                verification report
+                Structured verification report
               </span>
             </div>
           </section>
@@ -1447,9 +1470,7 @@ export default function VerifyPage() {
           ================================================== */}
 
           <div
-            className={
-              styles.actions
-            }
+            className={styles.actions}
           >
             <button
               type="button"
@@ -1464,9 +1485,7 @@ export default function VerifyPage() {
                 window.location.href =
                   "/verify/document-guide";
               }}
-              disabled={
-                isUploading
-              }
+              disabled={isUploading}
             >
               <span>←</span>
               Back
@@ -1508,10 +1527,8 @@ export default function VerifyPage() {
           >
             <span>🔒</span>
 
-            Your documents remain
-            securely stored while your
-            verification is being
-            processed.
+            Your documents remain securely stored
+            while your verification is being processed.
           </div>
         </div>
       </main>

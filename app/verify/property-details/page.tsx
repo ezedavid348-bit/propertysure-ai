@@ -320,19 +320,28 @@ export default function PropertyDetailsPage() {
     const details: PropertyDetails = {
       propertyType,
       propertySubtype,
+
       estimatedSize:
         estimatedSize.trim(),
+
       sizeUnit,
+
       estimatedValue:
         estimatedValue.trim(),
+
       currency: "NGN",
+
       propertyDescription:
         propertyDescription.trim(),
+
       ownerType,
+
       ownerName:
         ownerName.trim(),
+
       agentDeveloper:
         agentDeveloper.trim(),
+
       verificationPurpose,
     };
 

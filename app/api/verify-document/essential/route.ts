@@ -180,6 +180,7 @@ type DocumentAIResult = {
   holderName: string;
 
   gps: DocumentGPSResult;
+  ragAssessment?: RAGAssessment;
 };
 
 type VerificationFindings = {
@@ -257,6 +258,32 @@ function getSupabaseAdmin() {
   });
 }
 
+/*
+ * ============================================================
+ * SUPABASE AUTHENTICATED USER CLIENT
+ * ============================================================
+ */
+
+function getSupabaseAuthClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  const key =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    throw new Error(
+      "Supabase public authentication configuration is missing.",
+    );
+  }
+
+  return createClient(url, key, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
 /*
  * ============================================================
  * GENERAL HELPERS
@@ -1793,10 +1820,18 @@ function formatKnowledgeContext(
 
 async function retrieveApprovedKnowledge(
   documentType?: string,
+  jurisdiction?: string,
 ) {
+  // Unknown or missing jurisdiction must not return reference material.
+  // The knowledge retrieval module independently validates this value.
+  if (!jurisdiction) {
+    return [];
+  }
+
   try {
     return await searchKnowledge(
       {
+        jurisdiction,
         documentType:
           documentType as
             | PropertyDocumentType
@@ -1834,8 +1869,177 @@ async function retrieveApprovedKnowledge(
       error,
     );
 
-    return [];
+    // Do not disguise a database/RPC failure as a legitimate no-match.
+    throw error;
   }
+}
+
+/*
+ * ============================================================
+ * DOCUMENT-EXTRACTED JURISDICTION AND RAG EVIDENCE
+ * ============================================================
+ * Jurisdiction is derived ONLY from the AI-extracted property
+ * address/location, never from customer forms, filenames,
+ * issuer addresses or general knowledge of a town.
+ */
+const NIGERIAN_STATES = [
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi",
+  "Bayelsa", "Benue", "Borno", "Cross River", "Delta",
+  "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo",
+  "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi",
+  "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger",
+  "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers",
+  "Sokoto", "Taraba", "Yobe", "Zamfara",
+] as const;
+
+type RAGAssessment = {
+  jurisdiction: string | null;
+  status: "matched" | "no_approved_references" | "jurisdiction_unknown" | "conflicting_location" | "retrieval_error";
+  referenceCount: number;
+  references: Array<{ title: string; similarity: number | null }>;
+  observations: string[];
+  // Reference retrieval and the separate AI advisory are independent.
+  advisoryStatus: "not_attempted" | "completed" | "failed";
+  limitation: string;
+};
+
+function extractPropertyJurisdictions(location: string): string[] {
+  const normalized = location.normalize("NFKC").replace(/\s+/g, " ");
+  const found = new Set<string>();
+  for (const state of NIGERIAN_STATES) {
+    // Jurisdiction names are controlled constants, not user-generated regex.
+    const pattern = new RegExp(
+      `(?:^|[^A-Za-z])${state}(?:\\s+State)?(?=$|[^A-Za-z])`,
+      "i",
+    );
+    if (pattern.test(normalized)) found.add(state);
+  }
+  if (/(?:\bF\.?C\.?T\.?\b|\bFederal Capital Territory\b)/i.test(normalized)) {
+    found.add("FCT");
+  }
+  return [...found];
+}
+
+async function assessDocumentWithKnowledge(
+  extracted: {
+    documentType: string;
+    documentTitle: string;
+    summary: string;
+    documentNumber: string;
+    issuingAuthority: string;
+    propertyDetails: PropertyDetails;
+    parties: DocumentParties;
+    dates: DocumentDates;
+    checks: VerificationChecks;
+    manipulationIndicators: string[];
+  },
+  // Authoritative for this assessment only after ALL package locations agree.
+  packageJurisdiction: string | null,
+): Promise<RAGAssessment> {
+  const states = extractPropertyJurisdictions(extracted.propertyDetails.location);
+  const jurisdiction = states.length === 1 && states[0] === packageJurisdiction
+    ? states[0] : null;
+  const limitation = "Knowledge matching is advisory only. It does not confirm document authenticity, property location, registration or ownership.";
+
+  if (states.length > 1) {
+    return {
+      jurisdiction: null, status: "conflicting_location", referenceCount: 0,
+      references: [], observations: ["The extracted property address mentions multiple Nigerian jurisdictions. Manual review is required."], advisoryStatus: "not_attempted", limitation,
+    };
+  }
+  if (!jurisdiction) {
+    return {
+      jurisdiction: null, status: "jurisdiction_unknown", referenceCount: 0,
+      references: [], observations: ["A Nigerian State/FCT could not be established consistently from the uploaded property's document-location field."], advisoryStatus: "not_attempted", limitation,
+    };
+  }
+
+  let references: any[];
+  try {
+    references = await retrieveApprovedKnowledge(extracted.documentType, jurisdiction);
+  } catch (error) {
+    console.error("ESSENTIAL RAG LOOKUP FAILURE:", error);
+    return { jurisdiction, status: "retrieval_error", referenceCount: 0, references: [], observations: [], advisoryStatus: "not_attempted", limitation };
+  }
+  if (references.length === 0) {
+    return { jurisdiction, status: "no_approved_references", referenceCount: 0, references: [], observations: [], advisoryStatus: "not_attempted", limitation };
+  }
+
+  // Second, lightweight TEXT-ONLY pass is made only when approved
+  // jurisdiction-specific references are available. Original document
+  // extraction, GPS, scores and checks remain untouched.
+  const referenceSummaries = references.slice(0, 5).map((ref, i) => ({
+    id: i + 1,
+    title: safeString(ref.title),
+    content: safeString(ref.content || ref.description).slice(0, 1800),
+  }));
+  const sourceFacts = {
+    documentType: extracted.documentType,
+    documentTitle: extracted.documentTitle,
+    documentNumber: extracted.documentNumber,
+    issuingAuthority: extracted.issuingAuthority,
+    propertyDetails: extracted.propertyDetails,
+    parties: extracted.parties,
+    dates: extracted.dates,
+    summary: extracted.summary,
+    checks: extracted.checks,
+    manipulationIndicators: extracted.manipulationIndicators,
+  };
+  let observations: string[] = [];
+  let advisoryStatus: RAGAssessment["advisoryStatus"] = "failed";
+  try {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (apiKey) {
+      const response = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: process.env.OPENAI_DOCUMENT_MODEL || "gpt-5.6",
+          input: [{ role: "user", content: [{ type: "input_text", text: [
+            "Review extracted document data against jurisdiction-filtered, approved reference material.",
+            "Return JSON only: {\"observations\":[\"...\"]} with 0-5 concise advisory observations.",
+            "Only describe specific mismatches or missing evidence supported by the extracted facts and references.",
+            "Never copy reference property owner/name/number into the user's facts.",
+            "Never imply registry access, independent authenticity, criminal fraud or confirmed legal status.",
+            "If reference does not establish a check, return an empty observations array.",
+            `Jurisdiction: ${jurisdiction}`,
+            `EXTRACTED SOURCE FACTS: ${JSON.stringify(sourceFacts)}`,
+            `APPROVED REFERENCE CONTEXT: ${JSON.stringify(referenceSummaries)}`,
+          ].join("\n") }] }],
+          max_output_tokens: 800,
+        }),
+        cache: "no-store",
+      });
+      if (response.ok) {
+        const payload = await response.json();
+        const parsed = parseAIJson(extractAIOutputText(payload));
+        if (!Array.isArray(parsed?.observations) ||
+            !parsed.observations.every((item: unknown) => typeof item === "string")) {
+          throw new Error("RAG advisory response is missing the expected observations array.");
+        }
+        observations = normalizeStringArray(parsed.observations).slice(0, 5);
+        // An empty observations array is a valid completed advisory.
+        advisoryStatus = "completed";
+      } else {
+        console.warn("ESSENTIAL RAG ADVISORY FAILED:", response.status);
+      }
+    }
+  } catch (error) {
+    console.warn("ESSENTIAL RAG ADVISORY ERROR:", error);
+  }
+
+  return {
+    jurisdiction,
+    status: "matched",
+    referenceCount: references.length,
+    references: references.slice(0, 10).map((ref) => ({
+      title: safeString(ref.title) || "Approved knowledge reference",
+      similarity: typeof ref.similarity === "number" ? ref.similarity : null,
+    })),
+    observations,
+    advisoryStatus,
+    limitation,
+  };
 }
 
 /*
@@ -1876,20 +2080,9 @@ async function analyzeDocument(
   const dataUrl =
     `data:${actualMimeType};base64,${base64}`;
 
-  const knowledgeReferences =
-    await retrieveApprovedKnowledge(
-      documentType,
-    );
-
-  const knowledgeContext =
-    formatKnowledgeContext(
-      knowledgeReferences,
-    );
-
-  console.log(
-    "ESSENTIAL KNOWLEDGE REFERENCES:",
-    knowledgeReferences.length,
-  );
+  // The original document assessment occurs before jurisdiction-safe
+  // retrieval. A separate advisory step follows extraction.
+  const knowledgeContext = "No reference material is used at this stage. Extract facts only from the uploaded document.";
 
   /*
    * ==========================================================
@@ -2017,7 +2210,7 @@ issuingAuthority:
 Named issuing authority, when present.
 
 propertyDetails.location:
-Written property address or location.
+Written property address or location. Preserve the explicitly printed State/FCT when present. Do not infer a State/FCT from a town name, issuing authority or geographic guess.
 
 propertyDetails.propertyType:
 Explicitly stated type or use.
@@ -3200,6 +3393,52 @@ export async function POST(
       );
     }
 
+    // Authenticate before using administrator database privileges.
+    const authorization =
+      request.headers.get("authorization") || "";
+
+    const bearer =
+      /^Bearer\s+(.+)$/i.exec(authorization.trim());
+
+    const accessToken =
+      bearer?.[1]?.trim() || "";
+
+    if (!accessToken) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Authentication is required.",
+        },
+        {
+          status: 401,
+          headers: { "Cache-Control": "no-store" },
+        },
+      );
+    }
+
+    const authClient = getSupabaseAuthClient();
+
+    const {
+      data: authData,
+      error: authError,
+    } = await authClient.auth.getUser(accessToken);
+
+    const authenticatedUserId =
+      authData.user?.id || "";
+
+    if (authError || !authenticatedUserId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Your session could not be verified. Please sign in again.",
+        },
+        {
+          status: 401,
+          headers: { "Cache-Control": "no-store" },
+        },
+      );
+    }
     const supabaseAdmin =
       getSupabaseAdmin();
 
@@ -3215,7 +3454,7 @@ export async function POST(
     } = await supabaseAdmin
       .from("verifications")
       .select(
-        "id,doc_name,file_url,doc_type,status,findings",
+        "id,user_id,doc_name,file_url,doc_type,status,findings",
       )
       .eq("id", verificationId)
       .maybeSingle();
@@ -3267,7 +3506,7 @@ export async function POST(
     } = await supabaseAdmin
       .from("payments")
       .select(
-        "id,plan,status,amount,currency,provider",
+        "id,user_id,verification_id,plan,status,amount,currency,provider",
       )
       .eq(
         "verification_id",
@@ -3316,6 +3555,28 @@ export async function POST(
       );
     }
 
+    // A paid verification must also belong to the signed-in user.
+    const ownsVerification =
+      Boolean(verification.user_id) &&
+      verification.user_id === authenticatedUserId;
+
+    const ownsPayment =
+      payment.user_id === authenticatedUserId &&
+      payment.verification_id === verificationId;
+
+    if (!ownsVerification && !ownsPayment) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "You are not authorized to run this verification.",
+        },
+        {
+          status: 403,
+          headers: { "Cache-Control": "no-store" },
+        },
+      );
+    }
     /*
      * ========================================================
      * DOCUMENT PACKAGE
@@ -3326,6 +3587,9 @@ export async function POST(
       asObject(
         verification.findings,
       ) as VerificationFindings;
+
+    // Do not trust customer-entered or previously saved jurisdiction.
+    // Jurisdiction is established later from extracted document content.
 
     let documentPackage:
       DocumentPackageItem[] =
@@ -3710,6 +3974,81 @@ export async function POST(
 
     /*
      * ========================================================
+     * PACKAGE-SAFE JURISDICTION / RAG ASSESSMENT
+     * ========================================================
+     * All documents are extracted BEFORE any jurisdiction-based
+     * retrieval. Conflicting states prohibit any package RAG
+     * lookup or second-pass AI advisory for the entire package.
+     */
+    const jurisdictionsByDocument = documentResults.map((item) =>
+      extractPropertyJurisdictions(item.propertyDetails.location)
+    );
+    const jurisdictionSet = uniqueStrings(jurisdictionsByDocument.flat());
+    const jurisdictionConflict = jurisdictionSet.length > 1 ||
+      jurisdictionsByDocument.some((states) => states.length > 1);
+    const extractedJurisdiction = !jurisdictionConflict && jurisdictionSet.length === 1
+      ? jurisdictionSet[0]
+      : null;
+
+    if (jurisdictionConflict) {
+      for (const item of documentResults) {
+        item.ragAssessment = {
+          jurisdiction: null,
+          status: "conflicting_location",
+          referenceCount: 0,
+          references: [],
+          observations: ["Conflicting states were extracted from this document package. Jurisdiction-specific RAG was blocked pending review."],
+          advisoryStatus: "not_attempted",
+          limitation: "Document-extracted locations are not independent confirmation of the property's physical or legal location.",
+        };
+      }
+      console.warn("ESSENTIAL RAG BLOCKED: conflicting document jurisdictions", jurisdictionSet);
+    } else {
+      for (const item of documentResults) {
+        item.ragAssessment = await assessDocumentWithKnowledge({
+          documentType: item.documentType,
+          documentTitle: item.documentTitle,
+          summary: item.summary,
+          documentNumber: item.documentNumber,
+          issuingAuthority: item.issuingAuthority,
+          propertyDetails: item.propertyDetails,
+          parties: item.parties,
+          dates: item.dates,
+          checks: item.checks,
+          manipulationIndicators: item.manipulationIndicators,
+        }, extractedJurisdiction);
+        console.log("ESSENTIAL RAG ASSESSMENT:", {
+          document: item.documentName,
+          jurisdiction: item.ragAssessment.jurisdiction,
+          status: item.ragAssessment.status,
+          advisoryStatus: item.ragAssessment.advisoryStatus,
+          references: item.ragAssessment.referenceCount,
+        });
+      }
+    }
+
+    const ragSummary = {
+      source: "document_extracted_property_address",
+      jurisdiction: extractedJurisdiction,
+      jurisdictionStatus: jurisdictionConflict ? "conflicting" : extractedJurisdiction ? "established_from_document" : "unknown",
+      jurisdictionConflict,
+      independentlyVerified: false,
+      referenceCount: documentResults.reduce((n, item) => n + (item.ragAssessment?.referenceCount || 0), 0),
+      advisoryStatus: jurisdictionConflict || !extractedJurisdiction
+        ? "not_attempted"
+        : documentResults.some((item) => item.ragAssessment?.advisoryStatus === "failed")
+          ? "failed"
+          : documentResults.some((item) => item.ragAssessment?.advisoryStatus === "completed")
+            ? "completed"
+            : "not_attempted",
+      documents: documentResults.map((item) => ({
+        documentName: item.documentName,
+        ...item.ragAssessment,
+      })),
+    };
+
+    /*
+     * ========================================================
      * PACKAGE SCORES
      * ========================================================
      *
@@ -3915,6 +4254,8 @@ export async function POST(
         gps_analysis:
           gpsAnalysis,
 
+        rag_assessment: ragSummary,
+
         essential: {
           ...asObject(
             storedFindings.essential,
@@ -3932,6 +4273,8 @@ export async function POST(
 
           gps_analysis:
             gpsAnalysis,
+
+          rag_assessment: ragSummary,
 
           authenticity_status:
             "not_independently_verified",
@@ -4035,6 +4378,7 @@ export async function POST(
         packageOwnership,
 
       gpsAnalysis,
+      ragAssessment: ragSummary,
     });
   } catch (error) {
     console.error(
