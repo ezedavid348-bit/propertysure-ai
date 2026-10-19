@@ -254,15 +254,13 @@
 
 
 /* =========================================================
-   CONTENT CARD
+   MAIN CONTENT CARD
 ========================================================= */
 
 .contentCard {
   width: 100%;
 
-  min-height: 500px;
-
-  padding: 30px;
+  padding: 34px 30px 30px;
 
   border: 1px solid #dfe6ee;
 
@@ -272,51 +270,79 @@
 
   display: flex;
 
-  align-items: flex-start;
+  scroll-margin-top: 25px;
 }
 
 .contentText {
   width: 100%;
 
-  max-width: 720px;
+  max-width: 690px;
 
   min-width: 0;
 }
 
+.contentText > p {
+  margin: 0 0 22px;
+
+  color: #172743;
+
+  font-size: 14px;
+
+  line-height: 1.95;
+}
+
+.mainParagraph {
+  margin-bottom: 23px !important;
+}
+
+.contentText h2 {
+  margin: 28px 0 18px;
+
+  color: #0f1d38;
+
+  font-size: 19px;
+
+  line-height: 1.3;
+
+  font-weight: 700;
+}
+
 
 /* =========================================================
-   INTRO BOX
+   PROCESS LIST
 ========================================================= */
 
-.introBox {
+.processList {
   width: 100%;
-
-  padding: 17px 18px;
-
-  border: 1px solid #d4e2f3;
-
-  border-radius: 8px;
-
-  background: #f4f8fd;
 
   display: flex;
 
-  align-items: flex-start;
+  flex-direction: column;
 
-  gap: 13px;
+  gap: 20px;
 
   scroll-margin-top: 25px;
 }
 
-.introIcon {
-  width: 44px;
-  height: 44px;
+.processItem {
+  display: grid;
 
-  flex-shrink: 0;
+  grid-template-columns:
+    38px
+    minmax(0, 1fr);
+
+  gap: 14px;
+
+  align-items: flex-start;
+}
+
+.processNumber {
+  width: 32px;
+  height: 32px;
 
   border-radius: 50%;
 
-  background: #e4efff;
+  background: #e5efff;
 
   color: #0879df;
 
@@ -324,21 +350,27 @@
 
   align-items: center;
   justify-content: center;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  flex-shrink: 0;
 }
 
-.introBox h2 {
-  margin: 1px 0 7px;
+.processContent h3 {
+  margin: 1px 0 6px;
 
   color: #172743;
 
-  font-size: 17px;
+  font-size: 13px;
 
-  line-height: 1.3;
+  line-height: 1.4;
 
   font-weight: 700;
 }
 
-.introBox p {
+.processContent p {
   margin: 0;
 
   color: #52637b;
@@ -350,71 +382,143 @@
 
 
 /* =========================================================
-   CONTENT HEADINGS
+   SUCCESS BOX
 ========================================================= */
 
-.contentText > h2 {
-  margin: 28px 0 15px;
+.successBox {
+  width: 100%;
 
-  color: #0f1d38;
+  margin-top: 25px;
 
-  font-size: 19px;
+  padding: 13px 16px;
 
-  line-height: 1.3;
+  border: 1px solid #cce9dc;
 
-  font-weight: 700;
+  border-radius: 8px;
 
-  scroll-margin-top: 25px;
+  background: #f2fbf6;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+.successIcon {
+  width: 43px;
+  height: 43px;
+
+  border-radius: 50%;
+
+  background: #e1f6e9;
+
+  color: #15995a;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.successBox p {
+  margin: 0;
+
+  color: #526b60;
+
+  font-size: 11px;
+
+  line-height: 1.65;
+}
+
+.successBox strong {
+  color: #187b4d;
 }
 
 
 /* =========================================================
-   LIMIT LIST
+   CHECK LIST
 ========================================================= */
 
-.limitList {
-  display: flex;
+.checkList {
+  list-style: none;
 
-  flex-direction: column;
-
-  gap: 11px;
-
-  scroll-margin-top: 25px;
+  margin: 0;
+  padding: 0;
 }
 
-.limitItem {
-  width: 100%;
-
-  padding: 15px 16px;
-
-  border: 1px solid #e0e6ed;
-
-  border-radius: 8px;
-
-  background: #ffffff;
+.checkList li {
+  min-height: 34px;
 
   display: flex;
 
   align-items: flex-start;
 
-  gap: 14px;
+  gap: 10px;
+
+  color: #1e304b;
+
+  font-size: 13px;
+
+  line-height: 1.55;
 }
 
-.limitItem:hover {
-  border-color: #cbdbea;
+.checkList li > span {
+  width: 17px;
+  height: 17px;
 
-  background: #fbfdff;
-}
+  margin-top: 1px;
 
-.number {
-  width: 34px;
-  height: 34px;
+  border: 1.5px solid #22a467;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #16975a;
 
   flex-shrink: 0;
+}
+
+
+/* =========================================================
+   IMPORTANT NOTE
+========================================================= */
+
+.noteBox {
+  width: 100%;
+
+  margin-top: 25px;
+
+  padding: 13px 16px;
+
+  border: 1px solid #d4e2f3;
 
   border-radius: 8px;
 
-  background: #eef5ff;
+  background: #f4f8fd;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  scroll-margin-top: 25px;
+}
+
+.noteIcon {
+  width: 43px;
+  height: 43px;
+
+  border-radius: 50%;
+
+  background: #e4efff;
 
   color: #0879df;
 
@@ -423,92 +527,26 @@
   align-items: center;
   justify-content: center;
 
-  font-size: 9px;
-
-  font-weight: 700;
-}
-
-.limitItem h3 {
-  margin: 1px 0 5px;
-
-  color: #172640;
-
-  font-size: 13px;
-
-  line-height: 1.4;
-
-  font-weight: 700;
-}
-
-.limitItem p {
-  margin: 0;
-
-  color: #5a6b82;
-
-  font-size: 10.5px;
-
-  line-height: 1.65;
-}
-
-
-/* =========================================================
-   NOTICE
-========================================================= */
-
-.noticeBox {
-  width: 100%;
-
-  margin-top: 20px;
-
-  padding: 13px 16px;
-
-  border: 1px solid #f0dca7;
-
-  border-radius: 8px;
-
-  background: #fffaf0;
-
-  display: flex;
-
-  align-items: flex-start;
-
-  gap: 12px;
-
-  scroll-margin-top: 25px;
-}
-
-.noticeIcon {
-  width: 34px;
-  height: 34px;
-
   flex-shrink: 0;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  color: #d99418;
 }
 
-.noticeBox p {
+.noteBox p {
   margin: 0;
 
-  color: #53687b;
+  color: #263852;
 
-  font-size: 10.5px;
+  font-size: 11px;
 
   line-height: 1.65;
 }
 
-.noticeBox strong {
-  color: #263852;
+.noteBox strong {
+  color: #172743;
 }
 
 
 /* =========================================================
    BOTTOM ARTICLE NAVIGATION
-   MASTER HELP CENTER TEMPLATE
 ========================================================= */
 
 .bottomNavigation {
@@ -531,7 +569,7 @@
 
 
 /* =========================================================
-   PREVIOUS ARTICLE — DARK
+   PREVIOUS ARTICLE
 ========================================================= */
 
 .previousBottom {
@@ -700,7 +738,7 @@
 
 
 /* =========================================================
-   ARTICLE NAVIGATION
+   IN THIS ARTICLE
 ========================================================= */
 
 .articleNav {
@@ -879,7 +917,7 @@
 
 
 /* =========================================================
-   SIDEBAR PREVIOUS — DARK
+   SIDEBAR PREVIOUS
 ========================================================= */
 
 .previousArticle {
@@ -993,6 +1031,100 @@
 
 
 /* =========================================================
+   SUPPORT CARD
+========================================================= */
+
+.supportCard {
+  width: 100%;
+
+  padding: 21px;
+
+  border: 1px solid #d9e4f0;
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f5faff,
+      #ffffff
+    );
+}
+
+.supportIcon {
+  width: 48px;
+  height: 48px;
+
+  margin-bottom: 13px;
+
+  border-radius: 50%;
+
+  background: #e5efff;
+
+  color: #0879df;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.supportCard h3 {
+  margin: 0;
+
+  color: #18253a;
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+.supportCard p {
+  margin: 8px 0 15px;
+
+  color: #52637b;
+
+  font-size: 10.5px;
+
+  line-height: 1.65;
+}
+
+.supportCard button {
+  width: 100%;
+
+  height: 42px;
+
+  padding: 0 13px;
+
+  border: 1px solid #0879df;
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #0879df;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.supportCard button:hover {
+  background: #0879df;
+
+  color: #ffffff;
+}
+
+
+/* =========================================================
    TABLET
 ========================================================= */
 
@@ -1008,7 +1140,7 @@
   }
 
   .contentCard {
-    min-height: 480px;
+    padding: 30px 25px;
   }
 }
 
@@ -1025,8 +1157,6 @@
   }
 
   .contentCard {
-    min-height: auto;
-
     padding: 25px 22px;
   }
 
@@ -1041,6 +1171,10 @@
 
   .sideCard {
     margin-bottom: 0;
+  }
+
+  .supportCard {
+    grid-column: 1 / -1;
   }
 }
 
@@ -1084,47 +1218,63 @@
     padding: 19px 17px;
   }
 
-  .introBox {
-    padding: 14px;
+  .contentText > p {
+    font-size: 12px;
+
+    line-height: 1.8;
   }
 
-  .introBox h2 {
-    font-size: 16px;
-  }
-
-  .introBox p {
-    font-size: 10.5px;
-  }
-
-  .contentText > h2 {
+  .contentText h2 {
     font-size: 18px;
   }
 
-  .limitItem {
-    padding: 13px;
+  .processItem {
+    grid-template-columns:
+      34px
+      minmax(0, 1fr);
+
+    gap: 11px;
   }
 
-  .limitItem h3 {
+  .processNumber {
+    width: 30px;
+    height: 30px;
+  }
+
+  .processContent h3 {
     font-size: 12px;
   }
 
-  .limitItem p {
-    font-size: 10px;
+  .processContent p {
+    font-size: 10.5px;
+
+    line-height: 1.65;
   }
 
-  .number {
-    width: 31px;
-    height: 31px;
+  .checkList li {
+    font-size: 11px;
   }
 
-  .noticeBox p {
-    font-size: 10px;
+  .successBox {
+    align-items: flex-start;
+  }
+
+  .successBox p {
+    font-size: 10.5px;
+  }
+
+  .noteBox {
+    align-items: flex-start;
+  }
+
+  .noteBox p {
+    font-size: 10.5px;
   }
 
 
   /* =======================================================
-     BOTTOM NAVIGATION — MOBILE
-     ======================================================= */
+     BOTTOM ARTICLE NAVIGATION — MOBILE
+  ======================================================= */
 
   .bottomNavigation {
     display: flex;
@@ -1167,6 +1317,10 @@
 
     margin-top: 8px;
   }
+
+  .supportCard {
+    width: 100%;
+  }
 }
 
 
@@ -1181,8 +1335,4 @@
     rgba(8, 121, 223, 0.45);
 
   outline-offset: 3px;
-}
-
-html {
-  scroll-behavior: smooth;
 }

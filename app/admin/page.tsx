@@ -334,6 +334,13 @@ export default function AdminPage() {
             onClick={() => router.push("/admin/ai-knowledge")}
             active
           />
+          <AdminCard
+            title="Investigations"
+            description="Manage Professional and Premium investigations, official searches, evidence reviews, and final report approvals."
+            status="Open Investigation Center"
+            onClick={() => router.push("/admin/investigations")}
+            active
+          />
         </section>
 
         <section
